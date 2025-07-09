@@ -1,4 +1,4 @@
-import { Component, onWillUpdateProps, props, proxy, t } from "@odoo/owl";
+import { Component, onWillUnmount, onWillUpdateProps, props, proxy, t } from "@odoo/owl";
 import { useBus } from "@web/core/utils/hooks";
 import { MoOverviewLine } from "../mo_overview_line/mrp_mo_overview_line";
 import { MoOverviewOperationsBlock } from "../mo_overview_operations_block/mrp_mo_overview_operations_block";
@@ -35,18 +35,29 @@ export class MoOverviewComponentsBlock extends Component {
     setup() {
         this.state = proxy({
             fold: this.getIndexStates(this.props),
-            unfoldAll: this.props.unfoldAll || false,
+            unfoldAll: this.props.unfoldAll,
         });
 
         if (this.props.unfoldAll) {
             this.env.overviewBus.trigger("update-folded", { indexes: Object.keys(this.state.fold), isFolded: false });
         }
 
-        useBus(this.env.overviewBus, "unfold-all", () => this.unfoldAll());
+        useBus(this.env.overviewBus, "toggle-fold-all", (ev) =>
+            this._onToggleFoldAll(ev.detail.isFolded)
+        );
 
         onWillUpdateProps(newProps => {
             // Update the fold indexes so it matches the newly added lines.
             this.state.fold = { ...this.getIndexStates(newProps), ...this.state.fold };
+        });
+
+        onWillUnmount(() => {
+            if (this.hasComponents) {
+                this.env.overviewBus.trigger("update-folded", {
+                    indexes: Object.keys(this.state.fold),
+                    isFolded: true,
+                });
+            }
         });
     }
 
@@ -65,11 +76,11 @@ export class MoOverviewComponentsBlock extends Component {
         this.env.overviewBus.trigger("update-folded", { indexes: [foldIndex], isFolded: newState });
     }
 
-    unfoldAll() {
-        this.state.unfoldAll = true;
+    _onToggleFoldAll(isFolded) {
+        this.state.unfoldAll = !isFolded;
         const foldIndexes = Object.keys(this.state.fold);
-        foldIndexes.forEach(index => this.state.fold[index] = false);
-        this.env.overviewBus.trigger("update-folded", { indexes: foldIndexes, isFolded: false });
+        foldIndexes.forEach((index) => (this.state.fold[index] = isFolded));
+        this.env.overviewBus.trigger("update-folded", { indexes: foldIndexes, isFolded });
     }
 
     //---- Helpers ----
