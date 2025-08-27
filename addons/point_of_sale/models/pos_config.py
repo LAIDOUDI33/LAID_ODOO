@@ -220,11 +220,30 @@ class PosConfig(models.Model):
 
     def _notify_synchronisation(self, session_id, device_identifier, records={}, deleted_record_ids=None):
         self.ensure_one()
-        static_records = {}
+        models = []
+        search_params = {}
 
         for model, ids in records.items():
-            records = self.env[model].browse(ids).exists()
-            static_records[model] = self.env[model]._load_pos_data_read(records, self)
+            models.append(model)
+            search_params[model] = {
+                'domain': [('id', 'in', ids)],
+            }
+
+        if len(models) == 0:
+            self._notify('SYNCHRONISATION', {
+                'static_records': {},
+                'session_id': session_id,
+                'device_identifier': device_identifier,
+                'records': records
+            })
+            return
+
+        static_records = self.current_session_id.load_data({
+            'models': models,
+            'records': {},
+            'search_params': search_params,
+            'only_records': True,
+        })
 
         self._notify('SYNCHRONISATION', {
             'static_records': static_records,
@@ -274,8 +293,8 @@ class PosConfig(models.Model):
         }
 
     @api.model
-    def _load_pos_data_domain(self, data, config):
-        return [('id', '=', config.id)]
+    def _load_pos_data_domain(self, data):
+        return [('id', '=', data['pos.session'].config_id.id)]
 
     @api.model
     def _load_pos_data_read(self, records, config):
@@ -293,7 +312,6 @@ class PosConfig(models.Model):
         record['_data_server_date'] = self.env.context.get('pos_last_server_date') or self.env.cr.now()
         record['_has_cash_move_perm'] = self.env.user._has_cash_move_permission()
         record['_has_cash_delete_perm'] = self.env.user._has_cash_delete_permission()
-        record['_pos_special_products_ids'] = self.env['pos.config']._get_special_products().ids
 
         session = config.current_session_id
         last_opening = config._get_opening_balance() if session else 0.0
@@ -301,7 +319,7 @@ class PosConfig(models.Model):
 
         # Add custom fields for 'formula' taxes.
         # We can ignore data for _load_pos_data_domain since isn't needed in the domain computation of account.tax
-        taxes = self.env['account.tax'].search(self.env['account.tax']._load_pos_data_domain({}, config))
+        taxes = self.env['account.tax'].search(self.env['account.tax']._load_pos_data_domain({'pos.config': config}))
         product_fields = taxes._eval_taxes_computation_prepare_product_fields()
         record['_product_default_values'] = \
             self.env['account.tax']._eval_taxes_computation_prepare_product_default_values(product_fields)
