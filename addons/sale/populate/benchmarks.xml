@@ -144,7 +144,6 @@
             <model name="crm.team" count="50" id="bench_teams">
                 <field name="v_counter" virtual="True" generator="misc.counter" start="1"/>
                 <field name="name" eval="f'Benchmark Team {v_counter}'"/>
-                <field name="invoiced_target" start="10000" end="500000"/>
             </model>
 
             <model name="res.partner" count="500" id="bench_team_partners">
