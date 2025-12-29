@@ -68,3 +68,26 @@ class HrVersion(models.Model):
     def _generate_work_entries_postprocess_adapt_to_calendar(self, vals):
         res = super()._generate_work_entries_postprocess_adapt_to_calendar(vals)
         return res or (not 'work_entry_type_id' not in vals and vals.get('leave_id'))
+
+    @api.model
+    def _generate_work_entries_postprocess(self, vals_list):
+        result = super()._generate_work_entries_postprocess(vals_list)
+        for vals in result:
+            leave_id = vals.get('leave_id')
+            if not leave_id or not vals.get('date'):
+                continue
+            leave = self.env['hr.leave'].browse(leave_id)
+            calendar = leave.resource_calendar_id
+            if not calendar:
+                continue
+            if (
+                leave.request_unit_half
+                and leave.request_date_from != leave.request_date_to
+                and calendar.duration_based
+                and vals['date'] in (leave.request_date_from, leave.request_date_to)
+            ):
+                __, hours = calendar._get_half_day_leave_hours_on_date(
+                    vals['date'], leave.request_date_from, leave.request_date_to,
+                    leave.request_date_from_period, leave.request_date_to_period)
+                vals['duration'] = hours
+        return result
