@@ -157,6 +157,7 @@ class ProductTemplate(models.Model):
         inverse_name="product_tmpl_id",
         copy=True,
     )
+    computed_main_image_id = fields.Many2one("product.image")
 
     compare_list_price = fields.Monetary(
         string="Compare to Price",
@@ -272,6 +273,14 @@ class ProductTemplate(models.Model):
                 template.product_variant_ids.filtered("default_code").mapped("default_code")
             )
 
+    @api.depends("computed_main_image_id")
+    def _compute_image_1920(self):
+        super()._compute_image_1920()
+        for template in self.filtered("computed_main_image_id"):
+            template.with_context(
+                from_computed_image=True
+            ).image_1920 = template.computed_main_image_id.image_1920
+
     # === CRUD METHODS ===#
 
     @api.model_create_multi
@@ -284,6 +293,8 @@ class ProductTemplate(models.Model):
                 "suggest_accessory_products": not vals.get("accessory_product_ids"),
                 "suggest_alternative_products": not vals.get("alternative_product_ids"),
             })
+            if vals.get("product_template_image_ids") and not vals.get("image_1920"):
+                record._update_images_assignments()
         return records
 
     def write(self, vals):
@@ -301,7 +312,27 @@ class ProductTemplate(models.Model):
                     else v
                 ),
             )
-        return super().write(vals)
+
+        if vals.get("image_1920") and not self.env.context.get("from_computed_image"):
+            vals["computed_main_image_id"] = False
+
+        res = super().write(vals)
+
+        if vals.get("image_1920") and not self.env.context.get("from_computed_image"):
+            self._update_images_assignments()
+
+        if "image_1920" in vals and not vals["image_1920"]:
+            images_to_unlink = self.env["product.image"]
+            for template in self:
+                if template.computed_main_image_id:
+                    images_to_unlink |= template.computed_main_image_id
+                else:
+                    template._update_images_assignments()
+
+            if images_to_unlink:
+                images_to_unlink.unlink()
+
+        return res
 
     @api.ondelete(at_uninstall=False)
     def _unlink_if_not_donation_product(self):
@@ -359,6 +390,47 @@ class ProductTemplate(models.Model):
             "suggest_alternative_products": True,
         })
         self._update_suggested_products()
+
+    def _update_images_assignments(self, restore_computed=None):
+        """Update image type assignments and the computed main image.
+
+        If the template has no manually assigned main image, already uses a computed
+        one, or its ID is marked in `restore_computed`, the first non-attribute image is
+        selected as the computed main image and marked as primary. The second
+        non-attribute image, if any, is marked as secondary. If all images have
+        attribute values, the first two images by sequence are used instead.
+
+        Otherwise, the manually assigned main image is preserved, and the first
+        candidate image (preferring a non-attribute image, or otherwise the first
+        image by sequence) is marked as secondary.
+        """
+        for template in self:
+            should_restore_computed = (
+                restore_computed is not None
+                and restore_computed.get(template.id, False)
+            )
+
+            template_images = template.product_template_image_ids.sorted("sequence")
+            if not template_images:
+                template.computed_main_image_id = False
+                continue
+            template_images.image_type = False
+
+            images_to_assign = (
+                template_images.filtered(lambda image: not image.has_attribute_value)[:2]
+                or template_images[:2]
+            )
+
+            if not template.image_1920 or template.computed_main_image_id or should_restore_computed:
+                if images_to_assign[0].video_url:
+                    raise ValidationError(
+                        template.env._("You can't use a video as the product's main image.")
+                    )
+                images_to_assign[0].image_type = "primary"
+                images_to_assign[1:2].image_type = "secondary"
+                template.computed_main_image_id = images_to_assign[0]
+            else:
+                images_to_assign[0].image_type = "secondary"
 
     def _update_suggested_products(self):
         """Update the current product templates' optional, accessory, and alternative products.
@@ -1240,7 +1312,11 @@ class ProductTemplate(models.Model):
         Template Extra Images.
         """
         self.ensure_one()
-        return [self] + list(self.product_template_image_ids)
+        extra_images = list(
+            self.product_template_image_ids.sorted("sequence") - self.computed_main_image_id
+        )
+
+        return [self] + extra_images
 
     def _get_product_page_documents(self, variant=None):
         self.ensure_one()
@@ -1619,6 +1695,26 @@ class ProductTemplate(models.Model):
         self.ensure_one()
 
         return bool(self.valid_product_template_attribute_line_ids)
+
+    def get_attribute_value_mapping(self):
+        """Return variant attribute values grouped by attribute.
+
+        :return: A list of dictionaries with the keys `id` (attribute id) and
+                `values` (list of active PTAV ids and names).
+        :rtype: list[dict]
+        """
+        attribute_value_mapping = []
+        for line in self.attribute_line_ids:
+            if line.attribute_id.create_variant == "no_variant":
+                continue
+            values = [
+                {"id": ptav.id, "name": ptav.name}
+                for ptav in line.product_template_value_ids
+                if ptav.ptav_active
+            ]
+            if values:
+                attribute_value_mapping.append({"id": line.attribute_id.id, "values": values})
+        return attribute_value_mapping
 
     def _has_multiple_uoms(self) -> bool:
         """Check if the product has multiple available uoms for the current website.
