@@ -3,7 +3,8 @@ import { fields, Record } from "@mail/model/export";
 export class WebsiteTrack extends Record {
     static _name = "website.track";
 
-    page_id = fields.One("website.page");
+    res_model = fields.Attr();
+    res_id = fields.Attr();
     visit_datetime = fields.Datetime();
 }
 

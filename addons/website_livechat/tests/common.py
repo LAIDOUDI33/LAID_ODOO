@@ -71,17 +71,20 @@ class TestLivechatCommon(MailCommon):
         self.track_ids = self.env["website.track"].create(
             [
                 {
-                    "page_id": self.page_1.id,
+                    "res_model": 'website.page',
+                    "res_id": self.page_1.id,
                     "visitor_id": self.visitor.id,
                     "visit_datetime": self.base_datetime - datetime.timedelta(minutes=20),
                 },
                 {
-                    "page_id": self.page_2.id,
+                    "res_model": 'website.page',
+                    "res_id": self.page_2.id,
                     "visitor_id": self.visitor.id,
                     "visit_datetime": self.base_datetime - datetime.timedelta(minutes=10),
                 },
                 {
-                    "page_id": self.page_1.id,
+                    "res_model": 'website.page',
+                    "res_id": self.page_1.id,
                     "visitor_id": self.visitor.id,
                     "visit_datetime": self.base_datetime,
                 },

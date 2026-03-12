@@ -71,8 +71,13 @@ export class WebsiteVisitor extends websiteModels.WebsiteVisitor {
         res.many(
             "last_track_ids",
             (trackRes) => {
-                trackRes.one("page_id", ["name"]);
+                trackRes.attr("res_model");
+                trackRes.attr("res_id");
                 trackRes.attr("visit_datetime");
+                trackRes.attr(
+                    "name",
+                    (track) => this.env[track.res_model].browse(track.res_id)[0]?.name
+                );
             },
             {
                 sort: (a, b) => {
@@ -85,7 +90,8 @@ export class WebsiteVisitor extends websiteModels.WebsiteVisitor {
                     WebsiteTrack.browse(
                         WebsiteTrack.search_read(
                             [
-                                ["page_id", "!=", false],
+                                ["res_model", "=", "website.page"],
+                                ["res_id", "!=", false],
                                 ["visitor_id", "=", visitor.id],
                             ],
                             { limit: 3 }
