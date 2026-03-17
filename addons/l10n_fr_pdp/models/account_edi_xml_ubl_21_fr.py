@@ -4,8 +4,6 @@ from odoo.addons.account_edi_ubl_cii.models.account_edi_common import FloatFmt
 
 PDP_CUSTOMIZATION_ID = 'urn:cen.eu:en16931:2017'  # Not accepted by SuperPDP due to missing validator
 
-PAID_STATES = frozenset({'in_payment', 'paid'})
-
 
 class AccountEdiXmlUbl21Fr(models.AbstractModel):
     _name = "account.edi.xml.ubl_21_fr"
@@ -48,40 +46,9 @@ class AccountEdiXmlUbl21Fr(models.AbstractModel):
         invoice = vals['invoice']
         super()._add_invoice_header_nodes(document_node, vals)
 
-        # Les valeurs autorisées pour le Cadre (Mode de Facturation) sont:
-        # B1 : Dépôt d'une facture de bien
-        # S1 : Dépôt d'une facture de prestation de service
-        # M1 : Dépôt d'une facture double (livraison de bien et services qui ne sont pas accessoires l'une de l'autre)
-        # B2 : Dépôt d'une facture de bien déjà payée
-        # S2 : Dépôt d'une facture de prestation de service déjà payée
-        # M2 : Dépôt d'une facture double déjà payée
-        # B4 : Dépôt d'une facture définitive (après acompte) de bien
-        # S4 : Dépôt d'une facture définitive (après acompte) de service
-        # M4 : Dépôt d'une facture définitive (après acompte) double
-        # S5 : Dépôt par un sous-traitant d'une facture de prestation de service
-        # S6 : Dépôt par un cotraitant d'une facture de prestation de service
-        # B7 : Dépôt d'une facture de bien ayant fait l'objet d'un e-reporting (TVA déjà collectée)
-        # S7 : Dépôt d'une facture de prestation de service ayant fait l'objet d'un e-reporting (TVA déjà collectée)
-
-        tax_scopes = set(invoice.invoice_line_ids.tax_ids.mapped('tax_scope'))
-        profile_scope = "B"
-        if {'service', 'consu'}.issubset(tax_scopes):
-            profile_scope = "M"
-        elif 'service' in tax_scopes:
-            profile_scope = "S"
-
-        profile_number = "1"
-        if invoice.payment_state in PAID_STATES:
-            # Already paid
-            profile_number = "2"
-        elif not invoice._is_downpayment() and invoice.invoice_line_ids._get_downpayment_lines():
-            # After downpayment
-            profile_number = "4"
-
-        profile_id = f"{profile_scope}{profile_number}"
         document_node.update({
             'cbc:CustomizationID': {'_text': PDP_CUSTOMIZATION_ID},
-            'cbc:ProfileID': {'_text': profile_id},
+            'cbc:ProfileID': {'_text': self._l10n_fr_pdp_get_profile_id(vals)},
         })
 
         # [BR-FR-05] Add mandatory notes with defaults if not already present
@@ -90,7 +57,7 @@ class AccountEdiXmlUbl21Fr(models.AbstractModel):
         if not existing_note or not isinstance(document_node.get('cbc:Note'), list):
             document_node['cbc:Note'] = [existing_note] if existing_note else []
         # Add default notes
-        for code, default_content in invoice._l10n_fr_pdp_get_default_notes().items():
+        for code, default_content in self._get_default_notes(vals).items():
             document_node['cbc:Note'].append({
                 '_text': f"#{code}#{default_content}",
             })
