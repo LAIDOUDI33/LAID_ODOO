@@ -1360,7 +1360,6 @@ class Website(models.CachedModel):
             if not menu:
                 default_menu_values = {
                     'name': name,
-                    'url': page_url,
                     'parent_id': website.menu_id.id,
                     'page_id': page.id,
                     'website_id': website.id,
