@@ -8,6 +8,7 @@ from zoneinfo import ZoneInfo
 from odoo import api, fields, models
 from odoo.tools import SQL
 from odoo.tools.urls import urljoin
+from odoo.tools.business_data import is_vat_void
 
 
 _logger = logging.getLogger(__name__)
@@ -151,10 +152,10 @@ class BankAccountVerification(models.Model):
             partner_bank2verification = verifications.grouped(lambda verif: verif.partner_bank_account_number)
             for partner_bank in partner_banks:
                 partner_bank_verif = partner_bank2verification.get(partner_bank.sanitized_account_number)
-                if self.env['res.partner']._is_vat_void(partner_bank.partner_id.vat):
+                if partner_bank.partner_id._is_vat_void():
                     if not partner_bank_verif or not partner_bank_verif.filtered(lambda verif:
                         verif.partner_id == partner_bank.partner_id
-                        and self.env['res.partner']._is_vat_void(verif.partner_vat)
+                        and is_vat_void(verif.partner_vat)
                     ):
                         create_vals += self._get_creation_vals('incomplete_partner', partner_banks=partner_bank)
                     continue

@@ -7,6 +7,9 @@ _ADDRESS_REGEX = re.compile(r'^(.*?)(\s[0-9][0-9\S]*)?(?: - (.+))?$', flags=re.D
 _REGIONAL_INDICATOR_OFFSET = ord('\N{Regional Indicator Symbol Letter A}') - ord('A')
 
 
+def is_vat_void(vat: str) -> bool:
+    return not vat or vat in ['/', 'na', 'NA']
+
 def split_vat(vat: str, default_country_code: str = '') -> tuple[str, str]:
     """
     Return Country Code and VAT number without country prefix.
