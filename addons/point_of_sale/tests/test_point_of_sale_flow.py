@@ -1286,7 +1286,7 @@ class TestPointOfSaleFlow(CommonPosTest):
         stale_items.invalidate_recordset(['write_date'])
 
         # --- Full load ---
-        data = session.load_data([])
+        data = session.load_data({'only_records': True})
         loaded_ids = {i['id'] for i in data['product.pricelist.item']}
         self.assertIn(item_no_dates.id, loaded_ids)
         self.assertIn(item_past_start.id, loaded_ids)
@@ -1302,7 +1302,7 @@ class TestPointOfSaleFlow(CommonPosTest):
         # Modify item_to_modify now (write_date = now > last_server_date).
         item_to_modify.write({'fixed_price': 99})
 
-        data = session.with_context(pos_last_server_date=last_server_date).load_data([])
+        data = session.with_context(pos_last_server_date=last_server_date).load_data({'only_records': True})
         loaded_ids = {i['id'] for i in data['product.pricelist.item']}
         self.assertIn(item_just_activated.id, loaded_ids,
             "item whose date_start fell inside the sync window must be fetched on incremental load")

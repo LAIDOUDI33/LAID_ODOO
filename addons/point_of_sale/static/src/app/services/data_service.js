@@ -946,6 +946,7 @@ export class PosData {
                 const related = this.getRelatedModels(model);
                 related.forEach((m) => models.add(m));
             }
+            models = [...models];
         }
         const localData = await this.getCachedServerIdsFromIndexedDB(models);
         const search_params = {};

@@ -544,16 +544,16 @@ class TestSelfOrderController(SelfOrderCommonTest):
         self.pos_config.current_session_id.set_opening_control(0, "")
         data = self.make_request_to_controller('/pos-self/data/' + str(self.pos_config.id), {})
 
-        self.assertEqual(len(data['pos.config']), 1)
-        config_data = data['pos.config'][0]
+        self.assertEqual(len(data['pos.config']['records']), 1)
+        config_data = data['pos.config']['records'][0]
         self.assertEqual(config_data['id'], self.pos_config.id)
         self.assertEqual(config_data['self_ordering_mode'], 'mobile')
         self.assertTrue(len(config_data['_self_ordering_image_home_ids']) > 1)
         self.assertFalse(config_data.get('access_token'))
         self.assertFalse(config_data.get('self_ordering_url'))
 
-        self.assertEqual(len(data['pos.session']), 1)
-        session_data = data['pos.session'][0]
+        self.assertEqual(len(data['pos.session']['records']), 1)
+        session_data = data['pos.session']['records'][0]
         self.assertEqual(session_data['id'], self.pos_config.current_session_id.id)
         self.assertEqual(session_data['state'], 'opened')
-        self.assertFalse(config_data.get('access_token'))
+        self.assertFalse(session_data.get('access_token'))

@@ -1081,6 +1081,7 @@ registry.category("web_tour.tours").add("test_preset_timing_retail", {
             Chrome.presetTimingSlotHourNotExists("9:00am"),
             Chrome.selectPresetTimingSlotHour({ title: "delivery", hour: "5:00pm" }),
             Chrome.presetTimingSlotIs("5:00pm"),
+            Chrome.isSynced(),
             Chrome.clickOrders(),
             TicketScreen.nthRowContains(2, "002"),
             TicketScreen.nthRowContains(2, "Delivery", false),

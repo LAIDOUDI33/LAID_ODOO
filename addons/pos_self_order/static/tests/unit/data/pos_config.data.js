@@ -65,6 +65,11 @@ patch(PosConfig.prototype, {
             : MockServer.env["pos.session"].getModelFieldsToLoad(model);
     },
     processPosReadDataSelf(model, records) {
+        for (const record of records) {
+            if (!record.write_date) {
+                record.write_date = "2025-01-01 10:00:00";
+            }
+        }
         return model._load_pos_self_data_read
             ? model._load_pos_self_data_read(records)
             : MockServer.env["pos.session"].processPosReadData(model, records);

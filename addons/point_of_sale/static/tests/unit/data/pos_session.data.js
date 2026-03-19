@@ -88,6 +88,11 @@ export class PosSession extends models.ServerModel {
     }
 
     processPosReadData(model, records, opts) {
+        for (const record of records) {
+            if (!record.write_date) {
+                record.write_date = "2025-01-01 10:00:00";
+            }
+        }
         return (model._load_pos_data_read && model._load_pos_data_read(records)) || records;
     }
 

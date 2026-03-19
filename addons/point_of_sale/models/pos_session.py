@@ -170,28 +170,29 @@ class PosSession(models.Model):
     def _load_pos_data_fields(self, config):
         return [
             'id', 'name', 'user_id', 'config_id', 'start_at', 'stop_at',
-            'payment_method_ids', 'state', 'update_stock_at_closing', 'cash_register_balance_start', 'access_token',
+            'payment_method_ids', 'state', 'access_token',
         ]
 
     def load_data(self, local_data={}):
         """
-        data contains a dictionary with the following structure:
-        {
-            'models': [],
-            'records': {
-                'model.1': {id1: server_date1, id2: server_date2, ...},
-                'model.2': {id1: server_date1, id2: server_date2, ...},
-                ...
-            },
-            'search_params': {
-                'model.1': {
-                    'domain': domain,
-                    'offset': offset,
-                    'limit': limit,
-                }
-            },
-            'only_records': False, # if True, only returns the records
-        }
+        Load POS data for the session, optionally scoped by what the client already holds.
+
+        param local_data: dict with the following optional keys:
+
+        - ``models`` (list): restrict the response to these model names only.
+        - ``records`` (dict): per-model mapping of ``{id: write_date}`` already in the client cache;
+          used to compute records that should be removed locally, or updated.
+        - ``search_params`` (dict): per-model overrides for ``domain``, ``offset``, ``limit``, and ``context`` passed to ``_load_pos_metadata``.
+        - ``only_records`` (bool): if ``True``, return ``{model: [records]}`` without metadata (fields, relations, etc.).
+
+        :return: A dictionary where the keys are the model names and the values are list of records
+         if ``only_records`` is ``True``, or a dictionary with the following keys:
+
+        - ``records``: list of records
+        - ``fields``: list of fields
+        - ``relations``: list of relations
+        - ``to_remove``: list of ids that should be removed from the client cache.
+          Present only if local_data['records'] is not empty.
         """
         default_params = {
             'models': [],

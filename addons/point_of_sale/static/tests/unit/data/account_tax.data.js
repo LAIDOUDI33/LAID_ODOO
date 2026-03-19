@@ -22,6 +22,10 @@ export class AccountTax extends models.ServerModel {
         ];
     }
 
+    _load_pos_data_dependencies() {
+        return ["account.tax.group"];
+    }
+
     _records = [
         {
             id: 1,

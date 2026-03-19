@@ -16,10 +16,12 @@ export class ProductPricelist extends Base {
             generalRulesIds: {},
         };
 
-        // General rules can be computed only on starting since they
-        // are loaded by default, if a new pricelist is created
-        // after the POS is started, it will be computed during the setup
-        this.computeRuleIndexes();
+        // Rules are added to uiState through addRuleIndex,
+        // addRuleIndex is called by the product.pricelist.item when setup.
+        this.rulesByProductId = {};
+        this.rulesByTmplId = {};
+        this.uiState.generalRulesIdsByCateg = {};
+        this.uiState.generalRulesIds = {};
     }
 
     getCategoryRulesIds(categoryIds) {
@@ -46,46 +48,37 @@ export class ProductPricelist extends Base {
         return this.rulesByTmplId[tmplId] || [];
     }
 
-    computeRuleIndexes() {
-        this.rulesByProductId = {};
-        this.rulesByTmplId = {};
-        this.uiState.generalRulesIdsByCateg = {};
-        this.uiState.generalRulesIds = {};
-
-        for (let i = 0; i < this.item_ids.length; i++) {
-            const item = this.item_ids[i];
-
-            // Index by product_id (variant rules)
-            if (item.product_id) {
-                const prodId = item.product_id.id;
-                if (!this.rulesByProductId[prodId]) {
-                    this.rulesByProductId[prodId] = [];
-                }
-                this.rulesByProductId[prodId].push(item);
-                continue;
+    addRuleIndex(item, index) {
+        // Index by product_id (variant rules)
+        if (item.product_id) {
+            const prodId = item.product_id.id;
+            if (!this.rulesByProductId[prodId]) {
+                this.rulesByProductId[prodId] = [];
             }
-
-            // Index by product_tmpl_id (template rules)
-            if (item.product_tmpl_id) {
-                const tmplId = item.product_tmpl_id.id;
-                if (!this.rulesByTmplId[tmplId]) {
-                    this.rulesByTmplId[tmplId] = [];
-                }
-                this.rulesByTmplId[tmplId].push(item);
-                continue;
-            }
-
-            if (item.categ_id) {
-                if (!this.uiState.generalRulesIdsByCateg[item.categ_id.id]) {
-                    this.uiState.generalRulesIdsByCateg[item.categ_id.id] = {};
-                }
-
-                this.uiState.generalRulesIdsByCateg[item.categ_id.id][i] = item.id;
-                continue;
-            }
-
-            this.uiState.generalRulesIds[i] = item.id;
+            this.rulesByProductId[prodId].push(item);
+            return;
         }
+
+        // Index by product_tmpl_id (template rules)
+        if (item.product_tmpl_id) {
+            const tmplId = item.product_tmpl_id.id;
+            if (!this.rulesByTmplId[tmplId]) {
+                this.rulesByTmplId[tmplId] = [];
+            }
+            this.rulesByTmplId[tmplId].push(item);
+            return;
+        }
+
+        if (item.categ_id) {
+            if (!this.uiState.generalRulesIdsByCateg[item.categ_id.id]) {
+                this.uiState.generalRulesIdsByCateg[item.categ_id.id] = {};
+            }
+
+            this.uiState.generalRulesIdsByCateg[item.categ_id.id][index] = item.id;
+            return;
+        }
+
+        this.uiState.generalRulesIds[index] = item.id;
     }
 
     findBestRule(rules, quantity) {

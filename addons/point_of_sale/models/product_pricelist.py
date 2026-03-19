@@ -1,6 +1,5 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 from odoo import api, fields, models
-from odoo.fields import Domain
 
 
 class ProductPricelist(models.Model):
@@ -8,14 +7,14 @@ class ProductPricelist(models.Model):
     _inherit = ['product.pricelist', 'pos.load.mixin']
 
     @api.model
-    def _load_pos_data_domain(self, data, config):
+    def _load_pos_data_domain(self, data):
         pricelist_ids = data['pos.preset'].pricelist_id.ids
         all_ids = data['pos.config']._get_available_pricelists().ids + pricelist_ids
-        referenced_base_pricelist_ids = self.env['product.pricelist'].search([
-            ('id', 'in', all_ids),
-            ('item_ids.base', '=', 'pricelist'),
-            ('item_ids.base_pricelist_id', '!=', False),
-        ]).ids
+        referenced_base_pricelist_ids = self.env['product.pricelist.item'].search([
+            ('pricelist_id', 'in', all_ids),
+            ('base', '=', 'pricelist'),
+            ('base_pricelist_id', '!=', False),
+        ]).base_pricelist_id.ids
         return [('id', 'in', list(set(all_ids + referenced_base_pricelist_ids)))]
 
     @api.model
@@ -28,14 +27,14 @@ class ProductPricelistItem(models.Model):
     _inherit = ['product.pricelist.item', 'pos.load.mixin']
 
     @api.model
-    def _load_pos_data_domain(self, data, config):
+    def _load_pos_data_domain(self, data):
         pricelist_ids = data['product.pricelist'].ids
         product_tmpl_ids = data['product.product'].product_tmpl_id.ids
         product_ids = data['product.product'].ids
         product_categ = data['product.category'].ids
 
         now = fields.Datetime.now()
-        domain = [
+        return [
             ('pricelist_id', 'in', pricelist_ids),
             '|', ('product_tmpl_id', '=', False), ('product_tmpl_id', 'in', product_tmpl_ids),
             '|', ('product_id', '=', False), ('product_id', 'in', product_ids),
@@ -43,7 +42,6 @@ class ProductPricelistItem(models.Model):
             '|', ('date_start', '=', False), ('date_start', '<=', now),
             '|', ('date_end', '=', False), ('date_end', '>', now),
         ]
-        return domain
 
     @api.model
     def _load_pos_data_dependencies(self):

@@ -141,7 +141,7 @@ class ProductTemplate(models.Model):
     def _load_pos_metadata(self, data, search_params={}):
         result = self._load_pos_data_domain_and_dependencies(data)
         config = data['pos.config']['records'][0]
-        limit_count = config.get_limited_product_count()
+        limit_count = config._get_limited_product_count()
         query = self._search(search_params.get('domain', False) or result['domain'], bypass_access=True)
         sql = self._get_load_product_template_sql(query, limit_count)
         product_tmpl_ids = [r[0] for r in self.env.execute_query(sql)]

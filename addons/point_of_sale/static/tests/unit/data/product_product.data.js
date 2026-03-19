@@ -24,6 +24,10 @@ export class ProductProduct extends models.ServerModel {
         return true;
     }
 
+    _load_pos_data_dependencies() {
+        return ["product.template.attribute.value", "product.template"];
+    }
+
     _load_pos_data_read(data) {
         for (const record of data) {
             record["_is_pos_special_product"] = record["id"] === 25; // in the test data, product 25 is a special product
