@@ -68,6 +68,7 @@ else:
 safe_attrs = defs.safe_attrs | frozenset(
     ['style',
      'data-o-mail-quote', 'data-o-mail-quote-node',  # quote detection
+     'data-o-mail-full-composer',  # body composed with the full composer
      'data-oe-model', 'data-oe-id', 'data-oe-field', 'data-oe-type', 'data-oe-expression', 'data-oe-translation-source-sha', 'data-oe-nodeid',
      'data-last-history-commits', 'data-oe-protected', 'data-embedded', 'data-embedded-editable', 'data-embedded-props', 'data-oe-version',
      'data-oe-transient-content', 'data-behavior-props', 'data-prop-name', 'data-width', 'data-height', 'data-scale-x', 'data-scale-y', 'data-x', 'data-y',  # legacy editor
@@ -88,7 +89,7 @@ defs.link_attrs |= {'xlink:href'}
 
 SANITIZE_TAGS = {
     # allow new semantic HTML5 tags
-    'allow_tags': defs.tags | frozenset('article bdi section header footer hgroup nav aside figure main'.split() + [etree.Comment]),
+    'allow_tags': defs.tags | frozenset('article bdi section header footer hgroup nav aside figure main template'.split() + [etree.Comment]),
     'kill_tags': ['base', 'embed', 'frame', 'head', 'iframe', 'link', 'meta',
                   'noscript', 'object', 'script', 'style', 'title'],
     'remove_tags': ['html', 'body'],
