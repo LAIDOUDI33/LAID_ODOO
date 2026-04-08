@@ -384,7 +384,8 @@ class MailingList(models.Model):
                      'list_id': mailing_list.id}
                     for mailing_list in missing_lists
                 ])
-
+        to_subscribe = self.env['mailing.contact']
+        to_unsubscribe = self.env['mailing.contact']
         for contact in contacts:
             # do not log if no opt-out / opt-in was actually done
             if opt_out:
@@ -393,7 +394,11 @@ class MailingList(models.Model):
                 updated = current_opt_out.filtered(lambda sub: sub.contact_id == contact).list_id + missing_lists
             if not updated:
                 continue
-
+            else:
+                if opt_out:
+                    to_unsubscribe |= contact
+                else:
+                    to_subscribe |= contact
             if force_message is False:
                 continue
             if force_message:
@@ -412,7 +417,21 @@ class MailingList(models.Model):
                 body=body,
                 subtype_id=self.env['ir.model.data']._xmlid_to_res_id('mail.mt_note'),
             )
+        self._subscribe(to_subscribe)
+        self._unsubscribe(to_unsubscribe)
         return contacts
+
+    def _subscribe(self, contacts):
+        """
+        Will be overridden in other sub_modules
+        """
+        pass
+
+    def _unsubscribe(self, contacts):
+        """
+        Will be overridden in other sub_modules
+        """
+        pass
 
     # ------------------------------------------------------
     # MAILING
