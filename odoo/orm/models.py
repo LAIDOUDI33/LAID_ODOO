@@ -3164,9 +3164,17 @@ class BaseModel(metaclass=MetaModel):
                     # flushing is necessary to retrieve the en_US value of fields without a translation
                     # otherwise, re-create the SQL without flushing
                     if not field.translate:
+<<<<<<< 56e0fb5115395cc11884a1dddb98a7016401563d
                         sql_code, sql_params, to_flush = sql._sql_tuple
                         to_flush = (f for f in to_flush if f != field)
                         sql = SQL(sql_code, *sql_params, to_flush=to_flush)
+||||||| 980944259c46167ea83df0b694be3f609f1a130d
+                        to_flush = (f for f in sql.to_flush if f != field)
+                        sql = SQL(sql.code, *sql.params, to_flush=to_flush)
+=======
+                        to_flush = (f for f in sql.to_flush if f != field)
+                        sql = SQL("%s", sql, to_flush=to_flush)
+>>>>>>> 86eced245c75137ff56dd3dab1dc3afd37de03fb
                 sql_terms.append(sql)
 
             # select the given columns from the rows in the query
