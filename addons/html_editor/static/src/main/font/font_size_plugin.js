@@ -44,7 +44,7 @@ export const fontSizeItems = [
 
 export class FontSizePlugin extends Plugin {
     static id = "fontSize";
-    static dependencies = ["format", "selection"];
+    static dependencies = ["format", "selection", "history"];
     /** @type {import("plugins").EditorResources} */
     resources = {
         user_commands: [
@@ -100,6 +100,9 @@ export class FontSizePlugin extends Plugin {
                     },
                     document: this.document,
                     maxFontSize: this.config.maxFontSize,
+                    applyFontSizeResetPreview: this.applyFontSizeResetPreview.bind(this),
+                    applyFontSizePreview: this.applyFontSizePreview.bind(this),
+                    applyFontSizeCommit: this.applyFontSizeCommit.bind(this),
                 },
             }),
         ],
@@ -205,6 +208,9 @@ export class FontSizePlugin extends Plugin {
     setup() {
         this.fontSize = proxy({ displayName: "" });
         this.isTypingFontSize = false;
+        this.previewableApplyFontSize = this.dependencies.history.makePreviewableOperation(
+            (item, onSelected) => onSelected(item)
+        );
     }
 
     normalize(root) {
@@ -310,5 +316,18 @@ export class FontSizePlugin extends Plugin {
         for (const node of [block, ...descendants(block)]) {
             removeFormat(node, fontSizeSpec);
         }
+    }
+
+    applyFontSizeCommit(item, onSelected) {
+        this.previewableApplyFontSize.commit(item, onSelected);
+    }
+
+    applyFontSizePreview(item, onSelected) {
+        this.previewableApplyFontSize.preview(item, onSelected);
+    }
+
+    applyFontSizeResetPreview() {
+        this.previewableApplyFontSize.revert();
+        this.updateFontSizeSelectorParams();
     }
 }

@@ -32,7 +32,7 @@ export const fontFamilyItems = [
 
 export class FontFamilyPlugin extends Plugin {
     static id = "fontFamily";
-    static dependencies = ["split", "selection", "dom", "format"];
+    static dependencies = ["split", "selection", "dom", "format", "history"];
     fontFamily = proxy({ displayName: defaultFontFamily.nameShort });
     /** @type {import("plugins").EditorResources} */
     resources = {
@@ -72,6 +72,9 @@ export class FontFamilyPlugin extends Plugin {
                         });
                         this.fontFamily.displayName = item.nameShort;
                     },
+                    applyFontFamilyResetPreview: this.applyFontFamilyResetPreview.bind(this),
+                    applyFontFamilyPreview: this.applyFontFamilyPreview.bind(this),
+                    applyFontFamilyCommit: this.applyFontFamilyCommit.bind(this),
                 },
                 isDisabled: (sel, nodes) => nodes.some((node) => !isStylable(node)),
                 isAvailable: (selection) =>
@@ -84,17 +87,35 @@ export class FontFamilyPlugin extends Plugin {
         on_history_commit_redone_handlers: this.updateCurrentFontFamily.bind(this),
     };
 
+    setup() {
+        this.previewableApplyFontFamily = this.dependencies.history.makePreviewableOperation(
+            (item, onSelected) => onSelected(item)
+        );
+    }
+
     updateCurrentFontFamily(ev) {
-        const selelectionData = this.dependencies.selection.getSelectionData();
-        if (!selelectionData.documentSelectionIsInEditable) {
+        const selectionData = this.dependencies.selection.getSelectionData();
+        if (!selectionData.documentSelectionIsInEditable) {
             return;
         }
-        const anchorElement = closestElement(selelectionData.editableSelection.anchorNode);
+        const anchorElement = closestElement(selectionData.editableSelection.anchorNode);
         const anchorElementFontFamily = getComputedStyle(anchorElement).fontFamily;
         const currentFontItem =
             anchorElementFontFamily &&
             fontFamilyItems.find((item) => item.fontFamily === anchorElementFontFamily);
 
         this.fontFamily.displayName = (currentFontItem || defaultFontFamily).nameShort;
+    }
+
+    applyFontFamilyCommit(item, onSelected) {
+        this.previewableApplyFontFamily.commit(item, onSelected);
+    }
+
+    applyFontFamilyPreview(item, onSelected) {
+        this.previewableApplyFontFamily.preview(item, onSelected);
+    }
+
+    applyFontFamilyResetPreview() {
+        this.previewableApplyFontFamily.revert();
     }
 }

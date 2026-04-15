@@ -144,6 +144,10 @@ export class ListPlugin extends Plugin {
                 props: {
                     getButtons: () => this.listSelectorButtons,
                     getListMode: this.getListMode.bind(this),
+                    key: this.toolbarListSelectorKey,
+                    applyListResetPreview: this.applyListResetPreview.bind(this),
+                    applyListPreview: this.applyListPreview.bind(this),
+                    applyListCommit: this.applyListCommit.bind(this),
                 },
                 isAvailable: this.canToggleList.bind(this),
             }),
@@ -231,6 +235,9 @@ export class ListPlugin extends Plugin {
         this.canToggleListMemoized = weakMemoize(
             (selection) =>
                 isHtmlContentSupported(selection) && this.getBlocksToToggleList().length > 0
+        );
+        this.previewableApplyList = this.dependencies.history.makePreviewableOperation((item) =>
+            item.run()
         );
     }
 
@@ -1328,5 +1335,17 @@ export class ListPlugin extends Plugin {
             }
         }
         return container;
+    }
+
+    applyListCommit(item) {
+        this.previewableApplyList.commit(item);
+    }
+
+    applyListPreview(item) {
+        this.previewableApplyList.preview(item);
+    }
+
+    applyListResetPreview() {
+        this.previewableApplyList.revert();
     }
 }

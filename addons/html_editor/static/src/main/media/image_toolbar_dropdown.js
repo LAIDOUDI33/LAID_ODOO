@@ -6,6 +6,7 @@ import { useChildRef } from "@web/core/utils/hooks";
 import {
     useDropdownAutoVisibility,
     useToolbarDropdownFocus,
+    useToolbarDropdownPreview,
 } from "@html_editor/toolbar_dropdown_hook";
 import { useDropdownState } from "@web/core/dropdown/dropdown_hooks";
 
@@ -33,10 +34,27 @@ export class ImageToolbarDropdown extends Component {
         this.dropdown = useDropdownState();
         useToolbarDropdownFocus(this.dropdown, this.imageToolbarBtn);
         useDropdownAutoVisibility(this.env.overlayState, this.menuRef);
+        this.preview = useToolbarDropdownPreview({
+            dropdown: this.dropdown,
+            overlay: this.props.overlay,
+            preview: (item) => this.props.applyPreview(item, this.props.onSelected),
+            commit: (item) => {
+                this.props.applyCommit(item, this.props.onSelected);
+                this.props.focusEditable();
+            },
+            revert: () => this.props.applyResetPreview(),
+        });
     }
 
     onSelected(item) {
-        this.props.onSelected(item);
-        this.props.focusEditable();
+        this.preview.commit(item);
+    }
+
+    onItemHover(ev, item) {
+        this.preview.preview(ev, item);
+    }
+
+    onItemHoverOut() {
+        this.preview.reset();
     }
 }

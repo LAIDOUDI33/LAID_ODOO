@@ -108,6 +108,14 @@ export class TableBorderPlugin extends Plugin {
                         this.applyBorderCommit("width", item.value);
                         this.selectedBorderWidth.displayName = item.value;
                     },
+                    onPreview: (item) => {
+                        this.applyBorderPreview("width", item.value);
+                        this.selectedBorderWidth.displayName = item.value;
+                    },
+                    onPreviewReset: () => {
+                        this.applyBorderResetPreview();
+                        this.selectedBorderWidth.displayName = this.getTableSelectedBorder("width");
+                    },
                 },
             }),
             withSequence(12, {
@@ -128,6 +136,14 @@ export class TableBorderPlugin extends Plugin {
                     onSelected: (item) => {
                         this.applyBorderCommit("style", item.value);
                         this.selectedBorderStyle.displayName = item.value;
+                    },
+                    onPreview: (item) => {
+                        this.applyBorderPreview("style", item.value);
+                        this.selectedBorderStyle.displayName = item.value;
+                    },
+                    onPreviewReset: () => {
+                        this.applyBorderResetPreview();
+                        this.selectedBorderStyle.displayName = this.getTableSelectedBorder("style");
                     },
                 },
             }),

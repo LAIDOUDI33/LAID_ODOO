@@ -6,6 +6,7 @@ import { useDebounced } from "@web/core/utils/timing";
 import { getCSSVariableValue, getHtmlStyle } from "@html_editor/utils/formatting";
 import {
     useDropdownAutoVisibility,
+    useToolbarDropdownPreview,
     useToolbarDropdownFocus,
 } from "@html_editor/toolbar_dropdown_hook";
 import { useChildRef } from "@web/core/utils/hooks";
@@ -27,6 +28,10 @@ export class FontSizeSelector extends Component {
         title: t.or([t.string(), t.function()]),
         getSelection: t.function(),
         isDisabled: t.boolean(),
+        applyFontSizeResetPreview: t.function(),
+        applyFontSizePreview: t.function(),
+        applyFontSizeCommit: t.function(),
+        overlay: t.object().optional(),
     });
     static components = { Dropdown, DropdownItem, IframeInput };
 
@@ -42,6 +47,13 @@ export class FontSizeSelector extends Component {
         this.fontSizeInputRef = useChildRef();
         this.debouncedCustomFontSizeInput = useDebounced(this.onCustomFontSizeInput, 200);
         useToolbarDropdownFocus(this.dropdown, this.fontSizeSelector);
+        this.preview = useToolbarDropdownPreview({
+            dropdown: this.dropdown,
+            overlay: this.props.overlay,
+            preview: (item) => this.props.applyFontSizePreview(item, this.props.onSelected),
+            commit: (item) => this.props.applyFontSizeCommit(item, this.props.onSelected),
+            revert: () => this.props.applyFontSizeResetPreview(),
+        });
         const htmlStyle = getHtmlStyle(document);
         this.fontFamily = getCSSVariableValue("o-system-fonts", htmlStyle);
     }
@@ -108,6 +120,14 @@ export class FontSizeSelector extends Component {
     }
 
     onSelected(item) {
-        this.props.onSelected(item);
+        this.preview.commit(item);
+    }
+
+    onItemHover(ev, item) {
+        this.preview.preview(ev, item);
+    }
+
+    onItemHoverOut() {
+        this.preview.reset();
     }
 }

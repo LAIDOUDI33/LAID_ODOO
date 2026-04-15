@@ -48,6 +48,7 @@ export class FontTypePlugin extends Plugin {
         "format",
         "lineBreak",
         "delete",
+        "history",
     ];
     /** @type {import("plugins").EditorResources} */
     resources = {
@@ -125,6 +126,9 @@ export class FontTypePlugin extends Plugin {
                         });
                         this.updateFontTypeSelectorParams();
                     },
+                    applyFontTypeResetPreview: this.applyFontTypeResetPreview.bind(this),
+                    applyFontTypePreview: this.applyFontTypePreview.bind(this),
+                    applyFontTypeCommit: this.applyFontTypeCommit.bind(this),
                 },
                 isAvailable: this.blockFormatIsAvailable.bind(this),
                 isDisabled: (sel, nodes) => nodes.some((node) => !isStylable(node)),
@@ -254,6 +258,9 @@ export class FontTypePlugin extends Plugin {
             ({ tagName }) =>
                 !SUPPORTED_BASE_CONTAINER_NAMES.includes(tagName.toUpperCase()) ||
                 this.config.baseContainers.includes(tagName.toUpperCase())
+        );
+        this.previewableApplyFontType = this.dependencies.history.makePreviewableOperation(
+            (item, onSelected) => onSelected(item)
         );
     }
 
@@ -457,5 +464,17 @@ export class FontTypePlugin extends Plugin {
             block.remove();
             return true;
         }
+    }
+
+    applyFontTypeCommit(item, onSelected) {
+        this.previewableApplyFontType.commit(item, onSelected);
+    }
+
+    applyFontTypePreview(item, onSelected) {
+        this.previewableApplyFontType.preview(item, onSelected);
+    }
+
+    applyFontTypeResetPreview() {
+        this.previewableApplyFontType.revert();
     }
 }
