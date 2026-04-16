@@ -186,13 +186,13 @@ class ResUsers(models.Model):
         # see `_has_field_access``
         return name == 'user_writeable' or super()._valid_field_parameter(field, name)
 
-    def _default_groups(self):
+    def _default_groups(self, group='user_regular'):
         """Default groups for employees
 
         All the groups of the Default User Group
         """
-        groups = self.env.ref('base.group_user')
-        default_group = self.env.ref('base.default_user_group', raise_if_not_found=False)
+        groups = self.env.ref(f'base.group_{group}')
+        default_group = self.env.ref(f'base.default_{group}_group', raise_if_not_found=False)
         if default_group:
             groups += default_group.implied_ids
         return groups
@@ -259,7 +259,8 @@ class ResUsers(models.Model):
         return self.env['res.groups']._get_view_group_hierarchy()
 
     view_group_hierarchy = fields.Json(string='Technical field for user group setting', store=False, copy=False, default=_default_view_group_hierarchy)
-    role = fields.Selection([('group_user', 'User'), ('group_system', 'Administrator')], compute='_compute_role', readonly=False, string="Role")
+    role = fields.Selection([('group_user', 'Light User'), ('group_user_regular', 'User'), ('group_system', 'Administrator')],
+        compute='_compute_role', store=True, readonly=False, string="Role")
 
     _login_key = models.Constraint("UNIQUE (login)",
         'You can not have two users with the same login!')
@@ -424,23 +425,48 @@ class ResUsers(models.Model):
             else:
                 user.password = user.new_password
 
-    @api.depends('group_ids')
+    @api.model
+    def _sync_light_user_groups(self):
+        """Grant the Light-user implied groups to existing Light users.
+
+        A light user always the same set of group. He cannot have more groups anyway.
+        A Light user is provisioned with only the user_group at creation
+        time, so a module installed *afterwards* would never grant its group to
+        the Light users that predate it. Called by ``post_init_hook`` to top up
+        those users.
+        """
+        light_users = self.env['res.users'].search([('role', '=', 'group_user')])
+        light_users.group_ids = self._default_groups(group='user')
+
+    @api.depends('all_group_ids')
     def _compute_role(self):
+        group_user = self.env.ref('base.group_user')
+        group_no_one = self.env.ref('base.group_no_one', raise_if_not_found=False) or self.env['res.groups']
+        light_groups = (group_user + self._default_groups(group='user')).all_implied_ids - group_no_one
         for user in self:
-            user.role = (
-                'group_system' if user.has_group('base.group_system') else
-                'group_user' if user.has_group('base.group_user') else
-                False
-            )
+            if user.has_group('base.group_system'):
+                user.role = 'group_system'
+            elif user.has_group('base.group_user_regular'):
+                user.role = 'group_user_regular'
+            elif user.has_group('base.group_user'):
+                user_groups = user.all_group_ids._origin - group_no_one
+                user.role = 'group_user' if set(user_groups).issubset(set(light_groups)) else 'group_user_regular'
+            else:
+                user.role = False
 
     @api.onchange('role')
     def _onchange_role(self):
         group_admin = self.env['res.groups'].new(origin=self.env.ref('base.group_system'))
+        group_user_regular = self.env['res.groups'].new(origin=self.env.ref('base.group_user_regular'))
         group_user = self.env['res.groups'].new(origin=self.env.ref('base.group_user'))
         for user in self:
-            if user.role and user.has_group('base.group_user'):
-                groups = user.group_ids - (group_admin + group_user)
-                user.group_ids = groups + (group_admin if user.role == 'group_system' else group_user)
+            # If set to light user, access should be reset as a fresh new light user.
+            if user.role == 'group_user':
+                user.group_ids = self._default_groups(group='user')
+            elif user.role and user.has_group('base.group_user'):
+                groups = user.group_ids - (group_admin + group_user_regular + group_user)
+                user.group_ids = groups + (group_admin if user.role == 'group_system'
+                                           else group_user_regular)
 
     @api.depends('group_ids.all_implied_ids')
     def _compute_all_group_ids(self):

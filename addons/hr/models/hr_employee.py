@@ -10,10 +10,10 @@ from zoneinfo import ZoneInfo
 from dateutil.relativedelta import relativedelta
 from markupsafe import Markup
 
-from odoo import api, fields, models, tools
+from odoo import api, Command, fields, models, tools
 from odoo.exceptions import AccessError, RedirectWarning, UserError, ValidationError
 from odoo.fields import Domain
-from odoo.tools import SQL, convert, email_normalize, format_date, format_time
+from odoo.tools import SQL, convert, format_date, format_time
 from odoo.tools.float_utils import float_is_zero
 from odoo.tools.intervals import Intervals
 from odoo.tools.misc import SENTINEL
@@ -117,7 +117,9 @@ class HrEmployee(models.Model):
         check_company=True,
         precompute=True,
         index='btree_not_null',
-        ondelete='restrict')
+        ondelete='restrict',
+        copy=False
+    )
     user_partner_id = fields.Many2one(related="user_id.partner_id", related_sudo=False, string="User's partner")
     share = fields.Boolean(related="user_id.share")
     phone = fields.Char(related="user_id.phone")
@@ -162,7 +164,6 @@ class HrEmployee(models.Model):
     # private info
     legal_name = fields.Char(compute='_compute_legal_name', store=True, readonly=False, groups="hr.group_hr_user", help="The employee's official name as per government-issued or legal documents.")
     split_legal_name = fields.Boolean(compute='_compute_split_legal_name', groups="hr.group_hr_user", help="Indicates whether the legal name is split into first and last name fields based on the employee's country.")
-    is_user_active = fields.Boolean(related='user_id.active', string="User's active", groups="hr.group_hr_user")
     private_phone = fields.Char(string="Private Phone", groups="hr.group_hr_user")
     private_phone_sanitized = fields.Char(compute='_compute_restricted_phone_companion_fields', store=False, export_string_translation=False, groups='hr.group_hr_user')
     private_phone_formatted = fields.Char(compute='_compute_restricted_phone_companion_fields', store=False, export_string_translation=False, groups='hr.group_hr_user')
@@ -361,6 +362,11 @@ class HrEmployee(models.Model):
         compute='_compute_exceptional_location_id',
         help='This is the exceptional, non-weekly, location set for today.', groups="hr.group_hr_user")
     today_location_name = fields.Char()
+
+    # Display-only mirror of the linked user's invitation/activation status.
+    # Read-only: the status is driven by user actions (see action_* below), not
+    # by writing the computed res.users.state directly.
+    user_state = fields.Selection(related='user_id.state', string="User Status", groups="hr.group_hr_user")
 
     _barcode_uniq = models.Constraint(
         'unique (barcode)',
@@ -1230,127 +1236,37 @@ class HrEmployee(models.Model):
             action['res_id'] = related_partners.id
         return action
 
-    def action_create_user(self):
+    def action_send_invitation(self):
+        """Create a user and send a password-reset (invitation) e-mail to the linked user."""
         self.ensure_one()
-        if self.user_id:
-            raise ValidationError(self.env._("This employee already has an user."))
-        return {
-            'name': self.env._('Create User'),
-            'type': 'ir.actions.act_window',
-            'res_model': 'res.users',
-            'view_mode': 'form',
-            'view_id': self.env.ref('hr.view_users_simple_form').id,
-            'target': 'new',
-            'context': {
-                **self.env.context,
-                'default_create_employee_id': self.id,
-                'default_name': self.name,
-                'default_phone': self.work_phone,
-                'default_mobile': self.mobile_phone,
-                'default_login': self.work_email,
-                'default_partner_id': self.work_contact_id.id,
-            },
-        }
+        if not self.user_id:
+            self.user_id = self._get_or_create_light_user(required=True)
+        return self.user_id.action_reset_password()
 
-    def action_create_users_confirmation(self):
-        raise RedirectWarning(
-                message=self.env._("You're about to invite new users. %s users will be created with the default user template's rights. "
-                "Adding new users may increase your subscription cost. Do you wish to continue?", len(self.ids)),
-                action=self.env.ref('hr.action_hr_employee_create_users').id,
-                button_text=self.env._('Confirm'),
-                additional_context={
-                    'selected_ids': self.ids,
-                },
-            )
+    def action_reset_password(self):
+        """Send a password-reset e-mail to the linked user."""
+        self.ensure_one()
+        if not self.user_id:
+            raise UserError(self.env._("This employee has no user."))
+        return self.user_id.action_reset_password()
 
-    def action_create_users(self):
-        def _get_user_creation_notification_action(message, message_type, next_action):
-            return {
-                    'type': 'ir.actions.client',
-                    'tag': 'display_notification',
-                    'params': {
-                        'title': self.env._("User Creation Notification"),
-                        'type': message_type,
-                        'message': message,
-                        'next': next_action
-                    }
-                }
+    def action_copy_invitation_link(self):
+        self.ensure_one()
+        if not self.user_id:
+            raise UserError(self.env._("This employee has no user."))
+        self.user_id.check_access('write')
+        partner = self.user_id.partner_id
+        partner.sudo().signup_prepare()
+        return partner.sudo()._get_signup_url_for_action().get(partner.id)
 
-        employee_emails = [
-            normalized_email
-            for employee in self
-            for normalized_email in tools.mail.email_normalize_all(employee.work_email)
-        ]
-        conflicting_users = self.env['res.users']
-        if employee_emails:
-            conflicting_users = self.env['res.users'].search([
-                '|', ('email_normalized', 'in', employee_emails),
-                ('login', 'in', employee_emails),
-            ])
-        emp_by_email = self.grouped(lambda employee: email_normalize(employee.work_email))
-        duplicate_emails = [email for email, employees in emp_by_email.items() if email and len(employees) > 1]
-        old_users = []
-        new_users = []
-        users_without_emails = []
-        users_with_invalid_emails = []
-        users_with_existing_email = []
-        employees_with_duplicate_email = []
-        for employee in self:
-            normalized_email = email_normalize(employee.work_email)
-            if employee.user_id:
-                old_users.append(employee.name)
-                continue
-            if not employee.work_email:
-                users_without_emails.append(employee.name)
-                continue
-            if not normalized_email:
-                users_with_invalid_emails.append(employee.name)
-                continue
-            if normalized_email in conflicting_users.mapped('email_normalized'):
-                users_with_existing_email.append(employee.name)
-                continue
-            if normalized_email in duplicate_emails:
-                employees_with_duplicate_email.append(employee.name)
-                continue
-            new_users.append({
-                'create_employee_id': employee.id,
-                'name': employee.name,
-                'phone': employee.work_phone,
-                'login': normalized_email,
-                'partner_id': employee.work_contact_id.id,
-            })
-
-        next_action = {'type': 'ir.actions.act_window_close'}
-        if new_users:
-            self.env['res.users'].create(new_users)
-            message = self.env._('Users %s creation successful', ', '.join([user['name'] for user in new_users]))
-            next_action = _get_user_creation_notification_action(message, 'success', {
-                "type": "ir.actions.client",
-                "tag": "soft_reload",
-                "params": {"next": next_action},
-            })
-
-        if old_users:
-            message = self.env._('User already exists for Those Employees %s', ', '.join(old_users))
-            next_action = _get_user_creation_notification_action(message, 'warning', next_action)
-
-        if users_without_emails:
-            message = self.env._("You need to set the work email address for %s", ', '.join(users_without_emails))
-            next_action = _get_user_creation_notification_action(message, 'danger', next_action)
-
-        if users_with_invalid_emails:
-            message = self.env._("You need to set a valid work email address for %s", ', '.join(users_with_invalid_emails))
-            next_action = _get_user_creation_notification_action(message, 'danger', next_action)
-
-        if users_with_existing_email:
-            message = self.env._('User already exists with the same email for Employees %s', ', '.join(users_with_existing_email))
-            next_action = _get_user_creation_notification_action(message, 'warning', next_action)
-
-        if employees_with_duplicate_email:
-            message = self.env._('The following employees have the same work email address: %s', ', '.join(employees_with_duplicate_email))
-            next_action = _get_user_creation_notification_action(message, 'warning', next_action)
-
-        return next_action
+    def action_toggle_user_active(self):
+        """Activate / deactivate the linked user from the employee form."""
+        self.ensure_one()
+        if not self.user_id:
+            raise UserError(self.env._("This employee has no user."))
+        self.user_id.active = not self.user_id.active
+        if not self.user_id.active and self.is_in_contract:
+            return self.action_new_departure()
 
     def _compute_display_name(self):
         if self.browse().has_access('read'):
@@ -1664,6 +1580,116 @@ class HrEmployee(models.Model):
             vals['tz'] = user.tz
         return vals
 
+    def _get_or_create_light_user(self, required=False):
+        """Resolve or create the light user for an employee.
+
+        Called while building an employee's create values so the employee is
+        born already linked to its user (keeping the active/user_id constraint
+        satisfied without a mid-create flush). Reuses, in order, the resource's
+        user, the work contact's user, or an existing user matching the work
+        email; otherwise creates a light (less-billable) user.
+        """
+        self.ensure_one()
+        ResUsers = self.env['res.users'].sudo()
+        if self.resource_id.user_id:
+            return self.resource_id.user_id
+        company_id = self.company_id.id or self.env.company.id
+        # 1. reuse the work contact's user, or an existing user matching the work
+        #    email (by login or email address) to avoid creating a duplicate user
+        user = self.work_contact_id.user_ids[:1]
+        emails = tools.mail.email_normalize_all(self.work_contact_id.email or self.work_email or self.resource_id.email)
+        login = emails[0] if emails else False
+        # Try to search for an existing user.
+        if not user and login:
+            user = ResUsers.with_context(active_test=False).search(
+                ['|', ('login', '=', login), ('email_normalized', '=', login)], limit=1, order='active')
+        if user:
+            # If archived user or employee of the same company linked to that user...
+            if not user.active:
+                raise UserError(self.env._('An inactive user already exist with the following login: %(login)s. '
+                                           'User Name: %(user_name)s.', login=login, user_name=user.name))
+            existing_employee = user.employee_ids.filtered(lambda e: e.company_id.id == company_id)
+            if existing_employee:
+                raise UserError(self.env._('A user with the same login (%(login)s) already has an employee in this company. '
+                                           'User Name: %(user_name)s / Employee Name: %(employee)s',
+                                           login=login, user_name=user.name, employee=existing_employee.name))
+            elif user.share:
+                raise UserError(self.env._('A portal user already exist with the following login: %(login)s. '
+                                           'User Name: %(user_name)s. You should set another email address on the employee.',
+                                           login=login, user_name=user.name))
+            return user
+        if not login:
+            if not required:
+                return ResUsers
+            raise ValidationError(self.env._('Cannot create light user for an employee without login (email address or related contact).'))
+        # Reimplement default_groups just to test.
+        groups = ResUsers._default_groups(group='user')
+        return ResUsers.create({
+            'name': self.name,
+            'login': login,
+            'email': login,
+            'phone': self.work_phone or self.mobile_phone or self.work_contact_id.phone,
+            'partner_id': self.work_contact_id.id or False,
+            'company_id': company_id,
+            'company_ids': [Command.set([company_id])],
+            'group_ids': [Command.set(groups.ids)],
+        })
+
+    # def _get_or_create_light_user_from_vals(self, vals):
+    #     """Resolve or create the light user for an employee
+    #     Called while building an employee's create values so the employee is
+    #     born already linked to its user (keeping the active/user_id constraint
+    #     satisfied without a mid-create flush). Reuses, in order, the resource's
+    #     user, the work contact's user, or an existing user matching the work
+    #     email; otherwise creates a light (less-billable) user.
+    #     """
+    #     ResUsers = self.env['res.users'].sudo()
+    #     resource = self.env['resource.resource'].browse(vals.get('resource_id')).exists()
+    #     if resource.user_id:
+    #         return resource.user_id
+    #     work_contact = self.env['res.partner'].browse(vals.get('work_contact_id')).exists()
+    #     emails = tools.mail.email_normalize_all(
+    #         work_contact.email or vals.get('work_email') or resource.email)
+    #     login = emails[0] if emails else False
+    #     company_id = self.company_id or self.env.company.id
+    #     # 1. reuse the work contact's user, or an existing user matching the work
+    #     #    email (by login or email address) to avoid creating a duplicate user
+    #     user = work_contact.user_ids[:1]
+    #     # Try to search for an existing user.
+    #     if not user and login:
+    #         user = ResUsers.with_context(active_test=False).search(
+    #             ['|', ('login', '=', login), ('email_normalized', '=', login)], limit=1, order='active')
+    #     if user:
+    #         # If archived user or employee of the same company linked to that user...
+    #         if not user.active:
+    #             raise UserError(self.env._('An inactive user already exist with the following login: %(login)s. '
+    #                                        'User Name: %(user_name)s.', login=login, user_name=user.name))
+    #         existing_employee = user.employee_ids.filtered(lambda e: e.company_id.id == company_id)
+    #         if existing_employee:
+    #             raise UserError(self.env._('A user with the same login (%(login)s) already has an employee in this company. '
+    #                                        'User Name: %(user_name)s / Employee Name: %(employee)s',
+    #                                        login=login, user_name=user.name, employee=existing_employee.name))
+    #         elif user.share:
+    #             raise UserError(self.env._('A portal user already exist with the following login: %(login)s. '
+    #                                        'User Name: %(user_name)s. You should set another email address on the employee.',
+    #                                        login=login, user_name=user.name))
+    #         return user
+    #     if not login:
+    #         # if not possible to create a user, skip creation. The employee form will have a warning.
+    #         return ResUsers
+    #     # Reimplement default_groups just to test.
+    #     groups = ResUsers._default_groups(group='user')
+    #     return ResUsers.create({
+    #         'name': self.name,
+    #         'login': login,
+    #         'email': login,
+    #         'phone': self.work_phone or self.mobile_phone or self.work_contact_id.phone,
+    #         'partner_id': self.work_contact_id.id or False,
+    #         'company_id': company_id,
+    #         'company_ids': [Command.set([company_id])],
+    #         'group_ids': [Command.set(groups.ids)],
+    #     })
+
     def _prepare_resource_values(self, vals, tz):
         resource_vals = super()._prepare_resource_values(vals, tz)
         vals.pop('name')  # Already considered by super call but no popped
@@ -1759,6 +1785,13 @@ class HrEmployee(models.Model):
                 vals.update(self._sync_user(user, bool(vals.get('image_1920'))))
                 vals['name'] = vals.get('name', user.name)
                 self._remove_work_contact_id(user, vals.get('company_id'))
+            # elif (vals.get('active', True)
+            #       and not self.env.context.get('salary_simulation')):
+            #     # An active employee must have a light user.
+            #     user = self._get_or_create_light_user_from_vals(vals)
+            #     vals['user_id'] = user.id
+            #     if not vals.get('work_contact_id'):
+            #         vals['work_contact_id'] = user.partner_id.id
             # Having one create per company is necessary to pass the company in the context to correctly set it in
             # the underlying version created by the framework
             vals_per_company[vals.get('company_id', self.env.company)].append((idx, vals))
@@ -1775,6 +1808,9 @@ class HrEmployee(models.Model):
         employees.filtered(lambda e: not e.work_contact_id).sudo()._create_work_contacts()
         if self.env.context.get('salary_simulation'):
             return employees
+        # TODO DBE: Or create user here? so we can benefit from the created work_contact.
+        for employee in employees.filtered(lambda e: e.active):
+            employee.user_id = employee._get_or_create_light_user()
         for employee_sudo in employees.sudo():
             # creating 'svg/xml' attachments requires specific rights
             if not employee_sudo.image_1920 and self.env['ir.ui.view'].sudo(False).has_access('write'):
