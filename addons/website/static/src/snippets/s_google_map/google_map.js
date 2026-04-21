@@ -74,7 +74,7 @@ export class GoogleMap extends Interaction {
         if (this.el.dataset.pinStyle === "flat") {
             const iconImgEl = document.createElement("img");
             iconImgEl.src = "/website/static/src/img/snippets_thumbs/s_google_map_marker.png";
-            iconImgEl.alt = _t("Marker");
+            iconImgEl.alt = _t("Map Marker");
             markerOptions.content = iconImgEl;
         }
         new google.maps.marker.AdvancedMarkerElement(markerOptions);
