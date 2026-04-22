@@ -1,6 +1,5 @@
 <?xml version="1.0"?>
 <odoo>
-
     <!-- Calendar Events Types : Views and Actions -->
     <record id="view_calendar_event_type_tree" model="ir.ui.view">
         <field name="name">calendar.event.type</field>
@@ -218,6 +217,7 @@
                                 <group>
                                     <field name="user_id" widget="many2one_avatar_user" readonly="not user_can_edit"/>
                                     <field name="categ_ids" widget="many2many_tags" options="{'color_field': 'color', 'on_tag_click': 'edit_color', 'no_create_edit': True}" readonly="not user_can_edit"/>
+                                    <field name="calendar_id" invisible="not show_calendar_in_form" readonly="not user_can_edit or recurrence_id and recurrence_update != 'all_events'" options="{'no_open': True}"/>
                                     <field name="description"
                                         string="Calendar description"
                                         options="{'height': 120}"
@@ -238,7 +238,6 @@
                                     </div>
                                     <span class="fw-bold text-nowrap" invisible="rrule_type_ui not in ['weekly', 'custom'] or (rrule_type_ui == 'custom' and rrule_type != 'weekly')">Repeat on</span>
                                     <div invisible="rrule_type_ui not in ['weekly', 'custom'] or (rrule_type_ui == 'custom' and rrule_type != 'weekly')" ><widget name="calendar_week_days" readonly="not user_can_edit"/></div>
-                                    <field name="recurrence_id" invisible="1" />
 
                                     <label string="Day of Month" for="month_by" class="fw-bold text-900" style="width: fit-content;" invisible="rrule_type_ui not in ['monthly', 'custom'] or (rrule_type_ui == 'custom' and rrule_type != 'monthly')"/>
                                     <div class="d-flex gap-2" invisible="rrule_type_ui not in ['monthly', 'custom'] or (rrule_type_ui == 'custom' and rrule_type != 'monthly')">
@@ -389,6 +388,10 @@
                     <i class="fa fa-circle" title="Show as"/>
                     <field name="show_as" nolabel="1" class="w-100"/>
                 </div>
+                <div class="o_outlined d-flex align-items-baseline mb-2 gap-2">
+                    <i class="fa fa-calendar-o" title="Calendar"/>
+                    <field name="calendar_id" nolabel="1" class="w-100" options="{'no_open': True}"/>
+                </div>
                 <div class="o_outlined d-flex align-items-start mb-2 gap-2">
                     <i class="fa fa-sticky-note" title="Notes"/>
                     <field name="notes" nolabel="1" class="w-100" placeholder="Notes" widget="calendar_event_notes_html"/>
@@ -407,7 +410,9 @@
                 event_limit="5"
                 quick_create="true"
                 quick_create_view_id="%(calendar.view_calendar_event_form_quick_create)d"
-                color="partner_ids">
+                color="calendar_color">
+                <field name="calendar_color" invisible="1"/>
+                <field name="available_calendar_ids" invisible="1"/>
                 <field name="attendees_count" invisible="1"/>
                 <field name="accepted_count" invisible="1"/>
                 <field name="declined_count" invisible="1"/>
@@ -423,8 +428,7 @@
                 <field name="partner_ids" options="{'block': True, 'icon': 'fa fa-users'}"
                        filters="1" widget="many2manyattendeeexpandable" write_model="calendar.filters"
                        write_field="partner_id" filter_field="partner_checked" avatar_field="avatar_128"
-                       string="Calendars"
-                />
+                       string="Meet with" invisible="not partner_ids"/>
                 <field name="videocall_location" widget="CopyClipboardURL" text="Join Video Call"
                        options="{'icon': 'fa fa-lg fa-video-camera'}" invisible="not videocall_location"/>
                 <field name="res_model_name" invisible="not res_model_name" widget="calendar_open_event"
@@ -432,6 +436,9 @@
                 <field name="alarm_ids" invisible="not alarm_ids" options="{'icon': 'fa fa-bell-o'}"/>
                 <field name="categ_ids" invisible="not categ_ids" options="{'icon': 'fa fa-tag', 'color_field': 'color', 'on_tag_click': 'edit_color'}"/>
                 <field name="partner_id" string="Organizer" options="{'icon': 'fa fa-user-o'}"/>
+                <field name="calendar_id" filters="1" write_model="calendar.calendar.user" write_field="calendar_id"
+                       filter_field="is_filter_checked" color="filter_color" options="{'icon': 'fa fa-calendar-o', 'no_open': True}"
+                       string="My Calendars" invisible="not show_calendar_in_form"/>
                 <field name="description" class="text-wrap" invisible="not display_description" options="{'icon': 'fa fa-sticky-note'}"/>
             </calendar>
         </field>
@@ -600,5 +607,13 @@
         parent="menu_calendar_configuration"
         action="action_calendar_alarm"
         groups="base.group_no_one"/>
+
+    <menuitem
+        id="menu_calendar_calendars"
+        parent="calendar_menu_config"
+        name="Calendars"
+        sequence="46"
+        action="action_calendar_calendar"
+        groups="base.group_system"/>
 
 </odoo>

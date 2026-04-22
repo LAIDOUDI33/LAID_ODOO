@@ -98,6 +98,8 @@ class CalendarRecurrence(models.Model):
     base_event_id = fields.Many2one(
         'calendar.event', ondelete='set null', copy=False)  # store=False ?
     calendar_event_ids = fields.One2many('calendar.event', 'recurrence_id')
+    calendar_id = fields.Many2one('calendar.calendar', string='Calendar', index='btree',
+        compute='_compute_calendar_id', store=True, ondelete='cascade')
     event_tz = fields.Selection(
         _tz_get, string='Timezone',
         default=lambda self: self.env.context.get('tz') or self.env.user.tz)
@@ -196,6 +198,11 @@ class CalendarRecurrence(models.Model):
     def _compute_name(self):
         for recurrence in self:
             recurrence.name = recurrence.get_recurrence_name()
+
+    @api.depends('base_event_id')
+    def _compute_calendar_id(self):
+        for recurrence in self:
+            recurrence.calendar_id = recurrence.base_event_id.calendar_id
 
     @api.depends('calendar_event_ids.start')
     def _compute_dtstart(self):

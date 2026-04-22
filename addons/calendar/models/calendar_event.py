@@ -164,6 +164,12 @@ class CalendarEvent(models.Model):
 
     # description
     name = fields.Char('Meeting Subject', required=True)
+    calendar_id = fields.Many2one('calendar.calendar', string='Calendar', index='btree',
+        compute='_compute_calendar_id', store=True, readonly=False, ondelete='cascade',
+        domain='[("id", "in", available_calendar_ids)]')
+    available_calendar_ids = fields.Many2many('calendar.calendar', compute='_compute_available_calendar_ids')
+    show_calendar_in_form = fields.Boolean(compute='_compute_show_calendar_in_form')
+    calendar_color = fields.Integer(related='calendar_id.color')
     description = fields.Html('Description',
         help="""When synchronization with an external calendar is active, this description is synchronized \
         with the one of the associated meeting in that external calendar. Any update will be propagated there \
@@ -313,6 +319,12 @@ class CalendarEvent(models.Model):
         for event in self:
             event.show_as = 'free' if event.allday else 'busy'
 
+    @api.depends('user_id')
+    def _compute_calendar_id(self):
+        for event in self:
+            if not event.user_id.id in event.calendar_id.owner_ids.ids:
+                event.calendar_id = event.user_id.primary_calendar_id
+
     @api.depends("attendee_ids")
     def _compute_should_show_status(self):
         for event in self:
@@ -360,10 +372,25 @@ class CalendarEvent(models.Model):
                 'awaiting_count': attendees_count - accepted_count - declined_count - tentative_count
             })
 
+    @api.depends_context('uid')
+    @api.depends('user_id')
+    def _compute_show_calendar_in_form(self):
+        for event in self:
+            event.show_calendar_in_form = event.user_id.id == self.env.user.id
+
+    @api.depends_context('uid')
+    @api.depends('user_id')
+    def _compute_available_calendar_ids(self):
+        for event in self:
+            event.available_calendar_ids = event.user_id.writable_calendar_ids | self.env.user.calendar_ids
+
     @api.depends('partner_ids')
     @api.depends_context('uid')
     def _compute_user_can_edit(self):
         for event in self:
+            if event.calendar_id and event.calendar_id.id in self.env.user.writable_calendar_ids.ids:
+                event.user_can_edit = True
+                continue
             # By default, only current attendees and the organizer can edit the event.
             editor_candidates = set(event.partner_ids.user_ids + event.user_id)
             # Right before saving the event, old partners must be able to save changes.
@@ -384,7 +411,7 @@ class CalendarEvent(models.Model):
     @api.depends('privacy', 'user_id')
     def _compute_effective_privacy(self):
         for event in self:
-            event.effective_privacy = event.privacy or event.sudo().user_id.calendar_default_privacy
+            event.effective_privacy = event.privacy or event.sudo().calendar_id.calendar_default_privacy
 
     @api.depends('effective_privacy')
     def _compute_privacy_placeholder(self):
@@ -1017,9 +1044,10 @@ class CalendarEvent(models.Model):
         """ Checks if the event is private, returning True if the conditions match and False otherwise. """
         self.ensure_one()
         event_is_private = self.privacy == 'private'
-        calendar_is_private = not self.privacy and self.sudo().user_id.calendar_default_privacy == 'private'
+        calendar_is_private = not self.privacy and self.calendar_id and self.sudo().calendar_id.calendar_default_privacy == 'private'
         user_is_not_partner = self.user_id.id != self.env.uid and self.env.user.partner_id not in self.partner_ids
-        return (event_is_private or calendar_is_private) and user_is_not_partner
+        user_has_calendar_access = self.calendar_id and self.calendar_id.user_has_write_access
+        return (event_is_private or calendar_is_private) and user_is_not_partner and not user_has_calendar_access
 
     @api.depends('privacy', 'user_id')
     def _compute_display_name(self):
@@ -1215,16 +1243,17 @@ class CalendarEvent(models.Model):
 
     def _get_default_privacy_domain(self):
         # Sub query user settings from calendars that are not private ('public' and 'confidential').
-        public_calendars_settings = self.env['res.users.settings'].sudo()._search([('calendar_default_privacy', '!=', 'private')]).select('user_id')
+        public_calendars = self.env['calendar.calendar'].sudo()._search([('calendar_default_privacy', '!=', 'private')])
         # display public, confidential events and events with default privacy when owner's default privacy is not private
-        return ['|', '|',
+        return ['|', '|', '|',
+            ('calendar_id', 'in', self.env.user.writable_calendar_ids.ids),
             ('privacy', 'in', ['public', 'confidential']),
             ('user_id', '=', self.env.user.id),
             '&',
                 ('privacy', '=', False),
                 '|',
                     ('user_id', '=', False),
-                    ('user_id', 'in', public_calendars_settings)]
+                    ('calendar_id', 'in', public_calendars)]
 
     def _is_event_over(self):
         """Check if the event is over. This method is used to check if the event
@@ -1476,6 +1505,7 @@ class CalendarEvent(models.Model):
             'weekday': weekday_field_name.upper(),
             'byday': str(get_weekday_occurence(event_date)),
             'day': event_date.day,
+            'calendar_id': self.calendar_id.id,
         }
 
     @api.model
@@ -1909,7 +1939,7 @@ class CalendarEvent(models.Model):
     def _get_public_fields(self):
         return self._get_recurrent_fields() | self._get_time_fields() | self._get_custom_fields() | {
             'id', 'active', 'allday',
-            'duration', 'user_id', 'interval', 'partner_id',
+            'duration', 'user_id', 'interval', 'partner_id', 'calendar_id',
             'count', 'rrule', 'recurrence_id', 'show_as', 'privacy'}
 
     @api.model

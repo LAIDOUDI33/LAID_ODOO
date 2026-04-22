@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<odoo>
+    <record id="calendar_calendar_view_form" model="ir.ui.view">
+        <field name="name">calendar.calendar.view.form.dialog</field>
+        <field name="model">calendar.calendar</field>
+        <field name="arch" type="xml">
+            <form>
+                <div role="alert" class="alert alert-info" invisible="user_has_write_access">This calendar is readonly</div>
+                <group>
+                    <field name="display_name" placeholder="Calendar name"/>
+                    <field name="calendar_default_privacy" readonly="not user_has_write_access" string="Default visibility"/>
+                    <field name="color" widget="color_picker"/>
+                    <field name="shared_with_users" widget="many2many_avatar_user" invisible="user_access_role != 'owner'"/>
+                </group>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_calendar_calendar_list" model="ir.ui.view">
+        <field name="name">calendar.calendar.list</field>
+        <field name="model">calendar.calendar</field>
+        <field name="arch" type="xml">
+            <list string="Calendars" editable="bottom">
+                <field name="display_name" readonly="0"/>
+                <field name="calendar_default_privacy" string="Default Privacy" widget="selection"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_calendar_calendar" model="ir.actions.act_window">
+        <field name="name">Calendars</field>
+        <field name="res_model">calendar.calendar</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_calendar_calendar_list"/>
+        <field name="domain">[('user_has_read_access', '=', True)]</field>
+    </record>
+</odoo>
