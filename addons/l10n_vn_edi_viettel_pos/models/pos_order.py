@@ -21,9 +21,8 @@ class PosOrder(models.Model):
         if self.company_id.country_id.code != 'VN' or not self.config_id.l10n_vn_auto_send_to_sinvoice:
             return vals
 
-        sinvoice_symbol = self.config_id.l10n_vn_pos_symbol or self.config_id.company_id.l10n_vn_pos_default_symbol
-        if sinvoice_symbol:
-            vals['l10n_vn_edi_invoice_symbol'] = sinvoice_symbol.id
+        if symbol := self.config_id.l10n_vn_pos_symbol or self.config_id.company_id.l10n_vn_pos_default_symbol:
+            vals['l10n_vn_symbol_id'] = symbol.id
 
             # Refund Invoice (Credit Note)
             if self.amount_total < 0:
