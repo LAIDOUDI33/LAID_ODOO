@@ -11,8 +11,8 @@ from .common import TestL10nFrPdpCommon, mock_pdp_annuaire_lookup, mock_pdp_pepp
 class TestL10nFrPdpPartner(TestL10nFrPdpCommon, MailCase):
 
     def test_pdp_identifier_derivation(self):
-        # `routing_identifier` is no longer auto-computed from the registry: the PDP routing endpoint
-        # is set explicitly, while the SIREN is derived from the FR SIRET/SIREN identifier.
+        # The SIREN is derived from the FR SIRET/SIREN identifier, and suggested as the PDP
+        # routing endpoint (EAS 0225) since the company sends through a PDP.
         partner = self.env["res.partner"].create({
             'name': 'SUPER FRENCH PARTNER',
             'street': 'Rue Fabricy, 16',
@@ -24,11 +24,11 @@ class TestL10nFrPdpPartner(TestL10nFrPdpCommon, MailCase):
             'additional_identifiers': {'FR_SIRET': '96851575905808'},
             'invoice_edi_format': 'ubl_21_fr',
         })
-        # SIREN derived from the SIRET; no routing endpoint is auto-filled.
+        # SIREN derived from the SIRET, then suggested as the routing endpoint.
         self.assertEqual(partner._l10n_fr_pdp_get_siren(), '968515759')
-        self.assertFalse(partner.routing_identifier)
+        self.assertEqual(partner.routing_identifier, '0225:968515759')
 
-        # Setting the endpoint explicitly routes the partner via PDP (EAS 0225).
+        # The endpoint can be overridden by the SIREN_SIRET registered on the annuaire.
         partner.routing_identifier = '0225:968515759_96851575905808'
         self.assertTrue(partner.l10n_fr_is_pdp)
 

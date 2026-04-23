@@ -606,9 +606,10 @@ class CustomerPortal(Controller):
                     address_values[key] = field.convert_to_cache(value, ResPartner)
             elif (key_upper := key.upper()) in all_additional_identifiers:
                 # Set the additional identifier values in the `additional_identifiers` field of the
-                # address values.
-                address_values.setdefault("additional_identifiers", {})
-                address_values["additional_identifiers"][key_upper] = value
+                # address values. Empty values are dropped, which clears them on the partner.
+                address_values.setdefault('additional_identifiers', {})
+                if value:
+                    address_values['additional_identifiers'][key_upper] = value
             elif value:  # The value cannot be saved on the `res.partner` model.
                 extra_form_data[key] = value
 
@@ -732,7 +733,7 @@ class CustomerPortal(Controller):
                     # Only set to invalid field if the additional identifier is already set on the
                     # partner.
                     if partner_sudo_value != value and bool(partner_sudo_value):
-                        invalid_fields.add(additional_identifier.lower())
+                        invalid_fields.add(additional_identifier)
                         error_messages.append(get_commercial_field_error_msg(additional_identifier))
 
                 # Company name shouldn't be updated anywhere but the main and company address, even

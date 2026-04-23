@@ -19,7 +19,8 @@ from odoo.tools.date_utils import all_timezones
 from odoo.tools.translate import LazyGettext
 from odoo.tools.partner_identifiers import (
     ADDITIONAL_IDENTIFIERS_METADATA,
-    ALL_IDENTIFIERS_METADATA,
+    COMPANY_CATEGORIES,
+    INDIVIDUAL_CATEGORIES,
     TIN_METADATA,
     get_deduced_identifiers,
     get_tin_metadata_of_country,
@@ -682,21 +683,24 @@ class ResPartner(models.Model):
     def _apply_synced_identifiers(self, source_identifiers):
         """ Mirror the *synced* identifiers of ``source_identifiers`` onto every record
         in ``self``, while keeping per-contact identifiers untouched.
-        Per-contact identifiers are those flagged ``synced=False`` in their metadata
+        Per-contact identifiers are those flagged ``synced=False`` in their metadata, and
+        individual identifiers, which stay on their own record.
         """
         all_metadata = self._get_all_identifiers_metadata()
+
+        def is_shared(key):
+            metadata = all_metadata.get(key, {})
+            return metadata.get('synced', True) and metadata.get('category') not in INDIVIDUAL_CATEGORIES
+
         synced = {
             key: value
             for key, value in (source_identifiers or {}).items()
-            if all_metadata.get(key, {}).get('synced', True)
+            if is_shared(key)
         }
         for record in self:
             existing = record.additional_identifiers or {}
-            merged = {
-                key: value
-                for key, value in existing.items()
-                if not all_metadata.get(key, {}).get('synced', True)
-            } | synced
+            own = {key: value for key, value in existing.items() if not is_shared(key)}
+            merged = own if any(record._is_individual_identifier(key) for key in own) else own | synced
             if merged != existing:
                 record.write({'additional_identifiers': merged})
 
@@ -708,7 +712,14 @@ class ResPartner(models.Model):
         if 'additional_identifiers' in sync_vals:
             sync_vals = dict(sync_vals)
             self._apply_synced_identifiers(sync_vals.pop('additional_identifiers'))
-        self.write(sync_vals)
+        if 'vat' in sync_vals:
+            individuals = self.filtered(lambda p: any(
+                p._is_individual_identifier(key) for key in (p.additional_identifiers or {})
+            ))
+            individuals.write({key: value for key, value in sync_vals.items() if key != 'vat'})
+            (self - individuals).write(sync_vals)
+        else:
+            self.write(sync_vals)
 
     @api.model
     def _company_dependent_commercial_fields(self):
@@ -1336,8 +1347,10 @@ class ResPartner(models.Model):
         if (tin_meta := TIN_METADATA.get(key)) and (country_code := tin_meta.get('countries')[:1]):
             country = self.env['res.country'].search([('code', '=', country_code[0])], limit=1)
             tin, _country_code = self._run_vat_checks(country, value, validation=validation)
+            # validation=False only formats, so check validity explicitly
+            valid = bool(tin) if validation else bool(self._run_vat_checks(country, value, validation='setnull')[0])
             example = tin_meta.get('examples') or tin_meta.get('placeholder')
-            return {'valid': bool(tin), 'value': tin, 'example': example}
+            return {'valid': valid, 'value': tin, 'example': example}
 
         metadata = self._get_all_identifiers_metadata().get(key) or {}
         example = metadata.get('examples') or metadata.get('placeholder')
@@ -1472,10 +1485,9 @@ class ResPartner(models.Model):
 
     @api.model
     def _get_all_identifiers_metadata(self):
-        """ Returns a dict with the metadata of the additional identifiers.
-        TO BE OVERRIDEN by modules that want to add or modify the default metadata.
-        """
-        return ALL_IDENTIFIERS_METADATA
+        """ Combined metadata of every identifier (tax IDs + additional identifiers), composed
+        from `_get_all_additional_identifiers_metadata` so localizations are picked up too. """
+        return {**TIN_METADATA, **self._get_all_additional_identifiers_metadata()}
 
     @api.model
     def _get_all_identifiers_metadata_by_scheme(self):
@@ -1505,6 +1517,31 @@ class ResPartner(models.Model):
         """Return the label of an identifier given its key."""
         return self._get_all_identifiers_metadata().get(identifier_key, {}).get('label', '')
 
+    @api.model
+    def _is_individual_identifier(self, identifier_key):
+        """ Whether the identifier represents an individual (e.g. a citizen number). """
+        return self._get_all_identifiers_metadata().get(identifier_key, {}).get('category') in INDIVIDUAL_CATEGORIES
+
+    @api.model
+    def _is_company_identifier(self, identifier_key):
+        """ Whether the identifier represents a company (a tax number or an enterprise number). """
+        return self._get_all_identifiers_metadata().get(identifier_key, {}).get('category') in COMPANY_CATEGORIES
+
+    @api.model
+    def _get_additional_identifiers_metadata_of_country(self, country_code, include_international=True, seq_min=0, seq_max=100):
+        """ Additional identifiers offered for the country within the sequence range.
+        International identifiers(no country-specified) are included by default."""
+        result = {}
+        for key, metadata in self._get_all_additional_identifiers_metadata().items():
+            if not seq_min <= metadata.get('sequence', 100) <= seq_max:
+                continue
+            if country_code not in (metadata.get('countries') or []) and not (
+                include_international and not metadata.get('countries')
+            ):
+                continue
+            result[key] = metadata
+        return result
+
     def _get_preferred_legal_entity_identifier_vals(self):
         """Return a dict {'scheme': scheme, 'value': value, ...metadata} of the preferred legal entity identifier for the given partner.
         The selection is based on the following rules:
@@ -1512,6 +1549,8 @@ class ResPartner(models.Model):
         2. Among those, it picks the one with the lowest sequence, THEN the "best" category (see _get_legal_entity_category_priority).
         3. If no such identifier is found, an empty dict is returned.
         """
+        if not self:
+            return {}
         self.ensure_one()
         partner = self.commercial_partner_id
         priorities = self._get_legal_entity_category_priority()
@@ -1529,6 +1568,8 @@ class ResPartner(models.Model):
         2. Among those, it picks the one with the "best" category (see _get_tax_category_priority), THEN ties with the sequence.
         3. If no such identifier is found, an empty dict is returned.
         """
+        if not self:
+            return {}
         self.ensure_one()
         partner = self.commercial_partner_id
         priorities = self._get_tax_category_priority()

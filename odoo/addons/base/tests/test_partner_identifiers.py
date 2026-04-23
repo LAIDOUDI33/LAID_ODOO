@@ -34,11 +34,13 @@ class TestPartnerIdentifiers(TransactionCase):
         partner = self.env['res.partner'].create({'name': 'No Country Partner'})
         metadata = partner.available_additional_identifiers_metadata
         self.assertTrue(isinstance(metadata, dict))
-        self.assertEqual(len(metadata), 3)
-        # Check standard properties for international
+        # Country-agnostic identifiers, available regardless of the partner's country.
+        self.assertEqual(len(metadata), 5)
         self.assertIn('DUNS', metadata)
         self.assertIn('EAN_GLN', metadata)
         self.assertIn('OTHER', metadata)
+        self.assertIn('GS1', metadata)
+        self.assertIn('IBAN', metadata)
 
     def test_identifier_metadata_by_country(self):
         """ Specific country check """
