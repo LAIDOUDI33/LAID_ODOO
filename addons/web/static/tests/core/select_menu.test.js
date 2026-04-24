@@ -17,6 +17,7 @@ import {
 } from "@web/../tests/web_test_helpers";
 
 import { MainComponentsContainer } from "@web/core/main_components_container";
+import { Dropdown } from "@web/core/dropdown/dropdown";
 import { SelectMenu } from "@web/core/select_menu/select_menu";
 
 /**
@@ -1495,4 +1496,42 @@ test("Filter is preserved when choices rerender before the debounced search runs
     await animationFrame();
     // Filter must stay on "ku": only Doku and Lukaku match
     expect(".o_select_menu-choices span.o-dropdown-item").toHaveCount(2);
+});
+
+test("Ensure the Dropdown uses the correct 'position' value", async () => {
+    const positions = [];
+    patchWithCleanup(Dropdown.prototype, {
+        get position() {
+            const pos = super.position;
+            positions.push(pos);
+            return pos;
+        },
+    });
+
+    class MyParent extends Component {
+        static props = ["*"];
+        static components = { SelectMenu };
+        static template = xml`
+            <SelectMenu choices="this.choices" position="this.state.position"/>
+        `;
+        setup() {
+            this.state = proxy({ position: undefined });
+            this.choices = [
+                { label: "Item 1", value: "item_1" },
+                { label: "Item 2", value: "item_2" },
+            ];
+        }
+    }
+    const comp = await mountSingleApp(MyParent);
+    await open();
+    // If no value is set, the default position should be "bottom-fit"
+    expect(positions.some((p) => p === "bottom-fit")).toBe(true);
+
+    positions.length = 0;
+    comp.state.position = "top-start";
+    await press("escape");
+    await animationFrame();
+    await open();
+    // If a value is set, the position should be the one defined in the props
+    expect(positions.some((p) => p === "top-start")).toBe(true);
 });
