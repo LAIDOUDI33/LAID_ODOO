@@ -119,6 +119,7 @@
             ('include', 'mass_mailing.assets_mail_themes'),
             'mass_mailing/static/src/scss/mass_mailing_mail.scss',
             'mass_mailing/static/src/iframe_assets/**/*',
+            'mass_mailing/static/src/snippets/**/*.scss',
         ],
         # Complete style assets required to view the mail content.
         # convert_inline ONLY uses this and inline styles.
