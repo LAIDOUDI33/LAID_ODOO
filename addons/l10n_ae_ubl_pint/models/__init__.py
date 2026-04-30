@@ -1,0 +1,7 @@
+from . import account_edi_xml_pint_ae
+from . import account_move
+from . import account_payment_term
+from . import account_tax
+from . import product_product
+from . import product_template
+from . import res_partner
