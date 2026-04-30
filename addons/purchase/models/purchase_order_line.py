@@ -277,11 +277,15 @@ class PurchaseOrderLine(models.Model):
             else:
                 line.selected_seller_id = False
 
-    @api.depends('price_unit', 'qty_invoiced_at_date', 'qty_received_at_date')
+    @api.depends('price_unit', 'qty_invoiced_at_date', 'qty_received_at_date', 'product_qty')
     @api.depends_context('accrual_entry_date')
     def _compute_amount_to_invoice_at_date(self):
         for line in self:
-            qty_to_invoice = line.product_uom_id._compute_quantity(line.qty_received_at_date - line.qty_invoiced_at_date, line.product_id.uom_id)
+            if line.product_id.type == 'service' and line.product_id.purchase_method == 'purchase':
+                qty_ref = line.product_qty
+            else:
+                qty_ref = line.qty_received_at_date
+            qty_to_invoice = line.product_uom_id._compute_quantity(qty_ref - line.qty_invoiced_at_date, line.product_id.uom_id)
             line.amount_to_invoice_at_date = qty_to_invoice * line._get_gross_price_unit()
 
     @api.model_create_multi
