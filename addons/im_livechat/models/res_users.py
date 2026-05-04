@@ -1,8 +1,11 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-from odoo import fields, models, api
+from markupsafe import Markup
+
+from odoo import api, fields, models
 from odoo.addons.mail.tools.discuss import Store
 from odoo.fields import Command
+from odoo.http import request
 
 
 class ResUsers(models.Model):
@@ -148,6 +151,47 @@ class ResUsers(models.Model):
                     .write({"user_ids": [Command.unlink(operator.id) for operator in lost_operators]})
                 return result
         return super().write(vals)
+
+    def authenticate(self, credential, user_agent_env):
+        auth_info = super().authenticate(credential, user_agent_env)
+        if request and auth_info.get("uid"):
+            token = request.cookies.get(self.env["mail.guest"]._cookie_name, "")
+            guest = self.env["mail.guest"]._get_guest_from_token(token)
+            env = self.env(user=auth_info["uid"], context=dict(guest=guest))
+            if guest and not env.user._is_public():
+                env.user.with_env(env)._join_livechat_sessions_from_guest(guest)
+        return auth_info
+
+    def _join_livechat_sessions_from_guest(self, guest):
+        self.ensure_one()
+        # using guest env to find livechat channels the guest has access to
+        guest_access_env = self.env(user=self.env.ref("base.public_user"))
+        channels_to_join = guest_access_env["discuss.channel"].search([
+            ("channel_member_ids.guest_id", "=", guest.id),
+            ("channel_partner_ids", "!=", self.partner_id.id),
+            ("channel_type", "=", "livechat"),
+            ("create_date", ">=", "now -1H"),
+            ("livechat_end_dt", "=", False),
+        ], limit=5, order="id DESC")
+        if not channels_to_join:
+            return self.env["discuss.channel.member"]
+        channels_to_join.self_member_id.unlink()
+        # sudo: discuss.channel - user is not a member yet and cannot add themselves;
+        # the user authenticated as the guest who was a member of these channels, so adding them is legitimate
+        members = channels_to_join.with_env(self.env).sudo()._add_members(users=self, post_joined_message=False)
+        for member in members:
+            notif = self.env._(
+                "%(visitor)s authenticated as %(user)s.",
+                # sudo: mail.guest - reading the name for a notification message is acceptable
+                visitor=guest.sudo().name,
+                user=self.env.user.partner_id.name,
+            )
+            member.channel_id.message_post(
+                body=Markup('<div class="o_mail_notification" data-oe-type="o_mail_notification">%s</div>') % notif,
+                message_type="notification",
+                subtype_xmlid="mail.mt_comment",
+            )
+        return members
 
     def _store_init_global_fields(self, res: Store.FieldList):
         super()._store_init_global_fields(res)
