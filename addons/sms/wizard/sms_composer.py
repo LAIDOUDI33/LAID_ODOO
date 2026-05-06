@@ -22,7 +22,7 @@ class SmsComposer(models.TransientModel):
 
         scheduled_message_id = self.env.context.get('default_mail_scheduled_message_id')
         if scheduled_message_id:
-            
+
             scheduled_message = self.env['mail.scheduled.message'].browse(scheduled_message_id)
             if scheduled_message.exists():
                 result.update({
@@ -206,6 +206,30 @@ class SmsComposer(models.TransientModel):
                 record.body = record.template_id._render_field('body', [record.res_id], compute_lang=True, add_context=additional_context)[record.res_id]
             elif record.template_id:
                 record.body = record.template_id.body
+
+    @api.depends('composition_mode', 'res_model', 'res_ids', 'template_id')
+    def _compute_scheduled_date(self):
+        for composer in self:
+            if composer.template_id and 'scheduled_date' in composer.template_id._fields:
+                composer.scheduled_date = composer.template_id.scheduled_date
+
+    @api.depends('res_model')
+    def _compute_render_model(self):
+        for composer in self:
+            composer.render_model = composer.res_model
+
+    def open_template_creation_wizard(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'view_mode': 'form',
+            'view_id': self.env.ref('sms.sms_composer_view_form_template_save').id,
+            'name': _('Create an SMS Template'),
+            'res_model': 'sms.composer',
+            'context': {'dialog_size': 'medium'},
+            'target': 'new',
+            'res_id': self.id,
+        }
 
     # ------------------------------------------------------------
     # Actions
