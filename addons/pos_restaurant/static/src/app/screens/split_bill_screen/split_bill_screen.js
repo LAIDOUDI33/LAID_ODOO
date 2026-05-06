@@ -140,12 +140,7 @@ export class SplitBillScreen extends Component {
         }
     }
 
-    async createSplittedOrder() {
-        const curOrderUuid = this.currentOrder.uuid;
-        const originalOrder = this.pos.models["pos.order"].find((o) => o.uuid === curOrderUuid);
-        const originalOrderName = this._getOrderName(originalOrder);
-        const newOrderName = this._getSplitOrderName(originalOrderName);
-
+    async _createNewSplitOrder(originalOrder, newOrderName, curOrderUuid) {
         const newOrder = this.pos.createNewOrder({
             preset_id: originalOrder.preset_id,
             preset_time: originalOrder.preset_time,
@@ -250,14 +245,39 @@ export class SplitBillScreen extends Component {
         }
         await this.handleDiscountLines(originalOrder, newOrder);
         await this.handleServiceFeeLines(originalOrder, newOrder);
-        await this.pos.syncAllOrders({ orders: [originalOrder, newOrder] });
-        await this.pos.onPrepLinesSynced(prepLinePairs);
-        originalOrder.customer_count -= 1;
-        originalOrder.setScreenData({ name: "ProductScreen" });
-        this.pos.selectedOrderUuid = null;
-        this.pos.setOrder(newOrder);
-        this.back();
+        // Stash the prep-line pairs so createSplittedOrder can reconcile them
+        // after syncAllOrders (they are built here but consumed post-sync).
+        this.prepLinePairs = prepLinePairs;
         return newOrder;
+    }
+    async createSplittedOrder() {
+        const curOrderUuid = this.currentOrder.uuid;
+        const originalOrder = this.pos.models["pos.order"].find((o) => o.uuid === curOrderUuid);
+
+        // Guard to prevent multiple simultaneous split of the same order
+        if (originalOrder.uiState.isSplitInProgress) {
+            return;
+        }
+        originalOrder.uiState.isSplitInProgress = true;
+        try {
+            const originalOrderName = this._getOrderName(originalOrder);
+            const newOrderName = this._getSplitOrderName(originalOrderName);
+            const newOrder = await this._createNewSplitOrder(
+                originalOrder,
+                newOrderName,
+                curOrderUuid
+            );
+            await this.pos.syncAllOrders({ orders: [originalOrder, newOrder] });
+            //TODO-manv-master: not sure that we should call onPrepLinesSynced
+            await this.pos.onPrepLinesSynced(this.prepLinePairs);
+            originalOrder.customer_count -= 1;
+            originalOrder.setScreenData({ name: "ProductScreen" });
+            this.pos.selectedOrderUuid = null;
+            this.pos.setOrder(newOrder);
+            this.back();
+        } finally {
+            originalOrder.uiState.isSplitInProgress = false;
+        }
     }
 
     setLineQtyStr(line) {
