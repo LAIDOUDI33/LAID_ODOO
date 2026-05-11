@@ -16,7 +16,7 @@ import time
 import typing
 import uuid
 import warnings
-from contextlib import contextmanager, nullcontext
+from contextlib import closing, contextmanager, nullcontext
 from datetime import datetime, timedelta
 from inspect import currentframe
 
@@ -599,6 +599,10 @@ class Cursor(_CursorProtocol):
 
 BaseCursor = Cursor  # backward-compatibility
 
+# Cache mapping PostgreSQL role names to whether they have elevated privileges.
+# See PsycoConnection.has_high_privileges.
+_has_high_privileges_by_roles: dict[str, bool] = {}
+
 
 class PsycoConnection(psycopg2.extensions.connection):
     _pool_last_used: float = 0
@@ -617,6 +621,38 @@ class PsycoConnection(psycopg2.extensions.connection):
 
     def give_back(self, keep_in_pool=True):
         raise RuntimeError('not bound to a pool')
+
+    @property
+    def has_high_privileges(self) -> bool:
+        """ Whether the PostgreSQL login role has elevated privileges.
+
+        Returns ``True`` if the login role has any of the following role
+        attributes:
+            - SUPERUSER (rolsuper)
+            - REPLICATION (rolreplication)
+            - BYPASSRLS (rolbypassrls)
+
+        These are PostgreSQL "role attributes", not object privileges. They are
+        defined once per role for the entire PostgreSQL cluster, regardless of
+        the database being connected to.
+        Unlike regular privileges (for example, SELECT or UPDATE on a table),
+        they are not inherited through role membership: a role only has them if
+        the attribute is set directly on
+        that role.
+
+        Since the result depends only on the login role, it is cached
+        process-wide, keyed by role name.
+        """
+        role = self.info.user
+        if role not in _has_high_privileges_by_roles:
+            with closing(self.cursor()) as cr:
+                cr.execute("""
+                    SELECT (rolsuper OR rolreplication OR rolbypassrls)
+                    FROM pg_roles
+                    WHERE rolname = CURRENT_ROLE
+                """)
+                _has_high_privileges_by_roles[role] = bool(cr.fetchone()[0])
+        return _has_high_privileges_by_roles[role]
 
 
 class ConnectionPool:

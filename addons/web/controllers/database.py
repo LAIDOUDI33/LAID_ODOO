@@ -10,7 +10,7 @@ from operator import itemgetter
 from xml.etree import ElementTree as ET
 
 from lxml import html
-from werkzeug.exceptions import UnprocessableEntity
+from werkzeug.exceptions import Forbidden, UnprocessableEntity
 from werkzeug.utils import send_file
 
 import odoo
@@ -284,3 +284,12 @@ class Database(Controller):
         :rtype: list
         """
         return db_list()
+
+    @route('/web/database/has-high-privileges', type='jsonrpc', auth='user')
+    def has_high_privileges(self):
+        """ Whether the current database is served by a PostgreSQL role that has
+        elevated privileges (superuser, replication or bypassing RLS).
+        """
+        if not request.env.user._is_internal():
+            raise Forbidden()
+        return request.env.cr.connection.has_high_privileges
