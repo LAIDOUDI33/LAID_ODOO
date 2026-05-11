@@ -188,6 +188,27 @@ class StockMoveLine(models.Model):
         if any(ml.quantity < 0 for ml in self):
             raise ValidationError(_('You can not enter negative quantities.'))
 
+    @api.onchange('result_package_id', 'quantity', 'uom_id')
+    def _onchange_result_package_id(self):
+        package = self.result_package_id
+        package_type = package.package_type_id
+        if self.move_id != self.move_id._origin or not package_type or not package_type.max_weight:
+            return
+        current_package_weight = package._get_weight(picking_ids=self.picking_id.id, include_quants=True).get(package, 0.0)
+        product_weight = self.product_id.weight
+        current_weight = self.quantity_product_uom * product_weight if package != self.package_id else 0.0
+        original_weight = self._origin.quantity_product_uom * product_weight if self._origin.result_package_id == package != self._origin.package_id else 0.0
+        projected_package_weight = current_package_weight + current_weight - original_weight
+        if projected_package_weight > package_type.max_weight + package_type.base_weight:
+            return {
+                'warning': {
+                    'title': self.env._("Package Too Heavy!"),
+                    'message': self.env._(
+                        "The weight of your package is higher than the maximum weight authorized for its package type. Please choose another package."
+                    ),
+                }
+            }
+
     @api.onchange('product_id', 'uom_id')
     def _onchange_product_id(self):
         if self.product_id:

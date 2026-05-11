@@ -2957,6 +2957,31 @@ Please change the quantity done or the rounding precision in your settings.""",
                 'target': 'new'
             }
 
+    def get_overweight_packages(self, package_data):
+        package_data = {int(package): data for package, data in package_data.items()}
+        packages = self.env["stock.package"].browse(package_data).filtered(lambda p: p.package_type_id.max_weight)
+
+        product_weight = self.product_id.weight
+        package_weights = packages._get_weight(picking_ids=self.picking_id.id, include_quants=True)
+        current_contribution = {
+            package.id: sum(move_lines.mapped("quantity_product_uom")) * product_weight
+            for package, move_lines in self.move_line_ids.grouped("result_package_id").items()
+            if package
+        }
+        updated_contribution = {
+            package_id: quantity * product_weight
+            for package_id, quantity in package_data.items()
+        }
+
+        return [
+            package.display_name
+            for package in packages
+            if package_weights[package]
+                - current_contribution.get(package.id, 0)
+                + updated_contribution.get(package.id, 0)
+                > package.package_type_id.max_weight + package.package_type_id.base_weight
+        ]
+
     # === CATALOG ===#
 
     def _get_quantity_field(self) -> str:
