@@ -170,7 +170,7 @@ export class TablePlugin extends Plugin {
         on_will_split_block_handlers: this.resetTableSelection.bind(this),
 
         /** Processors */
-        before_insert_processors: this.normalizeTableStructure.bind(this),
+        fragment_to_insert_processors: this.normalizeTableStructure.bind(this),
         clean_for_save_processors: (root) => {
             this.deselectTable(root);
             return root;
@@ -806,7 +806,6 @@ export class TablePlugin extends Plugin {
         this.dependencies.selection.setSelection(selectionToRestore);
         this.tableGridMap?.delete(closestElement(row, "table"));
     }
-
 
     /**
      * @param {HTMLTableCellElement} cell
