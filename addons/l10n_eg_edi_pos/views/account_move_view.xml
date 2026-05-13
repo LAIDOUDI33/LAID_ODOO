@@ -1,0 +1,14 @@
+<odoo>
+    <data>
+        <record id="view_move_form_inherit" model="ir.ui.view">
+            <field name="name">account.move.form.inherit.l10n_eg_edi_pos</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="l10n_eg_edi_eta.view_move_form_inherit"/>
+            <field name="arch" type="xml">
+                <button name='action_post_sign_invoices' position="attributes">
+                    <attribute name="invisible" add="pos_order_count > 0" separator=" or "/>
+                </button>
+            </field>
+        </record>
+    </data>
+</odoo>
