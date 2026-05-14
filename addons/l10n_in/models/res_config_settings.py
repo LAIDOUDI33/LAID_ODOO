@@ -67,6 +67,14 @@ class ResConfigSettings(models.TransientModel):
         related='company_id.vat',
         readonly=False
     )
+    l10n_in_gst_registration_type = fields.Selection(
+        related='company_id.l10n_in_gst_registration_type',
+        readonly=False
+    )
+    l10n_in_composition_scheme_tax_rate = fields.Selection(
+        related='company_id.l10n_in_composition_scheme_tax_rate',
+        readonly=False
+    )
     l10n_in_gstin_status_feature = fields.Boolean(
         related='company_id.l10n_in_gstin_status_feature',
         readonly=False
