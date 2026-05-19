@@ -17,6 +17,12 @@
         <field name="is_extra_hours" eval="True"/>
     </record>
 
+    <record id="attendance_work_entry_type" model="hr.work.entry.type">
+        <field name="name">Work Time</field>
+        <field name="code">GENERATED_ATTENDANCE</field>
+        <field name="country_id" eval="False"/>
+    </record>
+
     <record id="generic_hr_work_entry_type_out_of_contract" model="hr.work.entry.type">
         <field name="name">Out of Contract</field>
         <field name="color">0</field>
@@ -492,6 +498,7 @@
         <field name="code">LEAVE90</field>
         <field name="count_as">absence</field>
         <field name="country_id" ref="base.be"/>
+        <field name="sequence">10</field>
     </record>
 
     <record id="be_work_entry_type_additional_hours" model="hr.work.entry.type">
@@ -533,6 +540,7 @@
         <field name="color">5</field>
         <field name="count_as">absence</field>
         <field name="country_id" ref="base.be"/>
+        <field name="sequence">9</field>
     </record>
 
     <record id="be_work_entry_type_sick_leave_without_certificate" model="hr.work.entry.type">
@@ -608,6 +616,7 @@
         <field name="color">3</field>
         <field name="country_id" ref="base.be"/>
         <field name="count_as">absence</field>
+        <field name="sequence">5</field>
     </record>
 
     <record id="l10n_be_work_entry_type_upcomming_public_holiday" model="hr.work.entry.type">
@@ -617,6 +626,7 @@
         <field name="color">3</field>
         <field name="country_id" ref="base.be"/>
         <field name="count_as">absence</field>
+        <field name="sequence">5</field>
     </record>
 
     <record id="l10n_be_work_entry_type_solicitation_time_off" model="hr.work.entry.type">
@@ -857,6 +867,7 @@
         <field name="display_code">LTS</field>
         <field name="country_id" ref="base.be"/>
         <field name="count_as">absence</field>
+        <field name="sequence">10</field>
     </record>
 
     <record id="l10n_be_work_entry_type_breast_feeding" model="hr.work.entry.type">
@@ -1009,6 +1020,7 @@
         <field name="display_code">CRT</field>
         <field name="country_id" ref="base.be"/>
         <field name="count_as">absence</field>
+        <field name="sequence">10</field>
     </record>
 
     <record id="l10n_be_work_entry_type_parental_time_off" model="hr.work.entry.type">
@@ -1018,6 +1030,7 @@
         <field name="display_code">PAR</field>
         <field name="country_id" ref="base.be"/>
         <field name="count_as">absence</field>
+        <field name="sequence">10</field>
     </record>
 
     <record id="l10n_be_work_entry_type_work_accident" model="hr.work.entry.type">
@@ -1054,6 +1067,7 @@
         <field name="display_code">PIN</field>
         <field name="country_id" ref="base.be"/>
         <field name="count_as">absence</field>
+        <field name="sequence">10</field>
     </record>
 
     <record id="l10n_be_work_entry_type_strike" model="hr.work.entry.type">
