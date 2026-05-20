@@ -5,6 +5,7 @@ import { ConnectionLostError } from "@web/core/network/rpc";
 import { onRpc } from "@web/../tests/web_test_helpers";
 import { imageUrl } from "@web/core/utils/urls";
 import { prepareRoundingVals } from "../accounting/utils";
+import { receiptLineGrouper } from "@point_of_sale/app/models/utils/order_change";
 const { DateTime } = luxon;
 
 definePosModels();
@@ -703,5 +704,194 @@ describe("pos_store.js", () => {
             expect(order.lines[1].price_subtotal).toEqual(6);
             expect(order.lines[1].price_subtotal_incl).toEqual(7.5);
         });
+    });
+
+    test("getOrderlines grouped by category when iface_group_by_categ is enabled", async () => {
+        const store = await setupPosEnv();
+
+        // Demo data used:
+        // Category 1 (id=1, seq=1) -> TEST (tmpl id=5)
+        // Category 2 (id=2, seq=2) -> TEST 2 (tmpl id=6), Wood chair (tmpl id=8)
+        // Burger    (id=4, seq=3) -> Bacon burger (tmpl id=12)
+        // Food      (id=3, seq=4) -> Club sandwich (tmpl id=14)
+        // No category             -> Accounting Test Product 1 (tmpl id=15)
+        const prodCat1 = store.models["product.template"].get(5); // Category 1, seq 1
+        const prodCat2A = store.models["product.template"].get(6); // Category 2, seq 2
+        const prodCat2B = store.models["product.template"].get(8); // Category 2, seq 2
+        const prodBurger = store.models["product.template"].get(12); // Burger, seq 3
+        const prodFood = store.models["product.template"].get(14); // Food, seq 4
+        const prodNoCat = store.models["product.template"].get(15); // No category
+
+        // Add in scrambled order: Cat2 products are intentionally separated
+        const order = store.addNewOrder();
+        await store.addLineToOrder({ product_tmpl_id: prodFood, qty: 1 }, order); // Food seq=4
+        await store.addLineToOrder({ product_tmpl_id: prodCat2A, qty: 1 }, order); // Cat2 seq=2
+        await store.addLineToOrder({ product_tmpl_id: prodCat1, qty: 1 }, order); // Cat1 seq=1
+        await store.addLineToOrder({ product_tmpl_id: prodNoCat, qty: 1 }, order); // No category
+        await store.addLineToOrder({ product_tmpl_id: prodBurger, qty: 1 }, order); // Burger seq=3
+        await store.addLineToOrder({ product_tmpl_id: prodCat2B, qty: 1 }, order); // Cat2 seq=2
+
+        // 1. Grouping disabled: lines in order of addition
+        store.config.iface_group_by_categ = false;
+        let lines = order.getOrderlines();
+        expect(lines.length).toBe(6);
+        expect(lines[0].product_id.product_tmpl_id.id).toBe(14); // Food
+        expect(lines[1].product_id.product_tmpl_id.id).toBe(6); // Cat2A
+        expect(lines[2].product_id.product_tmpl_id.id).toBe(5); // Cat1
+        expect(lines[3].product_id.product_tmpl_id.id).toBe(15); // No category
+        expect(lines[4].product_id.product_tmpl_id.id).toBe(12); // Burger
+        expect(lines[5].product_id.product_tmpl_id.id).toBe(8); // Cat2B
+
+        // 2. Grouping enabled: sorted by category sequence, same-category products grouped
+        store.config.iface_group_by_categ = true;
+        lines = order.getOrderlines();
+        expect(lines.length).toBe(6);
+        expect(lines[0].product_id.product_tmpl_id.id).toBe(5); // Cat1 seq=1
+        // Cat2 products (seq=2) are grouped together, in their original addition order
+        expect(lines[1].product_id.product_tmpl_id.id).toBe(6); // Cat2A seq=2
+        expect(lines[2].product_id.product_tmpl_id.id).toBe(8); // Cat2B seq=2
+        expect(lines[3].product_id.product_tmpl_id.id).toBe(12); // Burger seq=3
+        expect(lines[4].product_id.product_tmpl_id.id).toBe(14); // Food seq=4
+        expect(lines[5].product_id.product_tmpl_id.id).toBe(15); // No category (Infinity)
+
+        // 3. receiptLineGrouper returns correct group info
+        const groupCat1 = receiptLineGrouper.getGroup(lines[0]);
+        expect(groupCat1).toEqual({ index: 1, name: "Category 1" });
+
+        // Both Cat2 products return the same group
+        const groupCat2A = receiptLineGrouper.getGroup(lines[1]);
+        const groupCat2B = receiptLineGrouper.getGroup(lines[2]);
+        expect(groupCat2A).toEqual({ index: 2, name: "Category 2" });
+        expect(groupCat2B).toEqual(groupCat2A);
+
+        const groupNoCat = receiptLineGrouper.getGroup(lines[5]);
+        expect(groupNoCat).toBe(undefined);
+
+        // 4. getGroup returns undefined when grouping is disabled, even for a categorized line
+        store.config.iface_group_by_categ = false;
+        expect(receiptLineGrouper.getGroup(lines[0])).toBe(undefined);
+    });
+
+    test("getOrderlines anchors combo group to minimum category of its members", async () => {
+        const store = await setupPosEnv();
+        // Category 1 (seq=1), Category 2 (seq=2), Burger (seq=3), Food (seq=4)
+        const prodCat1 = store.models["product.template"].get(5); // Cat1 seq=1
+        const prodCat2A = store.models["product.template"].get(6); // Cat2 seq=2
+        const prodBurger = store.models["product.template"].get(12); // Burger seq=3
+        const prodFood = store.models["product.template"].get(14); // Food seq=4
+
+        store.config.iface_group_by_categ = true;
+        const order = store.addNewOrder();
+        await store.addLineToOrder({ product_tmpl_id: prodCat1, qty: 1 }, order); // seq=1
+        await store.addLineToOrder({ product_tmpl_id: prodBurger, qty: 1 }, order); // seq=3 (combo parent)
+        await store.addLineToOrder({ product_tmpl_id: prodFood, qty: 1 }, order); // seq=4
+
+        // Create a combo child (Cat2, seq=2) linked to the Burger parent.
+        // The propagation in getOrderlines() should move the whole combo to seq=2
+        // (the child's category), not leave the parent at its natural seq=3.
+        const parentLine = order.lines[1]; // Bacon burger
+        const childProduct = prodCat2A.product_variant_ids[0];
+        const childLine = store.models["pos.order.line"].create({
+            product_id: childProduct,
+            price_unit: childProduct.list_price,
+            order_id: order,
+            qty: 1,
+            combo_parent_id: parentLine,
+        });
+
+        const lines = order.getOrderlines();
+        expect(lines.length).toBe(4);
+
+        const idxCat1 = lines.findIndex((l) => l.product_id.product_tmpl_id.id === 5);
+        const idxBurger = lines.findIndex((l) => l.product_id.product_tmpl_id.id === 12);
+        const idxCat2Child = lines.findIndex((l) => l === childLine);
+        const idxFood = lines.findIndex((l) => l.product_id.product_tmpl_id.id === 14);
+
+        // Cat1 (seq=1) is first
+        expect(idxCat1).toBe(0);
+        // Food (seq=4) is last
+        expect(idxFood).toBe(3);
+        // Combo parent and child are adjacent
+        expect(Math.abs(idxBurger - idxCat2Child)).toBe(1);
+        // Both combo members sort before Food — the parent moved up from seq=3 to seq=2
+        expect(idxBurger).toBeLessThan(idxFood);
+        expect(idxCat2Child).toBeLessThan(idxFood);
+        // Parent before child (parent added before child, stable sort)
+        expect(idxBurger).toBeLessThan(idxCat2Child);
+    });
+
+    test("prepareReceiptGroupedData groups by category and injects missing combo parents", async () => {
+        const store = await setupPosEnv();
+
+        // Craft a receipt data payload: two category groups + a combo split across them
+        // + one uncategorized line to verify it sorts last (not first, which was the -1 bug).
+        const data = {
+            changes: {
+                data: [
+                    {
+                        uuid: "line-cat1",
+                        name: "Product A",
+                        quantity: 1,
+                        group: { index: 1, name: "Cat1" },
+                        isCombo: false,
+                        combo_parent_uuid: undefined,
+                    },
+                    {
+                        // Combo parent lives in Cat2
+                        uuid: "combo-parent",
+                        name: "Combo",
+                        quantity: 1,
+                        group: { index: 2, name: "Cat2" },
+                        isCombo: true,
+                        combo_parent_uuid: undefined,
+                    },
+                    {
+                        // Combo child lives in Cat1 — parent is absent from this group
+                        uuid: "combo-child",
+                        name: "Combo Item",
+                        quantity: 1,
+                        group: { index: 1, name: "Cat1" },
+                        isCombo: false,
+                        combo_parent_uuid: "combo-parent",
+                    },
+                    {
+                        // Uncategorized: should appear LAST (Infinity), not first (-1 was the bug)
+                        uuid: "line-no-cat",
+                        name: "Product B",
+                        quantity: 1,
+                        group: undefined,
+                        isCombo: false,
+                        combo_parent_uuid: undefined,
+                    },
+                ],
+            },
+        };
+
+        const result = await store.prepareReceiptGroupedData(data);
+        const groupedData = result.changes.groupedData;
+
+        expect(groupedData.length).toBe(3);
+
+        // Groups sorted by index: Cat1(1) < Cat2(2) < ungrouped(Infinity)
+        expect(groupedData[0].name).toBe("Cat1");
+        expect(groupedData[0].index).toBe(1);
+        expect(groupedData[1].name).toBe("Cat2");
+        expect(groupedData[1].index).toBe(2);
+        expect(groupedData[2].name).toBe(""); // ungrouped bucket
+        expect(groupedData[2].index).toBe(Infinity); // last, not first
+
+        // Cat1 group: original line + combo-child + injected combo-parent (before the child)
+        expect(groupedData[0].data.length).toBe(3);
+        expect(groupedData[0].data[0].uuid).toBe("line-cat1");
+        expect(groupedData[0].data[1].uuid).toBe("combo-parent"); // injected before its child
+        expect(groupedData[0].data[2].uuid).toBe("combo-child");
+
+        // Cat2 group: just the original combo-parent (no injection needed here)
+        expect(groupedData[1].data.length).toBe(1);
+        expect(groupedData[1].data[0].uuid).toBe("combo-parent");
+
+        // Ungrouped: only the uncategorized line
+        expect(groupedData[2].data.length).toBe(1);
+        expect(groupedData[2].data[0].uuid).toBe("line-no-cat");
     });
 });
