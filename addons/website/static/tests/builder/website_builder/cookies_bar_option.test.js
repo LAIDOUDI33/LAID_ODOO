@@ -17,7 +17,7 @@ const cookiesBarTemplate = `
             <div class="modal-dialog d-flex s_popup_size_full">
                 <div class="modal-content oe_structure">
 
-                    <section class="o_colored_level o_cc o_cc1">
+                    <section class="o_colored_level o_cc o_cc1 pe-5">
                         <div class="container">
                             <div class="row">
                                 <div class="col-lg-8 pt16">
@@ -33,6 +33,7 @@ const cookiesBarTemplate = `
                             </div>
                         </div>
                     </section>
+                    <button type="button" class="s_popup_close o_cookies_bar_close border-0 p-0 o_we_no_overlay o_not_editable shadow-none" aria-label="Close" contenteditable="false">×</button>
                 </div>
             </div>
         </div>
@@ -108,6 +109,33 @@ describe("Cookies bar popup options", () => {
         await contains("[data-label='Layout'] .dropdown-toggle").click();
         await contains("[data-class-action=o_cookies_classic]").click();
         expectCookieBarContent();
+    });
+
+    test("Switch between cookies bar layout should keep the close button", async () => {
+        await setupWebsiteBuilder(cookiesBarTemplate, {
+            loadIframeBundles: true,
+            loadAssetsFrontendJS: true,
+        });
+        await contains(".o_we_invisible_el_panel .o_we_invisible_entry").click();
+        expect(":iframe .o_cookies_bar_close").toHaveCount(1);
+
+        for (const layout of ["o_cookies_classic", "o_cookies_popup", "o_cookies_discrete"]) {
+            await contains("[data-label='Layout'] .dropdown-toggle").click();
+            await contains(`[data-class-action=${layout}]`).click();
+            expect(":iframe .o_cookies_bar_close").toHaveCount(1);
+        }
+    });
+
+    test("Close Button Color option applies the picked color to the close button", async () => {
+        await setupWebsiteBuilder(cookiesBarTemplate, {
+            loadIframeBundles: true,
+            loadAssetsFrontendJS: true,
+        });
+        await contains(".o_we_invisible_el_panel .o_we_invisible_entry").click();
+        await waitFor(".options-container");
+        await contains("[data-label='Close Button Color'] .o_we_color_preview").click();
+        await contains(".o-overlay-item [data-color='#FF0000']").click();
+        expect(":iframe .o_cookies_bar_close").toHaveStyle({ color: "rgb(255, 0, 0)" });
     });
 });
 

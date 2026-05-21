@@ -17,6 +17,7 @@ export class CookiesBarOptionPlugin extends Plugin {
             SelectLayoutAction,
         },
         immutable_link_selectors: [".o_cookies_bar_text_policy", ".o_cookies_bar_toggle"],
+        is_unremovable_selectors: ["#cookies-consent-essential", "#cookies-consent-all"],
     };
 
     setup() {
@@ -71,7 +72,10 @@ export class SelectLayoutAction extends BuilderAction {
             }
         }
 
-        contentEl.replaceChildren(templateEl);
+        // Keep the close button as is and replace the rest of the content
+        // with the new layout.
+        const closeButtonEl = contentEl.querySelector(":scope > .o_cookies_bar_close");
+        contentEl.replaceChildren(...[templateEl, closeButtonEl].filter(Boolean));
 
         switch (layout) {
             case "discrete":
