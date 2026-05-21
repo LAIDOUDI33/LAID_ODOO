@@ -40,17 +40,17 @@ class PosOrder(models.Model):
         string="Veri*Factu QR Code",
         compute='_compute_l10n_es_edi_verifactu_qr_code',
     )
-    l10n_es_edi_verifactu_refund_reason = fields.Selection(
-        selection=[
-            ('R1', "R1: Art 80.1 and 80.2 and error of law"),
-            ('R2', "R2: Art. 80.3"),
-            ('R3', "R3: Art. 80.4"),
-            ('R4', "R4: Rest"),
-            ('R5', "R5: Corrective invoices concerning simplified invoices"),
-        ],
+    l10n_es_invoice_type = fields.Selection(
+        selection="_l10n_es_refund_reason_selection",
         string="Veri*Factu Refund Reason",
+        help="BOE-A-1992-28740. Law 37/1992, of 28 December, on Value Added Tax. Article "
+             "80. Modification of the taxable base.",
         copy=False,
     )
+
+    @api.model
+    def _l10n_es_refund_reason_selection(self):
+        return self.env['account.move']._l10n_es_refund_reason_selection()
 
     @api.depends('state', 'l10n_es_edi_verifactu_state', 'l10n_es_edi_verifactu_document_ids',
                  'l10n_es_edi_verifactu_document_ids.state', 'l10n_es_edi_verifactu_document_ids.errors')
@@ -110,17 +110,12 @@ class PosOrder(models.Model):
         Currently we only support a single Clave Regimen per Veri*Factu document.
         """
         self.ensure_one()
-
-        tax_applicability = self._l10n_es_edi_verifactu_get_tax_applicability()
-        if not tax_applicability:
+        if not self._l10n_es_edi_verifactu_get_tax_applicability():
             return False
-
         taxes = self.lines.tax_ids.flatten_taxes_hierarchy()
-        special_regime = self.company_id.l10n_es_edi_verifactu_special_vat_regime
-        selected_clave_regimen = taxes._l10n_es_edi_verifactu_get_suggested_clave_regimen(
-            special_regime, forced_tax_applicability=tax_applicability
-        )
-        return selected_clave_regimen and selected_clave_regimen.split('_', 1)[0]
+        for tax in taxes:
+            if tax.l10n_es_regime_code:
+                return tax.l10n_es_regime_code.split('_', 1)[0]
 
     def l10n_es_edi_verifactu_button_send(self):
         self._l10n_es_edi_verifactu_mark_for_next_batch()
@@ -172,19 +167,22 @@ class PosOrder(models.Model):
             refunded_document = refunded_order.l10n_es_edi_verifactu_document_ids._get_last('submission')
 
         name = self.l10n_es_edi_verifactu_get_invoice_name()
+        is_simplified = not refunded_order or self.l10n_es_invoice_type == 'R5'
         vals.update({
             'rejected_before': rejected_before,
             'verifactu_state': self.l10n_es_edi_verifactu_state,
             'delivery_date': False,
             'description': None,
             'invoice_date': self.date_order.date(),
-            'is_simplified': not refunded_order or self.l10n_es_edi_verifactu_refund_reason == 'R5',
+            'is_simplified': is_simplified,
             # NOTE: invoice with negative amounts possible (when no `refunded_order` specified)
             'verifactu_move_type': 'correction_incremental' if refunded_order else 'invoice',
             'sign': -1 if refunded_order else 1,
             'name': name,
             'partner': self.partner_id.commercial_partner_id,
-            'refund_reason': self.l10n_es_edi_verifactu_refund_reason,
+            # `l10n_es_invoice_type` only holds a refund reason (R1-R5) on pos.order; a regular sale
+            # (non-refund) always maps to F1/F2 based on whether it is simplified.
+            'invoice_type': self.l10n_es_invoice_type if refunded_order else ('F2' if is_simplified else 'F1'),
             'refunded_document': refunded_document,
             'substituted_document': None,
             'substituted_document_reversal_document': None,
@@ -222,11 +220,11 @@ class PosOrder(models.Model):
                                   self.company_id.l10n_es_simplified_invoice_limit))
             refunded_order = self.refunded_order_id
             if refunded_order:
-                if not self.l10n_es_edi_verifactu_refund_reason:
+                if not self.l10n_es_invoice_type:
                     raise UserError(_("You have to specify a refund reason."))
                 simplified_partner = self.env.ref('l10n_es.partner_simplified', raise_if_not_found=False)
                 partner_specified = self.partner_id and self.partner_id != simplified_partner
-                if not partner_specified and self.l10n_es_edi_verifactu_refund_reason != 'R5':
+                if not partner_specified and self.l10n_es_invoice_type != 'R5':
                     raise UserError(_("A partner has to be specified for the selected Veri*Factu Refund Reason."))
 
         return super()._process_saved_order(draft)
@@ -275,10 +273,12 @@ class PosOrder(models.Model):
 
         if len(self) > 1:
             raise UserError(_("With Veri*Factu enabled, POS orders cannot be consolidated into one invoice."))
-        res['l10n_es_edi_verifactu_refund_reason'] = self.l10n_es_edi_verifactu_refund_reason
-        # There is no reason to create a simplified invoice instead of just creating an order.
-        # (Currently "simplified" basically just removes the partner information.)
-        res['l10n_es_is_simplified'] = False
+        # `l10n_es_invoice_type` on pos.order only ever holds a refund reason (R1-R5); carry it over
+        # for refunds (`_process_saved_order` already requires it to be set in that case). For a
+        # regular sale, force F1 explicitly instead of leaving it for account.move to guess — there
+        # is no reason to create a simplified invoice instead of just creating an order (currently
+        # "simplified" basically just removes the partner information).
+        res['l10n_es_invoice_type'] = self.l10n_es_invoice_type or 'F1'
 
         return res
 
