@@ -413,7 +413,7 @@ class TestSalePayment(AccountPaymentCommon, MailCase, PaymentHttpCommon, SaleCom
         """
         self.amount = self.sale_order.amount_total
         tx = self._create_transaction(
-            flow="redirect", sale_order_ids=[self.sale_order.id], state="done",
+            flow="redirect", sale_order_ids=[self.sale_order.id], state="done"
         )
         with mute_logger("odoo.addons.sale.models.payment_transaction"):
             self._run_post_processing(tx)
@@ -458,28 +458,6 @@ class TestSalePayment(AccountPaymentCommon, MailCase, PaymentHttpCommon, SaleCom
             self._run_post_processing(tx)
 
         self.assertTrue(self.sale_order.state == "sale")
-
-    def test_downpayment_automatic_invoice(self):
-        """
-        Down payment invoices should be created when a down payment confirms
-        the order and automatic invoice is checked.
-        """
-        self.sale_order.prepayment_percent = 0.2
-        self.env.company.sale_automatic_invoice = True
-
-        tx = self._create_transaction(
-            flow="direct",
-            amount=self.sale_order.amount_total * self.sale_order.prepayment_percent,
-            sale_order_ids=[self.sale_order.id],
-            state="done",
-        )
-
-        with mute_logger("odoo.addons.sale.models.payment_transaction"):
-            self._run_post_processing(tx)
-
-        invoice = self.sale_order.invoice_ids
-        self.assertTrue(len(invoice) == 1)
-        self.assertTrue(invoice.line_ids[0].is_downpayment)
 
     @mute_logger("odoo.http")
     def test_transaction_route_rejects_unexpected_kwarg(self):

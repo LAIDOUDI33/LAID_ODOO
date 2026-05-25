@@ -915,12 +915,12 @@ class AccountTestInvoicingCommon(ProductCommon):
 
         if amount_type in ('percent', 'percentage'):
             create_values = {
-                'advance_payment_method': 'percentage',
+                'advance_payment_method': 'downpayment',
                 'amount': amount,
             }
         elif amount_type == 'fixed':
             create_values = {
-                'advance_payment_method': 'fixed',
+                'advance_payment_method': 'downpayment',
                 'fixed_amount': amount,
             }
         else:  # amount_type == 'delivered'

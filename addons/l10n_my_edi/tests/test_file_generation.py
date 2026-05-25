@@ -787,7 +787,7 @@ class L10nMyEDITestFileGeneration(L10nMyEDITestFileGenerationCommon):
             .with_context(context)
             .create(
                 {
-                    "advance_payment_method": "percentage",
+                    "advance_payment_method": "downpayment",
                     "amount": 50,
                 }
             )

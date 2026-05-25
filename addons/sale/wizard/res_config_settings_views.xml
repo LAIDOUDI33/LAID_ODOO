@@ -190,7 +190,7 @@
                         </setting>
                         <setting
                             id="automatic_invoicing"
-                            help="Generate the invoice automatically when the online payment is confirmed"
+                            help="Generate the invoice automatically when the order is fully paid."
                             invisible="sale_invoice_policy != 'order' or not portal_confirmation_pay"
                             company_dependent="1"
                         >
