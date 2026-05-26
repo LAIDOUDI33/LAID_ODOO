@@ -120,7 +120,7 @@ const messagingMenuPatch = {
                                       icon: { template: "mail.NewMeetingIcon" },
                                       text: _t("Meeting"),
                                       title: _t("New Meeting"),
-                                      onClick: () => this.store.startMeeting(),
+                                      onClick: () => this.store.requestStartMeeting(),
                                   },
                               ]
                             : [],
