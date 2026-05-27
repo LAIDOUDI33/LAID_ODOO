@@ -214,13 +214,37 @@ class HrEmployee(models.Model):
             employee.current_leave_state = latest_emp_holiday.state
             employee.is_absent = any(e_h.work_entry_type_id.count_as == 'absence' for e_h in emp_holidays)
 
-        no_data = self - holidays.employee_id
-        no_data.update({
+        employees_not_on_leave = self - holidays.employee_id
+        employees_not_on_leave.update({
             'leave_date_from': False,
             'leave_date_to': False,
             'current_leave_state': False,
             'is_absent': False,
         })
+        if employees_not_on_leave:
+            now = fields.Datetime.now()
+            # sudo: resource.calendar.leaves - accessing public holidays are allowed for all users
+            grouped_companies = self.env['resource.calendar.leaves'].sudo()._read_group(
+                [
+                    ('resource_id', '=', False),
+                    ('company_id', 'in', employees_not_on_leave.company_id.ids),
+                    ('date_from', '<=', now),
+                    ('date_to', '>=', now),
+                ],
+                ['company_id'],
+                ['date_to:max'],
+            )
+            company_public_leave_end = {company.id: date_to for company, date_to in grouped_companies}
+            employees_on_public_leave = employees_not_on_leave.filtered(
+                lambda e: e.company_id.id in company_public_leave_end)
+            if employees_on_public_leave:
+                employee_back_on_public = employees_on_public_leave._get_first_working_interval_batch({
+                    employee.id: company_public_leave_end[employee.company_id.id]
+                    for employee in employees_on_public_leave
+                })
+                for employee in employees_on_public_leave:
+                    back_on = employee_back_on_public.get(employee.id, company_public_leave_end[employee.company_id.id])
+                    employee.leave_date_to = back_on.date()
 
     @api.depends('parent_id')
     def _compute_leave_manager(self):
