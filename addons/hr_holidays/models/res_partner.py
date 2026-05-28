@@ -43,6 +43,13 @@ class ResPartner(models.Model):
                     "main_user_id",
                     [
                         Store.Many(
+                            "all_employee_ids",
+                            "leave_date_to",
+                            value=lambda user: user.env["hr.employee"].sudo().search(
+                                [("user_id", "=", user.id)]
+                            ),
+                        ),
+                        Store.Many(
                             "employee_ids",
                             ["active", "company_id", "leave_date_to", "user_id"],
                             sudo=True,
