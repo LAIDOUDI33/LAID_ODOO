@@ -2650,11 +2650,6 @@ $ribbon-padding: 100px;
         }
     }
 
-    .oe_search_box:focus, .oe_search_button:focus {
-        z-index: 1;
-        box-shadow: none !important;
-    }
-
     &.o_keyboard_navigation {
         .oe_search_box:focus, .oe_search_button:focus {
             outline: $border-width * 2 solid $primary;
@@ -2679,6 +2674,10 @@ $ribbon-padding: 100px;
     }
 }
 
+.oe_search_box:focus, .oe_search_button:focus {
+    z-index: 1;
+    box-shadow: none !important;
+}
 
 // Search results
 .o_searchbar_form .o_dropdown_menu, .o_searchbar_result {
@@ -3613,6 +3612,29 @@ input[value*="data-oe-translation-source-sha"] {
 .input-group-text-subtle ~ .form-control:not(:focus),
 .input-group-text-subtle ~ .form-select:not(:focus):not(:hover) {
     border-left-width: 0;
+}
+
+// Apply the input focus shadow only on the bottom side when "Bottom Shadow"
+// theme option is enabled.
+@if o-website-value('input-focus-shadow') == 'bottom' {
+    $-input-focus-bottom-shadow: 0 $input-btn-focus-width $input-btn-focus-color;
+    // Fields that keep their default 4-side shadow: the shop/event quantity
+    // and also search bar.
+    $-excluded-class: '.quantity, .o_wevent_input_nb_tickets, .oe_search_box';
+    $-focused-field: '.form-control:focus:not(#{$-excluded-class}), .form-select:focus';
+
+    #{$-focused-field} {
+        box-shadow: $-input-focus-bottom-shadow;
+    }
+
+    .input-group:not(.css_quantity):has(#{$-focused-field}) {
+        border-radius: $input-border-radius;
+        box-shadow: $-input-focus-bottom-shadow;
+
+        > :is(.form-control, .form-select):focus {
+            box-shadow: none;
+        }
+    }
 }
 
 .form-control:not(:focus):has(~ .input-group-text-subtle),
