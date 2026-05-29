@@ -62,3 +62,4 @@ access_preparation_order,pos.prep.order,pos.prep.order,point_of_sale.group_pos_u
 access_pos_price_inclusion_wizard,pos.price.inclusion.wizard.user,pos.price.inclusion.wizard,point_of_sale.group_pos_user,crud
 access_account_bank_statement,account.bank.statement,account.bank.statement,point_of_sale.group_pos_user,cru
 access_account_bank_statement_manager,account.bank.statement,account.bank.statement,point_of_sale.group_pos_manager,crud
+rule_pos_bill_currency,Point Of Sale Coins & Bills,pos.bill,,crud,"[('available_currency_ids', 'in', user.env.companies.mapped('currency_id').ids + [False])]"
