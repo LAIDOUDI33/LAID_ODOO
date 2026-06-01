@@ -28,6 +28,7 @@ export const setupPosEnv = async () => {
     };
 
     assignDialogTestEnv();
+    onRpc("pos.config", "webrtc_announce", () => true);
     await makeTestApp();
     onRpc("/css", () => "");
     const store = getService("pos");
@@ -177,3 +178,9 @@ export async function setupAndMountPosApp(config = {}, opts = { openRegister: tr
 
     return store;
 }
+
+export const freezeDate = (date) => {
+    const timestamp = typeof date === "number" ? date : new Date(date).getTime();
+    patchWithCleanup(Date, { now: () => timestamp });
+    return timestamp;
+};
