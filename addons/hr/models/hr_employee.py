@@ -1085,6 +1085,14 @@ class HrEmployee(models.Model):
                     working_now += res_employee_ids.ids
         return working_now
 
+    def _get_today_work_intervals(self):
+        if not self.is_in_contract or not self.resource_calendar_id:
+            return []
+        tz = ZoneInfo(self.tz or 'UTC')
+        today = fields.Datetime.now().replace(tzinfo=UTC).astimezone(tz).replace(hour=0, minute=0, second=0, microsecond=0)
+        work_intervals = self.resource_calendar_id._work_intervals_batch(today, today + timedelta(days=1))[False]
+        return [[start.isoformat(), stop.isoformat()] for start, stop, _attendance in work_intervals]
+
     @api.depends('user_id.im_status')
     def _compute_presence_state(self):
         """
