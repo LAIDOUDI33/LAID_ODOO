@@ -408,6 +408,22 @@ class SaleOrderLine(models.Model):
     mandatory_product = fields.Boolean(
         string="Is Product Mandatory", compute="_compute_mandatory_product"
     )
+    section_qty = fields.Float(
+        string="Section Quantity",
+        digits="Product Unit",
+        compute="_compute_section_qty",
+        precompute=True,
+        store=True,
+        readonly=False,
+    )  # The total quantity of the section
+    section_uom_id = fields.Many2one(
+        comodel_name="uom.uom",
+        string="Section Unit of Measure",
+        compute="_compute_section_uom_id",
+        precompute=True,
+        store=True,
+        readonly=False,
+    )  # The unit of measure of the section
 
     # === COMPUTE METHODS ===#
 
@@ -1563,6 +1579,23 @@ class SaleOrderLine(models.Model):
         self.mandatory_product = (
             self.env["ir.config_parameter"].sudo().get_bool("sale.mandatory_product")
         )
+
+    @api.depends("display_type")
+    def _compute_section_qty(self):
+        for line in self:
+            if line.display_type in {"line_section", "line_subsection"}:
+                line.section_qty = 1.0
+            else:
+                line.section_qty = False
+
+    @api.depends("display_type")
+    def _compute_section_uom_id(self):
+        default_uom_id = self.env.ref("uom.product_uom_unit").id
+        for line in self:
+            if line.display_type in {"line_section", "line_subsection"}:
+                line.section_uom_id = default_uom_id
+            else:
+                line.section_uom_id = False
 
     # === CONSTRAINT METHODS ===#
 

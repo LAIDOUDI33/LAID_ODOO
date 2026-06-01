@@ -102,6 +102,20 @@
                                 <field name="is_optional" column_invisible="True"/>
                                 <field name="collapse_prices" column_invisible="True"/>
                                 <field name="collapse_composition" column_invisible="True"/>
+                                <field
+                                    name="section_qty"
+                                    column_invisible="1"
+                                    widget="section_qty"
+                                    class="fw-normal text-muted"
+                                />
+                                <field
+                                    name="section_uom_id"
+                                    column_invisible="2"
+                                    widget="section_uom"
+                                    groups="uom.group_uom"
+                                    options="{'no_open': True, 'no_create': True}"
+                                    class="fw-normal text-muted"
+                                />
                                 <field name="sequence" widget="handle"/>
                                 <field name="product_id"/>
                                 <field name="name" widget="section_and_note_text"/>
