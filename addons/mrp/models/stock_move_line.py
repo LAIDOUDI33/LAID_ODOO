@@ -9,6 +9,10 @@ class StockMoveLine(models.Model):
 
     workorder_id = fields.Many2one('mrp.workorder', 'Work Order', check_company=True, index='btree_not_null')
     production_id = fields.Many2one('mrp.production', 'Production Order', check_company=True)
+    visual_lot_name = fields.Char(
+        string="Visual Pre-generated Lot",
+        compute="_compute_visual_lot_name"
+    )
 
     @api.depends('production_id')
     def _compute_picking_type_id(self):
@@ -18,6 +22,31 @@ class StockMoveLine(models.Model):
                 line.picking_type_id = production_id.picking_type_id
                 line_to_remove |= line
         return super(StockMoveLine, self - line_to_remove)._compute_picking_type_id()
+
+    def _compute_visual_lot_name(self):
+        for line in self:
+            line.visual_lot_name = False
+            if not line.move_id.production_id:
+                continue
+            production = line.move_id.production_id
+            lots = production.lot_producing_ids
+            if not lots:
+                continue
+            is_byproduct = line in production.move_byproduct_ids.move_line_ids
+            if len(lots) == 1 and not is_byproduct:
+                line.visual_lot_name = lots[0].name
+                continue
+
+            # For Serial tracked finished product, we map each move line to lot_producing_ids
+            # only visually, they are set when we mark the production as done.
+            finished_lines = production.finished_move_line_ids.filtered(
+                lambda ml: ml.product_id == production.product_id
+            )
+
+            for f_line, f_lot in zip(finished_lines, lots):
+                if f_line.id == line.id:
+                    line.visual_lot_name = f_lot.name
+                    break
 
     def _search_picking_type_id(self, operator, value):
         if operator in Domain.NEGATIVE_OPERATORS:

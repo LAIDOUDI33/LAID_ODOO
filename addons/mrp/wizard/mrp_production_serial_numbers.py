@@ -71,12 +71,13 @@ class MrpProductionSerials(models.TransientModel):
         if self.qty_produced != self.workorder_id.qty_produced:
             self.workorder_id.qty_produced = self.qty_produced
         lots, new_lots = self._parse_serial_numbers()
-        self.production_id.lot_producing_ids = lots
-        if self.production_id.qty_producing != len(self.production_id.lot_producing_ids):
-            self.production_id.qty_producing = len(self.production_id.lot_producing_ids)
-        (self.workorder_id or self.production_id).set_qty_producing()
-        if new_lots and self.production_id.picking_type_id.auto_print_generated_mrp_lot:
-            print_action = self.production_id._autoprint_generated_lots(new_lots)
+        production = self.production_id
+        production.lot_producing_ids = lots
+        if production.qty_producing != len(production.lot_producing_ids):
+            production.qty_producing = len(production.lot_producing_ids)
+        (self.workorder_id or production).set_qty_producing()
+        if new_lots and production.picking_type_id.auto_print_generated_mrp_lot:
+            print_action = production._autoprint_generated_lots(new_lots)
             print_action['close_on_report_download'] = True
             return print_action
         return True
