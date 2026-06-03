@@ -177,7 +177,7 @@ class L10nEsEdiSiiDocument(models.Model):
                 doc.sudo().write({
                     'state': state,
                     'csv': response_data.get('csv'),
-                    'response_message': response_msg,
+                    'response_message': response_msg if state == 'accepted_with_errors' else False,
                 })
 
                 messages = {
