@@ -117,12 +117,10 @@ class PaymentTransaction(models.Model):
                     self._send_invoice()
 
     def _check_amount_and_confirm_order(self):
-        """Confirm the sales order based on the amount of a transaction.
+        """Confirm the sales order after the first successful payment transaction.
 
-        Confirm the sales orders only if the transaction amount (or the sum of the partial
-        transaction amounts) is equal to or greater than the required amount for order confirmation
-
-        Grouped payments (paying multiple sales orders in one transaction) are not supported.
+        Grouped payments (paying multiple sales orders in one transaction) are not
+        supported.
 
         :return: The confirmed sales orders.
         :rtype: a `sale.order` recordset
@@ -132,7 +130,7 @@ class PaymentTransaction(models.Model):
             # We only support the flow where exactly one quotation is linked to a transaction.
             if len(tx.sale_order_ids) == 1:
                 quotation = tx.sale_order_ids.filtered(lambda so: so.state in ("draft", "sent"))
-                if quotation and quotation._is_confirmation_amount_reached():
+                if quotation:
                     quotation.with_context(send_email=True).action_confirm()
                     confirmed_orders |= quotation
         return confirmed_orders
