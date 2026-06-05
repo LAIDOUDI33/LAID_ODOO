@@ -6,7 +6,7 @@ import hashlib
 import io
 
 from unittest.mock import patch
-from asn1crypto import algos, cms, core, x509 as asn1x509
+from asn1crypto import algos, cms, tsp, x509 as asn1x509
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
@@ -17,7 +17,56 @@ from odoo.tests.common import tagged, TransactionCase
 from odoo.tools import pdf
 from odoo.tools.misc import file_open
 from odoo.tools.pdf import reshape_text
-from odoo.tools.pdf.signature import PdfSigner
+from odoo.tools.pdf.incremental_pdf_merge import IncrementalPdfMerge
+from odoo.tools.pdf.signature import PdfSigner, SignaturePolicy, build_cms_signature, build_signed_attributes
+
+
+def verify_pdf_signatures(pdf_data, public_key, signer_certificate_der=None, expected_chain_length=None):
+    """ Verifies every applied signature in the document: recomputes the ``/ByteRange``
+    digest, matches it against the ``message_digest`` attribute, checks the certificate
+    binding attribute, and verifies the RSA signature over the signed attributes.
+
+    :param pdf_data: The complete PDF bytes.
+    :param public_key: The signer's public key, to verify the signature values.
+    :param signer_certificate_der: When given, the signing-certificate-v2 attribute must
+        hash this certificate.
+    :param expected_chain_length: When given, the number of certificates that must be
+        embedded in each CMS.
+    :return: The number of verified signatures.
+    :raises AssertionError, InvalidSignature: If any check fails.
+    """
+    reader = pdf.PdfFileReader(io.BytesIO(pdf_data), strict=False)
+    verified = 0
+    for field in (reader.get_fields() or {}).values():
+        if field.get('/FT') != '/Sig' or not field.get('/V'):
+            continue
+        sig_dict = field['/V'].get_object()
+
+        digest = hashlib.sha256()
+        byte_range = [int(value) for value in sig_dict['/ByteRange']]
+        for start, length in zip(byte_range[0::2], byte_range[1::2]):
+            digest.update(pdf_data[start:start + length])
+
+        signed_data = cms.ContentInfo.load(bytes(sig_dict['/Contents']))['content']
+        signer_info = signed_data['signer_infos'][0]
+        signed_attrs = signer_info['signed_attrs']
+        attr_map = {attr['type'].native: attr['values'] for attr in signed_attrs}
+
+        assert attr_map['message_digest'][0].native == digest.digest()
+        if signer_certificate_der is not None:
+            cert_ids = attr_map['signing_certificate_v2'][0]['certs']
+            assert cert_ids[0]['cert_hash'].native == hashlib.sha256(signer_certificate_der).digest()
+        if expected_chain_length is not None:
+            assert len(signed_data['certificates']) == expected_chain_length
+        # raises InvalidSignature if the signature does not match
+        public_key.verify(
+            signer_info['signature'].native,
+            signed_attrs.untag().dump(),
+            padding.PKCS1v15(),
+            hashes.SHA256(),
+        )
+        verified += 1
+    return verified
 
 @tagged('at_install', '-post_install')  # LEGACY at_install
 class TestPdf(TransactionCase):
@@ -185,13 +234,13 @@ class TestSignature(TransactionCase):
         fixed_time = datetime.datetime.now(datetime.timezone.utc)
         with file_open(self.pdf_path, "rb") as stream:
             out_stream = io.BytesIO()
-            with patch.object(PdfSigner, "_load_key_and_certificate",
-                              return_value=(self.private_key, self.certificate)):
-                signer = PdfSigner(stream, self.env, signing_time=fixed_time)
+            with patch.object(PdfSigner, "_load_key_and_certificates",
+                              return_value=(self.private_key, self.certificate, None)):
+                signer = PdfSigner(stream.read(), self.env, signing_time=fixed_time)
                 out_stream = signer.sign_pdf()
                 if not out_stream:
                     self.skipTest("Could not load the PdfSigner class properly")
-            pdf_data = out_stream.getvalue()
+            pdf_data = out_stream
 
             # Retrive the signature content
             sig_field_index = pdf_data.rfind(b"/FT /Sig")
@@ -227,10 +276,6 @@ class TestSignature(TransactionCase):
                     'values': ['data']
                 }),
                 cms.CMSAttribute({
-                    'type': 'signing_time',
-                    'values': [cms.Time({'utc_time': core.UTCTime(fixed_time)})]
-                }),
-                cms.CMSAttribute({
                     'type': 'cms_algorithm_protection',
                     'values': [
                         cms.CMSAlgorithmProtection(
@@ -250,6 +295,15 @@ class TestSignature(TransactionCase):
                 cms.CMSAttribute({
                     'type': 'message_digest',
                     'values': [result_digest],
+                }),
+                cms.CMSAttribute({
+                    'type': tsp.CMSAttributeType('signing_certificate_v2'),
+                    'values': [tsp.SigningCertificateV2({
+                        'certs': [tsp.ESSCertIDv2({
+                            'hash_algorithm': algos.DigestAlgorithm({'algorithm': 'sha256'}),
+                            'cert_hash': hashlib.sha256(cert.dump()).digest(),
+                        })],
+                    })],
                 }),
             ])
 
@@ -286,7 +340,153 @@ class TestSignature(TransactionCase):
             })
 
             signature_hex = content_info.dump().hex()
-            signature_hex = signature_hex.ljust(8192 * 2, "0")
+            signature_hex = signature_hex.ljust(16 * 1024 * 2, "0")
 
             self.assertEqual(signature_hex.encode(), content)
 
+    def _verify_pdf_signatures(self, pdf_data):
+        return verify_pdf_signatures(
+            pdf_data, self.certificate.public_key(),
+            signer_certificate_der=self.certificate.public_bytes(serialization.Encoding.DER))
+
+    def test_prepare_finalize_matches_sign_pdf(self):
+        """ The split prepare/finalize path with an externally computed signature must
+        produce the exact bytes of the one-shot local signing path. """
+        fixed_time = datetime.datetime.now(datetime.timezone.utc)
+        field_name = "Test Signature"
+        with file_open(self.pdf_path, "rb") as stream:
+            raw = stream.read()
+
+        with patch.object(PdfSigner, "_load_key_and_certificates",
+                          return_value=(self.private_key, self.certificate, None)):
+            signed_direct = PdfSigner(raw, self.env, signing_time=fixed_time).sign_pdf(field_name=field_name)
+
+        signer = PdfSigner(raw, signing_time=fixed_time)
+        prepared = signer.write_signature_placeholder(field_name=field_name)
+        cert = asn1x509.Certificate.load(self.certificate.public_bytes(serialization.Encoding.DER))
+        signed_attrs = build_signed_attributes(prepared.digest, cert)
+        # What an external signing service returns: a raw signature over the attributes
+        signature = self.private_key.sign(signed_attrs.dump(), padding.PKCS1v15(), hashes.SHA256())
+        signed_split = signer.fill_signature_placeholder(prepared, build_cms_signature(signed_attrs, signature, cert).dump())
+
+        self.assertEqual(signed_split, signed_direct)
+        self.assertEqual(self._verify_pdf_signatures(signed_split), 1)
+
+    def test_signed_attributes_signature_policy(self):
+        """ The signature-policy-identifier attribute is present only when a policy is
+        supplied, and carries its oid, (empty) hash and uri. """
+        cert = asn1x509.Certificate.load(self.certificate.public_bytes(serialization.Encoding.DER))
+        digest = hashlib.sha256(b"pdf").digest()
+
+        plain = {attr['type'].native for attr in build_signed_attributes(digest, cert)}
+        self.assertNotIn('signature_policy_identifier', plain)
+
+        policy = SignaturePolicy(
+            oid='1.3.6.1.4.1.49274.1.1.7.2.0',
+            uri='https://www.itsme.be/legal/document-repository')
+        # reload from DER so the assertions run on the encoded form, not the source object
+        attrs = cms.CMSAttributes.load(build_signed_attributes(digest, cert, policy).dump())
+        by_type = {attr['type'].native: attr for attr in attrs}
+        self.assertIn('signature_policy_identifier', by_type)
+        policy_id = by_type['signature_policy_identifier']['values'][0]
+        self.assertEqual(policy_id['sig_policy_id'].native, policy.oid)
+        self.assertEqual(policy_id['sig_policy_hash']['hash_value'].native, b'')
+        self.assertEqual(policy_id['sig_policy_qualifiers'][0]['qualifier'].native, policy.uri)
+
+    def test_incremental_double_signature(self):
+        """ A second signature must not touch the bytes covered by the first one, and
+        both signatures must remain verifiable. """
+        with file_open(self.pdf_path, "rb") as stream:
+            raw = stream.read()
+
+        with patch.object(PdfSigner, "_load_key_and_certificates",
+                          return_value=(self.private_key, self.certificate, None)):
+            first = PdfSigner(raw, self.env).sign_pdf(field_name="Signer 1")
+            second = PdfSigner(first, self.env).sign_pdf(field_name="Signer 2")
+
+        self.assertEqual(second[:len(first)], first)
+        self.assertEqual(self._verify_pdf_signatures(second), 2)
+
+    def _build_nested_xobject_overlay(self, width, height):
+        """ Builds a one-page PDF whose content draws through two levels of nested
+        Form XObjects: page contents -> /Outer Do -> /Inner Do. """
+        writer = pdf.PdfFileWriter()
+        page = writer.add_blank_page(width=width, height=height)
+        bbox = pdf.ArrayObject([pdf.NumberObject(value) for value in (0, 0, width, height)])
+
+        inner = pdf.DecodedStreamObject()
+        inner.set_data(b"0 0 1 rg 10 10 100 50 re f")
+        inner.update({
+            pdf.NameObject("/Type"): pdf.NameObject("/XObject"),
+            pdf.NameObject("/Subtype"): pdf.NameObject("/Form"),
+            pdf.NameObject("/BBox"): bbox,
+        })
+
+        outer = pdf.DecodedStreamObject()
+        outer.set_data(b"q /Inner Do Q")
+        outer.update({
+            pdf.NameObject("/Type"): pdf.NameObject("/XObject"),
+            pdf.NameObject("/Subtype"): pdf.NameObject("/Form"),
+            pdf.NameObject("/BBox"): bbox,
+            pdf.NameObject("/Resources"): pdf.DictionaryObject({
+                pdf.NameObject("/XObject"): pdf.DictionaryObject({
+                    pdf.NameObject("/Inner"): writer._add_object(inner),
+                }),
+            }),
+        })
+
+        contents = pdf.DecodedStreamObject()
+        contents.set_data(b"q /Outer Do Q")
+        page[pdf.NameObject("/Contents")] = writer._add_object(contents)
+        page[pdf.NameObject("/Resources")] = pdf.DictionaryObject({
+            pdf.NameObject("/XObject"): pdf.DictionaryObject({
+                pdf.NameObject("/Outer"): writer._add_object(outer),
+            }),
+        })
+
+        buffer = io.BytesIO()
+        writer.write(buffer)
+        return buffer.getvalue()
+
+    def test_merge_nested_form_xobjects_and_sign(self):
+        """ Stress the incremental merge object sweep with an overlay containing nested
+        Form XObjects, then sign the result and verify the signature. """
+        writer = pdf.PdfFileWriter()
+        writer.add_blank_page(width=612, height=792)
+        base_buffer = io.BytesIO()
+        writer.write(base_buffer)
+        raw = base_buffer.getvalue()
+        overlay_raw = self._build_nested_xobject_overlay(612, 792)
+
+        merger = IncrementalPdfMerge(raw)
+        merger.merge_pdf_regions_as_annotations(
+            pdf.PdfFileReader(io.BytesIO(overlay_raw), strict=False),
+            {0: [(10, 10, 110, 60)]},
+            annotations_title="nested")
+        merged = merger.get_output_stream_value()
+
+        # The increment only appended bytes
+        self.assertEqual(merged[:len(raw)], raw)
+
+        # The region is exposed at its own coordinates, so /BBox and /Rect match
+        reader = pdf.PdfFileReader(io.BytesIO(merged), strict=False)
+        stamp = reader.pages[0]["/Annots"][-1].get_object()
+        self.assertEqual(stamp["/Subtype"], "/Stamp")
+        self.assertEqual([float(coordinate) for coordinate in stamp["/Rect"]], [10, 10, 110, 60])
+        appearance = stamp["/AP"]["/N"].get_object()
+        self.assertEqual([float(coordinate) for coordinate in appearance["/BBox"]], [10, 10, 110, 60])
+        self.assertEqual(appearance.get_data(), b"q /X0 Do Q")
+
+        # The whole nested XObject graph survived the merge remapping
+        page_overlay = appearance["/Resources"]["/XObject"]["/X0"].get_object()
+        outer = page_overlay["/Resources"]["/XObject"]["/Outer"].get_object()
+        inner = outer["/Resources"]["/XObject"]["/Inner"].get_object()
+        self.assertEqual(page_overlay.get_data(), b"q /Outer Do Q")
+        self.assertEqual(outer.get_data(), b"q /Inner Do Q")
+        self.assertEqual(inner.get_data(), b"0 0 1 rg 10 10 100 50 re f")
+
+        # The merged document can still be signed and verified
+        with patch.object(PdfSigner, "_load_key_and_certificates",
+                          return_value=(self.private_key, self.certificate, None)):
+            signed = PdfSigner(merged, self.env).sign_pdf()
+        self.assertEqual(self._verify_pdf_signatures(signed), 1)
