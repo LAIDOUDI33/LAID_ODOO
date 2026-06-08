@@ -15,10 +15,10 @@ export class PaymentStatus extends Interaction {
         this.busService.addChannel(this.notificationChannel);
         this.busService.subscribe(this.notificationType, this.onProcessingCompleteBind);
 
-        // Redirect automatically after 10 seconds to avoid waiting for post-processing forever.
+        // Redirect automatically after a delay to avoid waiting for post-processing forever.
         this.redirectTimeout = this.waitForTimeout(() => {
             this.redirectToLandingPage(this.el.dataset.landingRoute);
-        }, 10000);
+        }, PaymentStatus.getRedirectTimeoutDelay(this.el.dataset.providerCode));
     }
 
     async willStart() {
@@ -68,6 +68,17 @@ export class PaymentStatus extends Interaction {
      */
     static getFinalStates(providerCode) {
         return new Set(["authorized", "done", "cancel", "error"]);
+    }
+
+    /**
+     * Returns the delay after which customers are redirected to the landing route, even if the
+     * transaction has not reached a final state yet.
+     *
+     * @param {string} providerCode - The payment provider code.
+     * @returns {number} - The redirect delay in milliseconds.
+     */
+    static getRedirectTimeoutDelay(providerCode) {
+        return 10000;
     }
 }
 
