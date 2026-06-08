@@ -286,6 +286,8 @@ class PeppolRegistration(models.TransientModel):
         if self._branch_with_same_address():
             raise ValidationError(_("Peppol ID should be different from main company."))
         if self.company_id.account_peppol_proxy_state != 'not_registered':
+            if self.company_id.account_peppol_proxy_state == 'receiver':
+                raise ValidationError(_("Cannot register a user already connected as a receiver."))
             raise ValidationError(_("Cannot register a user with a %s application", self.account_peppol_proxy_state))
 
     def _action_open_peppol_form(self, reopen=True):
