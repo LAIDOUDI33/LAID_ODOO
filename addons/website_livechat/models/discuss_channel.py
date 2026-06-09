@@ -1,9 +1,9 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 from odoo import fields, models, _
+from odoo.fields import Domain
 from odoo.addons.im_livechat.models.discuss_channel import is_livechat_channel
 from odoo.addons.mail.tools.discuss import Store
-from datetime import datetime, timedelta
 
 
 class DiscussChannel(models.Model):
@@ -38,6 +38,12 @@ class DiscussChannel(models.Model):
             predicate=is_livechat_channel,
         )
 
+    def _get_visitor_recent_channels_visitor_domain(self):
+        domain = super()._get_visitor_recent_channels_visitor_domain()
+        if self.livechat_visitor_id and self.livechat_visitor_id.has_access("read"):
+            domain |= Domain("livechat_visitor_id", "=", self.livechat_visitor_id.id)
+        return domain
+
     def _get_visitor_leave_message(self, correspondents=False, cancel=False):
         if not cancel:
             if self.livechat_visitor_id.id:
@@ -45,26 +51,6 @@ class DiscussChannel(models.Model):
             return _("Visitor left the conversation.")
         return _(
             "Live chat conversation closed automatically: the visitor started a new conversation with another agent.",
-        )
-
-    def _store_livechat_extra_fields(self, res: Store.FieldList):
-        super()._store_livechat_extra_fields(res)
-        res.one(
-            "livechat_visitor_id",
-            lambda res: res.many(
-                "discuss_channel_ids",
-                "_store_channel_fields",
-                # Not batched by simplicity as it is always called on a single channel.
-                value=lambda visitor: visitor.env["discuss.channel"].search(
-                    [
-                        ("channel_type", "=", "livechat"),
-                        ("livechat_visitor_id", "=", visitor.id),
-                        ("create_date", ">=", datetime.now() - timedelta(days=7)),
-                    ],
-                    limit=5,
-                ),
-            ),
-            predicate=is_livechat_channel,
         )
 
     def message_post(self, **kwargs):

@@ -8,9 +8,10 @@ import {
     startServer,
     MENU_ACTIVE_IDS,
 } from "@mail/../tests/mail_test_helpers";
-import { describe, press, test, waitFor } from "@odoo/hoot";
-import { Command, serverState } from "@web/../tests/web_test_helpers";
+import { describe, expect, press, test, waitFor } from "@odoo/hoot";
+import { Command, mockService, serverState } from "@web/../tests/web_test_helpers";
 import { serializeDate, today } from "@web/core/l10n/dates";
+import { range } from "@web/core/utils/numbers";
 import { getOrigin } from "@web/core/utils/urls";
 
 describe.current.tags("desktop");
@@ -340,4 +341,106 @@ test("auto-open of livechat info & members panels should combine", async () => {
     await click(".o-mail-NotificationItem:has(:text('General'))");
     await contains(".o-discuss-ChannelMemberList");
     await contains(".o-livechat-ChannelInfoList", { count: 0 });
+});
+
+test("Show recent conversations in channel info list", async () => {
+    const pyEnv = await startServer();
+    const customerPartnerId = pyEnv["res.partner"].create({
+        name: "Bob",
+        user_ids: [pyEnv["res.users"].create({ name: "Bob" })],
+    });
+    // At least two ongoing chats so that sort function ends up comparing two
+    // ongoing chats.
+    const channelIds = pyEnv["discuss.channel"].create([
+        {
+            channel_member_ids: [],
+            channel_type: "livechat",
+            description: "question about the live chat app",
+            livechat_status: "in_progress",
+        },
+        {
+            channel_member_ids: [],
+            channel_type: "livechat",
+            description: "question about the discuss app",
+            livechat_status: "in_progress",
+        },
+        {
+            channel_member_ids: [],
+            channel_type: "livechat",
+            livechat_status: "in_progress",
+        },
+    ]);
+    pyEnv["discuss.channel.member"].create([
+        {
+            channel_id: channelIds[0],
+            livechat_member_type: "visitor",
+            partner_id: customerPartnerId,
+        },
+        {
+            channel_id: channelIds[1],
+            livechat_member_type: "visitor",
+            partner_id: customerPartnerId,
+        },
+        {
+            channel_id: channelIds[2],
+            livechat_member_type: "visitor",
+            partner_id: customerPartnerId,
+        },
+        {
+            channel_id: channelIds[2],
+            livechat_member_type: "agent",
+            partner_id: serverState.partnerId,
+        },
+    ]);
+    await start();
+    await openDiscuss(channelIds.at(-1));
+    await contains(
+        ".o-livechat-LivechatChannelInfoList-recentConversation-link span:text('Conversation ongoing')",
+        { count: 2 }
+    );
+    await contains(
+        ".o-livechat-LivechatChannelInfoList-recentConversation-link:eq(0) span:text('question about the discuss app')"
+    );
+    await contains(
+        ".o-livechat-LivechatChannelInfoList-recentConversation-link:eq(1) span:text('question about the live chat app')"
+    );
+});
+
+test("Show view all and recent conversations count in channel info list", async () => {
+    const pyEnv = await startServer();
+    const customerPartnerId = pyEnv["res.partner"].create({
+        name: "Bob",
+        user_ids: [pyEnv["res.users"].create({ name: "Bob" })],
+    });
+    const channelIds = pyEnv["discuss.channel"].create(
+        range(10).map((i) => ({
+            channel_member_ids: [],
+            channel_type: "livechat",
+        }))
+    );
+    pyEnv["discuss.channel.member"].create(
+        channelIds.map((c) => ({
+            channel_id: c,
+            livechat_member_type: "visitor",
+            partner_id: customerPartnerId,
+        }))
+    );
+    mockService("action", {
+        doAction(action) {
+            if (action.name === "Recent Conversations") {
+                expect.step("doAction");
+                return;
+            }
+            return super.doAction(...arguments);
+        },
+    });
+    await start();
+    await openDiscuss(channelIds.at(-1));
+    await contains(
+        ".o-livechat-LivechatChannelInfoList-recentConversation-link span:text('Conversation ongoing')",
+        { count: 5 }
+    );
+    await contains(".o-livechat-LivechatChannelInfoList-recentConversation-count:text(9)");
+    await click(".o-livechat-LivechatChannelInfoList-recentConversation-viewAll");
+    await expect.waitForSteps(["doAction"]);
 });
