@@ -275,6 +275,21 @@ class PaymentProvider(models.Model):
 
     # === BUSINESS METHODS - PAYMENT FLOW === #
 
+    def _stripe_create_acss_setup_intent(self):
+        """Create a SetupIntent used only to initialize Stripe
+        Elements for payment methods that don't support deferred intents.
+        """
+        self.ensure_one()
+
+        try:
+            return self._send_api_request(
+                "POST",
+                "setup_intents",
+                data={"payment_method_types[]": "acss_debit", "usage": "off_session"},
+            )
+        except ValidationError:
+            return None
+
     def _stripe_get_publishable_key(self):
         """Return the publishable key of the provider.
 

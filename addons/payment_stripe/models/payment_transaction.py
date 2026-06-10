@@ -117,7 +117,9 @@ class PaymentTransaction(models.Model):
         :rtype: dict
         """
         ppm_code = self.payment_method_id.primary_payment_method_id.code
-        payment_method_type = ppm_code or self.payment_method_code
+
+        if self.payment_method_code == "acss_direct_debit":
+            ppm_code = self.payment_method_code
         payment_intent_payload = {
             "amount": payment_utils.to_minor_currency_units(
                 self.amount,
@@ -127,12 +129,21 @@ class PaymentTransaction(models.Model):
             "currency": self.currency_id.name.lower(),
             "description": self.reference,
             "capture_method": "manual" if self.provider_id.capture_manually else "automatic",
-            "payment_method_types[]": const.PAYMENT_METHODS_MAPPING.get(
-                payment_method_type, payment_method_type
-            ),
+            "payment_method_types[]": const.PAYMENT_METHODS_MAPPING.get(ppm_code, ppm_code),
             "expand[]": "payment_method",
             **stripe_utils.include_shipping_address(self),
         }
+
+        # ACSS Debit (Pre-authorized debit in Canada) does not support Stripe's deferred intent
+        # flow. The JS layer initializes Elements with a real client_secret instead, so we must
+        # include the mandatory mandate_options here when pre-creating the PaymentIntent.
+        if self.payment_method_code == "acss_direct_debit":
+            payment_intent_payload.update({
+                "payment_method_options[acss_debit][mandate_options][payment_schedule]": "sporadic",
+                "payment_method_options[acss_debit][mandate_options][transaction_type]": "business",
+                "payment_method_options[acss_debit][verification_method]": "automatic",
+            })
+
         if self.operation in ["online_token", "offline"]:
             if not self.token_id.stripe_payment_method:  # Pre-SCA token, migrate it.
                 self.token_id._stripe_sca_migrate_customer()

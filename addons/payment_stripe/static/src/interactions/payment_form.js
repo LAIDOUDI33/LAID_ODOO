@@ -5,6 +5,7 @@ import { _t } from '@web/core/l10n/translation';
 import { patch } from '@web/core/utils/patch';
 
 import { PaymentForm } from '@payment/interactions/payment_form';
+import { rpc } from '@web/core/network/rpc';
 
 patch(PaymentForm.prototype, {
 
@@ -80,7 +81,23 @@ patch(PaymentForm.prototype, {
             elementsOptions.mode = 'setup';
             elementsOptions.setupFutureUsage = 'off_session';
         }
-        this.stripeElements[paymentOptionId] = this.stripeJS.elements(elementsOptions);
+        if (paymentMethodCode === 'acss_direct_debit') {
+            const { client_secret } = await rpc(
+                '/payment/stripe/client_secret',
+                {
+                    provider_id: providerId,
+                },
+            );
+            if (!client_secret) {
+                throw new Error(_t("Failed to initialize ACSS Direct Debit."));
+            }
+            this.stripeElements[paymentOptionId] = this.stripeJS.elements({
+                clientSecret: client_secret,
+            });
+        } else {
+            this.stripeElements[paymentOptionId] =
+                this.stripeJS.elements(elementsOptions);
+        }
 
         // Instantiate the payment element.
         const paymentElementOptions = {
@@ -99,7 +116,7 @@ patch(PaymentForm.prototype, {
         const tokenizationCheckbox = inlineForm.querySelector(
             'input[name="o_payment_tokenize_checkbox"]'
         );
-        if (tokenizationCheckbox) {
+        if (tokenizationCheckbox && paymentMethodCode !== "acss_direct_debit") {
             // Display tokenization-specific inputs when the tokenization checkbox is checked.
             this.stripeElements[paymentOptionId].update({
                 setupFutureUsage: tokenizationCheckbox.checked ? 'off_session' : null,
