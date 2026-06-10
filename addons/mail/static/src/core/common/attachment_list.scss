@@ -1,21 +1,75 @@
 $o-mail-attachment-height: 10em;
+$o-mail-attachment-min-width: 11em;
+$o-mail-attachment-max-width: 13em;
+$o-mail-single-col-container: ($o-mail-attachment-min-width * 2) + 0.5em;
+
+.o-mail-AttachmentList {
+    container-type: inline-size;
+}
+
+.o-mail-Message-content {
+    flex: 1 1 100%;
+    min-width: 0;
+}
+
+.o-mail-AttachmentList-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax($o-mail-attachment-min-width, 1fr));
+    gap: 0.5em;
+
+    .o-mail-AttachmentContainer {
+        &:not(.o-inMessage.o-isImage),
+        &.o-inChatter.o-inMessage.o-isImage {
+            width: 100%;
+            max-width: 100%;
+            flex: none;
+        }
+    }
+}
 
 .o-mail-AttachmentContainer {
     &.o-inMessage.o-isImage:not(.o-inChatter) {
-        min-width: 13em;
+        min-width: $o-mail-attachment-max-width;
         min-height: $o-mail-attachment-height;
     }
     &:not(.o-inMessage.o-isImage),&.o-inChatter.o-inMessage.o-isImage {
-        width: 13em;
+        min-width: $o-mail-attachment-min-width;
+        max-width: $o-mail-attachment-max-width;
         height: $o-mail-attachment-height;
     }
+
     background-color: $gray-200;
 
-    @include media-breakpoint-down(sm) {
-        width: 12em;
-    }
     .o_image, .fa {
         z-index: 1;
+    }
+}
+
+@container (max-width: #{$o-mail-single-col-container}) {
+    .o-mail-AttachmentList:not(.o-mail-Message-content *) {
+        .o-mail-AttachmentContainer {
+            &:not(.o-inMessage.o-isImage),
+            &.o-inChatter.o-inMessage.o-isImage {
+                max-width: $o-mail-attachment-max-width;
+            }
+        }
+    }
+}
+
+.o-mail-Message,
+.o-mail-Message-content {
+    .o-mail-AttachmentList-content {
+        display: flex;
+        flex-wrap: wrap;
+
+        .o-mail-AttachmentContainer {
+            &:not(.o-inMessage.o-isImage),
+            &.o-inChatter.o-inMessage.o-isImage {
+                flex: 1 1 0;
+                width: auto;
+                max-width: $o-mail-attachment-max-width;
+            }
+        }
     }
 }
 
