@@ -112,4 +112,11 @@ export class DeviceSelect extends Component {
         }
         return this.store.rtc.microphonePermission === "granted";
     }
+
+    handlePermissionKeydown(ev) {
+        if (ev.key === "Enter" || ev.key === " ") {
+            ev.preventDefault();
+            this.showPermissionDialog(this.props.kind);
+        }
+    }
 }
