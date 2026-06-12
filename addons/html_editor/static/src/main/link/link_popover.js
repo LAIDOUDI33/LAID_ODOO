@@ -353,13 +353,6 @@ export class LinkPopover extends Component {
             this.state.previewIcon.value = "help_outline";
             return;
         }
-        if (this.isLogoutUrl()) {
-            // The session ends if we fetch this url, so the preview is hardcoded
-            this.resetPreview();
-            this.state.urlTitle = _t("Logout");
-            this.state.previewIcon.value = "logout";
-            return;
-        }
         if (this.isAttachmentUrl()) {
             const { name, mimetype } = await this.props.getAttachmentMetadata(this.state.url);
             this.resetPreview();
@@ -507,9 +500,6 @@ export class LinkPopover extends Component {
         this.onChange();
     }
 
-    isLogoutUrl() {
-        return !!this.state.url.match(/\/web\/session\/logout\b/);
-    }
     isAttachmentUrl() {
         return !!this.state.url.match(/\/web\/content\/\d+/);
     }
