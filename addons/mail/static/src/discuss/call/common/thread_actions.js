@@ -38,7 +38,12 @@ registerThreadAction("call-settings", {
         store.self_user &&
         (owner.props.chatWindow?.isOpen || store.inPublicPage) &&
         !owner.isDiscussSidebarChannelActions,
-    icon: "settings",
+    icon: ({ renderingContext }) => {
+        if (!renderingContext?.props.dropdown) {
+            return "settings";
+        }
+        return undefined;
+    },
     iconClass: "oi-filled oi-fw",
     name: _t("Voice & Video Settings"),
     sequence: 5,

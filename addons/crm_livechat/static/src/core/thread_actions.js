@@ -23,7 +23,12 @@ registerThreadAction("create-lead", {
     },
     actionPanelOuterClass: "bg-100",
     condition: false, // managed by ThreadAction patch
-    icon: "handshake",
+    icon: ({ renderingContext }) => {
+        if (!renderingContext?.props.dropdown) {
+            return "handshake";
+        }
+        return undefined;
+    },
     name: _t("Create Lead"),
     sequence: 10,
     sequenceGroup: 25,
