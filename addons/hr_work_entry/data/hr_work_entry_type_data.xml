@@ -22,6 +22,7 @@
         <field name="color">0</field>
         <field name="display_code">OoC</field>
         <field name="code">OUT</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="generic_work_entry_type_leave" model="hr.work.entry.type">
@@ -54,6 +55,7 @@
         <field name="display_code">UN</field>
         <field name="code">LEAVE90</field>
         <field name="count_as">absence</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="generic_work_entry_type_sick_leave" model="hr.work.entry.type">
@@ -127,6 +129,7 @@
         <field name="display_code">OoC</field>
         <field name="code">OUT</field>
         <field name="country_id" ref="base.ae"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="uae_work_entry_type_leave" model="hr.work.entry.type">
@@ -163,6 +166,7 @@
         <field name="code">LEAVE90</field>
         <field name="count_as">absence</field>
         <field name="country_id" ref="base.ae"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="uae_work_entry_type_sick_leave" model="hr.work.entry.type">
@@ -223,6 +227,7 @@
         <field name="display_code">OoC</field>
         <field name="code">OUT</field>
         <field name="country_id" ref="base.au"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="au_work_entry_type_leave" model="hr.work.entry.type">
@@ -259,6 +264,7 @@
         <field name="code">LEAVE90</field>
         <field name="count_as">absence</field>
         <field name="country_id" ref="base.au"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="au_work_entry_type_sick_leave" model="hr.work.entry.type">
@@ -456,6 +462,7 @@
         <field name="display_code">OoC</field>
         <field name="code">OUT</field>
         <field name="country_id" ref="base.be"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="be_work_entry_type_leave" model="hr.work.entry.type">
@@ -492,6 +499,7 @@
         <field name="code">LEAVE90</field>
         <field name="count_as">absence</field>
         <field name="country_id" ref="base.be"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="be_work_entry_type_additional_hours" model="hr.work.entry.type">
@@ -633,6 +641,7 @@
         <field name="display_code">UJR</field>
         <field name="country_id" ref="base.be"/>
         <field name="count_as">absence</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_be_work_entry_type_justified_reason_paid" model="hr.work.entry.type">
@@ -649,6 +658,7 @@
         <field name="display_code">JRU</field>
         <field name="country_id" ref="base.be"/>
         <field name="count_as">absence</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_be_work_entry_type_small_unemployment" model="hr.work.entry.type">
@@ -667,6 +677,7 @@
         <field name="display_code">ECO</field>
         <field name="country_id" ref="base.be"/>
         <field name="count_as">absence</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_be_work_entry_type_temporary_economic_unemployement_employee" model="hr.work.entry.type">
@@ -676,6 +687,7 @@
         <field name="display_code">ECO</field>
         <field name="country_id" ref="base.be"/>
         <field name="count_as">absence</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_be_work_entry_type_corona" model="hr.work.entry.type">
@@ -685,6 +697,7 @@
         <field name="display_code">COV</field>
         <field name="country_id" ref="base.be"/>
         <field name="count_as">absence</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_be_work_entry_type_maternity" model="hr.work.entry.type">
@@ -694,6 +707,7 @@
         <field name="display_code">MAT</field>
         <field name="country_id" ref="base.be"/>
         <field name="count_as">absence</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_be_work_entry_type_paternity_company" model="hr.work.entry.type">
@@ -712,6 +726,7 @@
         <field name="display_code">PTL</field>
         <field name="count_as">absence</field>
         <field name="country_id" ref="base.be"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_be_work_entry_type_child_ceremony" model="hr.work.entry.type">
@@ -784,6 +799,7 @@
         <field name="display_code">URU</field>
         <field name="country_id" ref="base.be"/>
         <field name="count_as">absence</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_be_work_entry_type_training" model="hr.work.entry.type">
@@ -857,6 +873,7 @@
         <field name="display_code">LTS</field>
         <field name="country_id" ref="base.be"/>
         <field name="count_as">absence</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_be_work_entry_type_breast_feeding" model="hr.work.entry.type">
@@ -866,6 +883,7 @@
         <field name="display_code">BFB</field>
         <field name="country_id" ref="base.be"/>
         <field name="count_as">absence</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_be_work_entry_type_medical_assistance" model="hr.work.entry.type">
@@ -875,6 +893,7 @@
         <field name="display_code">MED</field>
         <field name="country_id" ref="base.be"/>
         <field name="count_as">absence</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_be_work_entry_type_leave_palliative_care" model="hr.work.entry.type">
@@ -884,6 +903,7 @@
         <field name="display_code">PAL</field>
         <field name="country_id" ref="base.be"/>
         <field name="count_as">absence</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_be_work_entry_type_thematic_leave_informal_carer" model="hr.work.entry.type">
@@ -893,6 +913,7 @@
         <field name="display_code">CAR</field>
         <field name="country_id" ref="base.be"/>
         <field name="count_as">absence</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_be_work_entry_type_time_credit_not_equated" model="hr.work.entry.type">
@@ -902,6 +923,7 @@
         <field name="display_code">TCN</field>
         <field name="country_id" ref="base.be"/>
         <field name="count_as">absence</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_be_work_entry_type_youth_time_off" model="hr.work.entry.type">
@@ -911,6 +933,7 @@
         <field name="display_code">YTO</field>
         <field name="country_id" ref="base.be"/>
         <field name="count_as">absence</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_be_work_entry_type_senior_time_off" model="hr.work.entry.type">
@@ -920,6 +943,7 @@
         <field name="display_code">STO</field>
         <field name="country_id" ref="base.be"/>
         <field name="count_as">absence</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_be_work_entry_type_recovery_additional" model="hr.work.entry.type">
@@ -973,6 +997,7 @@
         <field name="display_code">SGS</field>
         <field name="country_id" ref="base.be"/>
         <field name="count_as">absence</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_be_work_entry_type_recovery" model="hr.work.entry.type">
@@ -1000,6 +1025,7 @@
         <field name="display_code">EUR</field>
         <field name="country_id" ref="base.be"/>
         <field name="count_as">absence</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_be_work_entry_type_credit_time" model="hr.work.entry.type">
@@ -1009,6 +1035,7 @@
         <field name="display_code">CRT</field>
         <field name="country_id" ref="base.be"/>
         <field name="count_as">absence</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_be_work_entry_type_parental_time_off" model="hr.work.entry.type">
@@ -1018,6 +1045,7 @@
         <field name="display_code">PAR</field>
         <field name="country_id" ref="base.be"/>
         <field name="count_as">absence</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_be_work_entry_type_work_accident" model="hr.work.entry.type">
@@ -1036,6 +1064,7 @@
         <field name="display_code">WAU</field>
         <field name="country_id" ref="base.be"/>
         <field name="count_as">absence</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_be_work_entry_occupational_disease_unpaid" model="hr.work.entry.type">
@@ -1045,6 +1074,7 @@
         <field name="display_code">ODU</field>
         <field name="country_id" ref="base.be"/>
         <field name="count_as">absence</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_be_work_entry_type_partial_incapacity" model="hr.work.entry.type">
@@ -1054,6 +1084,7 @@
         <field name="display_code">PIN</field>
         <field name="country_id" ref="base.be"/>
         <field name="count_as">absence</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_be_work_entry_type_strike" model="hr.work.entry.type">
@@ -1063,6 +1094,7 @@
         <field name="display_code">STR</field>
         <field name="country_id" ref="base.be"/>
         <field name="count_as">absence</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_be_work_entry_type_small_unemployment_birth" model="hr.work.entry.type">
@@ -1108,6 +1140,7 @@
         <field name="display_code">CRU</field>
         <field name="country_id" ref="base.be"/>
         <field name="count_as">working_time</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_be_work_entry_type_paid_recovered_compensatory_rest" model="hr.work.entry.type">
@@ -1163,6 +1196,7 @@
         <field name="display_code">CHU</field>
         <field name="country_id" ref="base.be"/>
         <field name="count_as">working_time</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_be_work_entry_type_sectoral_compensatory_rest" model="hr.work.entry.type">
@@ -1181,6 +1215,7 @@
         <field name="display_code">PUT</field>
         <field name="country_id" ref="base.be"/>
         <field name="count_as">absence</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_be_work_entry_type_extra_legal_public_holiday" model="hr.work.entry.type">
@@ -1208,6 +1243,7 @@
         <field name="display_code">WTO</field>
         <field name="country_id" ref="base.be"/>
         <field name="count_as">absence</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_be_work_entry_type_sailor_time_off" model="hr.work.entry.type">
@@ -1299,6 +1335,7 @@
         <field name="display_code">PRO</field>
         <field name="country_id" ref="base.be"/>
         <field name="count_as">absence</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_be_work_entry_type_prophylactic_time_off" model="hr.work.entry.type">
@@ -1308,6 +1345,7 @@
         <field name="display_code">PRO</field>
         <field name="country_id" ref="base.be"/>
         <field name="count_as">absence</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_be_work_entry_type_common_law_illness_ami" model="hr.work.entry.type">
@@ -1354,6 +1392,7 @@
         <field name="display_code">TUP</field>
         <field name="country_id" ref="base.be"/>
         <field name="count_as">absence</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_be_work_entry_type_temporary_unemployment_incident" model="hr.work.entry.type">
@@ -1363,6 +1402,7 @@
         <field name="display_code">TUT</field>
         <field name="country_id" ref="base.be"/>
         <field name="count_as">absence</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_be_work_entry_type_temporary_unemployment_force_majeure" model="hr.work.entry.type">
@@ -1372,6 +1412,7 @@
         <field name="display_code">TUA</field>
         <field name="country_id" ref="base.be"/>
         <field name="count_as">absence</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_be_work_entry_type_temporary_unemployment_force_majeure_medical" model="hr.work.entry.type">
@@ -1390,6 +1431,7 @@
         <field name="display_code">TUH</field>
         <field name="country_id" ref="base.be"/>
         <field name="count_as">absence</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_be_work_entry_type_temporary_unemployment_collective_closure_agreeement" model="hr.work.entry.type">
@@ -1399,6 +1441,7 @@
         <field name="display_code">TUC</field>
         <field name="country_id" ref="base.be"/>
         <field name="count_as">absence</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_be_work_entry_type_temporary_unemployment_collective_closure_reduction" model="hr.work.entry.type">
@@ -1408,6 +1451,7 @@
         <field name="display_code">TUR</field>
         <field name="country_id" ref="base.be"/>
         <field name="count_as">absence</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_be_work_entry_type_temporary_unemployment_strike" model="hr.work.entry.type">
@@ -1417,6 +1461,7 @@
         <field name="display_code">TUS</field>
         <field name="country_id" ref="base.be"/>
         <field name="count_as">absence</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_be_work_entry_type_temporary_unemployment_bad_weather" model="hr.work.entry.type">
@@ -1426,6 +1471,7 @@
         <field name="display_code">TUB</field>
         <field name="country_id" ref="base.be"/>
         <field name="count_as">absence</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_be_work_entry_type_non_provided_service_childminders" model="hr.work.entry.type">
@@ -1471,6 +1517,7 @@
         <field name="display_code">PN1</field>
         <field name="country_id" ref="base.be"/>
         <field name="count_as">absence</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_be_work_entry_type_postponed_paid_time_off_n2" model="hr.work.entry.type">
@@ -1480,6 +1527,7 @@
         <field name="display_code">PN2</field>
         <field name="country_id" ref="base.be"/>
         <field name="count_as">absence</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_be_work_entry_type_adoption_company" model="hr.work.entry.type">
@@ -1579,6 +1627,7 @@
         <field name="display_code">UMU</field>
         <field name="country_id" ref="base.be"/>
         <field name="count_as">absence</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_be_work_entry_type_civic_duty_unpaid" model="hr.work.entry.type">
@@ -1588,6 +1637,7 @@
         <field name="display_code">CIV</field>
         <field name="country_id" ref="base.be"/>
         <field name="count_as">absence</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_be_work_entry_type_public_mandate_unpaid" model="hr.work.entry.type">
@@ -1597,6 +1647,7 @@
         <field name="display_code">PMU</field>
         <field name="country_id" ref="base.be"/>
         <field name="count_as">absence</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_be_work_entry_type_militia_obligation" model="hr.work.entry.type">
@@ -1666,6 +1717,7 @@
         <field name="display_code">OoC</field>
         <field name="code">OUT</field>
         <field name="country_id" ref="base.bd"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="bd_work_entry_type_leave" model="hr.work.entry.type">
@@ -1702,6 +1754,7 @@
         <field name="code">LEAVE90</field>
         <field name="count_as">absence</field>
         <field name="country_id" ref="base.bd"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="bd_work_entry_type_sick_leave" model="hr.work.entry.type">
@@ -1747,6 +1800,7 @@
         <field name="display_code">OoC</field>
         <field name="code">OUT</field>
         <field name="country_id" ref="base.ch"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="ch_work_entry_type_leave" model="hr.work.entry.type">
@@ -1783,6 +1837,7 @@
         <field name="code">LEAVE90</field>
         <field name="count_as">absence</field>
         <field name="country_id" ref="base.ch"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="ch_work_entry_type_sick_leave" model="hr.work.entry.type">
@@ -1863,6 +1918,7 @@
         <field name="color">5</field>
         <field name="country_id" ref="base.ch"/>
         <field name="count_as">absence</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_ch_swissdec_illness_wt" model="hr.work.entry.type">
@@ -1972,6 +2028,7 @@
         <field name="code">OUT</field>
         <field name="amount_rate">0</field>
         <field name="country_id" ref="base.eg"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="eg_work_entry_type_leave" model="hr.work.entry.type">
@@ -2006,7 +2063,7 @@
         <field name="color">5</field>
         <field name="display_code">UN</field>
         <field name="code">LEAVE90</field>
-        <field name="amount_rate">0</field>
+        <field name="amount_rate">0.0</field>
         <field name="count_as">absence</field>
         <field name="country_id" ref="base.eg"/>
     </record>
@@ -2069,6 +2126,7 @@
         <field name="amount_rate">0</field>
         <field name="country_id" ref="base.eg"/>
         <field name="count_as">absence</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_eg_work_entry_type_overtime_work_days_daytime" model="hr.work.entry.type">
@@ -2168,6 +2226,7 @@
         <field name="display_code">OoC</field>
         <field name="code">OUT</field>
         <field name="country_id" ref="base.fr"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="fr_work_entry_type_leave" model="hr.work.entry.type">
@@ -2204,6 +2263,7 @@
         <field name="code">LEAVE90</field>
         <field name="count_as">absence</field>
         <field name="country_id" ref="base.fr"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="fr_work_entry_type_sick_leave" model="hr.work.entry.type">
@@ -2250,6 +2310,7 @@
         <field name="display_code">OoC</field>
         <field name="code">OUT</field>
         <field name="country_id" ref="base.hk"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="hk_work_entry_type_leave" model="hr.work.entry.type">
@@ -2286,6 +2347,7 @@
         <field name="code">LEAVE90</field>
         <field name="count_as">absence</field>
         <field name="country_id" ref="base.hk"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="hk_work_entry_type_sick_leave" model="hr.work.entry.type">
@@ -2423,6 +2485,7 @@
         <field name="display_code">OoC</field>
         <field name="code">OUT</field>
         <field name="country_id" ref="base.id"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="id_work_entry_type_leave" model="hr.work.entry.type">
@@ -2459,6 +2522,7 @@
         <field name="code">LEAVE90</field>
         <field name="count_as">absence</field>
         <field name="country_id" ref="base.id"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="id_work_entry_type_sick_leave" model="hr.work.entry.type">
@@ -2545,6 +2609,7 @@
         <field name="display_code">OoC</field>
         <field name="code">OUT</field>
         <field name="country_id" ref="base.in"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="in_work_entry_type_leave" model="hr.work.entry.type">
@@ -2581,6 +2646,7 @@
         <field name="code">LEAVE90</field>
         <field name="count_as">absence</field>
         <field name="country_id" ref="base.in"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="in_work_entry_type_sick_leave" model="hr.work.entry.type">
@@ -2627,6 +2693,7 @@
         <field name="display_code">OoC</field>
         <field name="code">OUT</field>
         <field name="country_id" ref="base.it"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="it_work_entry_type_leave" model="hr.work.entry.type">
@@ -2663,6 +2730,7 @@
         <field name="code">LEAVE90</field>
         <field name="count_as">absence</field>
         <field name="country_id" ref="base.it"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="it_work_entry_type_sick_leave" model="hr.work.entry.type">
@@ -2730,6 +2798,7 @@
         <field name="display_code">OoC</field>
         <field name="code">OUT</field>
         <field name="country_id" ref="base.iq"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="iq_work_entry_type_leave" model="hr.work.entry.type">
@@ -2766,6 +2835,7 @@
         <field name="code">LEAVE90</field>
         <field name="count_as">absence</field>
         <field name="country_id" ref="base.iq"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="iq_work_entry_type_sick_leave" model="hr.work.entry.type">
@@ -2866,6 +2936,7 @@
         <field name="display_code">OoC</field>
         <field name="code">OUT</field>
         <field name="country_id" ref="base.ke"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="ke_work_entry_type_leave" model="hr.work.entry.type">
@@ -2902,6 +2973,7 @@
         <field name="code">LEAVE90</field>
         <field name="count_as">absence</field>
         <field name="country_id" ref="base.ke"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="ke_work_entry_type_sick_leave" model="hr.work.entry.type">
@@ -2943,6 +3015,7 @@
         <field name="code">OUT</field>
         <field name="color">0</field>
         <field name="country_id" ref="base.kw"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_kw_work_entry_type_leave" model="hr.work.entry.type">
@@ -2975,6 +3048,7 @@
         <field name="count_as">absence</field>
         <field name="color">5</field>
         <field name="country_id" ref="base.kw"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_kw_work_entry_type_sick_leave" model="hr.work.entry.type">
@@ -3064,6 +3138,7 @@
         <field name="display_code">OoC</field>
         <field name="code">OUT</field>
         <field name="country_id" ref="base.lt"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="lt_work_entry_type_leave" model="hr.work.entry.type">
@@ -3100,6 +3175,7 @@
         <field name="code">LEAVE90</field>
         <field name="count_as">absence</field>
         <field name="country_id" ref="base.lt"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="lt_work_entry_type_sick_leave" model="hr.work.entry.type">
@@ -3146,6 +3222,7 @@
         <field name="display_code">OoC</field>
         <field name="code">OUT</field>
         <field name="country_id" ref="base.jo"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="jo_work_entry_type_leave" model="hr.work.entry.type">
@@ -3182,6 +3259,7 @@
         <field name="code">LEAVE90</field>
         <field name="count_as">absence</field>
         <field name="country_id" ref="base.jo"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="jo_work_entry_type_sick_leave" model="hr.work.entry.type">
@@ -3302,6 +3380,7 @@
         <field name="display_code">OoC</field>
         <field name="code">OUT</field>
         <field name="country_id" ref="base.lu"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="lu_work_entry_type_leave" model="hr.work.entry.type">
@@ -3338,6 +3417,7 @@
         <field name="code">LEAVE90</field>
         <field name="count_as">absence</field>
         <field name="country_id" ref="base.lu"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="lu_work_entry_type_sick_leave" model="hr.work.entry.type">
@@ -3364,6 +3444,7 @@
         <field name="code">LEAVE400</field>
         <field name="country_id" ref="base.lu"/>
         <field name="count_as">absence</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_lu_work_entry_type_sick_leave" model="hr.work.entry.type">
@@ -3412,6 +3493,7 @@
         <field name="count_as">absence</field>
         <field name="color">3</field>
         <field name="country_id" ref="base.lu"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
 <!-- MA : Morocco -->
@@ -3440,6 +3522,7 @@
         <field name="display_code">OoC</field>
         <field name="code">OUT</field>
         <field name="country_id" ref="base.ma"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="ma_work_entry_type_leave" model="hr.work.entry.type">
@@ -3476,6 +3559,7 @@
         <field name="code">LEAVE90</field>
         <field name="count_as">absence</field>
         <field name="country_id" ref="base.ma"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="ma_work_entry_type_sick_leave" model="hr.work.entry.type">
@@ -3522,6 +3606,7 @@
         <field name="display_code">OoC</field>
         <field name="code">OUT</field>
         <field name="country_id" ref="base.mx"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="mx_work_entry_type_leave" model="hr.work.entry.type">
@@ -3558,6 +3643,7 @@
         <field name="code">LEAVE90</field>
         <field name="count_as">absence</field>
         <field name="country_id" ref="base.mx"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="mx_work_entry_type_sick_leave" model="hr.work.entry.type">
@@ -3594,6 +3680,7 @@
         <field name="code">LEAVE1000</field>
         <field name="country_id" ref="base.mx"/>
         <field name="count_as">absence</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_mx_work_entry_type_maternity_imss" model="hr.work.entry.type">
@@ -3602,6 +3689,7 @@
         <field name="code">LEAVE1100</field>
         <field name="country_id" ref="base.mx"/>
         <field name="count_as">absence</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_mx_work_entry_type_disability_due_to_illness_imss" model="hr.work.entry.type">
@@ -3610,6 +3698,7 @@
         <field name="code">LEAVE1200</field>
         <field name="country_id" ref="base.mx"/>
         <field name="count_as">absence</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_mx_work_entry_type_care_children_with_cancer_imss" model="hr.work.entry.type">
@@ -3646,6 +3735,7 @@
         <field name="display_code">OoC</field>
         <field name="code">OUT</field>
         <field name="country_id" ref="base.my"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="my_work_entry_type_leave" model="hr.work.entry.type">
@@ -3682,6 +3772,7 @@
         <field name="code">LEAVE90</field>
         <field name="count_as">absence</field>
         <field name="country_id" ref="base.my"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="my_work_entry_type_sick_leave" model="hr.work.entry.type">
@@ -3728,6 +3819,7 @@
         <field name="display_code">OoC</field>
         <field name="code">OUT</field>
         <field name="country_id" ref="base.nl"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="nl_work_entry_type_leave" model="hr.work.entry.type">
@@ -3764,6 +3856,7 @@
         <field name="code">LEAVE90</field>
         <field name="count_as">absence</field>
         <field name="country_id" ref="base.nl"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="nl_work_entry_type_sick_leave" model="hr.work.entry.type">
@@ -3810,6 +3903,7 @@
         <field name="display_code">OoC</field>
         <field name="code">OUT</field>
         <field name="country_id" ref="base.pk"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="pk_work_entry_type_leave" model="hr.work.entry.type">
@@ -3846,6 +3940,7 @@
         <field name="code">LEAVE90</field>
         <field name="count_as">absence</field>
         <field name="country_id" ref="base.pk"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="pk_work_entry_type_sick_leave" model="hr.work.entry.type">
@@ -3892,6 +3987,7 @@
         <field name="display_code">OoC</field>
         <field name="code">OUT</field>
         <field name="country_id" ref="base.pl"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="pl_work_entry_type_leave" model="hr.work.entry.type">
@@ -3928,6 +4024,7 @@
         <field name="code">LEAVE90</field>
         <field name="count_as">absence</field>
         <field name="country_id" ref="base.pl"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="pl_work_entry_type_sick_leave" model="hr.work.entry.type">
@@ -3983,6 +4080,7 @@
         <field name="display_code">OoC</field>
         <field name="code">OUT</field>
         <field name="country_id" ref="base.ro"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="ro_work_entry_type_leave" model="hr.work.entry.type">
@@ -4019,6 +4117,7 @@
         <field name="code">LEAVE90</field>
         <field name="count_as">absence</field>
         <field name="country_id" ref="base.ro"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="ro_work_entry_type_sick_leave" model="hr.work.entry.type">
@@ -4064,6 +4163,7 @@
         <field name="display_code">OoC</field>
         <field name="code">OUT</field>
         <field name="country_id" ref="base.om"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="om_work_entry_type_leave" model="hr.work.entry.type">
@@ -4100,6 +4200,7 @@
         <field name="code">LEAVE90</field>
         <field name="count_as">absence</field>
         <field name="country_id" ref="base.om"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="om_work_entry_type_sick_leave" model="hr.work.entry.type">
@@ -4156,7 +4257,7 @@
         <field name="code">OMSICKLEAVE0</field>
         <field name="count_as">absence</field>
         <field name="country_id" ref="base.om"/>
-        <field name="amount_rate">0</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="l10n_om_work_entry_type_overtime_work_days_daytime" model="hr.work.entry.type">
@@ -4287,6 +4388,7 @@
         <field name="display_code">OoC</field>
         <field name="code">OUT</field>
         <field name="country_id" ref="base.sa"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="sa_work_entry_type_leave" model="hr.work.entry.type">
@@ -4323,6 +4425,7 @@
         <field name="code">LEAVE90</field>
         <field name="count_as">absence</field>
         <field name="country_id" ref="base.sa"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="sa_work_entry_type_sick_leave" model="hr.work.entry.type">
@@ -4434,6 +4537,7 @@
         <field name="display_code">OoC</field>
         <field name="code">OUT</field>
         <field name="country_id" ref="base.sk"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="sk_work_entry_type_leave" model="hr.work.entry.type">
@@ -4470,6 +4574,7 @@
         <field name="code">LEAVE90</field>
         <field name="count_as">absence</field>
         <field name="country_id" ref="base.sk"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="sk_work_entry_type_sick_leave" model="hr.work.entry.type">
@@ -4560,6 +4665,7 @@
         <field name="display_code">OoC</field>
         <field name="code">OUT</field>
         <field name="country_id" ref="base.tr"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="tr_work_entry_type_leave" model="hr.work.entry.type">
@@ -4596,6 +4702,7 @@
         <field name="code">LEAVE90</field>
         <field name="count_as">absence</field>
         <field name="country_id" ref="base.tr"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="tr_work_entry_type_sick_leave" model="hr.work.entry.type">
@@ -4679,6 +4786,7 @@
         <field name="count_as">absence</field>
         <field name="amount_rate">0</field>
         <field name="country_id" ref="base.us"/>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="us_work_entry_type_sick_leave" model="hr.work.entry.type">
@@ -4756,6 +4864,7 @@
         <field name="code">LEAVE90</field>
         <field name="count_as">absence</field>
         <field name="country_id" ref="base.ph"/>
+        <field name="amount_rate">0.0</field>
     </record>
     <record id="ph_work_entry_type_leave" model="hr.work.entry.type">
         <field name="name">Generic Time Off</field>
@@ -4851,6 +4960,7 @@
         <field name="code">SNWH_LEAVE</field>
         <field name="country_id" ref="base.ph"/>
         <field name="count_as">absence</field>
+        <field name="amount_rate">0.0</field>
     </record>
 
     <record id="ph_work_entry_type_attendance" model="hr.work.entry.type">
@@ -5140,5 +5250,6 @@
         <field name="display_code">OoC</field>
         <field name="code">OUT</field>
         <field name="country_id" ref="base.ph"/>
+        <field name="amount_rate">0.0</field>
     </record>
 </data></odoo>
