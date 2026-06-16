@@ -20,6 +20,7 @@ import {
     getPeriodOptions,
     INTERVAL_OPTIONS,
     rankInterval,
+    getRelativeFilterOptions,
     yearSelected,
 } from "./utils/dates";
 import { OfflinePlugin } from "@web/core/offline/offline_plugin";
@@ -530,7 +531,7 @@ export class SearchModel extends EventBus {
         const { domain, groupBys } = search;
         if (domain !== "[]") {
             search.facets.forEach((facet) => {
-                if (!["field", "filter", "favorite"].includes(facet.type)) {
+                if (!["field", "filter", "favorite", "relative"].includes(facet.type)) {
                     return;
                 }
                 let description = facet.values.join(` ${facet.separator} `);
@@ -1051,6 +1052,12 @@ export class SearchModel extends EventBus {
                     );
                 }
             } else {
+                // Deactivate other options on this field (prevent "This week" + "February" )
+                if (searchItem.relativeFilterId) {
+                    this.query = this.query.filter(
+                        (queryElem) => queryElem.searchItemId !== searchItem.relativeFilterId
+                    );
+                }
                 if (generatorId.startsWith("custom")) {
                     if (searchItem.type !== "parentFilter") {
                         this.query = this.query.filter(
@@ -1097,6 +1104,21 @@ export class SearchModel extends EventBus {
             this._checkOrderByCountStatus();
         } else {
             this.query.push({ searchItemId, intervalId });
+        }
+        this._notify();
+    }
+
+    toggleRelativeFilter(searchItemId, optionId) {
+        const { groupId, dateFilterId } = this.searchItems[searchItemId];
+        const alreadyActive = this.query.some(
+            (q) => q.searchItemId === searchItemId && q.optionId === optionId
+        );
+
+        // Deactivate other filter from same group (prevent "This week" + "February" )
+        this.query = this.query.filter((q) => this.searchItems[q.searchItemId].groupId !== groupId);
+        if (!alreadyActive) {
+            this.query = this.query.filter((q) => q.searchItemId !== dateFilterId);
+            this.query.push({ searchItemId, optionId }); // Activate if it wasn't active before
         }
         this._notify();
     }
@@ -1611,6 +1633,25 @@ export class SearchModel extends EventBus {
             this.nextId++;
         });
         this.nextGroupId++;
+
+        const dateFilterItem = pregroup.find((item) => item.type === "dateFilter");
+        if (dateFilterItem) {
+            const relativeFilterItem = {
+                type: "relativeFilter",
+                fieldName: dateFilterItem.fieldName,
+                fieldType: dateFilterItem.fieldType,
+                description: dateFilterItem.description,
+                options: getRelativeFilterOptions(dateFilterItem),
+                groupNumber: dateFilterItem.groupNumber,
+                groupId: this.nextGroupId,
+                id: this.nextId,
+                dateFilterId: dateFilterItem.id,
+            };
+            dateFilterItem.relativeFilterId = this.nextId;
+            this.searchItems[this.nextId] = relativeFilterItem;
+            this.nextId++;
+            this.nextGroupId++;
+        }
     }
 
     /**
@@ -1653,6 +1694,12 @@ export class SearchModel extends EventBus {
                 enrichSearchItem.options = _enrichOptions(
                     searchItem.optionsParams.customOptions,
                     queryElements.map((queryElem) => queryElem.generatorId)
+                );
+                break;
+            case "relativeFilter":
+                enrichSearchItem.options = _enrichOptions(
+                    searchItem.options,
+                    queryElements.map((queryElem) => queryElem.optionId)
                 );
                 break;
             case "field":
@@ -1967,6 +2014,12 @@ export class SearchModel extends EventBus {
                         values.push(`${searchItem.description}: ${innerFilterDescription}`);
                         break;
                     }
+                    case "relativeFilter": {
+                        type = "relative";
+                        const option = searchItem.options.find((o) => o.id === activeItem.optionId);
+                        values.push(`${searchItem.description}: ${option.description}`);
+                        break;
+                    }
                     case "parentFilter": {
                         type = "filter";
                         const innerFilterDescription = this._getParentFilterDomain(
@@ -2218,6 +2271,11 @@ export class SearchModel extends EventBus {
                         activeItems.push(activeItem);
                     }
                     activeItem.autocompleteValues.push(queryElem.autocompleteValue);
+                } else if ("optionId" in queryElem) {
+                    if (!activeItem) {
+                        activeItem = { searchItemId, optionId: queryElem.optionId };
+                        activeItems.push(activeItem);
+                    }
                 } else {
                     if (!activeItem) {
                         activeItem = { searchItemId };
@@ -2383,6 +2441,10 @@ export class SearchModel extends EventBus {
             case "dateFilter":
             case "parentFilter": {
                 return this._getParentFilterDomain(searchItem, activeItem.generatorIds);
+            }
+            case "relativeFilter": {
+                const option = searchItem.options.find((o) => o.id === activeItem.optionId);
+                return option?.domain ?? null;
             }
             case "filter":
             case "favorite": {
