@@ -22,6 +22,8 @@ import {
     rankInterval,
     getRelativeFilterOptions,
     yearSelected,
+    constructRelativeDateDomain,
+    getRelativeDateLabel,
 } from "./utils/dates";
 import { OfflinePlugin } from "@web/core/offline/offline_plugin";
 import { FACET_COLORS, FACET_ICONS } from "./utils/misc";
@@ -1118,8 +1120,14 @@ export class SearchModel extends EventBus {
         this.query = this.query.filter((q) => this.searchItems[q.searchItemId].groupId !== groupId);
         if (!alreadyActive) {
             this.query = this.query.filter((q) => q.searchItemId !== dateFilterId);
-            this.query.push({ searchItemId, optionId }); // Activate if it wasn't active before
+            this.query.push({ searchItemId, optionId, offset: 0 }); // Activate if it wasn't active before
         }
+        this._notify();
+    }
+
+    shiftRelativeFilter(groupId, delta) {
+        const filter = this.query.find((q) => this.searchItems[q.searchItemId].groupId === groupId);
+        filter.offset = (filter.offset || 0) + delta;
         this._notify();
     }
 
@@ -1634,14 +1642,13 @@ export class SearchModel extends EventBus {
         });
         this.nextGroupId++;
 
-        const dateFilterItem = pregroup.find((item) => item.type === "dateFilter");
-        if (dateFilterItem) {
+        for (const dateFilterItem of pregroup.filter((item) => item.type === "dateFilter")) {
             const relativeFilterItem = {
                 type: "relativeFilter",
                 fieldName: dateFilterItem.fieldName,
                 fieldType: dateFilterItem.fieldType,
                 description: dateFilterItem.description,
-                options: getRelativeFilterOptions(dateFilterItem),
+                options: getRelativeFilterOptions(),
                 groupNumber: dateFilterItem.groupNumber,
                 groupId: this.nextGroupId,
                 id: this.nextId,
@@ -2017,7 +2024,12 @@ export class SearchModel extends EventBus {
                     case "relativeFilter": {
                         type = "relative";
                         const option = searchItem.options.find((o) => o.id === activeItem.optionId);
-                        values.push(`${searchItem.description}: ${option.description}`);
+                        values.push(
+                            `${searchItem.description}: ${getRelativeDateLabel(
+                                option,
+                                activeItem.offset
+                            )}`
+                        );
                         break;
                     }
                     case "parentFilter": {
@@ -2273,7 +2285,8 @@ export class SearchModel extends EventBus {
                     activeItem.autocompleteValues.push(queryElem.autocompleteValue);
                 } else if ("optionId" in queryElem) {
                     if (!activeItem) {
-                        activeItem = { searchItemId, optionId: queryElem.optionId };
+                        const { optionId, offset = 0 } = queryElem;
+                        activeItem = { searchItemId, optionId, offset };
                         activeItems.push(activeItem);
                     }
                 } else {
@@ -2443,8 +2456,8 @@ export class SearchModel extends EventBus {
                 return this._getParentFilterDomain(searchItem, activeItem.generatorIds);
             }
             case "relativeFilter": {
-                const option = searchItem.options.find((o) => o.id === activeItem.optionId);
-                return option?.domain ?? null;
+                const { optionId, offset } = activeItem;
+                return this._getRelativeFilterDomain(searchItem, optionId, offset);
             }
             case "filter":
             case "favorite": {
@@ -2454,6 +2467,11 @@ export class SearchModel extends EventBus {
                 return null;
             }
         }
+    }
+
+    _getRelativeFilterDomain(searchItem, optionId, offset) {
+        const option = searchItem.options.find((o) => o.id === optionId);
+        return constructRelativeDateDomain(searchItem, option, offset);
     }
 
     _getSearchItemGroupBys(activeItem) {

@@ -4,9 +4,8 @@ import { serializeDate, serializeDateTime } from "@web/core/l10n/dates";
 import { localization } from "@web/core/l10n/localization";
 import { clamp, range } from "@web/core/utils/numbers";
 import { pick } from "@web/core/utils/objects";
-import { constructDomainFromTree } from "@web/core/tree_editor/construct_domain_from_tree";
-import { eliminateVirtualOperators } from "@web/core/tree_editor/virtual_operators";
-import { condition } from "@web/core/tree_editor/condition_tree";
+import { domainFromTree } from "@web/core/tree_editor/domain_from_tree";
+import { makeRelativeRange } from "@web/core/tree_editor/virtual_operators";
 
 export const QUARTERS = {
     1: { description: _t("Q1"), coveredMonths: [1, 2, 3] },
@@ -333,6 +332,13 @@ export function sortPeriodOptions(options) {
     });
 }
 
+/**
+ * Checks if a year id is among the given array of period option ids.
+ */
+export function yearSelected(selectedOptionIds) {
+    return selectedOptionIds.some((optionId) => optionId.startsWith("year"));
+}
+
 /**  ----------------------- RELATIVE DATE FILTERS -----------------------
  * Relative filters are search bar menu filters, created from the xml with
  * the syntax <filter ... date="invoice_date">, that can be toggled in the
@@ -348,22 +354,47 @@ export const RELATIVE_FILTER_OPTIONS = {
     thisYear: { description: _t("This Year"), granularity: "year" },
 };
 
-export function getRelativeFilterOptions(searchItem) {
-    const { fieldName, fieldType } = searchItem;
-    return Object.entries(RELATIVE_FILTER_OPTIONS).map(([id, option]) => ({
-        id,
-        ...option,
-        domain: constructDomainFromTree(
-            eliminateVirtualOperators(condition(fieldName, "in range", [fieldType, id]), {
-                generateSmartDates: false,
-            })
-        ),
-    }));
+const SCALE_LABELS = {
+    day: _t("days"),
+    week: _t("weeks"),
+    month: _t("months"),
+    quarter: _t("quarters"),
+    year: _t("years"),
+};
+const LAST_PERIOD_LABELS = {
+    week: _t("Last week"),
+    month: _t("Last month"),
+    quarter: _t("Last quarter"),
+    year: _t("Last year"),
+};
+const NEXT_PERIOD_LABELS = {
+    week: _t("Next week"),
+    month: _t("Next month"),
+    quarter: _t("Next quarter"),
+    year: _t("Next year"),
+};
+
+export function getRelativeFilterOptions() {
+    return Object.entries(RELATIVE_FILTER_OPTIONS).map(([id, option]) => ({ id, ...option }));
 }
 
-/**
- * Checks if a year id is among the given array of period option ids.
- */
-export function yearSelected(selectedOptionIds) {
-    return selectedOptionIds.some((optionId) => optionId.startsWith("year"));
+export function constructRelativeDateDomain(searchItem, option, offset) {
+    const { fieldName, fieldType } = searchItem;
+    return domainFromTree(makeRelativeRange(fieldName, offset, option.granularity, fieldType));
+}
+
+export function getRelativeDateLabel(option, offset) {
+    const isDay = option.granularity === "day";
+    if (offset === 0) {
+        return option.description;
+    } else if (offset === -1) {
+        return isDay ? _t("Yesterday") : LAST_PERIOD_LABELS[option.granularity];
+    } else if (offset === 1) {
+        return isDay ? _t("Tomorrow") : NEXT_PERIOD_LABELS[option.granularity];
+    }
+    const subs = {
+        offset: Math.abs(offset),
+        unit: SCALE_LABELS[option.granularity],
+    };
+    return offset < 0 ? _t("%(offset)s %(unit)s ago", subs) : _t("in %(offset)s %(unit)s", subs);
 }
