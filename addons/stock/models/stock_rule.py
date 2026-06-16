@@ -438,7 +438,7 @@ class StockRule(models.Model):
         if global_horizon_days:
             delays['horizon_time'] += global_horizon_days
             if not bypass_delay_description:
-                delay_description.append((_('Time Horizon'), _('+ %d day(s)', global_horizon_days)))
+                delay_description[:0] = [((_('Time Horizon'), _('+ %d day(s)', global_horizon_days)))]
         return delays, delay_description
 
     @api.model
