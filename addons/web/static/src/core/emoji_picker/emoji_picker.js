@@ -1,3 +1,4 @@
+import { FrequentEmojiPlugin } from "@web/core/emoji_picker/frequent_emoji_plugin";
 import { markEventHandled } from "@web/core/utils/misc";
 import { useRef } from "@web/owl2/utils";
 import {
@@ -8,6 +9,7 @@ import {
     onWillPatch,
     onWillStart,
     onWillUnmount,
+    plugin,
     proxy,
     useApp,
     useListener,
@@ -111,7 +113,7 @@ export class EmojiPicker extends Component {
         this.navbarRef = useRef("navbar");
         this.ui = useService("ui");
         this.isMobileOS = isMobileOS();
-        this.frequentEmojiService = useService("frequent_emoji");
+        this.frequentEmojiService = plugin(FrequentEmojiPlugin);
         const loadEmoji = useLoadEmoji();
         useAutofocus();
         onWillStart(async () => {
