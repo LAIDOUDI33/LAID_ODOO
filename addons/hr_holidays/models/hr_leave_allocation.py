@@ -871,6 +871,13 @@ class HolidaysAllocation(models.Model):
                 mail_activity_automation_skip=True
             ).create(allocation_vals)
             accrual_allocations = allocations.filtered(lambda a: a.allocation_type == 'accrual')
+            for allocation in accrual_allocations:
+                allocation.lastcall = allocation.date_from
+                allocation.nextcall = False
+                allocation.already_accrued = False
+                allocation.number_of_days_display = 0.0
+                allocation.number_of_hours_display = 0.0
+                allocation.number_of_days = 0.0
             for date_to, allocation in accrual_allocations.grouped('date_to').items():
                 date_to = min(date_to, date.today()) if date_to else False
                 allocation._process_accrual_plans(date_to)
