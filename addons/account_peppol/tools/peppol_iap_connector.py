@@ -58,6 +58,21 @@ class PeppolIAPConnector:
             'webhook_url': webhook_url,
         })
 
+    def authorize_sg_corppass(self, *, peppol_identifier, db_uuid, callback_url, connect_token, peppol_company_name, representative_name, representative_email):
+        # Starts a new SGNIC/Corppass KYC session. Unlike `can_connect`, this is NOT idempotent:
+        # it must be called exactly once per KYC attempt, only in direct response to an explicit
+        # user action, never from a polling loop or a re-render.
+        params = {
+            'dbuuid': db_uuid,
+            'peppol_identifier': peppol_identifier,
+            'callback_url': callback_url,
+            'connect_token': connect_token,
+            'peppol_company_name': peppol_company_name,
+            'representative_name': representative_name,
+            'representative_email': representative_email,
+        }
+        return self.request_public_http('POST', '/api/peppol/2/sg_corppass/authorize', data=params)
+
     def create_connection(self, *, peppol_identifier, db_uuid, public_key, auth_token=None, **company_details):
         assert self.proxy_mode != 'demo'
         params = {
