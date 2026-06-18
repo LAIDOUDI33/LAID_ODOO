@@ -1,22 +1,23 @@
-# -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-from odoo import models, api
-from odoo.fields import Domain
-
-import ast
 import json
+
+from odoo import api, models
+from odoo.fields import Domain
 
 
 class LoyaltyReward(models.Model):
     _name = 'loyalty.reward'
     _inherit = ['loyalty.reward', 'pos.load.mixin']
 
-    def _get_discount_product_values(self):
-        res = super()._get_discount_product_values()
-        for vals in res:
-            vals.update({'taxes_id': False})
-        return res
+    def unlink(self):
+        # A reward referenced by a saved pos.order.line cannot be deleted
+        # archive it instead so historical orders keep their reward
+        if len(self) == 1 and self.env['pos.order.line'].sudo().search_count(
+            [('reward_id', 'in', self.ids)], limit=1
+        ):
+            return self.action_archive()
+        return super().unlink()
 
     @api.model
     def _load_pos_data_domain(self, data, config):
@@ -50,12 +51,17 @@ class LoyaltyReward(models.Model):
         return read_records
 
     def _get_reward_product_domain_fields(self, config):
+        """Product fields referenced by the reward domains of this config's programs.
+
+        These must be loaded onto the POS product so the domains can be evaluated
+        client-side; otherwise a char-field condition (e.g. `name ilike ...`, which
+        stays untouched by `_replace_ilike_with_in`) would hit an undefined field.
+        """
         fields = set()
         search_domain = [('program_id', 'in', config._get_program_ids().ids)]
         domains = self.search_read(search_domain, fields=['reward_product_domain'], load=False)
         for domain in filter(lambda d: d['reward_product_domain'] != "null", domains):
-            domain = json.loads(domain['reward_product_domain'])
-            for condition in self._parse_domain(domain).values():
+            for condition in self._parse_domain(json.loads(domain['reward_product_domain'])).values():
                 field_name, _, _ = condition
                 fields.add(field_name)
         return fields
@@ -81,13 +87,7 @@ class LoyaltyReward(models.Model):
 
     def _parse_domain(self, domain):
         parsed_domain = {}
-
         for index, condition in enumerate(domain):
             if isinstance(condition, (list, tuple)) and len(condition) == 3:
                 parsed_domain[index] = condition
         return parsed_domain
-
-    def unlink(self):
-        if len(self) == 1 and self.env['pos.order.line'].sudo().search_count([('reward_id', 'in', self.ids)], limit=1):
-            return self.action_archive()
-        return super().unlink()
