@@ -15,8 +15,8 @@ class TestPeppolKYC(HttpCase):
         super().setUp()
         self.env['ir.config_parameter'].sudo().set_str('account_peppol.edi.mode', 'test')
 
-    def _mock_can_connect_method(self, with_auth=False):
-        auth_vals = {'available_auths': {'itsme': {'authorization_url': 'test_authorization_url'}}} if with_auth else {}
+    def _mock_can_connect_method(self, with_auth=False, auth_type='itsme'):
+        auth_vals = {'available_auths': {auth_type: {'authorization_url': 'test_authorization_url'}}} if with_auth else {}
         return patch('odoo.addons.account_peppol.tools.peppol_iap_connector.PeppolIAPConnector.can_connect', return_value={
             'auth_required': with_auth,
             **auth_vals,

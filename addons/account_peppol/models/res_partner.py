@@ -6,6 +6,9 @@ from lxml import etree
 from hashlib import md5
 from urllib import parse
 
+from stdnum import exceptions as stdnum_exceptions
+from stdnum.sg import uen as sg_uen
+
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 from odoo.fields import Domain
@@ -21,6 +24,18 @@ from odoo.addons.account_edi_ubl_cii.tools.partner_identifiers import (
 INVOICE_RESPONSE_CUSTOMISATION_ID = "busdox-docid-qns::urn:oasis:names:specification:ubl:schema:xsd:ApplicationResponse-2::ApplicationResponse##urn:fdc:peppol.eu:poacc:trns:invoice_response:3::2.1"
 TIMEOUT = 10
 _logger = logging.getLogger(__name__)
+
+
+def validate_sg_uen_peppol(value):
+    """ Validate a Singapore UEN, also accepting the SGNIC SMP participant
+    registration format 'SGUEN' + UEN used with Peppol scheme 0195.
+    """
+    try:
+        return sg_uen.validate(value)
+    except stdnum_exceptions.ValidationError:
+        if value[:5].upper() != 'SGUEN':
+            raise
+        return 'SGUEN' + sg_uen.validate(value[5:])
 
 
 class ResPartner(models.Model):
@@ -114,6 +129,14 @@ class ResPartner(models.Model):
                     validation_vals['value'] = None
                 validation_vals['valid'] = False
         return validation_vals
+
+    def _get_all_identifiers_metadata(self):
+        # EXTENDS 'account_edi_ubl_cii' - the SGNIC SMP registers Singapore Peppol
+        # participants as 0195:SGUEN<UEN>, so accept that form on top of a bare UEN.
+        metadata = super()._get_all_identifiers_metadata()
+        if sg_uen_metadata := metadata.get('SG_UEN'):
+            metadata = {**metadata, 'SG_UEN': {**sg_uen_metadata, 'validation_function': validate_sg_uen_peppol}}
+        return metadata
 
     @api.model
     def _get_participant_info(self, edi_identification):
