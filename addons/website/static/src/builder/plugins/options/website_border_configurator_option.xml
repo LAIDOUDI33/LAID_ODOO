@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+<t t-name="website.WebsiteBorderConfiguratorOption" t-inherit="html_builder.BorderConfiguratorOption">
+    <xpath expr="//BuilderRow[@label.translate=&quot;Round Corners&quot;]" position="replace">
+        <t t-if="this.props.withRoundCorner">
+
+            <t t-if="this.showRoundnessSuggestions">
+                <BuilderRow label.translate="Border Radius" level="this.props.level">
+                    <BuilderSelect>
+                        <t t-foreach="this.borderRadiusOptions" t-as="option" t-key="option.label">
+                            <BuilderSelectItem classAction="option.class">
+                                <t t-out="option.label"/>
+                            </BuilderSelectItem>
+                        </t>
+                        <BuilderSelectItem
+                            id="'custom_radius'"
+                            action="'setBorderRadius'"
+                            actionParam="{ mainParam: '', radiusActionParam: this.radiusActionParam }"
+                        >
+                            Custom
+                        </BuilderSelectItem>
+                    </BuilderSelect>
+                </BuilderRow>
+                <BuilderRow t-if="this.isActiveItem('custom_radius')" label.translate="Custom" level="(this.props.level ?? 0) + 1">
+                    <t t-call="website.RoundnessInput"/>
+                </BuilderRow>
+            </t>
+
+            <t t-else="">
+                <BuilderRow label.translate="Border Radius" level="this.props.level">
+                    <t t-call="website.RoundnessInput"/>
+                </BuilderRow>
+            </t>
+
+        </t>
+    </xpath>
+</t>
+
+<t t-name="website.RoundnessInput">
+    <BuilderNumberInput
+        action="this.props.action"
+        actionParam="this.radiusActionParam"
+        unit="'px'"
+        min="0"
+        composable="true"
+    />
+</t>
+
+</templates>
