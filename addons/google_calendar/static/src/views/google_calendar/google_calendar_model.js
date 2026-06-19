@@ -20,6 +20,7 @@ patch(AttendeeCalendarModel.prototype, {
      * @override
      */
     async updateData() {
+        this.meta.loadReason = undefined;
         this.googleSyncTimedOut = false;
         if (this.state.googlePendingSync) {
             return super.updateData(...arguments);

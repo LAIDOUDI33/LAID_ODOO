@@ -15,11 +15,16 @@ class GoogleCalendarAccountReset(models.TransientModel):
     def reset_account(self):
         if self.delete_events:
             events = self.env['calendar.event'].search([
-                ('user_id', '=', self.user_id.id),
-                ('google_id', '!=', False)])
+                ('google_id', '!=', False),
+                '|',
+                    ('calendar_id', 'in', self.user_id.owned_calendar_ids.ids),  # FRBIN TODO: check if owned by someone else
+                    ('user_id', '=', self.user_id.id)
+                ])
             recurrences = self.env['calendar.recurrence'].search([
                 ('base_event_id', 'in', events.ids),
                 ('google_id', '!=', False)])
+
+            events -= events.filtered(lambda e: len(e.calendar_id.owner_ids) > 1)
 
             # Clear google_id first. unlink() archives (instead of deleting) any event
             # still linked to Google, and archiving propagates the deletion to the remote
