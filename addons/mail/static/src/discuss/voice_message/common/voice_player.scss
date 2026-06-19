@@ -1,8 +1,63 @@
-.o-mail-VoicePlayer-wrapper {
-    height: 40px;
-    width: 80px;
+.o-mail-VoicePlayer-wave {
+    inset: 2em 0.6em 2.2em;
 }
 
-.o-mail-VoicePlayer-drawer {
-    z-index: 1;
+.o-mail-VoicePlayer-time {
+    font-variant-numeric: tabular-nums;
+    user-select: none;
+}
+
+.o-mail-VoicePlayer-sliderValue {
+    min-width: 3rem;
+    font-variant-numeric: tabular-nums;
+}
+
+// Override the default track color for better visibility.
+.o-mail-VoicePlayer-slider.form-range {
+    &::-webkit-slider-runnable-track {
+        background-color: #adb5bd;
+    }
+
+    &::-moz-range-track {
+        background-color: #adb5bd;
+    }
+}
+
+.o-mail-AttachmentContainer:has(.o-mail-VoicePlayer) {
+    .o-mail-VoicePlayer-wave,
+    .o-mail-VoicePlayer-play,
+    .o-mail-VoicePlayer-controls,
+    .o-mail-VoicePlayer-mic {
+        transition: opacity 0.15s ease;
+    }
+
+    .o-mail-VoicePlayer-mic {
+        opacity: 0;
+    }
+
+    @media (hover: hover) {
+        .o-mail-VoicePlayer-wave,
+        .o-mail-VoicePlayer-play,
+        .o-mail-VoicePlayer-controls {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .o-mail-VoicePlayer-mic {
+            opacity: 1;
+        }
+
+        &:is(:hover, :has(.o-mail-VoicePlayer.o-showControls)) {
+            .o-mail-VoicePlayer-wave,
+            .o-mail-VoicePlayer-play,
+            .o-mail-VoicePlayer-controls {
+                opacity: 1;
+                pointer-events: auto;
+            }
+
+            .o-mail-VoicePlayer-mic {
+                opacity: 0;
+            }
+        }
+    }
 }

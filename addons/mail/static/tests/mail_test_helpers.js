@@ -1059,6 +1059,12 @@ export function userContext() {
 /** @returns {VoiceMessagePatchResources} */
 export function patchVoiceMessageAudio() {
     const res = { audioProcessor: undefined };
+    patchWithCleanup(HTMLMediaElement.prototype, {
+        play() {
+            return Promise.resolve();
+        },
+        pause() {},
+    });
     const {
         AnalyserNode,
         AudioBufferSourceNode,

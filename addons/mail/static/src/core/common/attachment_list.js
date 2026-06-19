@@ -70,6 +70,10 @@ export class AttachmentList extends Component {
         });
     }
 
+    getPreviewAttClass(attachment) {
+        return { o_image: true };
+    }
+
     /**
      * @param {import("models").Attachment} attachment
      */
