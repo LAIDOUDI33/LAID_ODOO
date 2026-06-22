@@ -34,6 +34,23 @@ SHARE_DOMAIN = (
     & Domain("is_internal", "=", False)
     & Domain("subtype_id.internal", "=", False)
 )
+_QUOTE_ENTITY_RE = re.compile(r"&quot;|&apos;|&#x22;|&#x27;|&#x60;|&#34;|&#39;|&#96;", re.IGNORECASE)
+_QUOTE_ENTITY_DICT = {
+    "&quot;": '"',
+    "&#x22;": '"',
+    "&#34;": '"',
+    "&apos;": "'",
+    "&#x27;": "'",
+    "&#39;": "'",
+    "&#x60;": "`",
+    "&#96;": "`",
+}
+
+
+def _decode_search_term(term):
+    # we replace every space by a % to avoid hard spacing matching
+    term = term.replace(" ", "%")
+    return _QUOTE_ENTITY_RE.sub(lambda m: _QUOTE_ENTITY_DICT[m.group(0).lower()], term)
 
 
 def exists_in_cache(records, *, hint_field=''):
@@ -964,8 +981,7 @@ class MailMessage(models.Model):
         elif is_notification is False:
             domain &= Domain("message_type", "!=", "notification")
         if search_term:
-            # we replace every space by a % to avoid hard spacing matching
-            search_term = search_term.replace(" ", "%")
+            search_term = _decode_search_term(search_term)
             message_domain = Domain.OR([
                 # sudo: access to attachment is allowed if you have access to the parent model
                 [("attachment_ids", "in", self.env["ir.attachment"].sudo()._search([("name", "ilike", search_term)]))],
