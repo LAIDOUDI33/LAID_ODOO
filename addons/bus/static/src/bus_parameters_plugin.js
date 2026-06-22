@@ -1,9 +1,9 @@
 import { registry } from "@web/core/registry";
-import { Plugin, usePlugin } from "@odoo/owl";
+import { Plugin, signal, usePlugin } from "@odoo/owl";
 import { services } from "@web/core/services";
 
 export class BusParametersPlugin extends Plugin {
-    serverURL = window.origin;
+    serverURL = signal(window.origin);
 }
 
 services.add(BusParametersPlugin);
