@@ -686,6 +686,185 @@ class TestLotValuation(TestStockValuationCommon):
         self.assertEqual(self.lot2.standard_price, 10)
         # product's standard price should be 4150 / 55 = 75.45
         self.assertAlmostEqual(self.product.standard_price, 75.45, places=2)
+    # ---------------------------------------------------------------- BATCH
+    # The following cases exercise the per-method batch valuation
+    # (``_run_standard_batch`` / ``_run_avco`` / ``_run_fifo_batch``) with a
+    # lot-valuated product across several incoming and outgoing moves, and through
+    # the replay/correction machinery (backdating / editing a done move).
+
+    # ------------------------------------------------------------------ AVCO
+    def test_avco_lot_multi_in_out(self):
+        """AVCO keeps an independent running average per lot across several moves."""
+        product = self.product                                    # avco lot-valuated
+        lot1, lot2, _lot3 = self.lot1, self.lot2, self.lot3
+
+        self._make_in_move(product, 10, 10, lot_ids=[lot1])       # lot1: 10 @ 10
+        self._make_in_move(product, 10, 30, lot_ids=[lot2])       # lot2: 10 @ 30
+        self._make_in_move(product, 10, 20, lot_ids=[lot1])       # lot1: 20u, (100+200)/20 = 15
+        out1 = self._make_out_move(product, 5, lot_ids=[lot1])    # -5 @ 15
+        out2 = self._make_out_move(product, 5, lot_ids=[lot2])    # -5 @ 30
+        self._make_in_move(product, 5, 10, lot_ids=[lot2])        # lot2: (150+50)/10 = 20
+
+        self.assertEqual(out1.value, -75)
+        self.assertEqual(out2.value, -150)
+        self.assertEqual(lot1.product_qty, 15)
+        self.assertEqual(lot1.total_value, 225)
+        self.assertEqual(lot1.standard_price, 15)
+        self.assertEqual(lot2.product_qty, 10)
+        self.assertEqual(lot2.total_value, 200)
+        self.assertEqual(lot2.standard_price, 20)
+        self.assertEqual(product.qty_available, 25)
+        self.assertEqual(product.total_value, 425)
+
+    def test_avco_lot_replay_single(self):
+        """Backdating an in move re-prices the AVCO out move of the same lot."""
+        now = fields.Datetime.now()
+        product = self.product                                    # avco lot-valuated
+        lot1 = self.lot1
+
+        self._make_in_move(product, 10, 10, lot_ids=[lot1])
+        out = self._make_out_move(product, 8, lot_ids=[lot1])     # -8 @ 10
+        move_in_2 = self._make_in_move(product, 10, 20, lot_ids=[lot1])
+
+        self.assertEqual(out.value, -80)
+        self.assertEqual(lot1.total_value, 220)                   # 2 @ 10 + 10 @ 20
+
+        move_in_2.date = now - timedelta(days=15)                 # replay: avg becomes 15
+        self.assertEqual(out.value, -120)                         # 8 @ 15
+        self.assertEqual(lot1.total_value, 180)                   # 12 @ 15
+        self.assertEqual(lot1.standard_price, 15)
+
+    def test_avco_lot_replay_multi(self):
+        """Backdating a lot2 receipt must re-price the lot2 delivery with the lot2
+        average, not the product-wide average (lot1 is much cheaper)."""
+        now = fields.Datetime.now()
+        product = self.product                                    # avco lot-valuated
+        lot1, lot2 = self.lot1, self.lot2
+
+        self._make_in_move(product, 10, 10, lot_ids=[lot1])       # cheap lot1
+        self._make_in_move(product, 10, 100, lot_ids=[lot2])
+        out = self._make_out_move(product, 5, lot_ids=[lot2])     # -5 @ 100
+        move_in_2 = self._make_in_move(product, 10, 200, lot_ids=[lot2])
+
+        self.assertEqual(out.value, -500)
+
+        # backdate the lot2 @200 receipt before everything: lot2 avg at delivery is
+        # (10@100 + 10@200) / 20 = 150 -> the lot2 delivery is 5 @ 150.
+        move_in_2.date = now - timedelta(days=15)
+        self.assertEqual(out.value, -750)
+        self.assertEqual(lot2.product_qty, 15)
+        self.assertEqual(lot2.total_value, 2250)                  # 15 @ 150
+        self.assertEqual(lot2.standard_price, 150)
+        self.assertEqual(lot1.total_value, 100)                   # untouched
+
+    # ------------------------------------------------------------------ FIFO
+    def test_fifo_lot_multi_in_out(self):
+        """FIFO consumes each lot's own layers, oldest first."""
+        product = self.product
+        product.categ_id = self.category_fifo
+        lot1, lot2 = self.lot1, self.lot2
+
+        self._make_in_move(product, 10, 10, lot_ids=[lot1])       # lot1 layer 10 @ 10
+        self._make_in_move(product, 10, 20, lot_ids=[lot1])       # lot1 layer 10 @ 20
+        self._make_in_move(product, 10, 50, lot_ids=[lot2])       # lot2 layer 10 @ 50
+        out1 = self._make_out_move(product, 15, lot_ids=[lot1])   # 10@10 + 5@20 = 200
+        out2 = self._make_out_move(product, 4, lot_ids=[lot2])    # 4 @ 50 = 200
+
+        self.assertEqual(out1.value, -200)
+        self.assertEqual(out2.value, -200)
+        self.assertEqual(lot1.product_qty, 5)
+        self.assertEqual(lot1.total_value, 100)                   # 5 @ 20
+        self.assertEqual(lot1.standard_price, 20)
+        self.assertEqual(lot2.product_qty, 6)
+        self.assertEqual(lot2.total_value, 300)                   # 6 @ 50
+        self.assertEqual(lot2.standard_price, 50)
+        self.assertEqual(product.qty_available, 11)
+        self.assertEqual(product.total_value, 400)
+
+    def test_fifo_lot_replay_single(self):
+        """Backdating a cheaper receipt reshuffles the FIFO layers of the lot and
+        re-prices the delivery accordingly."""
+        now = fields.Datetime.now()
+        product = self.product
+        product.categ_id = self.category_fifo
+        lot1 = self.lot1
+
+        self._make_in_move(product, 10, 100, lot_ids=[lot1])
+        out = self._make_out_move(product, 5, lot_ids=[lot1])     # 5 @ 100
+        move_in_2 = self._make_in_move(product, 10, 20, lot_ids=[lot1])
+
+        self.assertEqual(out.value, -500)
+
+        # backdate the @20 receipt before the @100 one: FIFO now consumes 5 @ 20.
+        move_in_2.date = now - timedelta(days=15)
+        self.assertEqual(out.value, -100)
+        self.assertEqual(lot1.product_qty, 15)
+        self.assertEqual(lot1.total_value, 1100)                  # 5 @ 20 + 10 @ 100
+
+    def test_fifo_lot_replay_multi(self):
+        """A replay triggered on a lot-valuated FIFO product must keep each lot's
+        delivery priced from its own layers, not the product-wide FIFO stack
+        (lot1 is older and much cheaper than the delivered lot2)."""
+        now = fields.Datetime.now()
+        product = self.product
+        product.categ_id = self.category_fifo
+        lot1, lot2 = self.lot1, self.lot2
+
+        self._make_in_move(product, 10, 1, lot_ids=[lot1])        # cheap, oldest lot1
+        self._make_in_move(product, 10, 100, lot_ids=[lot2])
+        out = self._make_out_move(product, 5, lot_ids=[lot2])     # 5 @ 100
+        move_in_lot1 = self._make_in_move(product, 10, 5, lot_ids=[lot1])
+
+        self.assertEqual(out.value, -500)
+
+        # backdate a lot1 receipt to the very beginning -> triggers a full replay.
+        # The lot2 delivery must remain priced from lot2's layer (100), not from the
+        # product-wide oldest layer (lot1 @ 5).
+        move_in_lot1.date = now - timedelta(days=15)
+        self.assertEqual(out.value, -500)
+        self.assertEqual(lot2.product_qty, 5)
+        self.assertEqual(lot2.total_value, 500)                   # 5 @ 100
+        self.assertEqual(lot2.standard_price, 100)
+
+    # -------------------------------------------------------------- STANDARD
+    def test_standard_lot_multi_in_out(self):
+        """Standard cost: every move (in and out) is valued at the product standard
+        price regardless of the lot."""
+        product = self.product
+        product.categ_id = self.category_standard
+        product.standard_price = 10
+        lot1, lot2 = self.lot1, self.lot2
+
+        self._make_in_move(product, 10, 10, lot_ids=[lot1])
+        self._make_in_move(product, 10, 10, lot_ids=[lot2])
+        out1 = self._make_out_move(product, 4, lot_ids=[lot1])
+        out2 = self._make_out_move(product, 6, lot_ids=[lot2])
+
+        self.assertEqual(out1.value, -40)
+        self.assertEqual(out2.value, -60)
+        self.assertEqual(lot1.product_qty, 6)
+        self.assertEqual(lot1.total_value, 60)
+        self.assertEqual(lot2.product_qty, 4)
+        self.assertEqual(lot2.total_value, 40)
+        self.assertEqual(product.qty_available, 10)
+        self.assertEqual(product.total_value, 100)
+
+    def test_standard_lot_replay(self):
+        """Standard cost: a retroactive standard-price change re-prices the out
+        moves of a lot-valuated product."""
+        product = self.product
+        product.categ_id = self.category_standard
+        product.standard_price = 10
+        lot1 = self.lot1
+
+        self._make_in_move(product, 10, 10, lot_ids=[lot1])
+        out = self._make_out_move(product, 4, lot_ids=[lot1])
+        self.assertEqual(out.value, -40)
+
+        product.standard_price = 15
+        self.assertEqual(out.value, -60)                          # 4 @ 15
+        self.assertEqual(lot1.product_qty, 6)
+        self.assertEqual(lot1.total_value, 90)                    # 6 @ 15
 
     def test_fifo_remaining_qty_by_lot(self):
         """

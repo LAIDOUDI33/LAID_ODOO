@@ -319,7 +319,7 @@ class TestStockValuation(TestStockValuationCommon):
 
         # stock values for move1
         self.assertEqual(move1.value, -400.0)
-        self.assertEqual(move1.remaining_qty, 0.0)  # normally unused in out moves, but as it moved negative stock we mark it
+        self.assertEqual(move1.remaining_qty, -50.0)  # normally unused in out moves, but as it moved negative stock we mark it
 
         closing_move = self._close()
         valuation_aml = closing_move.line_ids.filtered(lambda l: l.account_id == self.account_stock_valuation)
@@ -679,8 +679,7 @@ class TestStockValuation(TestStockValuationCommon):
         self.assertEqual(move3.product_qty, 8)
         # old value: -80 -(8@10)
         # real value: -148 => -(10@10 + 4@12)
-        # estimated value: -140 => -(14@10)
-        self.assertEqual(move3.value, -140)
+        self.assertEqual(move3.value, -148)
 
         self.assertEqual(product.total_value, 72)
         closing_move = self._close()
@@ -2066,7 +2065,8 @@ class TestStockValuation(TestStockValuationCommon):
         self.assertEqual(product.with_context(to_date=Datetime.to_string(date5)).total_value, 1275)
 
         # Edit the quantity done of move1, increase it.
-        # The additional quantity is recorded at date6, not retroactively at date1.
+        # The additional quantity and value are applied retroactively at date1, the
+        # move's own date, so every later snapshot (date2 onward) shifts accordingly.
         with freeze_time(date6):
             self._set_quantity(move1, 20)
         self.assertEqual(product.qty_available, 95)
