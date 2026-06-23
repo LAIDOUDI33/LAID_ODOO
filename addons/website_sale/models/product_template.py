@@ -1022,13 +1022,13 @@ class ProductTemplate(models.Model):
 
         return attr_images
 
-    def _apply_taxes_to_combo_heuristic(
-        self, price, currency, *, product=None, product_taxes=None, taxes=None, tax_display=None
+    def _apply_taxes_of_cheapest_combo_choices(
+        self, price, currency, *, product_or_template=None, product_taxes=None, taxes=None
     ):
         base_price = self.env["product.product"]._get_tax_included_unit_price_from_price(
             price, product_taxes, product_taxes_after_fp=taxes
         )
-        combos = product.sudo().combo_ids
+        combos = product_or_template.sudo().combo_ids
         combo_base_prices = {
             combo: combo.currency_id._convert(
                 combo.base_price, currency, self.env.company, fields.Date.context_today(self)
@@ -1047,7 +1047,7 @@ class ProductTemplate(models.Model):
         # Heuristic: Pick the cheapest combo item of each choice
         assumed_combo_items = combos.mapped(
             lambda c: (
-                min(c.combo_item_ids, key=lambda item: item.product_id.lst_price + item.extra_price)
+                min(c.combo_item_ids, key=lambda item: item.lst_price + item.extra_price)
                 if c.combo_item_ids
                 else self.env["product.combo.item"]
             )
@@ -1058,15 +1058,21 @@ class ProductTemplate(models.Model):
             if not item:
                 continue
             prorated_base = combo_prices[item.combo_id] + item.extra_price
-            item_taxes = item.product_id.taxes_id._filter_taxes_by_company()
-            bases_by_tax[item_taxes] = bases_by_tax.get(item_taxes, 0.0) + prorated_base
+            item_taxes = item.product_id.sudo().taxes_id._filter_taxes_by_company()
+            mapped_taxes = (
+                self
+                .env["account.fiscal.position"]
+                ._get_fiscal_position(self.env.user.partner_id)
+                .map_tax(item_taxes)
+            )
+            bases_by_tax[mapped_taxes] = bases_by_tax.get(mapped_taxes, 0.0) + prorated_base
 
         approx_price = 0.0
-        for item_taxes, base in bases_by_tax.items():
-            if item_taxes:
-                approx_price += item_taxes.compute_all(
-                    base, currency, 1, product=None, partner=self.env.user.partner_id
-                )[tax_display]
+        for tax, base in bases_by_tax.items():
+            if tax:
+                approx_price += tax.compute_all(
+                    base, currency, 1, partner=self.env.user.partner_id
+                )["total_included"]
             else:
                 approx_price += base
         return approx_price
@@ -1090,13 +1096,12 @@ class ProductTemplate(models.Model):
             tax_display = "total_excluded" if show_tax == "tax_excluded" else "total_included"
 
         if self.type == "combo" and tax_display == "total_included":
-            return self._apply_taxes_to_combo_heuristic(
+            return self._apply_taxes_of_cheapest_combo_choices(
                 price,
                 currency,
-                product=product or self,
+                product_or_template=product or self,
                 product_taxes=product_taxes,
                 taxes=taxes,
-                tax_display=tax_display,
             )
 
         if product_taxes is None:
