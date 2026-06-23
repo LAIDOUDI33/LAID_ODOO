@@ -679,15 +679,17 @@ been taken for this time off type. Changing it now would affect existing employe
         return None, 0
 
     def _get_carried_over_days_expiration_data(self, allocations, target_date):
-        accrual_allocations = allocations.filtered(lambda alloc: alloc.allocation_type == 'accrual')
+        accrual_allocations = allocations.filtered(lambda alloc: alloc.accrual_plan_id)
         updated_alloc_data = accrual_allocations.sudo()._process_accrual_plans(target_date)
         carried_over_days_expiration_data = {}
         for allocation in accrual_allocations:
-            expiring_days = updated_alloc_data[allocation]['previous_carryover_number_of_days']
-            leaves_taken = updated_alloc_data[allocation]['leaves_taken']
+            allocation_data = updated_alloc_data[allocation]
+            expiring_duration = allocation_data['previous_carryover_allocated_duration']
+            leaves_taken = allocation_data['leaves_taken']
             carried_over_days_expiration_data[allocation] = {
-                'expiration_date': updated_alloc_data[allocation]['carried_over_days_expiration_date'],
-                'no_expiring_days': max(0, expiring_days - leaves_taken),
+                'expiration_date': allocation_data['carried_over_days_expiration_date'],
+                'no_expiring_days':
+                    allocation._convert_from_type_request_unit(max(0, expiring_duration - leaves_taken), allocation_data),
             }
         for allocation in allocations - accrual_allocations:
             carried_over_days_expiration_data[allocation] = {
