@@ -143,12 +143,20 @@ class ProductTemplate(models.Model):
         relation="product_public_category_product_template_rel",
     )
 
+    is_published = fields.Boolean(compute="_compute_is_published", store=True, readonly=False)
     publish_date = fields.Datetime(
         string="Publish Date",
         compute="_compute_publish_date",
         store=True,
         required=True,
         default=fields.Datetime.now,
+    )
+    auto_unpublished_date = fields.Datetime(
+        string="Auto-Unpublished Date",
+        compute="_compute_is_published",
+        store=True,
+        readonly=True,
+        copy=False,
     )
 
     product_template_image_ids = fields.One2many(
@@ -258,6 +266,39 @@ class ProductTemplate(models.Model):
     def _compute_publish_date(self):
         """Set `publish_date` to the moment of (re-)publishing."""
         self.filtered("is_published").publish_date = fields.Datetime.now()
+
+    @api.depends(
+        "is_storable",
+        "allow_out_of_stock_order",
+        "product_variant_ids.qty_available",
+        "product_variant_ids.outgoing_qty",
+    )
+    def _compute_is_published(self):
+        """Auto-unpublish a product when all variants are out of stock, republish when restocked.
+
+        A manual republish is preserved: it makes `publish_date` newer than `auto_unpublished_date`,
+        after which the product is never auto-unpublished again.
+        """
+        if not self.env["res.groups"]._is_feature_enabled(
+            "website_sale.group_unpublish_out_of_stock"
+        ):
+            return
+        for template in self:
+            if not template.id or not template.is_storable or template.allow_out_of_stock_order:
+                continue
+            variants = template.product_variant_ids.filtered("active")
+            sold_out = bool(variants) and all(variant.free_qty <= 0 for variant in variants)
+            if template.is_published:
+                manually_republished = (
+                    template.auto_unpublished_date
+                    and template.publish_date > template.auto_unpublished_date
+                )
+                if not manually_republished and sold_out:
+                    template.is_published = False
+                    template.auto_unpublished_date = fields.Datetime.now()
+            elif template.auto_unpublished_date and not sold_out:
+                template.is_published = True
+                template.auto_unpublished_date = False
 
     def _compute_website_url(self):
         super()._compute_website_url()
