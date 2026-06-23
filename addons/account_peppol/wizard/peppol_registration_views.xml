@@ -25,10 +25,12 @@
                         <group col="1">
                             <group>
                                 <field name="smp_registration" string="Allow incoming invoices" invisible="1"/>
+                                <field name="available_peppol_eas" invisible="1"/>
                                 <field name="peppol_eas"
                                        placeholder="Peppol ID"
                                        nolabel="1"
                                        widget="peppol_non_focusable_selection"
+                                       options="{'whitelist_fname': 'available_peppol_eas'}"
                                        class="o_field_peppol_eas_selection"/>
                                 <field name="peppol_endpoint"
                                        nolabel="1"/>

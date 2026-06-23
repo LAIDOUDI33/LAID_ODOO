@@ -1,12 +1,12 @@
 import { registry } from "@web/core/registry";
-import { SelectionField, selectionField } from "@web/views/fields/selection/selection_field";
+import { FilterableSelectionField, filterableSelectionField } from "@web/views/fields/selection/filterable_selection_field";
 
-class NonFocusableSelectionField extends SelectionField {
+class NonFocusableSelectionField extends FilterableSelectionField {
     static template = "account_peppol.NonFocusableSelectionField";
 }
 
 export const nonFocusableSelectionField = {
-    ...selectionField,
+    ...filterableSelectionField,
     component: NonFocusableSelectionField,
 };
 
