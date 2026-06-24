@@ -265,6 +265,15 @@ class ProductTemplate(models.Model):
             if product.id:
                 product.website_url = "/shop/%s" % self.env["ir.http"]._slug(product)
 
+    def _get_sitemap_lastmod(self):
+        self.ensure_one()
+        dates = [super()._get_sitemap_lastmod()]
+        dates += self.product_variant_ids.mapped('write_date')
+        dates += self.product_template_image_ids.mapped('write_date')
+        dates += self.attribute_line_ids.mapped('write_date')
+        dates += self.attribute_line_ids.value_ids.mapped('write_date')
+        return max(d for d in dates if d)
+
     @api.depends("product_variant_ids.default_code")
     def _compute_variants_default_code(self):
         for template in self:

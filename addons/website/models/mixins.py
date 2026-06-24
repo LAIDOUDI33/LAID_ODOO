@@ -264,6 +264,17 @@ class WebsiteLocatedMixin(models.AbstractModel):
             if record.website_url != '#':
                 record.website_absolute_url = url_join(record.get_base_url(), record.website_url)
 
+    def _get_sitemap_lastmod(self):
+        """Datetime for this record's sitemap ``<lastmod>``: when the rendered
+        page last changed.
+
+        Defaults to ``write_date`` (always set by the ORM). Override to ``max``
+        across related records that affect the page (variants, tickets, member
+        slides, ...).
+        """
+        self.ensure_one()
+        return self.write_date
+
     def _get_extra_tracking_values(self, **kwargs):
         return {}
 

@@ -199,7 +199,7 @@ class WebsiteSale(payment_portal.PaymentPortal):
         for cat in Category.search(dom):
             loc = cat.website_url
             if not qs or qs.lower() in loc:
-                yield {"loc": loc}
+                yield {"loc": loc, "lastmod": cat._get_sitemap_lastmod().date()}
 
     def sitemap_products(env, _rule, qs):  # noqa: N805
         if env.website and env.website.ecommerce_access == "logged_in" and not qs:
@@ -213,7 +213,7 @@ class WebsiteSale(payment_portal.PaymentPortal):
         for product in ProductTemplate.with_context(prefetch_fields=False).search(dom):
             loc = product.website_url
             if not qs or qs.lower() in loc:
-                yield {"loc": loc}
+                yield {"loc": loc, "lastmod": product._get_sitemap_lastmod().date()}
 
     def _get_search_options(
         self,
@@ -299,6 +299,7 @@ class WebsiteSale(payment_portal.PaymentPortal):
         website=True,
         list_as_website_content=_lt("Shop"),
         sitemap=sitemap_shop,
+        sitemap_group="products",
         # Return a 404 instead of a 403 error in case of an access error.
         handle_params_access_error=lambda e, **_kwargs: NotFound.code,  # noqa: ARG005
     )
@@ -718,6 +719,7 @@ class WebsiteSale(payment_portal.PaymentPortal):
         auth="public",
         website=True,
         sitemap=sitemap_products,
+        sitemap_group="products",
         # Return a 404 instead of a 403 error in case of an access error.
         handle_params_access_error=lambda e, **_kwargs: NotFound.code,  # noqa: ARG005
     )

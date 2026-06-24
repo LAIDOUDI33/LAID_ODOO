@@ -47,7 +47,7 @@ class WebsiteSlides(WebsiteProfile):
         for channel in Channel.search(dom):
             loc = '/slides/%s' % env['ir.http']._slug(channel)
             if not qs or qs.lower() in loc:
-                yield {'loc': loc}
+                yield {'loc': loc, 'lastmod': channel._get_sitemap_lastmod().date()}
 
     def _slide_render_context_base(self):
         return {
@@ -403,7 +403,7 @@ class WebsiteSlides(WebsiteProfile):
 
     @http.route(['/slides', '/slides/page/<int:page>',
                  '/slides/tag/<string:slug_tags>', '/slides/tag/<string:slug_tags>/page/<int:page>'],
-                type='http', auth="public", website=True, sitemap=sitemap_slides_channel, readonly=True,
+                type='http', auth="public", website=True, sitemap=sitemap_slides_channel, sitemap_group="courses", readonly=True,
                 list_as_website_content=_lt("eLearning"))
     def slides_channel(self, slide_category=None, slug_tags=None, my=0, page=1, **post):
         my = 1 if str(my) == '1' else 0  # if in the URL parameters, it will be a string instead of a number
@@ -531,7 +531,7 @@ class WebsiteSlides(WebsiteProfile):
         '/slides/<model("slide.channel"):channel>/tag/<model("slide.tag"):tag>/page/<int:page>',
         '/slides/<model("slide.channel"):channel>/category/<model("slide.slide"):category>',
         '/slides/<model("slide.channel"):channel>/category/<model("slide.slide"):category>/page/<int:page>',
-    ], type='http', auth="public", website=True, sitemap=sitemap_slide, handle_params_access_error=handle_wslide_error, readonly=True)
+    ], type='http', auth="public", website=True, sitemap=sitemap_slide, sitemap_group="courses", handle_params_access_error=handle_wslide_error, readonly=True)
     def channel(self, channel=False, channel_id=False, category=None, category_id=False, tag=None, page=1, slide_category=None, uncategorized=False, sorting=None, search=None, **kw):
         """ Will return the rendered page of a course, with optional parameters allowing customization:
 
@@ -975,15 +975,17 @@ class WebsiteSlides(WebsiteProfile):
         slides = env['slide.slide'].search([('website_published', '=', True), ('active', '=', True)])
         for slide in slides:
             if slide.is_category:
-                loc = slide.channel_id.website_url
+                record = slide.channel_id
+                loc = record.website_url
             else:
+                record = slide
                 loc = slide.website_url
 
             if not qs or qs.lower() in loc.lower():
-                yield {'loc': loc}
+                yield {'loc': loc, 'lastmod': record._get_sitemap_lastmod().date()}
 
     @http.route('/slides/slide/<model("slide.slide"):slide>', type='http', auth="public",
-                website=True, sitemap=sitemap_slide_view, handle_params_access_error=handle_wslide_error)
+                website=True, sitemap=sitemap_slide_view, sitemap_group="courses", handle_params_access_error=handle_wslide_error)
     def slide_view(self, slide, **kwargs):
         if slide.channel_id.website_id and slide.channel_id.website_id.id != self.env.context['website_id'] or not slide.active:
             raise werkzeug.exceptions.NotFound()
