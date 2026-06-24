@@ -5,6 +5,7 @@ export class HrWorkEntryType extends models.Model {
 
     id = fields.Integer();
     name = fields.Char();
+    time_off_selectable = fields.Boolean();
 
     _records = [
         {
