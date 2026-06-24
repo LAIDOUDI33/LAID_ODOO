@@ -95,11 +95,29 @@ class AccountEdiXmlUblTr(models.AbstractModel):
         document_node['cac:OrderReference']['cbc:IssueDate'] = {'_text': invoice.invoice_date}
 
         if invoice.partner_id.l10n_tr_nilvera_customer_status == 'earchive':
-            document_node['cac:AdditionalDocumentReference'] = {
-                'cbc:ID': {'_text': 'ELEKTRONIK'},
-                'cbc:IssueDate': {'_text': invoice.invoice_date},
-                'cbc:DocumentTypeCode': {'_text': 'SEND_TYPE'},
-            }
+            additional_ref_data = [('SEND_TYPE', 'ELEKTRONIK')]
+            # Append e-commerce related cac:AdditionalDocumentReference nodes (website, payment,
+            # delivery) if "Sales Type" is set to 'Website Sale', regardless of whether it
+            # originated from an online store or was selected manually.
+            if invoice.l10n_tr_sales_type == 'website':
+                ecom_data, ecom_errors = self._l10n_tr_get_ecommerce_sale_additional_reference_data(invoice)
+                if ecom_errors:
+                    raise UserError(
+                        self.env._(
+                            "The e-Archive XML cannot be generated yet.\n"
+                            "- %(errors)s",
+                            errors="\n- ".join(ecom_errors)
+                        )
+                    )
+                additional_ref_data.extend(ecom_data)
+            document_node['cac:AdditionalDocumentReference'] = [
+                {
+                    'cbc:ID': {'_text': value},
+                    'cbc:IssueDate': {'_text': invoice.invoice_date},
+                    'cbc:DocumentTypeCode': {'_text': code},
+                }
+                for code, value in additional_ref_data
+            ]
         document_node['cbc:Note'] = [
             document_node['cbc:Note'],
             {'_text': self._l10n_tr_get_amount_integer_partn_text_note(invoice.amount_residual_signed, self.env.ref('base.TRY')), 'note_attrs': {}}
@@ -111,6 +129,60 @@ class AccountEdiXmlUblTr(models.AbstractModel):
         if invoice.move_type == "out_refund":
             # For credit notes, we need to add cac:BillingReference (i.e. reference to the original invoice)
             self._l10n_tr_add_billing_reference_node(document_node, vals)
+
+    def _l10n_tr_get_ecommerce_sale_additional_reference_data(self, invoice):
+        ecom_errors = []
+        ecom_data = []
+
+        # Website Data
+        website = invoice.company_id.website
+        if 'website_id' in invoice._fields and invoice.website_id:
+            website = invoice.website_id.domain or invoice.website_id.name
+        if website:
+            ecom_data.extend([
+                ('IS_INTERNET', '.'),
+                ('INT_WEBSITE', website),
+            ])
+        else:
+            ecom_errors.append(self.env._("Add your e-commerce website information in Company Settings → Website, then try again."))
+
+        # Payment Data
+        if (
+            'sale_line_ids' in invoice.line_ids._fields
+            and (sale_order := invoice.line_ids.sale_line_ids.order_id[:1])
+            and 'transaction_ids' in sale_order._fields
+            and (transaction := sale_order.transaction_ids.filtered(lambda t: t.state in ('done', 'authorized'))[:1])
+        ):
+            if transaction.provider_id.custom_mode == 'wire_transfer':
+                pm_code = 'EFT/HAVALE'
+            elif transaction.provider_id.code not in ('custom', 'demo', 'none'):
+                pm_code = 'ODEMEARACISI'
+            elif 'card' in transaction.payment_method_code:
+                pm_code = 'KREDIKARTI/BANKAKARTI'
+            else:
+                pm_code = 'DIGER'
+            # Append nodes for online transaction details
+            ecom_data.extend([
+                ('INT_PAYMENT_AGENT_NAME', transaction.provider_id.name),
+                ('INT_PAYMENT_METHOD', pm_code),
+                ('INT_PAYMENTDATE', transaction.create_date.strftime('%d.%m.%Y')),
+            ])
+        elif payment := invoice.matched_payment_ids[:1]:
+            if payment.payment_method_code == 'wire_transfer':
+                pm_code = 'EFT/HAVALE'
+            elif 'card' in payment.payment_method_code:
+                pm_code = 'KREDIKARTI/BANKAKARTI'
+            else:
+                pm_code = 'DIGER'
+            # Append nodes for manual payment details
+            ecom_data.extend([
+                ('INT_PAYMENT_METHOD', pm_code),
+                ('INT_PAYMENTDATE', payment.create_date.strftime('%d.%m.%Y')),
+            ])
+        else:
+            ecom_errors.append(self.env._("The invoice must have either a completed online payment transaction or a registered manual payment."))
+
+        return ecom_data, ecom_errors
 
     @api.model
     def _l10n_tr_add_billing_reference_node(self, document_node, vals):
