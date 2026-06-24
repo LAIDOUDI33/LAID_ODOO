@@ -164,42 +164,51 @@
         </div>
     </t>
 
+    <t t-name="web.ListRenderer.CreateRow">
+        <tr class="d-print-none">
+            <td t-if="this.withHandleColumn"/>
+            <td t-att-colspan="this.withHandleColumn ? this.nbCols - 1 : this.nbCols"
+                class="o_field_x2many_list_row_add"
+                t-on-keydown="(ev) => this.onCellKeydown(ev, null)"
+            >
+                <t t-foreach="this.controls" t-as="control" t-key="control_index">
+                    <button
+                        t-if="control.type === 'create' and !this.evalColumnInvisible(control.invisible)"
+                        t-attf-class="btn btn-link #{control_index !== 0 ? 'ml16' : ''}"
+                        t-att-tabindex="this.props.list.editedRecord ? '-1' : '0'"
+                        t-att-data-hotkey="control.hotkey || false"
+                        t-on-click.stop.prevent="() => this.add({ context: control.context })"
+                    >
+                        <t t-out="control.string"/>
+                    </button>
+                    <ViewButton
+                        t-if="control.type === 'button' and !this.evalColumnInvisible(control.invisible)"
+                        className="`${control.className} ${control_index !== 0 ? 'ml16' : ''}`"
+                        clickParams="control.clickParams"
+                        icon="control.icon"
+                        icon_class="control.icon_class"
+                        attrs="control.attrs"
+                        record="this.props.list"
+                        string="control.string"
+                        title="control.title"
+                        tabindex="this.props.list.editedRecord ? '-1' : '0'"
+                    />
+                </t>
+            </td>
+        </tr>
+    </t>
+
     <t t-name="web.ListRenderer.Rows">
         <t t-if="!list.isGrouped">
+            <t t-if="this.displayRowCreates and  this.props.editable === 'top'">
+                <t t-call="{{ this.constructor.createRowTemplate }}"/>
+            </t>
             <t t-foreach="list.records" t-as="record" t-key="record.id">
                 <t t-call="{{ this.constructor.recordRowTemplate }}"/>
             </t>
-            <tr t-if="this.displayRowCreates" class="d-print-none">
-                <td t-if="this.withHandleColumn"/>
-                <td t-att-colspan="this.withHandleColumn ? this.nbCols - 1 : this.nbCols"
-                    class="o_field_x2many_list_row_add"
-                    t-on-keydown="(ev) => this.onCellKeydown(ev, null)"
-                >
-                    <t t-foreach="this.controls" t-as="control" t-key="control_index">
-                        <button
-                            t-if="control.type === 'create' and !this.evalColumnInvisible(control.invisible)"
-                            t-attf-class="btn btn-link #{control_index !== 0 ? 'ml16' : ''}"
-                            t-att-tabindex="this.props.list.editedRecord ? '-1' : '0'"
-                            t-att-data-hotkey="control.hotkey || false"
-                            t-on-click.stop.prevent="() => this.add({ context: control.context })"
-                        >
-                            <t t-out="control.string"/>
-                        </button>
-                        <ViewButton
-                            t-if="control.type === 'button' and !this.evalColumnInvisible(control.invisible)"
-                            className="`${control.className} ${control_index !== 0 ? 'ml16' : ''}`"
-                            clickParams="control.clickParams"
-                            icon="control.icon"
-                            icon_class="control.icon_class"
-                            attrs="control.attrs"
-                            record="this.props.list"
-                            string="control.string"
-                            title="control.title"
-                            tabindex="this.props.list.editedRecord ? '-1' : '0'"
-                        />
-                    </t>
-                </td>
-            </tr>
+            <t t-if="this.displayRowCreates and this.props.editable !== 'top'">
+                <t t-call="{{ this.constructor.createRowTemplate }}"/>
+            </t>
             <t t-if="!this.props.list.isGrouped and !this.props.noContentHelp">
                 <tr t-foreach="this.getEmptyRowIds" t-as="emptyRowId" t-key="emptyRowId">
                     <td t-att-colspan="this.nbCols">&#8203;</td>
