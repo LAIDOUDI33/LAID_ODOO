@@ -47,6 +47,7 @@ if typing.TYPE_CHECKING:
     from collections.abc import Callable
     from typing import Literal
     from odoo.api import Environment
+    from odoo.orm.fields import Field
     from odoo.orm.fields_textual import BaseString
 
 __all__ = [
@@ -747,27 +748,38 @@ class ParsedTranslation:
 
 def adapt_translated_field_value(
     env: Environment,
-    val: dict[str, str] | str | Literal[False] | None,
+    field: Field,
+    val: StoredTranslations | dict[str, str] | str | Literal[False] | None,
     adapter: Callable[[str, str], str],
-) -> dict[str, str] | str | Literal[False] | None:
+) -> StoredTranslations | dict[str, str] | str | Literal[False] | None:
     """Apply an adapter to a translated field value, handling all supported value formats.
 
     Translated fields accept either a plain string (single language) or a dict mapping
-    language codes to translated strings. This function normalizes both formats by
-    applying the adapter to each value, preserving None and False as-is.
+    language codes to translated strings. This function applies the adapter to each
+    value, preserving None and False as-is.
 
     :param env: the Odoo environment
+    :param field: the translated field
     :param val: the value to adapt; can be a dict {lang: value}, a plain string,
                 or None/False
     :param adapter: callable(lang, value) -> str; receives language code and value,
                     returns the adapted value for each translation
-    :return: the adapted value
+    :return: the adapted value in the same format as ``val``
     """
     if val is None or val is False:
         return val
     if not isinstance(val, dict):
         return adapter(env.lang or 'en_US', val)
-    return {k: adapter(k, v) for k, v in val.items()}
+    assert field.translate
+    adapted = {k: adapter(k, v) for k, v in val.items()}
+    if isinstance(val, StoredTranslations):
+        model = env[field.model_name]
+        return StoredTranslations({
+            k: cache_v
+            for k, v in adapted.items()
+            if (cache_v := field.convert_to_cache(v, model)) is not None
+        })
+    return adapted
 
 
 def get_translation(module: str, lang: str, source: str, args: tuple | dict) -> str:
