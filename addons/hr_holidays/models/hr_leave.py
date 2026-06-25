@@ -653,6 +653,13 @@ class HrLeave(models.Model):
                     work_time_per_day_list = work_time_per_day_mapped[leave.date_from, leave.date_to, leave.work_entry_type_id.include_public_holidays_in_duration, calendar][leave.employee_id.id]
                     days = len(work_time_per_day_list)
                     hours = sum(map(lambda t: t[1], work_time_per_day_list))
+                elif (
+                    leave.work_entry_type_request_unit == 'half_day'
+                    and leave.request_date_from != leave.request_date_to
+                    and calendar.attendance_ids
+                    and any(calendar.attendance_ids.mapped('duration_based'))
+                ):
+                    days, hours = leave._get_duration_based_half_day_duration(calendar)
                 else:
                     work_days_data = work_days_data_mapped[leave.date_from, leave.date_to, leave.work_entry_type_id.include_public_holidays_in_duration, calendar][leave.employee_id.id]
                     hours, days = work_days_data['hours'], work_days_data['days']
@@ -667,6 +674,24 @@ class HrLeave(models.Model):
                 days = ceil(days)
             result[leave.id] = (days, hours)
         return result
+
+    def _get_duration_based_half_day_duration(self, calendar):
+        """Compute the (days, hours) duration of a multi-day half-day request on a calendar
+        that has at least one duration-based attendance.
+        """
+        self.ensure_one()
+        total_days = 0.0
+        total_hours = 0.0
+        current = self.request_date_from
+        while current <= self.request_date_to:
+            is_half, day_contribution = calendar._get_half_day_leave_hours_on_date(
+                current, self.request_date_from, self.request_date_to,
+                self.request_date_from_period, self.request_date_to_period)
+            if day_contribution:
+                total_days += 0.5 if is_half else 1.0
+                total_hours += day_contribution
+            current += timedelta(days=1)
+        return total_days, total_hours
 
     @api.depends('date_from', 'date_to', 'resource_calendar_id')
     def _compute_duration(self):
