@@ -172,14 +172,12 @@ class MrpUnbuild(models.Model):
 
         if self.mo_id and self.mo_id.state != 'done':
             raise UserError(_('You cannot unbuild a undone manufacturing order.'))
-
         consume_moves = self._generate_consume_moves()
         consume_moves._action_confirm()
         produce_moves = self._generate_produce_moves()
         produce_moves._action_confirm()
         produce_moves.quantity = 0
 
-        # Collect component lots already restored by previous unbuilds on the same MO
         previously_unbuilt_lots = (self.mo_id.unbuild_ids - self).produce_line_ids.filtered(lambda ml: ml.product_id != self.product_id and ml.product_id.tracking == 'serial').lot_ids
 
         finished_moves = consume_moves.filtered(lambda m: m.product_id == self.product_id)
@@ -195,6 +193,7 @@ class MrpUnbuild(models.Model):
         if any(consume_move.product_id.tracking in ['lot', 'serial'] and not self.mo_id for consume_move in consume_moves):
             raise UserError(error_message)
 
+        finished_moves.move_line_ids.unlink()
         for finished_move in finished_moves:
             if finished_move.uom_id.compare(finished_move.product_uom_qty, finished_move.quantity) > 0:
                 finished_move_line_vals = self._prepare_finished_move_line_vals(finished_move)
