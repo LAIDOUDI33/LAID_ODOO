@@ -48,6 +48,13 @@ test("prettifyMessageContent properly replaces mentions with links", async () =>
                         { id: 12, name: "Isabelle" },
                     ],
                 },
+                {
+                    messageTemplate: partnerMessageTemplate,
+                    records: [
+                        { id: 1, name: "Bernard" },
+                        { id: 2, name: "Bernard Junior" },
+                    ],
+                },
             ],
         },
         {
@@ -58,6 +65,24 @@ test("prettifyMessageContent properly replaces mentions with links", async () =>
                     records: [
                         { id: 1, displayName: "Best beer in Belgium" },
                         { id: 18, displayName: "Cutest cats" },
+                    ],
+                },
+                {
+                    messageTemplate: threadMessageTemplate,
+                    records: [
+                        { id: 1, displayName: "Best beer" },
+                        { id: 2, displayName: "Best beer in Belgium" },
+                    ],
+                },
+                {
+                    messageTemplate: threadMessageTemplate,
+                    records: [
+                        { id: 1, displayName: "Best beer" },
+                        {
+                            id: 2,
+                            displayName: "in Belgium",
+                            parent_channel_id: { displayName: "Best beer" },
+                        },
                     ],
                 },
             ],
