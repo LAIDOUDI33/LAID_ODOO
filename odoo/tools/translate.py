@@ -738,6 +738,7 @@ class StoredTranslations(dict):
         *,
         digest: Callable[[str], str] | None = None,
         overwrite: bool = True,
+        delay_translations: bool = False,
     ) -> StoredTranslations | None:
         """ Apply term-level translations and build a new stored mapping.
 
@@ -755,6 +756,10 @@ class StoredTranslations(dict):
                           ``False``, prior mappings take priority. Prior mappings are those
                           where the stored term differs from the source term (``term != src``).
                           see ``TestStoredTranslations.test_translated_overwrite_false`` for more details.
+        :param delay_translations: If ``True``, keep current non-updated language
+                                   values and store recomputed values in technical
+                                   keys (``_lang``). If ``False``, write recomputed
+                                   values directly.
         :return: A new validated ``StoredTranslations`` result, or ``None`` when no
                  valid translation can be kept.
         """
@@ -764,22 +769,20 @@ class StoredTranslations(dict):
             return None
 
         # For updated languages, use the latest synchronized value as base.
-        for lang in term_updates:
-            if dict.__contains__(valid_self, f'_{lang}'):  # noqa: PLC2801
-                valid_self[lang] = valid_self.pop(f'_{lang}')
+        if not delay_translations:
+            for lang in term_updates:
+                if dict.__contains__(valid_self, f'_{lang}'):  # noqa: PLC2801
+                    valid_self[lang] = valid_self.pop(f'_{lang}')
+
         term_updates = {lang: src2term for lang, src2term in term_updates.items() if src2term}
         if not term_updates:
             return valid_self
 
-        old_source_lang_value = valid_self[next(
-            lang
-            for lang in [f'_{source_lang}', source_lang, '_en_US', 'en_US']
-            if dict.__contains__(valid_self, lang)  # noqa: PLC2801
-        )]
+        old_source_lang_value = valid_self['_' + source_lang]
         old_values_to_translate = {
             lang: value
-            for lang, value in valid_self.items()
-            if lang != source_lang and lang in term_updates
+            for lang in term_updates
+            if (value := valid_self['_' + lang]) != old_source_lang_value
         }
         # {source_term: {lang: translated_term}}
         old_translation_dictionary = field.get_translation_dictionary(old_source_lang_value, old_values_to_translate)
@@ -799,7 +802,6 @@ class StoredTranslations(dict):
                 for lang, src2term in term_updates.items()
             }
 
-        model = env[field.model_name]
         for lang, src2term in term_updates.items():
             old_src2term = {src: term for src, lang2term in old_translation_dictionary.items() if (term := lang2term.get(lang)) and term != src}
             new_src2term = {**old_src2term, **src2term} if overwrite else {**src2term, **old_src2term}
@@ -807,8 +809,56 @@ class StoredTranslations(dict):
             if field.type == 'html':
                 # a hack to sanitize html
                 translation = field._validated_cache_value(translation, env)
-            valid_self[lang] = field.convert_to_cache(translation, model)
+            if delay_translations:
+                valid_self['_' + lang] = translation
+                valid_self.setdefault(lang, valid_self['en_US'])
+            else:
+                valid_self[lang] = translation
         return valid_self
+
+    def extract_term_translations(self, env: Environment, field: Field, source_lang: str, target_langs: set[str] | None = None, *, include_identical: bool = False) -> dict[str, dict[str, str]]:
+        """ Extract per-language term mappings from stored model_terms translations.
+
+        :param env: Odoo environment
+        :param field: A model_terms translated field (``callable(field.translate)``).
+        :param source_lang: Language of the source terms to extract against
+        :param target_langs: if provided, restrict output to these language codes
+        :param include_identical: if True, also keep terms where translated_term == source_term
+        :return: the terms mapping for each target language {lang: {src_term: translated_term}}
+        """
+        assert callable(field.translate)
+        valid_self = self._validate(env, field, check_structure=False, auto_fix=True)
+        if not valid_self:
+            return {}
+
+        source_value = valid_self['_' + source_lang]
+
+        target_lang_values = {
+            lang: value
+            for lang in valid_self
+            if not lang.startswith('_')
+            and lang != source_lang and (target_langs is None or lang in target_langs)
+            and (value := valid_self['_' + lang]) != source_value
+        }
+        if not target_lang_values and not include_identical:
+            return {}
+
+        # {source_term: {lang: translated_term}}
+        translation_dictionary = field.get_translation_dictionary(source_value, target_lang_values)
+
+        # Invert to {lang: {source_term: translated_term}}
+        result: dict[str, dict[str, str]] = {}
+        for source_term, lang2term in translation_dictionary.items():
+            for lang, translated_term in lang2term.items():
+                if include_identical or source_term != translated_term:
+                    result.setdefault(lang, {})[source_term] = translated_term
+
+        if include_identical:
+            for lang in env['res.lang']._get_active_by('code') if target_langs is None else target_langs:
+                if lang not in result:
+                    result[lang] = {source_term: source_term for source_term in translation_dictionary}
+
+        return result
 
 
 class ParsedTranslation:

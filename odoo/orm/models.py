@@ -2929,8 +2929,10 @@ class BaseModel(metaclass=MetaModel):
             if not stored_translations:
                 return False
             stored_translations = StoredTranslations(stored_translations)
-            source_lang_env = self.with_context(lang=source_lang).env
-            write_value = stored_translations.translated(source_lang_env, field, source_lang, translations, digest=digest)
+            write_value = stored_translations.translated(
+                self.env, field, source_lang, translations, digest=digest,
+                delay_translations=bool(self.env.context.get('delay_translations')),
+            )
             self[field_name] = write_value
         return True
 
@@ -4974,22 +4976,8 @@ class BaseModel(metaclass=MetaModel):
                         k: v for k, v in old_stored_translations.items() if k in valid_langs and k != lang
                     })
                 else:
-                    old_translations = {
-                        k: old_stored_translations.get(f'_{k}', v)
-                        for k, v in old_stored_translations.items()
-                        if k in valid_langs
-                    }
-                    # {from_lang_term: {lang: to_lang_term}
-                    translation_dictionary = field.get_translation_dictionary(
-                        old_translations.pop(lang, old_translations['en_US']),
-                        old_translations
-                    )
-                    # {lang: {old_term: new_term}}
-                    translations = defaultdict(dict)
-                    for from_lang_term, to_lang_terms in translation_dictionary.items():
-                        for lang, to_lang_term in to_lang_terms.items():
-                            translations[lang][from_lang_term] = to_lang_term
-                    new.update_field_translations(name, translations)
+                    translations = StoredTranslations(old_stored_translations).extract_term_translations(self.env, field, lang)
+                    new.update_field_translations(name, translations, source_lang=lang)
 
     def copy(self, default: ValuesType | None = None) -> Self:
         """ Duplicate record ``self`` updating it with default values.
