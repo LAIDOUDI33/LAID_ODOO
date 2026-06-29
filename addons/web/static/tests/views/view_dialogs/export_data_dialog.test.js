@@ -1,19 +1,12 @@
 import { expect, test } from "@odoo/hoot";
-import {
-    check,
-    dblclick,
-    pointerDown,
-    queryAll,
-    queryAllTexts,
-    queryFirst,
-    select,
-} from "@odoo/hoot-dom";
+import { check, dblclick, pointerDown, queryAllTexts, queryFirst, select } from "@odoo/hoot-dom";
 import { animationFrame, runAllTimers } from "@odoo/hoot-mock";
 import {
     contains,
     defineModels,
     fields,
     getMockEnv,
+    mockService,
     models,
     mountView,
     onRpc,
@@ -208,6 +201,19 @@ test("Export dialog UI test", async () => {
 });
 
 test("Export dialog: interacting with export templates", async () => {
+    mockService("action", {
+        doAction(action) {
+            expect.step("edit template");
+            expect(action).toEqual({
+                name: "Export Templates",
+                res_id: 2,
+                res_model: "ir.exports",
+                target: "new",
+                type: "ir.actions.act_window",
+                views: [[false, "form"]],
+            });
+        },
+    });
     onRpc("/web/export/formats", () => [
         { tag: "csv", label: "CSV" },
         { tag: "xls", label: "Excel" },
@@ -308,20 +314,14 @@ test("Export dialog: interacting with export templates", async () => {
             message: "unselecting an export template has not changed the export list",
         }
     );
-    expect(".o_delete_exported_list").toHaveCount(0, {
-        message: "trash icon is not visible when no template has been selected",
+    expect(".o_edit_exported_list").toHaveCount(0, {
+        message: "edit button is not visible when no template has been selected",
     });
     await select("2", { target: ".o_exported_lists_select" });
     await animationFrame();
-    await contains(".o_delete_exported_list").click();
-    expect(queryAll(".o_dialog .modal-body")[1]).toHaveText(
-        "Do you really want to delete this export template?"
-    );
-    await contains(".o-overlay-item:nth-child(2) .btn-primary").click();
-    expect(".o_exported_lists_select").toHaveValue("", {
-        message: "the template list has been reset",
-    });
-    expect(queryAllTexts(".o_right_field_panel .o_export_field")).toEqual(["Foo"]);
+    await contains(".o_edit_exported_list").click();
+    await animationFrame();
+    expect.verifySteps(["edit template"]);
 });
 
 test("Export dialog: interacting with export templates in debug", async () => {

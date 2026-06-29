@@ -12,20 +12,6 @@ import { useDebounced } from "@web/core/utils/timing";
 
 import { Component, onMounted, onWillStart, onWillUnmount, proxy } from "@odoo/owl";
 
-class DeleteExportListDialog extends Component {
-    static components = { Dialog };
-    static template = "web.DeleteExportListDialog";
-    static props = {
-        text: String,
-        close: Function,
-        delete: Function,
-    };
-    async onDelete() {
-        await this.props.delete();
-        this.props.close();
-    }
-}
-
 class ExportDataItem extends Component {
     static template = "web.ExportDataItem";
     static components = { ExportDataItem };
@@ -94,7 +80,7 @@ export class ExportDataDialog extends Component {
     };
 
     setup() {
-        this.dialog = useService("dialog");
+        this.action = useService("action");
         this.notification = useService("notification");
         this.orm = useService("orm");
         this.draggableRef = useRef("draggable");
@@ -358,19 +344,15 @@ export class ExportDataDialog extends Component {
         this.state.disabled = false;
     }
 
-    async onDeleteExportTemplate() {
-        this.dialog.add(DeleteExportListDialog, {
-            text: _t("Do you really want to delete this export template?"),
-            delete: async () => {
-                const id = Number(this.state.templateId);
-                await this.orm.unlink("ir.exports", [id], { context: this.props.context });
-                this.templates.splice(
-                    this.templates.findIndex((i) => i.id === id),
-                    1
-                );
-                this.state.templateId = null;
-                this.setDefaultExportList();
-            },
+    onEditExportTemplate() {
+        const resId = Number(this.state.templateId);
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            name: _t("Export Templates"),
+            res_model: "ir.exports",
+            res_id: resId,
+            target: "new",
+            views: [[false, "form"]],
         });
     }
 

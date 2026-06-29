@@ -1,16 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
 
-    <t t-name="web.DeleteExportListDialog">
-        <Dialog title.translate="Confirmation" size="'md'">
-            <div t-out="this.props.text" />
-            <t t-set-slot="footer">
-                <button class="btn btn-primary" t-on-click="this.onDelete">Delete</button>
-                <button class="btn btn-secondary" t-on-click="() => this.props.close()">Discard</button>
-            </t>
-        </Dialog>
-    </t>
-
     <t t-name="web.ExportDataItem">
         <div t-att-data-field_id="this.props.field.id" t-attf-class="o_export_tree_item cursor-pointer position-relative ps-4 {{ this.state.subfields.length ? 'o_expanded mb-2' : '' }} {{ this.props.field.parent ? '' : 'pe-3'}}" role="treeitem" t-on-click.stop="() => this.toggleItem(this.props.field.id, true)" t-on-dblclick="() => this.onDoubleClick(this.props.field.id)">
             <div t-attf-class="o_tree_column d-flex align-items-center {{ this.props.field.required ? 'fw-bolder' : ''}}">
@@ -29,7 +19,7 @@
     </t>
 
     <t t-name="web.ExportDataDialog">
-        <Dialog contentClass="'o_export_data_dialog'" title.translate="Export Data" size="'lg'">
+        <Dialog contentClass="'o_export_data_dialog'" title.translate="Export" size="'lg'">
             <div class="row w-100">
                 <div class="o_left_panel col-12 col-md-6 h-100 d-flex flex-column flex-nowrap">
                     <div class="o_import_compat">
@@ -75,11 +65,11 @@
                     <div class="o_exported_lists">
                         <div class="input-group mb-3">
                             <t t-if="this.state.templateId === 'new_template'">
-                                <label class="pt-2 mb-0 fw-bold">Save as: </label>
+                                <label class="pt-2 mb-0 fw-bold">Save as</label>
                                 <input t-custom-ref="exportList" class="form-control ms-4 o_save_list_name" t-att-placeholder="this.newTemplateText" />
                             </t>
                             <t t-else="">
-                                <label class="pt-2 mb-0 fw-bold">Template: </label>
+                                <label class="pt-2 mb-0 fw-bold">Template</label>
                                 <select class="form-select ms-4 o_exported_lists_select" t-on-change="this.onChangeExportList">
                                     <option />
                                     <t t-foreach="this.templates" t-as="template" t-key="template.id">
@@ -97,8 +87,8 @@
                                 </button>
                             </t>
                             <t t-else="">
-                                <button t-if="this.state.templateId" type="button" class="btn btn-secondary ms-1 o_delete_exported_list" t-on-click.stop="this.onDeleteExportTemplate">
-                                    <i class="fa fa-trash" />
+                                <button t-if="this.state.templateId" type="button" class="btn btn-secondary ms-1 o_edit_exported_list" t-on-click.stop="this.onEditExportTemplate">
+                                    <i class="fa fa-pencil" />
                                 </button>
                             </t>
                         </div>
