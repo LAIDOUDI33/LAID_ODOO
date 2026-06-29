@@ -580,7 +580,7 @@ export function useHasPreview(getAllActions) {
     );
 }
 
-function useWithLoadingEffect(getAllActions) {
+export function useWithLoadingEffect(getAllActions) {
     const env = useEnv();
     const getAction = env.editor.shared.builderActions.getAction;
     let withLoadingEffect = true;
@@ -596,7 +596,7 @@ function useWithLoadingEffect(getAllActions) {
     return withLoadingEffect;
 }
 
-function useCanTimeout(getAllActions) {
+export function useCanTimeout(getAllActions) {
     const env = useEnv();
     const getAction = env.editor.shared.builderActions.getAction;
     let canTimeout = true;
