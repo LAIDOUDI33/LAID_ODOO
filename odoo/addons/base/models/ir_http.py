@@ -29,6 +29,12 @@ try:
 except ImportError:
     slugify_lib = None
 
+# optional regex import to for full url language support
+try:
+    import regex as regex_lib
+except ImportError:
+    regex_lib = None
+
 import odoo
 from odoo import api, models
 from odoo.api import SUPERUSER_ID
@@ -182,6 +188,14 @@ class IrHttp(models.AbstractModel):
     _description = "HTTP Routing"
 
     @classmethod
+    def _has_incompatible_characters(cls, text: str) -> bool:
+        """Returns True if the text contains word characters that re's \\w wouldn't match."""
+        return any(
+            unicodedata.category(ch).startswith("M") and not re.match(r"\w", ch)
+            for ch in text
+        )
+
+    @classmethod
     def _slugify_one(cls, value: str, max_length: int | None = None) -> str:
         """ Transform a string to a slug that can be used in a url path.
             This method will first try to do the job with python-slugify if present.
@@ -192,15 +206,27 @@ class IrHttp(models.AbstractModel):
         if slugify_lib:
             # There are 2 different libraries only python-slugify is supported
             try:
-                return slugify_lib.slugify(value, max_length=max_length)
+                return slugify_lib.slugify(value, max_length=max_length, allow_unicode=True)
             except TypeError:
                 pass
-        uni = unicodedata.normalize('NFKD', value)
+        uni = unicodedata.normalize('NFKC', value)
 
-        # Strip combining marks (so accents like 'é' become 'e' instead of 'e-')
-        cleaned = ''.join(c for c in uni if unicodedata.category(c) != 'Mn')
+        if regex_lib:
+            # Replace punctuation and spaces with hyphens and remove all non unicode word characters
+            slug = regex_lib.sub(r"[\p{P}\s]+", "-", uni).strip("-").lower()
+            slug = regex_lib.sub(r"[^\w-]+", "", slug)
+            return slug[:max_length]
+        elif cls._has_incompatible_characters(uni):
+            _logger.warning(
+                """
+                Your url string contains characters which are currently incompatible for url
+                generation. Please install the python regex library if you would like to provide
+                support for these characters.
+                """
+            )
+
         # Replace all non-word chars AND underscores with a single dash
-        slug = re.sub(r'[\W_]+', '-', cleaned).strip('-').lower()
+        slug = re.sub(r'[\W_]+', '-', uni).strip('-').lower()
         slugified_str = unicodedata.normalize('NFC', slug)
         return slugified_str[:max_length]
 
