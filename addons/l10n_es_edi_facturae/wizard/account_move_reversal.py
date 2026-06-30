@@ -18,7 +18,7 @@ class AccountMoveReversal(models.TransientModel):
         return res
 
     def _get_ref_string(self, move):
-        if move._l10n_es_edi_facturae_get_default_enable():
+        if self.env['account.move.send']._is_es_facturae_applicable(move):
             field = self.env['account.move']._fields['l10n_es_edi_facturae_reason_code']
             reason_descr = dict(field._description_selection(self.env)).get(self.l10n_es_edi_facturae_reason_code or '10')
             return _('Reversal of: %(move_name)s - %(reason)s', move_name=move.name, reason=reason_descr)
