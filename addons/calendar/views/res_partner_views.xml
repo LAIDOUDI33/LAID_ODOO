@@ -12,8 +12,26 @@
                         <button class="oe_stat_button" type="object"
                             name="schedule_meeting"
                             icon="fa-calendar"
-                            context="{'partner_id': id, 'partner_name': name}">
+                            context="{'partner_id': id, 'partner_name': name}"
+                            invisible="not next_meeting_id">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Next Meeting</span>
+                                <field name="next_meeting_start" class="o_stat_value"/>
+                            </div>
+                        </button>
+                        <button class="oe_stat_button" type="object"
+                            name="action_show_meetings"
+                            icon="fa-calendar"
+                            context="{'partner_id': id, 'partner_name': name}"
+                            invisible="next_meeting_id or meeting_count == 0">
                             <field string="Meetings" name="meeting_count" widget="statinfo"/>
+                        </button>
+                        <button class="oe_stat_button" type="object"
+                            name="schedule_meeting"
+                            icon="fa-calendar"
+                            context="{'partner_id': id, 'partner_name': name}"
+                            invisible="next_meeting_id or meeting_count != 0">
+                            <div>No Meetings</div>
                         </button>
                     </div>
                 </data>

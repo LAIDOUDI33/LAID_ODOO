@@ -13,6 +13,8 @@ class ResPartner(models.Model):
     meeting_count = fields.Integer("# Meetings", compute='_compute_meeting_count')
     meeting_ids = fields.Many2many('calendar.event', 'calendar_event_res_partner_rel', 'res_partner_id',
                                    'calendar_event_id', string='Meetings', copy=False)
+    next_meeting_id = fields.Many2one('calendar.event', compute="_compute_next_meeting_id", search="_search_next_meeting_id")
+    next_meeting_start = fields.Datetime(related="next_meeting_id.start")
 
     calendar_last_notif_ack = fields.Datetime(
         'Last notification marked as read from base Calendar', default=fields.Datetime.now)
@@ -22,6 +24,17 @@ class ResPartner(models.Model):
         for p in self:
             p.meeting_count = len(result.get(p.id, []))
 
+    def _search_next_meeting_id(self, operator, value):
+        next_meetings = self.env['calendar.event'].search([('partner_ids', 'in', self.id), ('res_model', '!=', 'hr.leave'), ('start', '>=', fields.Datetime.today())])
+        return [('id', 'in', next_meetings[-1].partner_ids)] if next_meetings else []
+
+    def _compute_next_meeting_id(self):
+        for partner in self:
+            next_meeting_ids = self.env['calendar.event'].search([('partner_ids', 'in', partner.ids),
+                                                                  ('res_model', '!=', 'hr.leave'),
+                                                                  ('start', '>=', fields.Datetime.today())])
+            partner.next_meeting_id = next_meeting_ids[-1] if next_meeting_ids else next_meeting_ids
+
     def _compute_meeting(self):
         if self.ids:
             # prefetch 'parent_id'
@@ -29,7 +42,7 @@ class ResPartner(models.Model):
                 [('id', 'child_of', self.ids)], ['parent_id'],
             )
 
-            query = self.env['calendar.event']._search([])  # ir.rules will be applied
+            query = self.env['calendar.event']._search([("res_model", "!=", "hr.leave")])  # ir.rules will be applied
             meeting_data = self.env.execute_query(SQL("""
                 SELECT res_partner_id, calendar_event_id, count(1)
                   FROM calendar_event_res_partner_rel
@@ -102,13 +115,31 @@ class ResPartner(models.Model):
         self.ensure_one()
         partner_ids = self.ids
         partner_ids.append(self.env.user.partner_id.id)
-        action = self.env["ir.actions.actions"]._for_xml_id("calendar.action_calendar_event")
-        action['context'] = {
-            'default_partner_ids': partner_ids,
-            'calendar_include_user_events': True,
+        return {
+            'name': _("Meetings"),
+            'type': 'ir.actions.act_window',
+            'res_model': 'calendar.event',
+            'view_mode': 'calendar',
+            'views': [(False, 'calendar')],
+            'domain': [('partner_ids', 'in', self.ids),
+                       ('res_model', '!=', 'hr.leave')],
+            'context': {
+                'default_partner_ids': partner_ids,
+                'calendar_include_user_events': False,
+            },
         }
-        action['domain'] = ['|', ('id', 'in', self._compute_meeting()[self.id]), ('partner_ids', 'in', self.ids)]
-        return action
+
+    def action_show_meetings(self):
+        self.ensure_one()
+        return {
+            'name': _("Meetings"),
+            'type': 'ir.actions.act_window',
+            'res_model': 'calendar.event',
+            'domain': [('partner_ids', 'in', self.id),
+                       ('res_model', '!=', 'hr.leave')],
+            'view_mode': 'list',
+            'views': [(False, 'list')],
+        }
 
     def _get_busy_calendar_events(self, start_datetime, end_datetime):
         """Get a mapping from partner id to attended events intersecting with the time interval.

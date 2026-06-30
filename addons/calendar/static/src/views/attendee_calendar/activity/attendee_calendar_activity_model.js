@@ -78,6 +78,7 @@ patch(AttendeeCalendarModel.prototype, {
                 ["date_deadline", ">=", serializeDate(data.range.start)],
                 ["date_deadline", "<=", serializeDate(data.range.end)],
                 ["user_id", "=", user.userId],
+                ["activity_category", "!=", "meeting"],
             ],
             {
                 specification: {
