@@ -233,6 +233,18 @@ export class AttendeeCalendarModel extends CalendarModel {
         if (rawRecord.effective_privacy === "private") {
             normalizedRecord.titleIcon = "fa fa-lock";
         }
-        return normalizedRecord;
+        let isEventStart = normalizedRecord.duration < 24;
+        if (!isEventStart) {
+            if (normalizedRecord.isDay) {
+                isEventStart = this.meta.date.c['day'] === normalizedRecord.start.c['day'];
+            } else if (this.meta.scale === "week") {
+                const weekdayRange = this.computeRange();
+                isEventStart = normalizedRecord.start >= weekdayRange.start;
+            }
+        }
+        return {
+            ...normalizedRecord,
+            isEventStart,
+        };
     }
 }

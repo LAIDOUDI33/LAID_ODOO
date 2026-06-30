@@ -252,6 +252,7 @@
         .fc-timeGridWeek-view {
             --o-cw-bg: #{$o-calendar-today-background-color};
             --o-cw-color: #{$o-calendar-today-color};
+            --o-hover-bg: #{$o-gray-400};
 
             .fc-scrollgrid-section-body {
                 &:not(.fc-scrollgrid-section-liquid) .fc-scroller-harness {
@@ -271,6 +272,9 @@
 
                 .o_cw_day_number:hover {
                     cursor: default;
+                    background-color: var(--o-hover-bg);
+                    border-radius: 50%;
+                    aspect-ratio: 1;
                 }
 
                 &.fc-day-today .o_cw_day_number {
