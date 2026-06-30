@@ -214,6 +214,12 @@ export class ListPlugin extends Plugin {
                 }
             }
         },
+        is_node_in_boundary_predicates: (n, rootNode) => {
+            const listAncestor = closestElement(n, "ul, ol");
+            if (listAncestor && rootNode.contains(listAncestor)) {
+                return false;
+            }
+        },
 
         /** Providers */
         color_target_providers: (node) => {
@@ -1209,8 +1215,8 @@ export class ListPlugin extends Plugin {
         cursors.restore();
     }
 
-    postFormatAppliedOnList(node, formatName, applyStyle) {
-        if (formatName !== "fontSize") {
+    postFormatAppliedOnList(node, formatSpec, applyStyle) {
+        if (formatSpec.id !== "fontSize") {
             return;
         }
         const listsSet = new Set();
@@ -1218,7 +1224,9 @@ export class ListPlugin extends Plugin {
             const sublists = childNodes(node).filter(isListElement);
             for (const list of sublists) {
                 if (applyStyle) {
-                    list.classList.add("o_default_font_size");
+                    formatSpec.addNeutralStyle(list);
+                } else {
+                    formatSpec.removeStyle(list);
                 }
             }
             listsSet.add(node.parentElement);
