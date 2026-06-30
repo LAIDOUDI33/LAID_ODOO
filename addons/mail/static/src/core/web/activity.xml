@@ -33,7 +33,7 @@
                 <span class="fw-bolder ps-2 pe-1 text-break"><t t-out="this.displayName"/></span>
                 <span class="o-mail-Activity-user pe-1" t-if="this.activity().user_id?.partner_id" >for <t t-out="this.activity().user_id.partner_id.displayName"/></span>
                 <span class="o-mail-Activity-role pe-1" t-elif="!this.activity().user_id and this.activity().role_id">for @<t t-out="this.activity().role_id.name"/></span>
-                <i class="oi oi-filled p-0" data-icon="info" role="img" title="Info" aria-label="Info"
+                <i class="oi oi-filled p-0 text-muted" data-icon="info" role="img" title="Info" aria-label="Info"
                     data-tooltip-template="mail.ActivityTooltip" t-att-data-tooltip-info="this.tooltipInfo"/>
             </div>
             <div t-if="!this.activity().isNoteEmpty" class="o-mail-Activity-note text-break" t-out="this.activity().note"/>
