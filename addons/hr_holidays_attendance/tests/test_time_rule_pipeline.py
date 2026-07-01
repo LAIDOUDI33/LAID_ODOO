@@ -311,6 +311,70 @@ class TestTimeRulePipeline(TransactionCase):
             (date(2022, 12, 12), 8.5, self.att_type),
         ])
 
+    def test_employer_tolerance_non_working_day(self):
+        """employer_tolerance gates overtime on non-working days (Saturdays).
+
+        A weekend-only rule with 1h tolerance:
+        - 10 min worked: below tolerance → no overtime
+        - 1h worked: equal to tolerance → no overtime (strictly-greater check)
+        - 4h worked: above tolerance → full 4h overtime (not 4 - 1 = 3)
+        """
+        self.time_rule.active = False
+        ot_type = self.env['hr.work.entry.type'].create({
+            'name': 'Weekend OT', 'code': 'WKENDOTR', 'requires_allocation': False,
+        })
+        self.env['hr.time.rule'].create({
+            'name': 'Weekend Tolerance Rule',
+            'calendar_source': 'employee',
+            'quantity_period': 'day',
+            'apply_monday': False,
+            'apply_tuesday': False,
+            'apply_wednesday': False,
+            'apply_thursday': False,
+            'apply_friday': False,
+            'employer_tolerance': 1.0,
+            'work_entry_type_id': ot_type.id,
+            'condition_work_entry_type_ids': [self.att_type.id],
+        })
+
+        def _ot_atts(employee):
+            return self.env['hr.attendance'].search([
+                ('employee_id', '=', employee.id),
+                ('is_time_rule_output', '=', True),
+            ])
+
+        # jan 2, 9, 16 2021 are all saturdays
+        # 10 min: below 1h tolerance → no overtime created
+        self.env['hr.attendance'].create({
+            'employee_id': self.cal_emp.id,
+            'check_in': datetime(2021, 1, 2, 8, 0),
+            'check_out': datetime(2021, 1, 2, 8, 10),
+        })
+        self.assertFalse(_ot_atts(self.cal_emp),
+            "10 min < 1h tolerance: no overtime attendance expected")
+
+        # 1h: equal to tolerance → still no overtime (must be strictly greater)
+        self.env['hr.attendance'].create({
+            'employee_id': self.cal_emp.id,
+            'check_in': datetime(2021, 1, 9, 8, 0),
+            'check_out': datetime(2021, 1, 9, 9, 0),
+        })
+        self.assertFalse(_ot_atts(self.cal_emp),
+            "1h == 1h tolerance: no overtime attendance expected")
+
+        # 4h: above tolerance → full 4h overtime (not 4 - 1 = 3)
+        self.env['hr.attendance'].create({
+            'employee_id': self.cal_emp.id,
+            'check_in': datetime(2021, 1, 16, 8, 0),
+            'check_out': datetime(2021, 1, 16, 12, 0),
+        })
+        ot = _ot_atts(self.cal_emp)
+        self.assertTrue(ot, "4h > 1h tolerance: overtime attendance expected")
+        self.assertAlmostEqual(
+            sum(a.worked_hours for a in ot), 4.0, places=5,
+            msg="overtime is the full 4h worked, not 4 - 1 = 3h",
+        )
+
     def test_overtime_multiple_attendances_same_day(self):
         """Two attendances totalling 10h on the same day: 8h att_type + 2h overtime."""
         self.env['hr.attendance'].create([
