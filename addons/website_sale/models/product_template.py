@@ -1090,9 +1090,7 @@ class ProductTemplate(models.Model):
     ):
         product = product or self.env["product.product"]
         if not tax_display:
-            show_tax = (
-                website or self.env["website"].get_current_website()
-            ).show_line_subtotals_tax_selection
+            show_tax = (website or self.env.website).show_line_subtotals_tax_selection
             tax_display = "total_excluded" if show_tax == "tax_excluded" else "total_included"
 
         if self.type == "combo" and tax_display == "total_included":
