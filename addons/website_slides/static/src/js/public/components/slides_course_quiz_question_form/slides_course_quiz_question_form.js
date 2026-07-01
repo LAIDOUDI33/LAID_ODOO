@@ -1,17 +1,17 @@
 import { useLayoutEffect, useRef } from "@web/owl2/utils";
-import { Component, proxy } from "@odoo/owl";
+import { Component, proxy, props, t } from "@odoo/owl";
 import { useAutofocus, useService } from "@web/core/utils/hooks";
 import { rpc } from "@web/core/network/rpc";
 import { _t } from "@web/core/l10n/translation";
 
 export class WebsiteSlidesCourseQuizQuestionForm extends Component {
     static template = "slide.quiz.question.input";
-    static props = {
-        update: Boolean,
-        question: Object,
-        onSave: Function,
-        onCancel: Function,
-    };
+    props = props({
+        update: t.boolean(),
+        question: t.object(),
+        onSave: t.function(),
+        onCancel: t.function(),
+    });
 
     setup() {
         this.slidesService = useService("website_slides");
@@ -22,7 +22,7 @@ export class WebsiteSlidesCourseQuizQuestionForm extends Component {
             error: null,
         });
         if (this.props.update) {
-            this.question = this.props.question;
+            this.question = proxy({ ...this.props.question });
             for (const answer of this.question.answers) {
                 this.state.answerLines.push({
                     id: answer.id,
@@ -33,7 +33,11 @@ export class WebsiteSlidesCourseQuizQuestionForm extends Component {
                 });
             }
         } else {
-            this.question = {};
+            this.question = proxy({
+                sequence: this.props.question.sequence ?? 1,
+                text: "",
+                ...this.props.question,
+            });
             this.state.answerLines = [
                 { id: 1, placeholder: "A giraffe", text: "", isCorrect: false, comment: "" },
                 { id: 2, placeholder: "A bird", text: "", isCorrect: false, comment: "" },
@@ -61,7 +65,7 @@ export class WebsiteSlidesCourseQuizQuestionForm extends Component {
     }
 
     onQuestionsReordered() {
-        this.props.question.sequence = parseInt(this.sequenceRef.el.textContent);
+        this.question.sequence = parseInt(this.sequenceRef.el.textContent);
     }
 
     onIsCorrectClick(answer, isCorrect) {
@@ -170,8 +174,8 @@ export class WebsiteSlidesCourseQuizQuestionForm extends Component {
         }
         return {
             existing_question_id: this.question.id,
-            sequence: this.props.question.sequence,
-            question: this.props.question.text,
+            sequence: this.question.sequence,
+            question: this.question.text,
             slide_id: this.slide.id,
             answer_ids: answers,
         };

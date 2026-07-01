@@ -11,7 +11,7 @@ import { CheckBox } from "@web/core/checkbox/checkbox";
 import { MediaDialog } from "@html_editor/main/media/media_dialog/media_dialog";
 import { getMimetype } from "@html_editor/utils/image";
 import { WebsiteDialog } from "./dialog";
-import { Component, onMounted, onWillStart, proxy, useApp } from "@odoo/owl";
+import { Component, onMounted, onWillStart, proxy, props, t, useApp } from "@odoo/owl";
 import wUtils from "@website/js/utils";
 
 // This replaces \b, because accents(e.g. à, é) are not seen as word boundaries.
@@ -674,9 +674,7 @@ export class TitleDescription extends Component {
 export class BrokenLink extends Component {
     static template = "website.BrokenLink";
 
-    static props = {
-        link: Object,
-    };
+    props = props({ link: t.object() });
 
     setup() {
         this.website = useService("website");
