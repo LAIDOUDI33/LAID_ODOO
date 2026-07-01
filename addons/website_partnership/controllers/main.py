@@ -118,3 +118,13 @@ class WebsitePartnership(WebsitePartnerPage):
             **post
         )
         return request.render("website_partnership.index_layout", values)
+
+    @route('/partners/reload', type='jsonrpc', auth="public", website=True)
+    def partners_reload(self, grade=None, **kwargs):
+        Grade = request.env['res.partner.grade']
+        current_grade = Grade.browse(int(grade)).exists() if grade else Grade.browse()
+        response = self.partners(grade=current_grade, **kwargs)
+        return {
+            'count': len(response.qcontext['partners']),
+            'html': str(response.render()),
+        }
