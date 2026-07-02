@@ -823,6 +823,30 @@ class TestMailSchedule(EventMailCommon):
 @tagged('event_mail', 'post_install', '-at_install')
 class TestMailScheduleInternals(EventMailCommon):
 
+    def test_event_mail_scheduler_cancellation_and_validation(self):
+        """Test cancellation of overdue event mail schedulers and validation scheduling emails after the event ends."""
+        before_event_start = self.test_event.event_mail_ids.filtered(lambda s: s.interval_type == "before_event")
+
+        # CRON run after event end cancels time-sensitive scheduler
+        self.execute_event_cron(freeze_date=self.event_date_end + relativedelta(hours=2))
+
+        self.assertTrue(before_event_start.mail_done)
+        self.assertTrue(before_event_start.mail_cancelled)
+        self.assertEqual(before_event_start.mail_state, "cancelled")
+
+        # ValidationError when scheduled date falls after event end
+        with self.assertRaises(exceptions.ValidationError):
+            self.test_event.write({
+                "event_mail_ids": [
+                    (0, 0, {
+                        "interval_nbr": 3,
+                        "interval_unit": "days",
+                        "interval_type": "after_event_start",
+                        "template_ref": f"mail.template,{self.template_reminder.id}",
+                    }),
+                ],
+            })
+
     def test_scheduled_date(self):
         now = self.reference_now.replace(microsecond=0)
         start, end = now + relativedelta(days=1), now + relativedelta(days=5)
@@ -852,8 +876,6 @@ class TestMailScheduleInternals(EventMailCommon):
             ("after_event_start", "now", 3, start),
             ("after_event_start", "hours", 3, start + relativedelta(hours=3)),
             ("after_event_start", "days", 3, start + relativedelta(days=3)),
-            ("after_event_start", "weeks", 3, start + relativedelta(weeks=3)),
-            ("after_event_start", "months", 3, start + relativedelta(months=3)),
             # event: end date
             ("after_event", "now", 3, end),
             ("after_event", "hours", 3, end + relativedelta(hours=3)),
