@@ -866,12 +866,13 @@
                 >
                     <i class="oi text-600" data-icon="remove"/>
                 </button>
+                <t t-set="minimum_qty" t-value="combination_info.get('minimum_qty') or 1"/>
                 <input
                     type="text"
                     t-attf-class="form-control quantity text-center border-0"
-                    data-min="1"
+                    t-att-data-min="minimum_qty"
                     name="add_qty"
-                    t-att-value="1"
+                    t-att-value="minimum_qty"
                     aria-label="Quantity"
                 />
                 <button

@@ -404,6 +404,21 @@ export class ProductPage extends Interaction {
     }
 
     /**
+     * Update the minimum quantity of the product based on the selected combination
+     *
+     * @param {Element} parent
+     * @param {Object} combination
+     */
+    _updateMinimumQuantity(parent, combination) {
+        const minQtyInput = parent.querySelector('input[name="add_qty"]');
+        const minimumQty = Math.max(1, combination.minimum_qty);
+        minQtyInput.dataset.min = minimumQty;
+        if (minQtyInput.value < minimumQty) {
+            minQtyInput.value = minimumQty;
+        }
+    }
+
+    /**
      * @see onChangeVariant
      *
      * @param {Event} ev
@@ -742,6 +757,7 @@ export class ProductPage extends Interaction {
             }
         });
 
+        this._updateMinimumQuantity(parent, combination);
         this._toggleDisable(parent, isCombinationPossible && this.el.dataset.hasAvailableUoms);
 
         // Only update the images, tags and packaging selector if the product has changed.

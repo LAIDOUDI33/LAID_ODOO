@@ -355,6 +355,17 @@ class SaleOrder(models.Model):
             "website_sale.require_billing_details_for_services", True
         )
 
+    def _get_remaining_minimum_qty(self, product):
+        """Compute the remaining minimum quantity to order for a product.
+
+        :param product: the product to check.
+        :return: the remaining minimum quantity to order for the product
+        """
+        minimum_qty = product.minimum_qty
+        cart_quantity_base = self._get_cart_qty(product.id)
+
+        return minimum_qty - cart_quantity_base
+
     def _update_address(self, partner_id, fnames=None):
         if not fnames:
             return
@@ -627,7 +638,9 @@ class SaleOrder(models.Model):
 
         if quantity <= 0:
             # Remove zero or negative lines
+            product = order_line.product_id
             order_line.unlink()
+            self._ensure_minimum_qty_after_removal(product)
             return self.env["sale.order.line"]
 
         # Update existing line
@@ -666,6 +679,28 @@ class SaleOrder(models.Model):
             order_line._check_validity()
 
         return order_line
+
+    def _ensure_minimum_qty_after_removal(self, product):
+        """Re-enforce the minimum quantity for product after one of its cart lines was removed.
+
+        :param product.product product: the product whose line was just removed.
+        """
+        self.ensure_one()
+        remaining_lines = self.order_line.filtered(lambda sol: sol.product_id == product)
+        if not remaining_lines:
+            return
+
+        remaining_min_qty = self._get_remaining_minimum_qty(product)
+        if remaining_min_qty <= 0:
+            return
+
+        target_line = min(
+            remaining_lines, key=lambda sol: sol.product_uom_id._compute_quantity(1, product.uom_id)
+        )
+        added_qty = product.uom_id._compute_quantity(remaining_min_qty, target_line.product_uom_id)
+        target_line.product_uom_qty += int(
+            float_round(added_qty, precision_digits=0, rounding_method="UP")
+        )
 
     def _prepare_order_line_update_values(self, order_line, quantity, **_kwargs):
         self.ensure_one()
@@ -1130,6 +1165,14 @@ class SaleOrder(models.Model):
         if not all([sol._check_availability() for sol in self.order_line]):  # noqa: C419
             self._add_warning_alert(
                 self.env._("Unfortunately, there is no longer enough stock to fulfill your order.")
+            )
+            return False
+
+        if not all(sol._check_minimum_qty() for sol in self.order_line):
+            self._add_warning_alert(
+                self.env._(
+                    "Some products don't meet the minimum quantity required to be purchased."
+                )
             )
             return False
 

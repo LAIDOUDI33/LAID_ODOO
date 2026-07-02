@@ -213,6 +213,17 @@ class SaleOrderLine(models.Model):
                 return False
         return True
 
+    def _check_minimum_qty(self):
+        """Check that the line's quantity meets the minimum quantity required to purchase the
+        product in the current line.
+
+        :return: True if the quantity is valid, False otherwise.
+        :rtype: bool
+        """
+        self.ensure_one()
+        remaining_min_qty = self.order_id._get_remaining_minimum_qty(self.product_id)
+        return remaining_min_qty <= 0.0
+
     def _show_line_in_cart(self):
         self.ensure_one()
         return self._is_product_line() and not self.combo_item_id
