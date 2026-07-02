@@ -1,4 +1,4 @@
-import { onWillRender, useLayoutEffect } from "@web/owl2/utils";
+import { useLayoutEffect } from "@web/owl2/utils";
 import { Component, onWillStart, props, proxy, signal, t } from "@odoo/owl";
 import { _t } from "@web/core/l10n/translation";
 import { sortBy } from "@web/core/utils/arrays";
@@ -139,17 +139,6 @@ export class ModelFieldSelectorPopover extends Component {
             this.state.page = await this.loadPages(this.props.resModel, this.props.path);
         });
 
-        onWillRender(() => {
-            const followRelation = this.props.followRelation;
-            if (followRelation instanceof Function) {
-                this._followRelation = followRelation;
-            } else if (followRelation) {
-                this._followRelation = () => {};
-            } else {
-                this._followRelation = () => false;
-            }
-        });
-
         useLayoutEffect(() => {
             const focusedElement = this.rootRef()?.querySelector(
                 ".o_model_field_selector_popover_item.active"
@@ -180,11 +169,22 @@ export class ModelFieldSelectorPopover extends Component {
         return this.props.showDebugInput ?? this.props.isDebugMode;
     }
 
+    get followRelationFn() {
+        const { followRelation } = this.props;
+        if (followRelation instanceof Function) {
+            return followRelation;
+        }
+        if (followRelation) {
+            return () => {};
+        }
+        return () => false;
+    }
+
     canFollowRelationFor(fieldDef) {
         if (fieldDef.type === "properties") {
             return true;
         }
-        return this._followRelation?.({ fieldDef }) ?? fieldDef.relation;
+        return this.followRelationFn({ fieldDef }) ?? fieldDef.relation;
     }
 
     filter(fieldDefs, path, resModel) {
