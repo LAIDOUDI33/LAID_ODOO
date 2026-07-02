@@ -60,6 +60,7 @@ export class BlogPostPageOptionPlugin extends Plugin {
         applyFunDependOnSelectorAndExclude(this.assignHeadingIds.bind(this), root, {
             selector: ".o_wblog_post_content_field",
         });
+        return root;
     }
 
     /**
