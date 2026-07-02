@@ -64,18 +64,61 @@ const discussChannelPatch = {
         });
         /** @type {import("@web/core/network/rpc").RPCError|import("@web/core/network/rpc").ConnectionLostError|import("@web/core/network/rpc").ConnectionAbortedError|undefined} */
         this.chatbotTriggerFailedError;
+        this._toggleChatbot = fields.Attr(false, {
+            compute() {
+                return Boolean(this.chatbot && !this.chatbot.completed && !this.livechat_end_dt);
+            },
+            onUpdate() {
+                const shouldToggle = this._toggleChatbot;
+                this.isLoadedPromise.then(() => {
+                    if (shouldToggle) {
+                        this.chatbot.start();
+                    } else {
+                        this.chatbot?.stop();
+                    }
+                });
+            },
+            eager: true,
+        });
     },
     get allowDescriptionTypes() {
         return [...super.allowDescriptionTypes, "livechat"];
     },
     get allowEditDescription() {
         return (
-            super.allowEditDescription ||
-            (this.channel_type === "livechat" && this.store.has_access_livechat)
+            this.self_member_id?.livechat_member_type !== "visitor" &&
+            (super.allowEditDescription ||
+                (this.channel_type === "livechat" && this.store.has_access_livechat))
         );
     },
     get allowedToLeaveChannelTypes() {
         return [...super.allowedToLeaveChannelTypes, "livechat"];
+    },
+    get avatarUrl() {
+        if (
+            this.channel_type === "livechat" &&
+            (this.isTransient || this.self_member_id?.livechat_member_type === "visitor")
+        ) {
+            let bestScore = -1;
+            let bestMemberHistory;
+            // Agents are preferred over bots, current members over former members, and higher IDs over lower IDs
+            for (const memberHistory of this.livechat_channel_member_history_ids.sort(
+                (a, b) => b.id - a.id
+            )) {
+                if (memberHistory.livechat_member_type === "visitor") {
+                    continue;
+                }
+                const score =
+                    (memberHistory.livechat_member_type === "agent" ? 4 : 0) +
+                    (memberHistory.member_id ? 2 : 0);
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestMemberHistory = memberHistory;
+                }
+            }
+            return bestMemberHistory?.partner_id?.avatarUrl || super.avatarUrl;
+        }
+        return super.avatarUrl;
     },
     /** @override */
     _computeCanHide() {
@@ -122,6 +165,9 @@ const discussChannelPatch = {
         }
         return super.isHideUntilNewMessageSupported;
     },
+    get isLastMessageFromCustomer() {
+        return this.newestPersistentOfAllMessage?.author?.eq(this.livechatVisitorMember?.persona);
+    },
     get livechatShouldAskLeaveConfirmation() {
         if (
             this.isTransient ||
@@ -167,12 +213,18 @@ const discussChannelPatch = {
         return this.channel_type === "livechat" || super.allow_invite_by_email;
     },
     get composerHidden() {
-        if (this.channel?.channel_type === "livechat") {
+        if (this.channel?.channel_type !== "livechat") {
+            return super.composerHidden;
+        }
+        if (this.channel.self_member_id?.livechat_member_type !== "visitor") {
             return !!this.livechat_end_dt;
         }
-        return super.composerHidden;
+        return (
+            super.composerHidden ||
+            !!this.livechat_end_dt ||
+            (this.channel.chatbot?.completed && !this.channel.livechat_agent_history_ids.length)
+        );
     },
-
     get composerHiddenText() {
         if (this.channel?.channel_type === "livechat" && this.livechat_end_dt) {
             return _t("This live chat conversation has ended.");
