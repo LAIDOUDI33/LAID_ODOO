@@ -1038,7 +1038,7 @@ class CalendarEvent(models.Model):
             )
         }
         private_fields = fnames - self._get_public_fields()
-        if not self.env.su and private_fields:
+        if not self.env.su and private_fields and groupby != ('partner_ids',):
             domain = Domain.AND([domain, self._get_default_privacy_domain()])
         return super()._read_group(domain, groupby, aggregates, having=having, offset=offset, limit=limit, order=order)
 
