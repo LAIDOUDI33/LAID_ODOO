@@ -6,6 +6,9 @@
         &:not(:has(li.o_dragged)) .input-group:hover > * {
             background-color: $table-hover-bg !important;
         }
+        .input-group > .o_drag_handle {
+            transition-property: color, border-color, box-shadow;
+        }
         li.o_dragged {
             opacity: 1 !important;
             box-shadow: 5px 5px 5px -5px rgba(0,0,0,0.2);
