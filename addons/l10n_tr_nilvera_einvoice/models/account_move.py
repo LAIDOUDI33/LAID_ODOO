@@ -125,7 +125,7 @@ class AccountMove(models.Model):
                             indicates a client error (4xx), or if a server error occurs (500).
         :return: None
         """
-        with _get_nilvera_client(self.env.company) as client:
+        with _get_nilvera_client(self.env.company.sudo()) as client:
             response = client.request(
                 "POST",
                 endpoint,
@@ -179,7 +179,7 @@ class AccountMove(models.Model):
 
     def _l10n_tr_nilvera_get_submitted_document_status(self):
         for company, invoices in self.grouped("company_id").items():
-            with _get_nilvera_client(company) as client:
+            with _get_nilvera_client(company.sudo()) as client:
                 for invoice in invoices:
                     invoice_channel = invoice.partner_id.l10n_tr_nilvera_customer_status
                     document_category = invoice._l10n_tr_get_document_category(invoice_channel)
@@ -223,7 +223,7 @@ class AccountMove(models.Model):
         return last_fetched_date
 
     def _l10n_tr_nilvera_get_documents(self, invoice_channel="einvoice", document_category="Purchase", journal_type="purchase"):
-        with _get_nilvera_client(self.env.company) as client:
+        with _get_nilvera_client(self.env.company.sudo()) as client:
             endpoint = f"/{invoice_channel}/{quote(document_category)}"
             start_date = self._get_nilvera_last_fetch_date(invoice_channel, journal_type)
             end_date = fields.Datetime.context_timestamp(self.with_context(tz='Europe/Istanbul'), fields.Datetime.now()).strftime("%Y-%m-%dT%H:%M:%S")
@@ -373,7 +373,11 @@ class AccountMove(models.Model):
         invoice.with_context(no_new_invoice=True).message_post(attachment_ids=attachment.ids)
 
     def l10n_tr_nilvera_get_pdf(self):
-        with _get_nilvera_client(self.env.company) as client:
+        invoices_to_refresh = self.filtered(lambda inv: inv.l10n_tr_nilvera_send_status in {'waiting', 'sent', 'unknown'})
+        if invoices_to_refresh:
+            invoices_to_refresh._l10n_tr_nilvera_get_submitted_document_status()
+
+        with _get_nilvera_client(self.env.company.sudo()) as client:
             for invoice in self:
                 if (
                         invoice.l10n_tr_nilvera_customer_status not in {'einvoice', 'earchive'}
@@ -441,7 +445,7 @@ class AccountMove(models.Model):
 
     def _l10n_tr_nilvera_company_get_documents(self, invoice_channel, category, journal_type):
         for company in self.env.companies:
-            if company.country_code != "TR" or not company.l10n_tr_nilvera_api_key:
+            if company.country_code != "TR" or not company.sudo().l10n_tr_nilvera_api_key:
                 continue
             self.with_company(company)._l10n_tr_nilvera_get_documents(invoice_channel, category, journal_type)
 
