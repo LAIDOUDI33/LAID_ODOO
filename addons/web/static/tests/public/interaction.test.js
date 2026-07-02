@@ -449,7 +449,7 @@ describe("adding listeners", () => {
             await click("button");
             await animationFrame();
             expect("button").toHaveClass("pe-none");
-            expect("button span").toHaveCount(1);
+            expect("button > span").toHaveCount(1);
             def.resolve();
             expect.verifySteps([]);
             await animationFrame();
@@ -2818,7 +2818,13 @@ describe("locked", () => {
 
             const observer = new MutationObserver((mutations) => {
                 for (const m of mutations) {
-                    if ([...m.addedNodes].some((node) => node.tagName === "SPAN")) {
+                    if (
+                        [...m.addedNodes].some(
+                            (node) =>
+                                node.tagName === "SPAN" &&
+                                node.classList.contains("o_btn_loading_spinner")
+                        )
+                    ) {
                         expect.step("loading added");
                     }
                 }
@@ -2827,12 +2833,12 @@ describe("locked", () => {
         });
 
         test("should be added when the handler takes more than 400ms", async () => {
-            expect("span.fa-spin").toHaveCount(0);
+            expect(".o_btn_loading_spinner").toHaveCount(0);
             await click("button");
             // Advance time more than the debounce delay of makeButtonHandler
             // (400ms) but less than the handler duration.
             await advanceTime(500);
-            expect("span.fa-spin").toHaveCount(1);
+            expect(".o_btn_loading_spinner").toHaveCount(1);
             expect.verifySteps(["loading added"]);
             await advanceTime(handlerDuration);
             expect.verifySteps(["handler done"]);
@@ -2840,14 +2846,14 @@ describe("locked", () => {
 
         test("should never be added when the handler takes less than 400ms", async () => {
             handlerDuration = 100;
-            expect("span.fa-spin").toHaveCount(0);
+            expect(".o_btn_loading_spinner").toHaveCount(0);
             await click("button");
             // Advance time more than the handler duration but less than the
             // debounce delay of makeButtonHandler (400ms).
             await advanceTime(200);
             expect.verifySteps(["handler done"]);
             await advanceTime(1000);
-            expect("span.fa-spin").toHaveCount(0);
+            expect(".o_btn_loading_spinner").toHaveCount(0);
             expect.verifySteps([], {
                 message:
                     "Loading effect should never be added in the DOM for handlers shorter than 400ms",
