@@ -283,7 +283,7 @@ class HrTimeRule(models.Model):
     @api.depends('country_id', 'company_id')
     def _compute_country_work_entry_type_ids(self):
         for rule in self:
-            country = rule.country_id or rule.company_id.country_id or self.env.company.country_id
+            country = rule.country_id or rule.company_id.country_id
             if not country or not self.env['hr.work.entry.type'].search_count([('country_id', '=', country.id)], limit=1):
                 domain = [('country_id', '=', False)]
             else:

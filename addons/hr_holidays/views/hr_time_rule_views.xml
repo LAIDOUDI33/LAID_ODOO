@@ -36,8 +36,8 @@
                     invisible="threshold_operator == 'less_than'">Allocate</span>
                 <span class="o_form_label"
                     invisible="threshold_operator != 'less_than'">Take</span>
-                <div class="d-flex gap-1 align-items-center">
-                    <field name="leave_compensation_rate" widget="percentage" nolabel="1" style="width:8ch"/>
+                <div class="d-flex gap-3 align-items-baseline">
+                    <field name="leave_compensation_rate" widget="percentage" nolabel="1" style="width:6ch"/>
                     <span class="text-muted" invisible="not leave_compensation_rate">to</span>
                     <field name="allocation_type_id" nolabel="1"
                         invisible="not leave_compensation_rate"

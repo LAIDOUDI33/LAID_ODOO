@@ -14,7 +14,7 @@ class HrTimeRule(models.Model):
     _inherit = 'hr.time.rule'
 
     work_entry_type_id = fields.Many2one(
-        domain="[('id', 'in', country_work_entry_type_ids), ('requires_allocation', '=', False)]",
+        domain="[('id', 'in', country_work_entry_type_ids), ('requires_allocation', '=', False), ('request_unit', '=', 'hour')]",
     )
     leave_compensation_rate = fields.Float(
         "Allocate %",
@@ -28,26 +28,36 @@ class HrTimeRule(models.Model):
     )
 
     def _get_remainder_leave_vals(self, employee, source_leave, date_from, date_to):
+        tz = ZoneInfo(employee._get_tz())
+        df_local = date_from.replace(tzinfo=UTC).astimezone(tz).replace(tzinfo=None)
+        dt_local = date_to.replace(tzinfo=UTC).astimezone(tz).replace(tzinfo=None)
         return {
             'employee_id': employee.id,
             'work_entry_type_id': source_leave.work_entry_type_id.id,
             'date_from': date_from,
             'date_to': date_to,
-            'request_date_from': date_from.date(),
-            'request_date_to': date_to.date(),
+            'request_date_from': df_local.date(),
+            'request_date_to': dt_local.date(),
+            'request_hour_from': df_local.hour + df_local.minute / 60,
+            'request_hour_to': dt_local.hour + dt_local.minute / 60,
             'source_leave_id': source_leave.id,
             'resource_calendar_id': source_leave.resource_calendar_id.id,
             'state': 'validate',
         }
 
     def _get_output_leave_vals(self, employee, rule, date_from, date_to, source_leave, all_rules=None, accumulated_pp=frozenset()):
+        tz = ZoneInfo(employee._get_tz())
+        df_local = date_from.replace(tzinfo=UTC).astimezone(tz).replace(tzinfo=None)
+        dt_local = date_to.replace(tzinfo=UTC).astimezone(tz).replace(tzinfo=None)
         return {
             'employee_id': employee.id,
             'work_entry_type_id': rule.work_entry_type_id.id,
             'date_from': date_from,
             'date_to': date_to,
-            'request_date_from': date_from.date(),
-            'request_date_to': date_to.date(),
+            'request_date_from': df_local.date(),
+            'request_date_to': dt_local.date(),
+            'request_hour_from': df_local.hour + df_local.minute / 60,
+            'request_hour_to': dt_local.hour + dt_local.minute / 60,
             'time_rule_id': rule.id,
             'source_leave_id': source_leave.id,
             'resource_calendar_id': source_leave.resource_calendar_id.id,
@@ -200,17 +210,21 @@ class HrTimeRule(models.Model):
                 min_out_start_utc = min_out_start_local.replace(tzinfo=tz).astimezone(UTC).replace(tzinfo=None)
 
                 if min_out_start_utc <= source_leave.date_from:
-                    # OT covers the very start → archive source; all remainders become records
+                    # OT covers the very start -> archive source; all remainders become records
                     archive_source_ids.append(source_leave.id)
                     for seg_s, seg_e, _ in remainder_segments:
                         df = seg_s.replace(tzinfo=tz).astimezone(UTC).replace(tzinfo=None)
                         dt = seg_e.replace(tzinfo=tz).astimezone(UTC).replace(tzinfo=None)
                         leave_create_vals.append(self._get_remainder_leave_vals(employee, source_leave, df, dt))
                 else:
-                    # OT starts after source start → shrink source date_to; source IS remainder[0]
+                    # OT starts after source start -> shrink source date_to; source IS remainder[0]
+                    # keep request fields in sync: _compute_date_from_to uses request_hour_to
+                    # for hour-based types (the only types allowed on time rules)
+                    hour_to = min_out_start_local.hour + min_out_start_local.minute / 60
                     Leave.browse([source_leave.id]).with_context(**auto_ctx).write({
                         'date_to': min_out_start_utc,
-                        'request_date_to': min_out_start_utc.date(),
+                        'request_date_to': min_out_start_local.date(),
+                        'request_hour_to': hour_to,
                     })
                     for seg_s, seg_e, _ in remainder_segments[1:]:
                         df = seg_s.replace(tzinfo=tz).astimezone(UTC).replace(tzinfo=None)
@@ -234,4 +248,4 @@ class HrTimeRule(models.Model):
 
         if all_source_ids:
             sources = Leave.with_context(active_test=False).browse(list(all_source_ids))
-            (sources | new_leaves)._create_resource_leave()
+            (sources | new_leaves).with_context(**auto_ctx)._create_resource_leave()

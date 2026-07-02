@@ -1603,6 +1603,28 @@ class TestTimeRulePipeline(TransactionCase):
         self.assertAlmostEqual(total_ot, 11.0, places=5,
                                msg="8h Fri OT + 3h Sat OT = 11h total")
 
+    def test_midnight_crossing_with_same_day_followup(self):
+        self.env['hr.attendance'].create([
+            {
+                'employee_id': self.cal_emp.id,
+                'check_in': datetime(2022, 12, 12, 22, 0),   # Monday
+                'check_out': datetime(2022, 12, 13, 10, 0),   # Tuesday
+            },
+            {
+                'employee_id': self.cal_emp.id,
+                'check_in': datetime(2022, 12, 13, 14, 0),
+                'check_out': datetime(2022, 12, 13, 18, 0),
+            },
+        ])
+        vals = self.cal_version.generate_work_entries(date(2022, 12, 12), date(2022, 12, 13))
+        monday_ot = [v for v in vals if v['date'] == date(2022, 12, 12) and v['work_entry_type_id'] == self.overtime_type]
+        self.assertFalse(monday_ot, "2h worked on Mon (below 8h schedule) must not produce overtime")
+        tuesday_ot = [v for v in vals if v['date'] == date(2022, 12, 13) and v['work_entry_type_id'] == self.overtime_type]
+        self.assertAlmostEqual(
+            sum(v['duration'] for v in tuesday_ot), 6.0, places=5,
+            msg="midnight-10:00 (10h) + 14:00-18:00 (4h) - 8h schedule = 6h OT on Tue",
+        )
+
     def test_total_overtime_reflects_output_attendances(self):
         """employee.total_overtime sums output attendance hours."""
         self.env['hr.attendance'].create({
@@ -2086,7 +2108,7 @@ class TestTimeRulePipeline(TransactionCase):
         """Excess rule fires on day1, deficit rule fires on day2 across two sources.
 
         _____________day1___________|_____________day2___________|
-        [att1 8-18      ]      [att2 22->6   ]
+        [att1 8 -> 18      ]     [att2 22 -> 6   ]
 
         att1 Mon 08:00-18:00 (10h, threshold 8h) -> 2h OT output linked to att1.
         att2 Mon 22:00 to Tue 06:00: Mon portion (2h) is all excess; Tue portion
@@ -2107,12 +2129,12 @@ class TestTimeRulePipeline(TransactionCase):
         att1 = self.env['hr.attendance'].create({
             'employee_id': self.cal_emp.id,
             'check_in': datetime(2022, 12, 12, 8),   # Mon
-            'check_out': datetime(2022, 12, 12, 18),  # Mon 18:00 — 10h, 2h above threshold
+            'check_out': datetime(2022, 12, 12, 18),  # Mon 18:00 - 10h, 2h above threshold
         })
         att2 = self.env['hr.attendance'].create({
             'employee_id': self.cal_emp.id,
             'check_in': datetime(2022, 12, 12, 22),   # Mon 22:00
-            'check_out': datetime(2022, 12, 13, 6),   # Tue 06:00 — 6h on Tue side, 2h below threshold
+            'check_out': datetime(2022, 12, 13, 6),   # Tue 06:00 - 6h on Tue side, 2h below threshold
         })
 
         att1_ot = att1.overtime_attendance_ids.filtered(
