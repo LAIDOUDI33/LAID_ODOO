@@ -314,4 +314,38 @@
         </field>
     </record>
 
+    <record id="product_pricelist_item_view_multi_create" model="ir.ui.view">
+        <field name="name">product.pricelist.item.multi.create</field>
+        <field name="model">product.pricelist.item</field>
+        <field name="priority">20</field>
+        <field name="inherit_id" ref="product.product_pricelist_item_form_view"/>
+        <field name="mode">primary</field>
+        <field name="arch" type="xml">
+            <group name="date_range" position="replace"/>
+            <group name="min_quantity" position="replace"/>
+        </field>
+    </record>
+
+    <record id="product_pricelist_item_view_calendar" model="ir.ui.view">
+        <field name="name">product.pricelist.item.calendar</field>
+        <field name="model">product.pricelist.item</field>
+        <field name="arch" type="xml">
+            <calendar
+                string="Daily Rates"
+                js_class="daily_rates_calendar"
+                date_start="date_start"
+                date_stop="date_end"
+                mode="month"
+                scales="month"
+                color="product_tmpl_id"
+                event_open_popup="1"
+                multi_create_view="product.product_pricelist_item_view_multi_create"
+            >
+                <field name="pricelist_id"/>
+                <field name="product_tmpl_id"/>
+                <field name="price"/>
+            </calendar>
+        </field>
+    </record>
+
 </odoo>
