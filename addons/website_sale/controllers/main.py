@@ -508,36 +508,18 @@ class WebsiteSale(payment_portal.PaymentPortal):
         if products:
             search_term = fuzzy_search_term if fuzzy_search_term else search
             product_query = request.env["product.template"]._search(
-                self._get_shop_domain(search_term, category, attribute_value_dict)
+                self._get_shop_domain(search_term, category, attribute_value_dict={})
             )
-            products_domain = [[("pav_attribute_line_ids.product_tmpl_id", "in", product_query)]]
-            if attribute_value_dict:
-                product_query_without_attributes = request.env["product.template"]._search(
-                    self._get_shop_domain(search_term, category, attribute_value_dict={})
-                )
-                # Allow selecting pavs that are not exclusive if its from the same attribute
-                products_domain.append(
-                    Domain.AND([
-                        [
-                            (
-                                "pav_attribute_line_ids.product_tmpl_id",
-                                "in",
-                                product_query_without_attributes,
-                            )
-                        ],
-                        [("attribute_id", "in", attribute_ids)],
-                    ])
-                )
-
-            filters_domain = Domain.AND([
-                [("attribute_id.visibility", "=", "visible")],
-                Domain.OR(products_domain),
-            ])
-
             grouped_pavs = ProductAttributeValue._read_group(
-                domain=filters_domain, groupby=["attribute_id"], aggregates=["id:recordset"]
+                domain=[
+                    ("pav_attribute_line_ids.product_tmpl_id", "in", product_query),
+                    ("attribute_id.visibility", "=", "visible"),
+                ],
+                groupby=["attribute_id"],
+                order="attribute_id",
+                aggregates=["id:recordset"],
             )
-            pavs_per_attribute.update({att: pavs.sorted() for att, pavs in grouped_pavs})
+            pavs_per_attribute.update(grouped_pavs)
             # Return attributes as recordset of `product.attribute`
             attributes = ProductAttribute.union(pavs_per_attribute.keys())
         else:
