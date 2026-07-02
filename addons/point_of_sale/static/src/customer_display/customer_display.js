@@ -16,9 +16,12 @@ export class CustomerDisplay extends Component {
 
     setup() {
         this.session = session;
-        this.dialog = useService("dialog");
-        this.order = useService("customer_display_data");
         this.uiService = useService("ui");
+        this.customerDisplayService = useService("customer_display_service");
+        this.customerDisplayService.initReceiver();
+        this.order = this.customerDisplayService.data;
+        window.displayData = this.customerDisplayService;
+
         this.time = useTime();
 
         onMounted(() => this.scrollSelectedIntoView());
@@ -38,8 +41,11 @@ export class CustomerDisplay extends Component {
         };
     }
 
-    getInternalNotes(line) {
-        return JSON.parse(line.internalNote || "[]");
+    parseInternalNotes(noteStr) {
+        if (!noteStr || typeof noteStr !== "string") {
+            return [];
+        }
+        return JSON.parse(noteStr);
     }
 
     get configLogoSrc() {

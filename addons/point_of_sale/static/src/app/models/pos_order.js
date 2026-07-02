@@ -962,6 +962,25 @@ export class PosOrder extends PosOrderAccounting {
         };
     }
 
+    get hasRemainingDue() {
+        const isNegative = this.totalDue < 0;
+        const remainingDue = this.remainingDue;
+
+        if ((isNegative && remainingDue >= 0) || (!isNegative && remainingDue <= 0)) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    get remainingDueAmount() {
+        return this.hasRemainingDue ? this.remainingDue : this.change;
+    }
+
+    get remainingDueLabel() {
+        return this.hasRemainingDue ? _t("Remaining") : _t("Change");
+    }
+
     get serviceFeeLines() {
         return this.lines?.filter((line) => line.isServiceFeeLine());
     }
