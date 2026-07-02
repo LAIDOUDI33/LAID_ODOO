@@ -655,7 +655,16 @@ export class Form extends Interaction {
                     popover.show();
                 }
                 if (!firstInvalidInput) {
-                    firstInvalidInput = invalidInputs[0] || controlEls[0];
+                    // The input itself may be hidden (e.g. the <select>
+                    // backing the many2many dropdown widget): focus/scroll
+                    // would be no-ops on it, so prefer an element with a
+                    // layout box.
+                    firstInvalidInput =
+                        [...invalidInputs, ...controlEls].find(
+                            (el) => el.getClientRects().length
+                        ) ||
+                        invalidInputs[0] ||
+                        controlEls[0];
                 }
                 formValid = false;
             }
