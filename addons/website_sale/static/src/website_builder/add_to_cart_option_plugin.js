@@ -50,6 +50,7 @@ export class ProductToCartAction extends BuilderAction {
             editingElement: buttonEl,
             params: { mainParam: "disabled" },
         });
+        buttonEl.removeAttribute("disabled");
         if (!oneVariant) {
             this.dependencies.builderActions
                 .getAction("addToCartAction")
@@ -70,6 +71,7 @@ export class ProductToCartAction extends BuilderAction {
             editingElement: buttonEl,
             params: { mainParam: "disabled" },
         });
+        buttonEl.setAttribute("disabled", "");
         this.dependencies.builderActions
             .getAction("addToCartAction")
             .resetDefaultAction(editingElement);
