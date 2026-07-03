@@ -12,7 +12,7 @@ import { BusBus } from "./mock_server/mock_models/bus_bus";
 import { IrWebSocket } from "./mock_server/mock_models/ir_websocket";
 import { getWebSocketWorker, onWebsocketEvent } from "./mock_websocket";
 
-import { busService } from "@bus/services/bus_service";
+import { BusPlugin, busService } from "@bus/services/bus_plugin";
 import { WEBSOCKET_CLOSE_CODES } from "@bus/workers/websocket_worker";
 import { on, runAllTimers, waitUntil } from "@odoo/hoot-dom";
 import { registry } from "@web/core/registry";
@@ -41,7 +41,7 @@ import { patch } from "@web/core/utils/patch";
 // Setup
 //-----------------------------------------------------------------------------
 
-patch(busService, {
+patch(BusPlugin.prototype, {
     _onMessage(env, id, type, payload) {
         // Generic handlers (namely: debug info)
         if (type in busMessageHandlers) {
@@ -322,7 +322,7 @@ export function lockWebsocketConnect() {
 }
 
 export async function startBusService() {
-    getService("bus_service").start();
+    getService(BusPlugin).start();
     await runAllTimers();
 }
 
