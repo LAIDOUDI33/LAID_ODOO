@@ -1328,10 +1328,22 @@ class ProductTemplate(models.Model):
             "sequence": 20,
         }
 
+<<<<<<< 28a6b7959255570430fd629b91071ed8076e0326
     def _search_fetch(self, search_detail, search, offset, limit, order):
         results, count = super()._search_fetch(search_detail, search, offset, limit, order)
         return results.with_context(search_term=search), count
 
+||||||| c21498c4344eac34007cd46aae9a53b7b24b1fbf
+=======
+    @api.model
+    def _search_get_field_domain(self, field, search_term):
+        if field == "product_tag_ids.name":
+            return Domain('product_tag_ids', 'any',
+                [('name', 'ilike', search_term), ('visible_to_customers', '=', True)]
+            )
+        return super()._search_get_field_domain(field, search_term)
+
+>>>>>>> ad5c25eb7c9d7d74d5ad03eb5edf364d3fdf7167
     def _search_render_results(self, fetch_fields, mapping, icon, limit):
         results_data = super()._search_render_results(fetch_fields, mapping, icon, limit)
         search_term = self.env.context.get("search_term", "")
@@ -1341,8 +1353,20 @@ class ProductTemplate(models.Model):
             combination_info = product._get_combination_info(only_template=True)
             values = product.mapped("attribute_line_ids.value_ids")
             data["attribute_value_ids"] = values.read(["id", "name"])
+<<<<<<< 28a6b7959255570430fd629b91071ed8076e0326
             data["product_tag_ids"] = product.product_tag_ids.read(["name"])
             price = self._search_render_results_prices(mapping, combination_info)
+||||||| c21498c4344eac34007cd46aae9a53b7b24b1fbf
+            data["product_tag_ids"] = product.product_tag_ids.read(["name"])
+            price = self._search_render_results_prices(
+                mapping, combination_info
+            )
+=======
+            data["product_tag_ids"] = product.product_tag_ids.filtered('visible_to_customers').read(["name"])
+            price = self._search_render_results_prices(
+                mapping, combination_info
+            )
+>>>>>>> ad5c25eb7c9d7d74d5ad03eb5edf364d3fdf7167
             if price:
                 data["price"] = price
             data["image_url"] = "/web/image/product.template/%s/image_128" % data["id"]
