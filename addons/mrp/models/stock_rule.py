@@ -92,16 +92,19 @@ class StockRule(models.Model):
                 mo = self.env['mrp.production'].sudo().search(domain, limit=1)
             is_batch_size = bom and bom.enable_batch_size
             if not mo or is_batch_size:
-                if not bom:
-                    # No BOM: skip MO creation, only replenishment rules should handle this
-                    continue
                 procurement_qty = procurement.product_qty
                 batch_size = bom.uom_id._compute_quantity(bom.batch_size, procurement.uom_id) if is_batch_size else procurement_qty
                 vals = rule._prepare_mo_vals(*procurement, bom)
                 while procurement.uom_id.compare(procurement_qty, 0) > 0:
                     new_productions_values_by_company[procurement.company_id.id]['values'].append({
                         **vals,
+<<<<<<< 8f308a43a8656c52f24bafc9c84c7837eac8fe3f
                         'product_qty': procurement.uom_id._compute_quantity(batch_size, bom.uom_id),
+||||||| 14b40fd1653bf42c53e4c8d4b768c43d670aa2ef
+                        'product_qty': procurement.product_uom._compute_quantity(batch_size, bom.product_uom_id),
+=======
+                        'product_qty': procurement.product_uom._compute_quantity(batch_size, bom.product_uom_id) if bom else procurement_qty,
+>>>>>>> e2d60f4eccab81a1f50ffdf74290fbb30df155af
                     })
                     new_productions_values_by_company[procurement.company_id.id]['procurements'].append(procurement)
                     procurement_qty -= batch_size
