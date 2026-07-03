@@ -132,6 +132,12 @@ class ResConfigSettings(models.TransientModel):
         for config in self:
             config.shared_user_account = not config.website_id.specific_user_account
 
+    @api.onchange('cookie_policy_id')
+    def _onchange_cookie_policy_id(self):
+        website = self.website_id
+        if website.cookie_policy_id and not self.cookie_policy_id:
+            self.cookie_policy_id = website.cookie_policy_id
+
     @api.onchange('plausible_shared_key')
     def _onchange_shared_key(self):
         for config in self:
