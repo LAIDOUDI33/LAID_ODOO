@@ -5,7 +5,6 @@ import { Dropdown } from "@web/core/dropdown/dropdown";
 import { DropdownItem } from "@web/core/dropdown/dropdown_item";
 import { _t } from "../../core/l10n/translation";
 import { formatDateTime } from "@web/core/l10n/dates";
-import { useLayoutEffect } from "@web/owl2/utils";
 import { ConfirmationDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
 
 const { DateTime } = luxon;
@@ -27,10 +26,10 @@ class OfflineSystray extends Component {
         this.offlineService = useService("offline");
         this.actionService = useService("action");
         this.dialogService = useService("dialog");
-        useLayoutEffect(this.env.redrawNavbar, () => [
-            this.offlineService.offline,
-            this.offlineService.hasScheduledCalls,
-        ]);
+        // useLayoutEffect(this.env.redrawNavbar, () => [
+        //     this.offlineService.offline,
+        //     this.offlineService.hasScheduledCalls,
+        // ]);
     }
 
     get groupEntries() {
