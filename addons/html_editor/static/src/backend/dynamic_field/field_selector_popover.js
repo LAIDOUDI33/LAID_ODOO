@@ -1,7 +1,8 @@
-import { Component, onWillStart, props, proxy, t } from "@odoo/owl";
+import { FieldPlugin } from "@web/core/field_plugin";
+import { Component, onWillStart, plugin, props, proxy, t } from "@odoo/owl";
 import { useHotkey } from "@web/core/hotkeys/hotkey_hook";
 import { ModelFieldSelector } from "@web/core/model_field_selector/model_field_selector";
-import { useAutofocus, useService } from "@web/core/utils/hooks";
+import { useAutofocus } from "@web/core/utils/hooks";
 
 export class FieldSelectorPopover extends Component {
     static template = "html_editor.FieldSelectorPopover";
@@ -25,7 +26,7 @@ export class FieldSelectorPopover extends Component {
             modelName: this.props.resModel,
         });
 
-        this.fieldService = useService("field");
+        this.fieldService = plugin(FieldPlugin);
         useHotkey("Enter", () => this.validate(), { bypassEditableProtection: true });
         useHotkey("Escape", () => this.props.close(), { bypassEditableProtection: true });
 

@@ -1100,6 +1100,7 @@ MISC_WHITELIST = {
 }
 # serviceName: [PluginClass, ImportPath]
 SERVICES_MAPPING = {
+    "field": ['FieldPlugin', '@web/core/field_plugin'],
     "notification": ['NotificationPlugin', '@web/core/notifications/notification_plugin'],
 }
 

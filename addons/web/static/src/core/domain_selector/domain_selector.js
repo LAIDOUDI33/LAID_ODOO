@@ -1,4 +1,5 @@
-import { Component, onWillStart, onWillUpdateProps, props, t } from "@odoo/owl";
+import { FieldPlugin } from "@web/core/field_plugin";
+import { Component, onWillStart, onWillUpdateProps, plugin, props, t } from "@odoo/owl";
 import { CheckBox } from "@web/core/checkbox/checkbox";
 import { Domain } from "@web/core/domain";
 import { getDomainDisplayedOperators } from "@web/core/domain_selector/domain_selector_operator_editor";
@@ -36,7 +37,7 @@ export class DomainSelector extends Component {
     props = props(domainSelectorProps);
 
     setup() {
-        this.fieldService = useService("field");
+        this.fieldService = plugin(FieldPlugin);
         this.treeProcessor = useService("tree_processor");
 
         this.tree = null;

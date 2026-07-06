@@ -1,5 +1,5 @@
-import { Component, onWillStart, onWillUpdateProps, props, proxy, t } from "@odoo/owl";
-import { useService } from "@web/core/utils/hooks";
+import { FieldPlugin } from "@web/core/field_plugin";
+import { Component, onWillStart, onWillUpdateProps, plugin, props, proxy, t } from "@odoo/owl";
 import { getAllActionsAndOperations, useBuilderComponent, useDomState } from "../utils";
 import { BuilderComponent } from "./builder_component";
 import { BasicMany2Many } from "./basic_many2many";
@@ -32,7 +32,7 @@ export class BuilderMany2Many extends Component {
 
     setup() {
         useBuilderComponent();
-        this.fields = useService("field");
+        this.fields = plugin(FieldPlugin);
         const { getAllActions, callOperation } = getAllActionsAndOperations(this);
         this.callOperation = callOperation;
         this.applyOperation = this.env.editor.shared.history.makePreviewableAsyncOperation(

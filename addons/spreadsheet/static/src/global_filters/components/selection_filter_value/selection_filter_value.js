@@ -1,8 +1,9 @@
+import { FieldPlugin } from "@web/core/field_plugin";
 /** @ts-check */
 
 import { useLayoutEffect } from "@web/owl2/utils";
-import { Component, onWillStart, onWillUpdateProps, props, t } from "@odoo/owl";
-import { useChildRef, useService } from "@web/core/utils/hooks";
+import { Component, onWillStart, onWillUpdateProps, plugin, props, t } from "@odoo/owl";
+import { useChildRef } from "@web/core/utils/hooks";
 
 import { BadgeTag } from "@web/core/tags_list/badge_tag";
 import { AutoComplete } from "@web/core/autocomplete/autocomplete";
@@ -34,7 +35,7 @@ export class SelectionFilterValue extends Component {
         );
         this.tags = [];
         this.sources = [];
-        this.fields = useService("field");
+        this.fields = plugin(FieldPlugin);
         onWillStart(() => this._computeTagsAndSources(this.props));
         onWillUpdateProps((nextProps) => this._computeTagsAndSources(nextProps));
     }
