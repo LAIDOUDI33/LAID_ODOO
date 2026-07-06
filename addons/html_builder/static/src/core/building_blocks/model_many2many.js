@@ -1,6 +1,6 @@
-import { Component, onWillStart, onWillUpdateProps, props, proxy, status, t } from "@odoo/owl";
+import { FieldPlugin } from "@web/core/field_plugin";
+import { Component, onWillStart, onWillUpdateProps, plugin, props, proxy, status, t } from "@odoo/owl";
 import { uniqueId } from "@web/core/utils/functions";
-import { useService } from "@web/core/utils/hooks";
 import { useDomState } from "@html_builder/core/utils";
 import { useCachedModel } from "@html_builder/core/cached_model_utils";
 import { BuilderComponent } from "./builder_component";
@@ -24,7 +24,7 @@ export class ModelMany2Many extends Component {
     static components = { BuilderComponent, BasicMany2Many };
 
     setup() {
-        this.fields = useService("field");
+        this.fields = plugin(FieldPlugin);
         this.cachedModel = useCachedModel();
         this.state = proxy({
             searchModel: undefined,

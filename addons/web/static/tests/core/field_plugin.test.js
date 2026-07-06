@@ -1,3 +1,4 @@
+import { FieldPlugin } from "@web/core/field_plugin";
 import { expect, test } from "@odoo/hoot";
 import {
     defineModels,
@@ -11,8 +12,7 @@ import {
 } from "@web/../tests/web_test_helpers";
 
 import { animationFrame } from "@odoo/hoot-mock";
-import { Component, xml, proxy } from "@odoo/owl";
-import { useService } from "@web/core/utils/hooks";
+import { Component, plugin, proxy, xml } from "@odoo/owl";
 
 /**
  * @param {string} resModel
@@ -380,7 +380,7 @@ test("async method loadFields is protected", async () => {
         `;
         static props = ["*"];
         setup() {
-            this.fieldService = useService("field");
+            this.fieldService = plugin(FieldPlugin);
             callFieldService = async () => {
                 expect.step("loadFields called");
                 await this.fieldService.loadFields("tortoise");

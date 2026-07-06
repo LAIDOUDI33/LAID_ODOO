@@ -1,5 +1,6 @@
+import { FieldPlugin } from "@web/core/field_plugin";
 import { render } from "@web/owl2/utils";
-import { Component, onWillStart, onWillUpdateProps, props, t } from "@odoo/owl";
+import { Component, onWillStart, onWillUpdateProps, plugin, props, t } from "@odoo/owl";
 import { Dropdown } from "@web/core/dropdown/dropdown";
 import { DropdownItem } from "@web/core/dropdown/dropdown_item";
 import { cloneTree, connector, isTree, TRUE_TREE } from "@web/core/tree_editor/condition_tree";
@@ -36,7 +37,7 @@ export class TreeEditor extends Component {
 
     setup() {
         this.isTree = isTree;
-        this.fieldService = useService("field");
+        this.fieldService = plugin(FieldPlugin);
         this.treeProcessor = useService("tree_processor");
         this.hasTouch = hasTouch();
         onWillStart(() => this.onPropsUpdated(this.props));
