@@ -939,6 +939,31 @@ class HrLeave(models.Model):
             if holiday.dashboard_warning_message:
                 raise ValidationError(holiday.dashboard_warning_message)
 
+#TODO: maybe not needed really
+    @api.constrains('date_from', 'date_to', 'employee_id', 'state')
+    def _check_no_overlap_with_time_rule_outputs(self):
+        if self.env.context.get('skip_time_rules') or self.env.context.get('leave_skip_date_check'):
+            return
+        for leave in self:
+            if leave.state in ('refuse', 'cancel') or leave.is_time_rule_output or leave.source_leave_id:
+                continue
+            if not leave.date_from or not leave.date_to:
+                continue
+            overlapping = self.env['hr.leave'].search([
+                ('employee_id', '=', leave.employee_id.id),
+                ('is_time_rule_output', '=', True),
+                ('date_from', '<', leave.date_to),
+                ('date_to', '>', leave.date_from),
+                ('state', '=', 'validate'),
+                ('id', '!=', leave.id),
+            ])
+            if overlapping:
+                raise ValidationError(_(
+                    "Cannot create this time off for %(empl_name)s: it overlaps with an "
+                    "engine-generated record. Delete that record first.",
+                    empl_name=leave.employee_id.name,
+                ))
+
     @api.constrains('date_from', 'date_to', 'employee_id')
     def _check_date_state(self):
         if self.env.context.get('leave_skip_state_check'):
@@ -1260,7 +1285,7 @@ class HrLeave(models.Model):
     def unlink(self):
         # capture affected info before records are deleted, for the post-deletion recompute
         if not self.env.context.get('skip_time_rules'):
-            source_leaves = self.filtered(lambda l: not l.is_time_rule_output)
+            source_leaves = self.filtered(lambda l: not l.source_leave_id)
             affected = [(l.employee_id, l.date_from, l.date_to) for l in source_leaves if l.date_from and l.date_to]
         self.sudo()._post_leave_cancel()
         self.env['hr.leave.allocation'].invalidate_model(['leaves_taken', 'max_leaves'])  # missing dependency on compute
@@ -1307,7 +1332,7 @@ class HrLeave(models.Model):
 
     def _process_time_rules(self):
         """Recompute time rule outputs for employees/dates affected by self."""
-        source = self.filtered(lambda l: not l.is_time_rule_output and l.date_from and l.date_to)
+        source = self.filtered(lambda l: not l.source_leave_id and l.date_from and l.date_to)
         if not source:
             return
         affected = [(l.employee_id, l.date_from, l.date_to) for l in source]
@@ -1315,7 +1340,7 @@ class HrLeave(models.Model):
 
     def _trigger_time_rules(self):
         """Apply the full day/week, past/current, exceed/undertime split for validated source leaves."""
-        validated = self.filtered(lambda l: l.state == 'validate' and not l.is_time_rule_output and l.date_from and l.date_to)
+        validated = self.filtered(lambda l: l.state == 'validate' and not l.source_leave_id and l.date_from and l.date_to)
         if not validated:
             return
         self._trigger_time_rules_for_affected([(l.employee_id, l.date_from, l.date_to) for l in validated])
@@ -1395,33 +1420,6 @@ class HrLeave(models.Model):
     def _get_source_records_for_time_rules(self, employees, start_dt, end_dt):
         return self._get_source_leaves_for_time_rules(employees, start_dt, end_dt)
 
-    def _collect_auto_ctx(self):
-        return dict(
-            skip_time_rules=True,
-            leave_fast_create=True,
-            leave_skip_date_check=True,
-            leave_skip_state_check=True,
-            leave_exact_dates=True,
-            tracking_disable=True,
-            mail_activity_automation_skip=True,
-            skip_leave_version_check=True,
-            skip_create_resource_leave=True,
-        )
-
-    def _restore_source_span(self, source, original_end, auto_ctx):
-        tz = ZoneInfo(source.employee_id._get_tz())
-        end_local = original_end.replace(tzinfo=UTC).astimezone(tz).replace(tzinfo=None)
-        source.with_context(**auto_ctx).write({
-            'active': True,
-            'date_to': original_end,
-            'request_date_to': end_local.date(),
-            'request_hour_to': end_local.hour + end_local.minute / 60,
-        })
-
-    def _after_source_restore(self, modified_sources, auto_ctx):
-        if modified_sources:
-            modified_sources.with_context(**auto_ctx)._create_resource_leave()
-
     def _merge_rule_outputs(self, a, b):
         merged = defaultdict(lambda: defaultdict(list))
         for outputs in (a, b):
@@ -1436,9 +1434,7 @@ class HrLeave(models.Model):
         Called from _process_time_rules_for after weekly scope expansion.
         Override to filter or pre-process source leaves before time rule evaluation.
         """
-        return self.env['hr.leave'].sudo().with_context(active_test=False).search([
-            ('time_rule_id', '=', False),
-            ('source_leave_id', '=', False),
+        return self.env['hr.leave'].sudo().search([
             ('employee_id', 'in', employees.ids),
             ('date_from', '<=', end_dt.replace(tzinfo=None)),
             ('date_to', '>=', start_dt.replace(tzinfo=None)),
@@ -1748,38 +1744,6 @@ class HrLeave(models.Model):
                     partner_ids=holiday.employee_id.user_id.partner_id.ids)
 
         self.activity_update()
-        to_cleanup = self.filtered(
-            lambda l: l.date_from and l.date_to and not l.is_time_rule_output and not l.source_leave_id
-        )
-        if to_cleanup:
-            auto_ctx = dict(
-                skip_time_rules=True,
-                leave_fast_create=True,
-                leave_skip_date_check=True,
-                leave_skip_state_check=True,
-                tracking_disable=True,
-                mail_activity_automation_skip=True,
-                skip_leave_version_check=True,
-                skip_create_resource_leave=True,
-            )
-            all_children = to_cleanup.sudo().output_leave_ids
-            max_child_dt = {}
-            for child in all_children:
-                sid = child.source_leave_id.id
-                if child.date_to and (sid not in max_child_dt or child.date_to > max_child_dt[sid]):
-                    max_child_dt[sid] = child.date_to
-            all_children.with_context(skip_time_rules=True).unlink()
-            affected = []
-            for src in to_cleanup.sudo():
-                original_dt = max(src.date_to, max_child_dt.get(src.id, src.date_to))
-                affected.append((src.employee_id, src.date_from, original_dt))
-                if not src.active or original_dt != src.date_to:
-                    src.with_context(**auto_ctx).write({
-                        'active': True,
-                        'date_to': original_dt,
-                        'request_date_to': original_dt.date(),
-                    })
-            self._trigger_time_rules_for_affected(affected)
         return True
 
     def _notify_manager(self):

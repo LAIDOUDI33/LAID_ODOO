@@ -1,6 +1,6 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-from datetime import UTC
+from datetime import UTC, datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
 from odoo import fields, models
@@ -46,11 +46,18 @@ class HrTimeRule(models.Model):
         return resolve_intervals_by_sequence(valid)
 
     def _apply_attendance_output(self, excess, deficit):
-        """Create output and remainder attendance records from the computed excess/deficit."""
+        """Apply time rule output to attendance records.
+
+        Excess: when output starts at source start, repurpose the source record in-place
+        (type-change + shrink to first output end).  When output starts later, shrink
+        source check_out to the first output start.  Remainder and subsequent output
+        segments are created as new records.  No archiving.
+
+        Deficit: create output records as before.
+        """
         Attendance = self.env['hr.attendance'].sudo()
         auto_ctx = dict(skip_time_rules=True, tracking_disable=True)
         att_create_vals = []
-        archive_source_ids = []
         dummy = self.env['resource.calendar']
 
         for employee, by_source in excess.items():
@@ -62,6 +69,8 @@ class HrTimeRule(models.Model):
                     continue
                 src_start = source_att.check_in.replace(tzinfo=UTC).astimezone(tz).replace(tzinfo=None)
                 src_stop = source_att.check_out.replace(tzinfo=UTC).astimezone(tz).replace(tzinfo=None)
+                # capture before any write so remainder records inherit the original type
+                source_wet_id = source_att.work_entry_type_id.id
                 out_union = Intervals([(s, e, dummy) for s, e, _ in output_intervals], keep_distinct=True)
                 remainder_segments = list(Intervals([(src_start, src_stop, dummy)]) - out_union)
 
@@ -70,17 +79,32 @@ class HrTimeRule(models.Model):
                     for seg_s, _, _ in output_intervals
                 )
                 if min_out_start_utc <= source_att.check_in:
-                    # OT covers the very start → archive source; all remainder segments become records
-                    archive_source_ids.append(source_att.id)
+                    # output covers source start: repurpose source as first output in-place
+                    first_s, first_e, first_rule = output_intervals[0]
+                    first_end_utc = first_e.replace(tzinfo=tz).astimezone(UTC).replace(tzinfo=None)
+                    if not (
+                        source_att.work_entry_type_id == first_rule.work_entry_type_id
+                        and source_att.time_rule_id == first_rule
+                        and source_att.check_out == first_end_utc
+                    ):
+                        Attendance.browse([source_att.id]).with_context(**auto_ctx).write({
+                            'work_entry_type_id': first_rule.work_entry_type_id.id,
+                            'time_rule_id': first_rule.id,
+                            'check_out': first_end_utc,
+                        })
                     for s, e, _ in remainder_segments:
-                        att_create_vals.append(self._get_remainder_attendance_vals(
-                            employee, source_att,
-                            s.replace(tzinfo=tz).astimezone(UTC).replace(tzinfo=None),
-                            e.replace(tzinfo=tz).astimezone(UTC).replace(tzinfo=None),
-                        ))
+                        ci = s.replace(tzinfo=tz).astimezone(UTC).replace(tzinfo=None)
+                        co = e.replace(tzinfo=tz).astimezone(UTC).replace(tzinfo=None)
+                        att_create_vals.append({
+                            'employee_id': employee.id,
+                            'work_entry_type_id': source_wet_id,
+                            'check_in': ci,
+                            'check_out': co,
+                            'source_attendance_id': source_att.id,
+                        })
+                    subsequent = output_intervals[1:]
                 else:
-                    # OT starts after check_in → shrink source check_out to first OT start;
-                    # source itself is the first non-OT segment, so skip remainder_segments[0]
+                    # output starts after check_in: shrink source; source covers first remainder
                     Attendance.browse([source_att.id]).with_context(**auto_ctx).write(
                         {'check_out': min_out_start_utc}
                     )
@@ -90,8 +114,9 @@ class HrTimeRule(models.Model):
                             s.replace(tzinfo=tz).astimezone(UTC).replace(tzinfo=None),
                             e.replace(tzinfo=tz).astimezone(UTC).replace(tzinfo=None),
                         ))
+                    subsequent = output_intervals
 
-                for seg_s, seg_e, rule in output_intervals:
+                for seg_s, seg_e, rule in subsequent:
                     acc_pp = frozenset().union(*(
                         orig_pp for orig_s, orig_e, orig_r, orig_pp in all_ivs_with_pp
                         if orig_r == rule and orig_s <= seg_s and orig_e >= seg_e
@@ -114,10 +139,33 @@ class HrTimeRule(models.Model):
                     if rule != effective_rule or e <= s:
                         continue
                     ci = s.replace(tzinfo=tz).astimezone(UTC).replace(tzinfo=None)
-                    co = e.replace(tzinfo=tz).astimezone(UTC).replace(tzinfo=None)
-                    att_create_vals.append(self._get_output_attendance_vals(employee, rule, ci, co, source_att))
+                    deficit_amount = (e - s).total_seconds() / 3600
+                    # go around any record that blocks part of the deficit interval
+                    if rule.quantity_period == 'week':
+                        ws = int(rule.week_start or '0')
+                        days_to_end = ((ws - 1) % 7 - s.weekday()) % 7
+                        period_end_date = s.date() + timedelta(days=days_to_end + 1)
+                    else:
+                        period_end_date = s.date() + timedelta(1)
+                    period_end = datetime.combine(period_end_date, time.min).replace(tzinfo=tz).astimezone(UTC).replace(tzinfo=None)
 
-        if archive_source_ids:
-            Attendance.browse(archive_source_ids).with_context(**auto_ctx).write({'active': False})
+                    existing = Attendance.search([
+                        ('employee_id', '=', employee.id),
+                        ('check_in', '<', period_end),
+                        ('check_out', '>', ci),
+                    ])
+                    occupied = Intervals(
+                        [(a.check_in, a.check_out, dummy) for a in existing],
+                        keep_distinct=True,
+                    )
+                    remaining = deficit_amount
+                    for slot_ci, slot_co, _ in Intervals([(ci, period_end, dummy)]) - occupied:
+                        if remaining <= 1e-6:
+                            break
+                        slot_hours = (slot_co - slot_ci).total_seconds() / 3600
+                        if slot_hours > remaining:
+                            slot_co = slot_ci + timedelta(hours=remaining)
+                        att_create_vals.append(self._get_output_attendance_vals(employee, rule, slot_ci, slot_co, source_att))
+                        remaining -= (slot_co - slot_ci).total_seconds() / 3600
 
         Attendance.with_context(**auto_ctx).create(att_create_vals)

@@ -1,7 +1,7 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 from collections import defaultdict
-from datetime import UTC, timedelta
+from datetime import UTC, datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
 from odoo import fields, models
@@ -73,11 +73,12 @@ class HrTimeRule(models.Model):
         return self
 
     def _apply_leave_output(self, excess, deficit):
-        """Create output and remainder leave records from the computed excess/deficit.
+        """Apply time rule output to leave records (radical approach: type-change in-place, no archiving).
 
-        For excess: shrink source date_to to first OT start (or archive if OT covers the
-        beginning), create remainder records for subsequent non-OT gaps, and output records
-        for OT segments.  For deficit: emit output records as before.
+        Excess: when output starts at source start, repurpose the source record in-place
+        (type-change + shrink to first output end).  When output starts later, shrink
+        source date_to to the first output start.  Remainder and subsequent output
+        segments are created as new records.
         """
         Leave = self.env['hr.leave'].sudo()
         auto_ctx = dict(
@@ -92,8 +93,8 @@ class HrTimeRule(models.Model):
         )
 
         leave_create_vals = []
-        archive_source_ids = []
         all_source_ids = set()
+        dummy = self.env['resource.calendar']
 
         for employee, by_source in deficit.items():
             tz = ZoneInfo(employee._get_tz())
@@ -110,25 +111,47 @@ class HrTimeRule(models.Model):
                     by_period[pkey].append((start, stop, rule))
 
                 winning_intervals = []
-                for pivs in by_period.values():
+                for pkey, pivs in by_period.items():
                     all_period_rules = self.browse([r.id for _, _, r in pivs])
                     min_seq = min(r.sequence for r in all_period_rules)
+                    # exclusive end of the rule period (first moment of the next period)
+                    period_end_date = pkey[1] + timedelta(1)
                     for s, e, r in pivs:
                         if r.sequence == min_seq:
-                            winning_intervals.append((s, e, r, all_period_rules))
+                            winning_intervals.append((s, e, r, all_period_rules, period_end_date))
 
-                for start_local, stop_local, rule, all_rules in winning_intervals:
+                for start_local, stop_local, rule, all_rules, period_end_date in winning_intervals:
                     if not rule.work_entry_type_id:
                         continue
-                    date_from = start_local.replace(tzinfo=tz).astimezone(UTC).replace(tzinfo=None)
-                    date_to = stop_local.replace(tzinfo=tz).astimezone(UTC).replace(tzinfo=None)
-                    leave_create_vals.append(
-                        self._get_output_leave_vals(employee, rule, date_from, date_to, source_leave, all_rules=all_rules)
+                    deficit_start = start_local.replace(tzinfo=tz).astimezone(UTC).replace(tzinfo=None)
+                    deficit_amount = (stop_local - start_local).total_seconds() / 3600
+                    # go around any record that blocks part of the deficit interval
+                    period_end = datetime.combine(period_end_date, time.min).replace(tzinfo=tz).astimezone(UTC).replace(tzinfo=None)
+
+                    existing = Leave.search([
+                        ('employee_id', '=', employee.id),
+                        ('date_from', '<', period_end),
+                        ('date_to', '>', deficit_start),
+                        ('state', '=', 'validate'),
+                    ])
+                    occupied = Intervals(
+                        [(l.date_from, l.date_to, dummy) for l in existing],
+                        keep_distinct=True,
                     )
+                    remaining = deficit_amount
+                    for slot_start, slot_end, _ in Intervals([(deficit_start, period_end, dummy)]) - occupied:
+                        if remaining <= 1e-6:
+                            break
+                        slot_hours = (slot_end - slot_start).total_seconds() / 3600
+                        if slot_hours > remaining:
+                            slot_end = slot_start + timedelta(hours=remaining)
+                        leave_create_vals.append(
+                            self._get_output_leave_vals(employee, rule, slot_start, slot_end, source_leave, all_rules=all_rules)
+                        )
+                        remaining -= (slot_end - slot_start).total_seconds() / 3600
 
                     if rule.leave_compensation_rate > 0 and rule.allocation_type_id:
-                        deficit_hours = (date_to - date_from).total_seconds() / 3600
-                        deduct_days = deficit_hours * rule.leave_compensation_rate / 100
+                        deduct_days = deficit_amount * rule.leave_compensation_rate / 100
                         allocation = self.env['hr.leave.allocation'].sudo().search([
                             ('employee_id', '=', employee.id),
                             ('work_entry_type_id', '=', rule.allocation_type_id.id),
@@ -136,8 +159,6 @@ class HrTimeRule(models.Model):
                         ], limit=1)
                         if allocation:
                             allocation.number_of_days = max(0, allocation.number_of_days - deduct_days)
-
-        dummy = self.env['resource.calendar']
 
         for employee, by_source in excess.items():
             tz = ZoneInfo(employee._get_tz())
@@ -197,7 +218,9 @@ class HrTimeRule(models.Model):
                     else:
                         merged_slices.append([start, stop, rules, effective, pp, merge_key])
 
-                # compute remainder segments (source - all outputs)
+                # capture source WET before any write so remainder records inherit the original type
+                source_wet_id = source_leave.work_entry_type_id.id
+
                 src_start = source_leave.date_from.replace(tzinfo=UTC).astimezone(tz).replace(tzinfo=None)
                 src_stop = source_leave.date_to.replace(tzinfo=UTC).astimezone(tz).replace(tzinfo=None)
                 out_union = Intervals(
@@ -210,16 +233,30 @@ class HrTimeRule(models.Model):
                 min_out_start_utc = min_out_start_local.replace(tzinfo=tz).astimezone(UTC).replace(tzinfo=None)
 
                 if min_out_start_utc <= source_leave.date_from:
-                    # OT covers the very start -> archive source; all remainders become records
-                    archive_source_ids.append(source_leave.id)
+                    # output covers source start: repurpose source in-place as first merged output
+                    first_start_local, first_stop_local, _, first_rule, _first_pp, _ = merged_slices[0]
+                    first_end_utc = first_stop_local.replace(tzinfo=tz).astimezone(UTC).replace(tzinfo=None)
+                    if not (
+                        source_leave.work_entry_type_id == first_rule.work_entry_type_id
+                        and source_leave.time_rule_id == first_rule
+                        and source_leave.date_to == first_end_utc
+                    ):
+                        Leave.browse([source_leave.id]).with_context(**auto_ctx).write({
+                            'work_entry_type_id': first_rule.work_entry_type_id.id,
+                            'time_rule_id': first_rule.id,
+                            'date_to': first_end_utc,
+                            'request_date_to': first_stop_local.date(),
+                            'request_hour_to': first_stop_local.hour + first_stop_local.minute / 60,
+                        })
                     for seg_s, seg_e, _ in remainder_segments:
                         df = seg_s.replace(tzinfo=tz).astimezone(UTC).replace(tzinfo=None)
                         dt = seg_e.replace(tzinfo=tz).astimezone(UTC).replace(tzinfo=None)
-                        leave_create_vals.append(self._get_remainder_leave_vals(employee, source_leave, df, dt))
+                        vals = self._get_remainder_leave_vals(employee, source_leave, df, dt)
+                        vals['work_entry_type_id'] = source_wet_id
+                        leave_create_vals.append(vals)
+                    subsequent = merged_slices[1:]
                 else:
-                    # OT starts after source start -> shrink source date_to; source IS remainder[0]
-                    # keep request fields in sync: _compute_date_from_to uses request_hour_to
-                    # for hour-based types (the only types allowed on time rules)
+                    # output starts after source start: shrink source; source covers first remainder
                     hour_to = min_out_start_local.hour + min_out_start_local.minute / 60
                     Leave.browse([source_leave.id]).with_context(**auto_ctx).write({
                         'date_to': min_out_start_utc,
@@ -229,9 +266,12 @@ class HrTimeRule(models.Model):
                     for seg_s, seg_e, _ in remainder_segments[1:]:
                         df = seg_s.replace(tzinfo=tz).astimezone(UTC).replace(tzinfo=None)
                         dt = seg_e.replace(tzinfo=tz).astimezone(UTC).replace(tzinfo=None)
-                        leave_create_vals.append(self._get_remainder_leave_vals(employee, source_leave, df, dt))
+                        vals = self._get_remainder_leave_vals(employee, source_leave, df, dt)
+                        vals['work_entry_type_id'] = source_wet_id
+                        leave_create_vals.append(vals)
+                    subsequent = merged_slices
 
-                for start_local, stop_local, all_rules, rule, accumulated_pp, _merge_key in merged_slices:
+                for start_local, stop_local, all_rules, rule, accumulated_pp, _merge_key in subsequent:
                     date_from = start_local.replace(tzinfo=tz).astimezone(UTC).replace(tzinfo=None)
                     date_to = stop_local.replace(tzinfo=tz).astimezone(UTC).replace(tzinfo=None)
                     leave_create_vals.append(
@@ -240,9 +280,6 @@ class HrTimeRule(models.Model):
                             all_rules=all_rules, accumulated_pp=accumulated_pp,
                         )
                     )
-
-        if archive_source_ids:
-            Leave.browse(archive_source_ids).with_context(**auto_ctx).write({'active': False})
 
         new_leaves = Leave.with_context(**auto_ctx).create(leave_create_vals)
 
