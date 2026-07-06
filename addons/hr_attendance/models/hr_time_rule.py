@@ -41,9 +41,23 @@ class HrTimeRule(models.Model):
         }
 
     def _resolve_output_intervals(self, intervals):
-        """For each time slice, the lowest-sequence rule with a work entry type wins."""
-        valid = [(s, e, rule) for s, e, rule in intervals if rule.work_entry_type_id]
-        return resolve_intervals_by_sequence(valid)
+        """For each time slice, pick the lowest-sequence rule with a work entry type.
+
+        intervals: iterable of (start, stop, rule, pp) 4-tuples.
+        Returns a list of (start, stop, rule, pp) 4-tuples where pp is the union of
+        all accumulated_pp values from intervals where the winning rule covers the slice.
+        """
+        raw = [(s, e, r) for s, e, r, _pp in intervals if r.work_entry_type_id]
+        resolved = resolve_intervals_by_sequence(raw)
+        result = []
+        ivs = list(intervals)
+        for seg_s, seg_e, rule in resolved:
+            pp = frozenset().union(*(
+                orig_pp for orig_s, orig_e, orig_r, orig_pp in ivs
+                if orig_r == rule and orig_s <= seg_s and orig_e >= seg_e
+            ))
+            result.append((seg_s, seg_e, rule, pp))
+        return result
 
     def _apply_attendance_output(self, excess, deficit):
         """Apply time rule output to attendance records.
@@ -63,24 +77,23 @@ class HrTimeRule(models.Model):
         for employee, by_source in excess.items():
             tz = ZoneInfo(employee._get_tz())
             for source_att, intervals in by_source.items():
-                all_ivs_with_pp = list(intervals)
-                output_intervals = self._resolve_output_intervals([(s, e, r) for s, e, r, _pp in all_ivs_with_pp])
+                output_intervals = self._resolve_output_intervals(intervals)
                 if not output_intervals:
                     continue
                 src_start = source_att.check_in.replace(tzinfo=UTC).astimezone(tz).replace(tzinfo=None)
                 src_stop = source_att.check_out.replace(tzinfo=UTC).astimezone(tz).replace(tzinfo=None)
                 # capture before any write so remainder records inherit the original type
                 source_wet_id = source_att.work_entry_type_id.id
-                out_union = Intervals([(s, e, dummy) for s, e, _ in output_intervals], keep_distinct=True)
+                out_union = Intervals([(s, e, dummy) for s, e, _r, _pp in output_intervals], keep_distinct=True)
                 remainder_segments = list(Intervals([(src_start, src_stop, dummy)]) - out_union)
 
                 min_out_start_utc = min(
                     seg_s.replace(tzinfo=tz).astimezone(UTC).replace(tzinfo=None)
-                    for seg_s, _, _ in output_intervals
+                    for seg_s, _e, _r, _pp in output_intervals
                 )
                 if min_out_start_utc <= source_att.check_in:
                     # output covers source start: repurpose source as first output in-place
-                    first_s, first_e, first_rule = output_intervals[0]
+                    first_s, first_e, first_rule, first_pp = output_intervals[0]
                     first_end_utc = first_e.replace(tzinfo=tz).astimezone(UTC).replace(tzinfo=None)
                     if not (
                         source_att.work_entry_type_id == first_rule.work_entry_type_id
@@ -91,6 +104,7 @@ class HrTimeRule(models.Model):
                             'work_entry_type_id': first_rule.work_entry_type_id.id,
                             'time_rule_id': first_rule.id,
                             'check_out': first_end_utc,
+                            **first_rule._get_output_in_place_extra_vals(accumulated_pp=first_pp),
                         })
                     for s, e, _ in remainder_segments:
                         ci = s.replace(tzinfo=tz).astimezone(UTC).replace(tzinfo=None)
@@ -116,11 +130,7 @@ class HrTimeRule(models.Model):
                         ))
                     subsequent = output_intervals
 
-                for seg_s, seg_e, rule in subsequent:
-                    acc_pp = frozenset().union(*(
-                        orig_pp for orig_s, orig_e, orig_r, orig_pp in all_ivs_with_pp
-                        if orig_r == rule and orig_s <= seg_s and orig_e >= seg_e
-                    ))
+                for seg_s, seg_e, rule, acc_pp in subsequent:
                     ci = seg_s.replace(tzinfo=tz).astimezone(UTC).replace(tzinfo=None)
                     co = seg_e.replace(tzinfo=tz).astimezone(UTC).replace(tzinfo=None)
                     att_create_vals.append(self._get_output_attendance_vals(employee, rule, ci, co, source_att, accumulated_pp=acc_pp))

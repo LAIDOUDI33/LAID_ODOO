@@ -532,6 +532,14 @@ class HrTimeRule(models.Model):
         self.ensure_one()
         return frozenset()
 
+    def _get_output_in_place_extra_vals(self, accumulated_pp=frozenset()):
+        """Extra write vals when the source record is repurposed in-place as the first output segment.
+
+        Override to propagate fields that _get_output_*_vals sets on newly created records
+        but that the in-place write path would otherwise miss (e.g. l10n_be_premium_pay_rule_ids).
+        """
+        return {}
+
     def _evaluate_period(self, start, stop, record_intervals, schedule):
         """Evaluate one time period against this rule's threshold.
 

@@ -16,8 +16,8 @@ class HrTimeRule(models.Model):
 
         for employee, by_source in excess.items():
             for _source_att, intervals in by_source.items():
-                resolved = self._resolve_output_intervals([(s, e, r) for s, e, r, _pp in intervals])
-                for s, e, rule in resolved:
+                resolved = self._resolve_output_intervals(intervals)
+                for s, e, rule, _pp in resolved:
                     if not (rule.leave_compensation_rate > 0 and rule.allocation_type_id):
                         continue
                     alloc_days = (e - s).total_seconds() / 3600 * rule.leave_compensation_rate / 100

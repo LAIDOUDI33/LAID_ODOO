@@ -234,7 +234,7 @@ class HrTimeRule(models.Model):
 
                 if min_out_start_utc <= source_leave.date_from:
                     # output covers source start: repurpose source in-place as first merged output
-                    first_start_local, first_stop_local, _, first_rule, _first_pp, _ = merged_slices[0]
+                    first_start_local, first_stop_local, _, first_rule, first_pp, _ = merged_slices[0]
                     first_end_utc = first_stop_local.replace(tzinfo=tz).astimezone(UTC).replace(tzinfo=None)
                     if not (
                         source_leave.work_entry_type_id == first_rule.work_entry_type_id
@@ -247,6 +247,7 @@ class HrTimeRule(models.Model):
                             'date_to': first_end_utc,
                             'request_date_to': first_stop_local.date(),
                             'request_hour_to': first_stop_local.hour + first_stop_local.minute / 60,
+                            **first_rule._get_output_in_place_extra_vals(accumulated_pp=first_pp),
                         })
                     for seg_s, seg_e, _ in remainder_segments:
                         df = seg_s.replace(tzinfo=tz).astimezone(UTC).replace(tzinfo=None)
