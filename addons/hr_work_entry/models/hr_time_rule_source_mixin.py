@@ -16,10 +16,43 @@ class HrTimeRuleSourceMixin(models.AbstractModel):
     _time_rule_source_field = ''      # m2o from output to source
     _time_rule_span_start_field = ''  # span start field name
     _time_rule_span_end_field = ''    # span end field name
+    _time_rule_write_ctx = {'skip_time_rules': True, 'tracking_disable': True}
 
     def _get_source_records_for_time_rules(self, employees, start_dt, end_dt):
         """Return validated records overlapping [start_dt, end_dt] for employees."""
         raise NotImplementedError
+
+    def _get_time_rule_end_write_vals(self, end_utc, stop_local):
+        """Write vals dict for updating the span-end field.
+
+        end_utc is the new UTC end datetime; stop_local is the same instant as a
+        naive datetime in the employee's tz.  Leave overrides to also write
+        request_date_to / request_hour_to.
+        """
+        return {self._time_rule_span_end_field: end_utc}
+
+    def _get_time_rule_deficit_occupied(self, employee_id, start_utc, period_end_utc):
+        """Return Intervals of existing records that occupy [start_utc, period_end_utc].
+
+        Used by the deficit go-around algorithm to find free slots.
+        """
+        raise NotImplementedError
+
+    def _get_time_rule_output_vals(self, rule, df, dt, pp):
+        """Create vals for a new time rule output record.
+
+        df/dt are UTC datetimes; pp is a frozenset of premium pay rule IDs.
+        """
+        raise NotImplementedError
+
+    def _get_time_rule_remainder_vals(self, df, dt):
+        """Create vals for a remainder record (source's original type, trimmed span).
+
+        df/dt are UTC datetimes. work_entry_type_id is intentionally omitted;
+        the caller fills it with the source's original WET before creating.
+        """
+        raise NotImplementedError
+
 
     def _collect_time_rule_outputs(self, rules, ranges_by_employee):
         all_excess = defaultdict(lambda: defaultdict(list))

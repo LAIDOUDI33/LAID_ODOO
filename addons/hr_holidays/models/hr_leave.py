@@ -349,7 +349,6 @@ class HrLeave(models.Model):
             & Domain('employee_id', 'in', check_warning_leaves.employee_id.ids)
             & Domain('work_entry_type_id.allow_request_on_top', '=', False)
             & Domain('state', 'not in', ['cancel', 'refuse'])
-            & not_generated
         )
         for holiday in check_warning_leaves:
             conflicting_holidays = all_leaves.filtered_domain([
@@ -939,31 +938,6 @@ class HrLeave(models.Model):
             if holiday.dashboard_warning_message:
                 raise ValidationError(holiday.dashboard_warning_message)
 
-#TODO: maybe not needed really
-    @api.constrains('date_from', 'date_to', 'employee_id', 'state')
-    def _check_no_overlap_with_time_rule_outputs(self):
-        if self.env.context.get('skip_time_rules') or self.env.context.get('leave_skip_date_check'):
-            return
-        for leave in self:
-            if leave.state in ('refuse', 'cancel') or leave.is_time_rule_output or leave.source_leave_id:
-                continue
-            if not leave.date_from or not leave.date_to:
-                continue
-            overlapping = self.env['hr.leave'].search([
-                ('employee_id', '=', leave.employee_id.id),
-                ('is_time_rule_output', '=', True),
-                ('date_from', '<', leave.date_to),
-                ('date_to', '>', leave.date_from),
-                ('state', '=', 'validate'),
-                ('id', '!=', leave.id),
-            ])
-            if overlapping:
-                raise ValidationError(_(
-                    "Cannot create this time off for %(empl_name)s: it overlaps with an "
-                    "engine-generated record. Delete that record first.",
-                    empl_name=leave.employee_id.name,
-                ))
-
     @api.constrains('date_from', 'date_to', 'employee_id')
     def _check_date_state(self):
         if self.env.context.get('leave_skip_state_check'):
@@ -1440,6 +1414,54 @@ class HrLeave(models.Model):
             ('date_to', '>=', start_dt.replace(tzinfo=None)),
             ('state', '=', 'validate'),
         ])
+
+    _time_rule_write_ctx = {
+        'skip_time_rules': True,
+        'leave_fast_create': True,
+        'leave_skip_date_check': True,
+        'leave_skip_state_check': True,
+        'tracking_disable': True,
+        'mail_activity_automation_skip': True,
+        'skip_leave_version_check': True,
+        'skip_create_resource_leave': True,
+    }
+
+    def _get_time_rule_end_write_vals(self, end_utc, stop_local):
+        return {
+            'date_to': end_utc,
+            'request_date_to': stop_local.date(),
+            'request_hour_to': stop_local.hour + stop_local.minute / 60,
+        }
+
+    def _get_time_rule_deficit_occupied(self, employee_id, start_utc, period_end_utc):
+        dummy = self.env['resource.calendar']
+        existing = self.env['hr.leave'].sudo().search([
+            ('employee_id', '=', employee_id),
+            ('date_from', '<', period_end_utc),
+            ('date_to', '>', start_utc),
+            ('state', '=', 'validate'),
+        ])
+        return Intervals([(l.date_from, l.date_to, dummy) for l in existing], keep_distinct=True)
+
+    def _get_time_rule_output_vals(self, rule, df, dt, pp):
+        return rule._get_output_leave_vals(self.employee_id, rule, df, dt, self, accumulated_pp=pp)
+
+    def _get_time_rule_remainder_vals(self, df, dt):
+        tz = ZoneInfo(self.employee_id._get_tz())
+        df_local = df.replace(tzinfo=UTC).astimezone(tz).replace(tzinfo=None)
+        dt_local = dt.replace(tzinfo=UTC).astimezone(tz).replace(tzinfo=None)
+        return {
+            'employee_id': self.employee_id.id,
+            'date_from': df,
+            'date_to': dt,
+            'request_date_from': df_local.date(),
+            'request_date_to': dt_local.date(),
+            'request_hour_from': df_local.hour + df_local.minute / 60,
+            'request_hour_to': dt_local.hour + dt_local.minute / 60,
+            'source_leave_id': self.id,
+            'resource_calendar_id': self.resource_calendar_id.id,
+            'state': 'validate',
+        }
 
     def copy_data(self, default=None):
         vals_list = super().copy_data(default=default)

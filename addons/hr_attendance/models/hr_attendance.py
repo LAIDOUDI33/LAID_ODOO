@@ -818,6 +818,26 @@ class HrAttendance(models.Model):
     def _get_source_records_for_time_rules(self, employees, start_dt, end_dt):
         return self._get_source_attendances_for_time_rules(employees, start_dt, end_dt)
 
+    def _get_time_rule_deficit_occupied(self, employee_id, start_utc, period_end_utc):
+        dummy = self.env['resource.calendar']
+        existing = self.env['hr.attendance'].sudo().search([
+            ('employee_id', '=', employee_id),
+            ('check_in', '<', period_end_utc),
+            ('check_out', '>', start_utc),
+        ])
+        return Intervals([(a.check_in, a.check_out, dummy) for a in existing], keep_distinct=True)
+
+    def _get_time_rule_output_vals(self, rule, df, dt, pp):
+        return rule._get_output_attendance_vals(self.employee_id, rule, df, dt, self, accumulated_pp=pp)
+
+    def _get_time_rule_remainder_vals(self, df, dt):
+        return {
+            'employee_id': self.employee_id.id,
+            'check_in': df,
+            'check_out': dt,
+            'source_attendance_id': self.id,
+        }
+
     def _merge_rule_outputs(self, a, b):
         merged = defaultdict(lambda: defaultdict(list))
         for outputs in (a, b):
@@ -880,5 +900,3 @@ class HrAttendance(models.Model):
 
     def action_reset_to_draft(self):
         self.write({'state': 'draft'})
-
-
