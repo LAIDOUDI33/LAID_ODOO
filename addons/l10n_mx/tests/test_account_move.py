@@ -7,15 +7,9 @@ from odoo.addons.l10n_mx.tests.common import TestMxCommon
 @tagged('post_install_l10n', 'post_install', '-at_install')
 class TestAccountMove(TestMxCommon):
 
-<<<<<<< ee6b3c149bb20bb40ddbe023b162575c8f11e19d
     _test_user_groups = None  # FIXME list needed groups
 
-    def test_credit_note_assign_right_account_on_lines(self):
-||||||| 9546819c03f7cb2ca72151f8528b7d31dd80933f
-    def test_credit_note_assign_right_account_on_lines(self):
-=======
     def test_credit_note_assign_right_account_on_lines_on_create(self):
->>>>>>> 5bad57e9ff6e2cd6928857070a47deb60a161638
         """
         This test check if the lines of a credit note created for MX, reference the
         right account id by default.
