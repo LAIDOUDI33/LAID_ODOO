@@ -7,9 +7,15 @@ from odoo.addons.l10n_mx.tests.common import TestMxCommon
 @tagged('post_install_l10n', 'post_install', '-at_install')
 class TestAccountMove(TestMxCommon):
 
+<<<<<<< ee6b3c149bb20bb40ddbe023b162575c8f11e19d
     _test_user_groups = None  # FIXME list needed groups
 
     def test_credit_note_assign_right_account_on_lines(self):
+||||||| 9546819c03f7cb2ca72151f8528b7d31dd80933f
+    def test_credit_note_assign_right_account_on_lines(self):
+=======
+    def test_credit_note_assign_right_account_on_lines_on_create(self):
+>>>>>>> 5bad57e9ff6e2cd6928857070a47deb60a161638
         """
         This test check if the lines of a credit note created for MX, reference the
         right account id by default.
@@ -26,6 +32,33 @@ class TestAccountMove(TestMxCommon):
         })
 
         self.assertRecordValues(credit_note.line_ids, [
+            {'display_type': 'product', 'account_code': '402.01.01'},
+            {'display_type': 'payment_term', 'account_code': '105.01.01'},
+        ])
+
+    def test_credit_note_assign_right_account_on_lines_on_switch_move_type(self):
+        """
+        This test check if the lines of a credit note created from a invoice from which we switch the type, reference the
+        right account id by default.
+        """
+        move = self.env['account.move'].create({
+            'move_type': 'out_invoice',
+            'company_id': self.company_data['company'].id,
+            'partner_id': self.partner_mx.id,
+            'invoice_line_ids': [Command.create({
+                'name': 'Test',
+                'quantity': 1,
+                'price_unit': 100,
+            })],
+        })
+        self.assertRecordValues(move.line_ids, [
+            {'display_type': 'product', 'account_code': '401.01.01'},
+            {'display_type': 'payment_term', 'account_code': '105.01.01'},
+        ])
+
+        move.action_switch_move_type()
+
+        self.assertRecordValues(move.line_ids, [
             {'display_type': 'product', 'account_code': '402.01.01'},
             {'display_type': 'payment_term', 'account_code': '105.01.01'},
         ])
