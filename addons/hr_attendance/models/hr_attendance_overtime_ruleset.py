@@ -1,6 +1,6 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-from odoo import models, fields
+from odoo import api, models, fields
 
 
 class HrAttendanceOvertimeRuleset(models.Model):
@@ -38,7 +38,7 @@ class HrAttendanceOvertimeRuleset(models.Model):
 
     def _attendances_to_regenerate_for(self):
         self.ensure_one()
-        elligible_version = self.env['hr.version'].search([('ruleset_id', '=', self.id)])
+        elligible_version = self.env['hr.version'].sudo().search([('ruleset_id', '=', self.id)])
         if not elligible_version:
             return self.env['hr.attendance']
         elligible_attendances = self.env['hr.attendance'].search([
@@ -49,3 +49,13 @@ class HrAttendanceOvertimeRuleset(models.Model):
 
     def action_regenerate_overtimes(self):
         self._attendances_to_regenerate_for()._update_overtime()
+
+    @api.model
+    def _action_open_overtime_rulesets(self):
+        action = self.sudo().env.ref('hr_attendance.hr_attendance_overtime_ruleset_action').read()[0]
+        can_create_edit = self.env.user.has_group('hr.group_hr_user')
+        action['context'] = {
+            'can_edit': can_create_edit,
+            'create': can_create_edit,
+        }
+        return action
