@@ -252,6 +252,11 @@ export class ListDataSource extends OdooViewsDataSource {
         return record ? record.id : undefined;
     }
 
+    getIds() {
+        this.assertIsValid();
+        return this.data.map((record) => record?.id);
+    }
+
     /**
      * @param {string} fieldPath
      * @returns {string | EvaluationError}
