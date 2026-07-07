@@ -151,3 +151,5 @@ class TestReturnOrderController(TestSaleStockCommon, HttpCase):
             lambda m: "return label has been downloaded" in (m.body or "").lower()
         )[:1]
         self.assertTrue(message.body)
+        # Verify that HTML tags are rendered correctly and not escaped.
+        self.assertNotIn("<br/>", message.preview)
