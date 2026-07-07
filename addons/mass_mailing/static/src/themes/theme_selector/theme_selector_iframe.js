@@ -6,10 +6,10 @@ import {
     markup,
     onMounted,
     onWillUnmount,
-    onWillUpdateProps,
     status,
     proxy,
     useApp,
+    useEffect,
 } from "@odoo/owl";
 import { useService } from "@web/core/utils/hooks";
 import { renderToFragment } from "@web/core/utils/render";
@@ -47,9 +47,9 @@ export class ThemeSelectorIframe extends Component {
                 this.themeSelectorRoot.destroy();
             }
         });
-        onWillUpdateProps((newProps) => {
-            if (newProps.config.mailingModelId !== this.props.config.mailingModelId) {
-                this.themeSelectorProps.favoriteThemes.promise = this.fetchFavoriteThemes(newProps);
+        useEffect(() => {
+            if (this.props.config.mailingModelId && this.themeSelectorRoot) {
+                this.themeSelectorProps.favoriteThemes.promise = this.fetchFavoriteThemes(this.props);
             }
         });
     }
