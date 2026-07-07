@@ -53,7 +53,6 @@ class HrTimeRuleSourceMixin(models.AbstractModel):
         """
         raise NotImplementedError
 
-
     def _collect_time_rule_outputs(self, rules, ranges_by_employee):
         all_excess = defaultdict(lambda: defaultdict(list))
         all_deficit = defaultdict(lambda: defaultdict(list))

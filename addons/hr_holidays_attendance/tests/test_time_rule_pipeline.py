@@ -1920,7 +1920,7 @@ class TestTimeRulePipeline(TransactionCase):
         })
 
         # batch create: engine evaluates both attendances together (5h combined)
-        att1, att2 = self.env['hr.attendance'].create([
+        self.env['hr.attendance'].create([
             {
                 'employee_id': self.flex_emp.id,
                 'check_in': datetime(2022, 12, 12, 8),
@@ -1996,6 +1996,45 @@ class TestTimeRulePipeline(TransactionCase):
             sum(a.worked_hours for a in att2_deficit), 2.0, places=5,
             msg="att2 Tue portion (00:00-06:00, 6h) < 8h threshold -> 2h deficit output",
         )
+
+    def test_overtime_duration_precision(self):
+        # 5-second overtime must not be truncated by pipeline or generate_work_entries.
+        self.time_rule.write({'active': False})
+        self.env['hr.time.rule'].create({
+            'name': 'Precision Rule 9h',
+            'working_hours_mode': 'day',
+            'expected_hours': 9.0,
+            'work_entry_type_id': self.overtime_type.id,
+            'condition_work_entry_type_ids': [self.att_type.id],
+        })
+
+        att = self.env['hr.attendance'].create({
+            'employee_id': self.cal_emp.id,
+            'check_in': datetime(2022, 1, 3, 8, 0, 0),
+            'check_out': datetime(2022, 1, 3, 17, 0, 5),
+        })
+
+        expected_ot_hours = 5 / 3600  # 0.001388..
+
+        # pipeline output: source trimmed to 9 h; OT child holds the 5-second tail
+        ot_atts = att.overtime_attendance_ids.filtered(
+            lambda a: a.work_entry_type_id == self.overtime_type
+        )
+        self.assertAlmostEqual(
+            sum(a.worked_hours for a in ot_atts), expected_ot_hours, places=5,
+            msg="5-second OT must survive the pipeline without being rounded to zero",
+        )
+
+        # payslip path: generate_work_entries must also carry the 5-second OT entry
+        vals = self.cal_version.generate_work_entries(date(2022, 1, 3), date(2022, 1, 3))
+        ot_total = sum(v['duration'] for v in vals if v['work_entry_type_id'] == self.overtime_type)
+        self.assertAlmostEqual(
+            ot_total, expected_ot_hours, places=5,
+            msg="generate_work_entries must not truncate 5-second OT to zero",
+        )
+        # sanity: the source work entry must carry exactly 9 h
+        att_total = sum(v['duration'] for v in vals if v['work_entry_type_id'] == self.att_type)
+        self.assertAlmostEqual(att_total, 9.0, places=5)
 
     def test_multiple_overlapping_overtimes_rounding(self):
         """Brussels midnight crossing with weekday+weekend rules: Fri 2h30m28s OT + Sat 1h29m44s OT."""
@@ -2103,10 +2142,27 @@ class TestTimeRuleCronBehavior(TransactionCase):
         })
 
     def _outputs_for(self, att_id, ot_type=None):
-        domain = [('source_attendance_id', '=', att_id), ('is_time_rule_output', '=', True)]
+        att = self.env['hr.attendance'].browse(att_id)
+        # in-place repurpose: the source itself is the output (time_rule_id set, no source link)
+        if att.is_time_rule_output and not att.source_attendance_id:
+            all_outputs = att
+            if ot_type:
+                all_outputs = all_outputs.filtered(lambda a: a.work_entry_type_id == ot_type)
+            return all_outputs
+        # separate child records created by the pipeline
+        direct = self.env['hr.attendance'].search([
+            ('source_attendance_id', '=', att_id),
+            ('is_time_rule_output', '=', True),
+        ])
+        # one level deeper (e.g. week-OT whose source is a day-OT child of att)
+        indirect = self.env['hr.attendance'].search([
+            ('source_attendance_id', 'in', direct.ids),
+            ('is_time_rule_output', '=', True),
+        ]) if direct else self.env['hr.attendance']
+        all_outputs = direct | indirect
         if ot_type:
-            domain.append(('work_entry_type_id', '=', ot_type.id))
-        return self.env['hr.attendance'].search(domain)
+            all_outputs = all_outputs.filtered(lambda a: a.work_entry_type_id == ot_type)
+        return all_outputs
 
     def test_today_attendance_deferred_to_day_cron(self):
         """Today's attendance with expected_hours=0 creates output immediately (all hours are excess)."""
@@ -2147,7 +2203,7 @@ class TestTimeRuleCronBehavior(TransactionCase):
             'working_hours_mode': 'week',
             'expected_hours': 5,
             'work_entry_type_id': self.week_ot_type.id,
-            'condition_work_entry_type_ids': [self.att_type.id],
+            'condition_work_entry_type_ids': [self.att_type.id, self.day_ot_type.id],
         })
         try:
             with freeze_time('2022-12-12'):
@@ -2167,10 +2223,10 @@ class TestTimeRuleCronBehavior(TransactionCase):
 
             day_h = sum(o.worked_hours for o in self._outputs_for(att.id, self.day_ot_type))
             week_h = sum(o.worked_hours for o in self._outputs_for(att.id, self.week_ot_type))
-            self.assertAlmostEqual(day_h, 2.0, places=5,
-                msg="Day OT preserved , week cron must not remove it")
+            self.assertAlmostEqual(day_h, 1.0, places=5,
+                msg="Day OT cut by weekly rule (last 1 hour is converted into weekly overtime)")
             self.assertAlmostEqual(week_h, 1.0, places=5,
-                msg="1h weekly OT added by week cron (6h - 5h threshold)")
+                msg="1h weekly OT by week cron (6h - 5h threshold)")
         finally:
             day_rule.write({'active': False})
             week_rule.write({'active': False})

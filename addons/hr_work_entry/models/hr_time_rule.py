@@ -39,7 +39,6 @@ def resolve_intervals_by_sequence(intervals):
     return result
 
 
-
 def _naivify(intervals):
     """Strip tzinfo from an interval iterable, returning a new Intervals object."""
     return Intervals([(s.replace(tzinfo=None), e.replace(tzinfo=None), r) for s, e, r in intervals])
