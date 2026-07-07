@@ -237,6 +237,7 @@ class AccountAccount(models.Model):
 
     @api.constrains('company_ids', 'account_type')
     def _check_company_consistency(self):
+        self.invalidate_recordset(['company_ids'])
         if accounts_without_company := self.filtered(lambda a: not a.sudo().company_ids):
             raise ValidationError(
                 self.env._(
@@ -244,12 +245,27 @@ class AccountAccount(models.Model):
                     accounts="\n".join(f"- {account.display_name}" for account in accounts_without_company),
                 ),
             )
+<<<<<<< 9a5e99b1025209de2a2cfe467720141f3f06a2dc
         if self.filtered(lambda a: a.account_type == 'asset_cash' and len(a.company_ids) > 1):
+||||||| 5ad627b5ddfd45106a24b211e4b7caf83c44c86c
+        # Need to invalidate the sudo cache as we might have just written on `company_ids`
+        self.invalidate_recordset(fnames=['company_ids'])
+        if self.filtered(lambda a: a.account_type == 'asset_cash' and len(a.company_ids) > 1):
+=======
+
+        if self.filtered(lambda a: a.account_type == 'asset_cash' and len(a.sudo().company_ids) > 1):
+>>>>>>> 6d15f29185f16b46b34ce5125e3a627839f948a5
             raise ValidationError(_("Bank & Cash accounts cannot be shared between companies."))
 
+<<<<<<< 9a5e99b1025209de2a2cfe467720141f3f06a2dc
         # Need to invalidate the sudo cache as we might have just written on `company_ids`
         self.invalidate_recordset(fnames=['company_ids'])
         for companies, accounts in self.grouped(lambda a: a.company_ids).items():
+||||||| 5ad627b5ddfd45106a24b211e4b7caf83c44c86c
+        for companies, accounts in self.grouped(lambda a: a.company_ids).items():
+=======
+        for companies, accounts in self.grouped(lambda a: a.sudo().company_ids).items():
+>>>>>>> 6d15f29185f16b46b34ce5125e3a627839f948a5
             if self.env['account.move.line'].sudo().search_count([
                 ('account_id', 'in', accounts.ids),
                 '!', ('company_id', 'child_of', companies.ids)
@@ -321,6 +337,7 @@ class AccountAccount(models.Model):
         # We re-compute it right away for the active company, as it is used by constraints while `code` is still protected.
         self.invalidate_recordset(fnames=['code'], flush=False)
         self._compute_code()
+        self._onchange_code()
 
     @api.depends_context('company')
     @api.depends('code')
@@ -627,7 +644,6 @@ class AccountAccount(models.Model):
             record.opening_credit = record.opening_credit or res['credit']
             record.opening_balance = record.opening_balance or res['balance']
 
-    @api.depends('code')
     def _compute_account_type(self):
         accounts_to_process = self.filtered(lambda account: account.code and not account.account_type)
         self._get_closest_parent_account(accounts_to_process, 'account_type', default_value='asset_current')
@@ -929,6 +945,10 @@ class AccountAccount(models.Model):
         self.ensure_one()
         return False
 
+    @api.onchange('code')
+    def _onchange_code(self):
+        self.env.add_to_compute(self._fields['account_type'], self)
+
     @api.depends_context('company', 'formatted_display_name', 'from_bill')
     @api.depends('code')
     def _compute_display_name(self):
@@ -1106,6 +1126,13 @@ class AccountAccount(models.Model):
             self._ensure_code_is_unique()
 
         return res
+
+    @api.model
+    def load(self, fields, data):
+        load_data = super(AccountAccount, self.with_context(defer_account_code_checks=True)).load(fields, data)
+        if {'company_ids', 'code', 'code_mapping_ids/code', 'code_mapping_ids/company_id'} & set(fields):
+            self.browse(load_data['ids'])._ensure_code_is_unique()
+        return load_data
 
     def _ensure_code_is_unique(self):
         """ Check that no child or parent companies have another account with the same code
