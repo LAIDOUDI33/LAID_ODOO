@@ -15,6 +15,7 @@ import { useService } from "@web/core/utils/hooks";
 import { url } from "@web/core/utils/urls";
 
 import { attClassObjectToString } from "@mail/utils/common/format";
+import { propComputed } from "@mail/utils/common/hooks";
 
 class Actions extends Component {
     static components = { Dropdown, DropdownItem };
@@ -35,6 +36,10 @@ class Actions extends Component {
     }
 }
 
+/** @param {import("models").Store} store */
+export const unlinkAttachmentType = (store) =>
+    t.function([t.object({ attachment: t.instanceOf(store["ir.attachment"].Class) })]);
+
 export class AttachmentList extends Component {
     static components = { Actions, Gif };
     static template = "mail.AttachmentList";
@@ -46,11 +51,15 @@ export class AttachmentList extends Component {
     setup() {
         super.setup();
         this.store = useService("mail.store");
-        this.props = props({
-            attachments: t.array(t.instanceOf(this.store["ir.attachment"].Class)),
-            messageSearch: t.instanceOf(MessageSearchState).optional(),
-            unlinkAttachment: t.function([t.instanceOf(this.store["ir.attachment"].Class)]),
-        });
+        this.unlinkAttachment = props.static("unlinkAttachment", unlinkAttachmentType(this.store));
+        this.attachments = propComputed(
+            "attachments",
+            t.array(t.instanceOf(this.store["ir.attachment"].Class))
+        );
+        this.messageSearch = propComputed(
+            "messageSearch",
+            t.instanceOf(MessageSearchState).optional()
+        );
         this.ui = useService("ui");
         this.dialog = useService("dialog");
         this.fileViewer = useFileViewer(this.rootRef);
@@ -78,9 +87,10 @@ export class AttachmentList extends Component {
     }
 
     /**
-     * @param {import("models").Attachment} attachment
+     * @param {MouseEvent} ev
+     * @param {{ attachment: import("models").Attachment }} param1
      */
-    onClickDownload(attachment) {
+    onClickDownload(ev, { attachment }) {
         download({
             data: {},
             url: attachment.downloadUrl,
@@ -88,11 +98,12 @@ export class AttachmentList extends Component {
     }
 
     /**
-     * @param {import("models").Attachment} attachment
+     * @param {MouseEvent} ev
+     * @param {{ attachment: import("models").Attachment }} param1
      */
-    onClickUnlink(attachment) {
+    onClickUnlink(ev, { attachment }) {
         if (this.env.inComposer) {
-            return this.props.unlinkAttachment(attachment);
+            return this.unlinkAttachment({ attachment });
         }
         this.dialog.add(ConfirmationDialog, {
             title: _t("Delete Attachment"),
@@ -102,19 +113,23 @@ export class AttachmentList extends Component {
             ),
             confirmLabel: _t("Delete Attachment"),
             cancel: () => {},
-            confirm: () => this.onConfirmUnlink(attachment),
+            confirm: () => this.onConfirmUnlink({ attachment }),
         });
     }
 
-    onClickAttachment(attachment) {
-        this.fileViewer.open(attachment, this.props.attachments);
+    /**
+     * @param {MouseEvent} ev
+     * @param {{ attachment: import("models").Attachment }} param1
+     */
+    onClickAttachment(ev, { attachment }) {
+        this.fileViewer.open(attachment, this.attachments());
     }
 
     /**
-     * @param {import("models").Attachment} attachment
+     * @param {{ attachment: import("models").Attachment }} param0
      */
-    onConfirmUnlink(attachment) {
-        this.props.unlinkAttachment(attachment);
+    onConfirmUnlink({ attachment }) {
+        this.unlinkAttachment({ attachment });
     }
 
     onImageLoaded() {
@@ -135,14 +150,14 @@ export class AttachmentList extends Component {
             res.push({
                 label: _t("Remove"),
                 icon: "fa fa-trash",
-                onSelect: () => this.onClickUnlink(attachment),
+                onSelect: (ev) => this.onClickUnlink(ev, { attachment }),
             });
         }
         if (this.canDownload(attachment)) {
             res.push({
                 label: _t("Download"),
                 icon: "fa fa-download",
-                onSelect: () => this.onClickDownload(attachment),
+                onSelect: (ev) => this.onClickDownload(ev, { attachment }),
             });
         }
         return res;
@@ -160,7 +175,7 @@ export class AttachmentList extends Component {
         return (
             !this.env.message ||
             this.env.message.hasTextContent ||
-            (this.env.message && this.props.attachments.length > 1)
+            (this.env.message && this.attachments().length > 1)
         );
     }
 

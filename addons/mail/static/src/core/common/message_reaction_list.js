@@ -9,7 +9,7 @@ import { useService } from "@web/core/utils/hooks";
 
 /** @param {import("models").Store} store */
 export const openReactionMenuType = (store) =>
-    t.function([t.instanceOf(store.MessageReactions.Class)]);
+    t.function([t.object({ reaction: t.instanceOf(store.MessageReactions.Class) })]);
 
 export class MessageReactionList extends Component {
     static template = "mail.MessageReactionList";
@@ -109,7 +109,7 @@ export class MessageReactionList extends Component {
     onContextMenu(ev) {
         if (this.ui.isSmall) {
             ev.preventDefault();
-            this.openReactionMenu();
+            this.openReactionMenu({});
         }
     }
 
@@ -120,6 +120,6 @@ export class MessageReactionList extends Component {
      */
     onClickReactionList(ev, { reactionAtRender }) {
         this.preview.isOpen = false; // closes dropdown immediately as to not recover focus after dropdown closes
-        this.openReactionMenu(reactionAtRender);
+        this.openReactionMenu({ reaction: reactionAtRender });
     }
 }

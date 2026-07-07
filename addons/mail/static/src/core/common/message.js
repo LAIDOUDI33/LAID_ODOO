@@ -134,6 +134,7 @@ export class Message extends Component {
         this.dialog = useService("dialog");
         this.ui = useService("ui");
         this.openReactionMenu = this.openReactionMenu.bind(this);
+        this.onClickAttachmentUnlink = this.onClickAttachmentUnlink.bind(this);
         this.optionsDropdown = useDropdownState();
         this.isActive = computed(() => Boolean(this._isActive));
         useSubEnv({ inMessage: true });
@@ -266,7 +267,10 @@ export class Message extends Component {
         }
         this.state.moreAction = moreAction;
         this.quickActions = quickActions;
-        this.actions = actions;
+        const unchanged =
+            this.actions?.length === actions.length &&
+            this.actions.every((action, index) => action === actions[index]);
+        this.actions = unchanged ? this.actions : actions;
     }
 
     get attClass() {
@@ -444,7 +448,8 @@ export class Message extends Component {
         return true;
     }
 
-    onClickAttachmentUnlink(attachment) {
+    /** @type {ReturnType<typeof import("@mail/core/common/attachment_list").unlinkAttachmentType>["type"]} */
+    onClickAttachmentUnlink({ attachment }) {
         return attachment.remove();
     }
 
@@ -598,7 +603,7 @@ export class Message extends Component {
     }
 
     /** @type {ReturnType<typeof import("@mail/core/common/message_reaction_list").openReactionMenuType>["type"]} */
-    openReactionMenu(reaction) {
+    openReactionMenu({ reaction }) {
         this.dialog.add(
             MessageReactionMenu,
             { message: this.props.message, initialReaction: reaction },

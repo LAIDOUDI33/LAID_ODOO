@@ -1,8 +1,9 @@
 import { useLayoutEffect, useRef } from "@web/owl2/utils";
 import { Gif } from "@mail/core/common/gif";
 import { LinkPreviewConfirmDelete } from "@mail/core/common/link_preview_confirm_delete";
+import { propComputed } from "@mail/utils/common/hooks";
 
-import { Component, props, proxy, types } from "@odoo/owl";
+import { Component, proxy, t } from "@odoo/owl";
 
 import { useService } from "@web/core/utils/hooks";
 
@@ -13,9 +14,10 @@ export class LinkPreview extends Component {
     setup() {
         super.setup();
         this.store = useService("mail.store");
-        this.props = props({
-            messageLinkPreview: types.instanceOf(this.store["mail.message.link.preview"].Class),
-        });
+        this.messageLinkPreview = propComputed(
+            "messageLinkPreview",
+            t.instanceOf(this.store["mail.message.link.preview"].Class)
+        );
         this.dialogService = useService("dialog");
         this.ui = useService("ui");
         this.state = proxy({ startVideo: false, videoLoaded: false });
@@ -32,13 +34,17 @@ export class LinkPreview extends Component {
     }
 
     get linkPreview() {
-        return this.props.messageLinkPreview.link_preview_id;
+        return this.messageLinkPreview().link_preview_id;
     }
 
-    onClick() {
+    /**
+     * @param {MouseEvent} ev
+     * @param {{ messageLinkPreviewAtRender: import("models").MessageLinkPreview }} param1
+     */
+    onClick(ev, { messageLinkPreviewAtRender }) {
         this.dialogService.add(LinkPreviewConfirmDelete, {
             LinkPreview,
-            messageLinkPreview: this.props.messageLinkPreview,
+            messageLinkPreview: messageLinkPreviewAtRender,
         });
     }
 

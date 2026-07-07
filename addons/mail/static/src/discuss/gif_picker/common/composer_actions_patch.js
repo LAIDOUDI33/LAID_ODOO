@@ -11,8 +11,10 @@ import { usePopover } from "@web/core/popover/popover_hook";
 
 registerComposerAction("add-gif", {
     actionPanelComponent: GifPicker,
-    actionPanelComponentProps: ({ action, owner }) => ({
-        onSelect: async (gif) => {
+    actionPanelComponentProps: ({ action, owner }) => {
+        // Bind once per action instance so the callbacks stay stable refs (GifPicker declares them props.static).
+        /** @type {ReturnType<typeof import("./gif_picker").onSelectGifType>["type"]} */
+        action._onSelectGif ??= async ({ gif }) => {
             const href = encodeURI(gif.url);
             await owner._sendMessage(
                 markup`<a href="${href}" target="_blank" rel="noreferrer noopener">${gif.url}</a>`,
@@ -20,9 +22,14 @@ registerComposerAction("add-gif", {
                     parentId: owner.props.composer.replyToMessage?.id,
                 }
             );
-        },
-        onClose: () => action.actionPanelClose(),
-    }),
+        };
+        action._closeGif ??= (opts) => action.actionPanelClose(opts);
+        return {
+            onSelect: action._onSelectGif,
+            onClose: () => action.actionPanelClose(),
+            close: action._closeGif,
+        };
+    },
     actionPanelName: _t("GIF"),
     actionPanelOpen(...args) {
         const anchorEl = pickerGetAnchor(...args);
