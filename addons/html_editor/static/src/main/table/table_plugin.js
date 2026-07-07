@@ -805,7 +805,6 @@ export class TablePlugin extends Plugin {
         this.tableGridMap?.delete(closestElement(row, "table"));
     }
 
-
     /**
      * @param {HTMLTableCellElement} cell
      */
@@ -1408,12 +1407,20 @@ export class TablePlugin extends Plugin {
     onMousedown(ev) {
         this._currentMouseState = ev.type;
         this._lastMousedownPosition = [ev.x, ev.y];
+        delete this._isKeyDown;
         const isPointerInsideCell = this.isPointerInsideCell(ev);
         const td = closestElement(ev.target, isTableCell);
         if (isPointerInsideCell) {
-            if (
-                !isProtected(td) &&
-                !isProtecting(td) &&
+            const isUnprotectedCell = !isProtected(td) && !isProtecting(td);
+            if (isUnprotectedCell && ev.ctrlKey) {
+                td.classList.toggle("o_selected_td");
+                const table = closestElement(td, "table");
+                table.classList.toggle(
+                    "o_selected_table",
+                    table.querySelectorAll(".o_selected_td").length > 0
+                );
+            } else if (
+                isUnprotectedCell &&
                 ((isEmptyBlock(td) && ev.detail === 2) || ev.detail === 3)
             ) {
                 this.handleFirefoxSelection();
