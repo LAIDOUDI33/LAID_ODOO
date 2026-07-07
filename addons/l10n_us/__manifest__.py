@@ -9,8 +9,9 @@
     'category': 'Accounting/Localizations/Account Charts',
     'description': """
     """,
-    'depends': ['base'],
+    'depends': ['base', 'base_address_extended'],
     'data': [
+        'data/res.city.csv',
         'data/res_company_data.xml',
         'views/res_partner_bank_views.xml'
     ],
