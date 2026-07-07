@@ -1,7 +1,7 @@
 import { useLayoutEffect } from "@web/owl2/utils";
 import { Discuss } from "@mail/core/public_web/discuss_app/discuss_app";
 
-import { onWillStart, onWillUpdateProps, proxy } from "@odoo/owl";
+import { asyncComputed, onWillStart, proxy } from "@odoo/owl";
 
 import { useService } from "@web/core/utils/hooks";
 import { FormRenderer } from "@web/views/form/form_renderer";
@@ -16,6 +16,8 @@ export class LivechatSessionFormRenderer extends FormRenderer {
     setup() {
         super.setup();
         this.store = proxy(useService("mail.store"));
+        this.channel = asyncComputed(() => this.getChannel(this.props));
+        onWillStart(() => this.channel.currentPromise());
         useLayoutEffect(
             (channel) => {
                 if (channel) {
@@ -23,15 +25,8 @@ export class LivechatSessionFormRenderer extends FormRenderer {
                     return () => channel.shadowedBySelf--;
                 }
             },
-            () => [this.channel]
+            () => [this.channel()]
         );
-        onWillStart(() => this.getChannel(this.props));
-        onWillUpdateProps(async (nextProps) => {
-            if (nextProps.record.resId === this.props.record.resId) {
-                return;
-            }
-            await this.getChannel(nextProps);
-        });
     }
 
     /**
@@ -41,7 +36,7 @@ export class LivechatSessionFormRenderer extends FormRenderer {
      * @param {Props} props
      */
     async getChannel(props) {
-        this.channel = await this.store["discuss.channel"].getOrFetch(props.record.resId);
+        return await this.store["discuss.channel"].getOrFetch(props.record.resId);
     }
 
     redirectToSessions() {
