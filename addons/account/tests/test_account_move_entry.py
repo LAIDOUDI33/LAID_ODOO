@@ -1534,4 +1534,4 @@ class TestAccountMove(AccountTestInvoicingCommon):
         })
 
         line = invoice.invoice_line_ids.filtered(lambda l: l.product_id == self.product_a)[:1]
-        self.assertEqual(line.name, "product_a\nBouteille d'eau")
+        self.assertEqual(line.name, "Bouteille d'eau")

@@ -450,7 +450,7 @@
                         <field name="transaction_count" widget="statinfo" string="Payments"/>
                     </button>
                 </div>
-                <div 
+                <div
                     class="badge rounded-pill text-bg-secondary float-end fs-6 border-0"
                     invisible="not locked"
                 >
@@ -738,8 +738,9 @@
                                     widget="sol_product_many2one"
                                     placeholder="Type to find a product..."
                                 />
+                                <field name="name"/>
                                 <field
-                                    name="name"
+                                    name="product_and_description"
                                     widget="sol_label_text"
                                     context="{'partner_id': parent.partner_id}"
                                 />

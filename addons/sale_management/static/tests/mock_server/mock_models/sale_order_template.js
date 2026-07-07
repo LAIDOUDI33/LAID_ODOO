@@ -32,6 +32,7 @@ export class SaleOrderTemplate extends models.ServerModel {
         return [
             {
                 name: "Section Template 1",
+                product_and_description: "Section Template 1",
                 display_type: "line_section",
                 product_uom_qty: 0,
                 price_unit: 0,
@@ -40,6 +41,7 @@ export class SaleOrderTemplate extends models.ServerModel {
             },
             {
                 name: "line1",
+                product_and_description: "line1",
                 product_uom_qty: 3,
                 price_unit: 3,
                 price_total: 9,
@@ -47,6 +49,7 @@ export class SaleOrderTemplate extends models.ServerModel {
             },
             {
                 name: "line2",
+                product_and_description: "line2",
                 product_uom_qty: 5,
                 price_unit: 6,
                 price_total: 7,

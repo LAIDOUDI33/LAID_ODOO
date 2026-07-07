@@ -10,7 +10,7 @@ registry.category("web_tour.tours").add("deductible_percentage_column", {
     },
     {
         content: "Edit name",
-        trigger: ".o_field_widget[name='name'] .o_input",
+        trigger: ".o_field_widget[name='product_and_description'] .o_input",
         run: "edit Laptop"
     },
     {

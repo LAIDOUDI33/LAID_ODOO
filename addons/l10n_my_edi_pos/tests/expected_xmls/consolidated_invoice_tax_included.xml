@@ -122,7 +122,6 @@
             </cac:TaxSubtotal>
         </cac:TaxTotal>
         <cac:Item>
-            <cbc:Description>___ignore___</cbc:Description>
             <cbc:Name>___ignore___</cbc:Name>
             <cac:CommodityClassification>
                 <cbc:ItemClassificationCode listID="CLASS">004</cbc:ItemClassificationCode>

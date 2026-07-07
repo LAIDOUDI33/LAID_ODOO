@@ -750,7 +750,7 @@ class TestPeppolMessage(TestAccountMoveSendCommon, MailCommon):
 
         self.assertRecordValues(move.line_ids, [
             {
-                'name': 'product_a',
+                'product_and_description': 'product_a',
                 'quantity': 1.0,
                 'price_unit': 100.0,
                 'tax_ids': tax_21.ids,
@@ -758,7 +758,7 @@ class TestPeppolMessage(TestAccountMoveSendCommon, MailCommon):
                 'currency_id': self.env.ref('base.EUR').id,
             },
             {
-                'name': 'percent_21.0_(1)',
+                'product_and_description': 'percent_21.0_(1)',
                 'quantity': False,
                 'price_unit': False,
                 'tax_ids': [],
@@ -766,7 +766,7 @@ class TestPeppolMessage(TestAccountMoveSendCommon, MailCommon):
                 'currency_id': self.env.ref('base.EUR').id,
             },
             {
-                'name': 'BILL/2017/01/0001',
+                'product_and_description': 'BILL/2017/01/0001',
                 'quantity': False,
                 'price_unit': False,
                 'tax_ids': [],

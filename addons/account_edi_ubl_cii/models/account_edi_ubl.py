@@ -376,21 +376,12 @@ class AccountEdiUBL(models.AbstractModel):
     def _ubl_add_line_item_name_description_nodes(self, vals):
         item_node = vals['item_node']
         base_line = vals['line_vals']['base_line']
-        product = base_line['product_id']
 
-        if base_line.get('_removed_tax_data'):
-            # Emptying tax extra line.
-            name = description = base_line['_removed_tax_data']['tax'].name
-        else:
-            name = product.name or ''
-            if line_name := base_line.get('name'):
-                # Regular business line.
-                description = line_name
-                if not name:
-                    name = line_name
-            else:
-                # Undefined line.
-                description = product.description_sale or ''
+        description = name = base_line.get('name', '')  # Regular business line.
+        if product := base_line.get('product_id'):
+            name = product.name
+        elif base_line.get('_removed_tax_data'):
+            name = base_line['_removed_tax_data']['tax'].name
 
         if description:
             item_node['cbc:Description'] = {'_text': description}
@@ -2436,12 +2427,9 @@ class AccountEdiUBL(models.AbstractModel):
 
     def _import_ubl_invoice_line_add_name(self, collected_values):
         line_tree = collected_values['line_tree']
-        item_ref = line_tree.findtext('.//{*}Item/{*}SellersItemIdentification/{*}ID')
-        item_name = line_tree.findtext('.//{*}Item/{*}Name')
-        name = collected_values['name'] = (
-            line_tree.findtext('.//{*}Item/{*}Description')
-            or (f"[{item_ref}] {item_name}" if (item_ref and item_name) else item_name)
-        )
+        name = collected_values['name'] = line_tree.findtext(
+            './/{*}Item/{*}Description'
+        ) or line_tree.findtext('.//{*}Item/{*}Name')
         if name:
             collected_values['to_write']['name'] = name
 
@@ -2980,7 +2968,7 @@ class AccountEdiUBL(models.AbstractModel):
         if account := collected_values['account_values'].get('account'):
             base_line_kwargs['account_id'] = account
 
-        if name := collected_values.get('name'):
+        if name := to_write.get('name'):
             base_line_kwargs['_create_values']['name'] = name
         if deferred_start_date := to_write.get('deferred_start_date'):
             base_line_kwargs['_create_values']['deferred_start_date'] = deferred_start_date
@@ -3073,6 +3061,10 @@ class AccountEdiUBL(models.AbstractModel):
             to_write = line_collected_values['to_write']
             if product := line_collected_values['product_values'].get('product'):
                 to_write['product_id'] = product.id
+                # If the imported description matches the product's name, omit the `name`
+                # so the default product description is used instead of storing a redundant value.
+                if to_write.get('name') == product.name:
+                    to_write.pop('name')
             else:
                 to_write['product_id'] = False
 

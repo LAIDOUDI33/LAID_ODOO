@@ -1294,7 +1294,12 @@
                                                     and [('sale_ok', '=', True)]
                                                     or [('purchase_ok', '=', True)]
                                                "/>
-                                        <field name="name" widget="account_label_text" optional="show"/>
+                                        <field name="name" optional="show"/>
+                                        <field
+                                            string="Label"
+                                            name="product_and_description"
+                                            widget="account_label_text"
+                                        />
                                         <field name="account_id"
                                                context="{
                                                     'partner_id': partner_id,
