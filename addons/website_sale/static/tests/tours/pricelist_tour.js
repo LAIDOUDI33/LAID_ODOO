@@ -4,8 +4,8 @@ import * as tourUtils from "@website_sale/js/tours/tour_utils";
 registry.category("web_tour.tours").add("website_sale.pricelist_on_login", {
     steps: () => [
         {
-            content: "Check pricelist",
-            trigger: ".o_pricelist_dropdown .dropdown-toggle:not(:contains('User Pricelist'))",
+            content: "Check can't select user pricelist as public user",
+            trigger: `[name="currency_dropup"]:not(:has(.dropdown-item[data-code="GBP"]))`,
         },
         {
             content: "Go to login page",
@@ -19,8 +19,8 @@ registry.category("web_tour.tours").add("website_sale.pricelist_on_login", {
             redirectUrl: "/shop",
         }),
         {
-            content: "Check pricelist",
-            trigger: ".o_pricelist_dropdown .dropdown-toggle:contains('User Pricelist')",
+            content: "Check user pricelist is active by default once logged in",
+            trigger: `[name="currency_dropup"]:has(.dropdown-item.active[data-code="GBP"])`,
         },
     ],
 });

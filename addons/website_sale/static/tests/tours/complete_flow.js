@@ -13,6 +13,7 @@ registry.category("web_tour.tours").add('website_sale.complete_flow_1', {
             run: "click",
             expectUnloadPage: true,
         },
+        ...tourUtils.changeCountry("DE"),
         tourUtils.increaseProductPageQuantity(),
         tourUtils.assertProductPagePrice('79.00'),
         ...tourUtils.addToCartFromProductPage(),
@@ -27,6 +28,10 @@ registry.category("web_tour.tours").add('website_sale.complete_flow_1', {
             total: '181.70',
         }),
         tourUtils.goToCheckout(),
+        {
+            content: "Check default country is Germany",
+            trigger: `#o_country_id:has(option[code="DE"][selected])`,
+        },
         ...tourUtils.fillAddressForm(
             {
                 name: "abcd",

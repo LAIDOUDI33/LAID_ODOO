@@ -240,20 +240,6 @@ class TestCustomize(
             product_template.attribute_line_ids.product_template_value_ids,
         )
 
-    def test_07_editor_shop(self):
-        self.env.user.write({
-            "group_ids": [Command.link(self.env.ref("product.group_product_pricelist").id)]
-        })
-        self.env["product.pricelist"].create([
-            {"name": "Base Pricelist", "selectable": True},
-            {"name": "Other Pricelist", "selectable": True},
-        ])
-        self.start_tour(
-            self.env["website"].get_client_action_url("/shop", True),
-            "website_sale.shop_editor",
-            login="website_user",
-        )
-
     def test_08_portal_tour_archived_variant_multiple_attributes(self):
         """The goal of this test is to make sure that an archived variant with multiple
         attributes only disabled other options if only one is missing or all are selected.

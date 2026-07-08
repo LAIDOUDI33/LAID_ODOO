@@ -7,7 +7,7 @@ from odoo.addons.account.tests.common import AccountTestInvoicingHttpCommon
 
 
 @tagged("post_install", "-at_install")
-class WebsiteSaleShopPriceListCompareListPriceDispayTests(AccountTestInvoicingHttpCommon):
+class WebsiteSaleShopPriceListCompareListPriceDisplayTests(AccountTestInvoicingHttpCommon):
     _test_user_groups = None  # FIXME list needed groups
 
     @classmethod
@@ -64,6 +64,7 @@ class WebsiteSaleShopPriceListCompareListPriceDispayTests(AccountTestInvoicingHt
             "name": "pricelist_with_discount",
             "website_id": website.id,
             "company_id": cls.env.company.id,
+            "currency_id": cls.quick_ref("base.EUR").id,
             "selectable": True,
             "sequence": 2,
             "item_ids": [
@@ -85,6 +86,7 @@ class WebsiteSaleShopPriceListCompareListPriceDispayTests(AccountTestInvoicingHt
             "name": "pricelist_without_discount",
             "website_id": website.id,
             "company_id": cls.env.company.id,
+            "currency_id": cls.quick_ref("base.GBP").id,
             "selectable": True,
             "sequence": 3,
             "item_ids": [
@@ -102,6 +104,12 @@ class WebsiteSaleShopPriceListCompareListPriceDispayTests(AccountTestInvoicingHt
                 }),
             ],
         })
+
+        # Disable currency conversion
+        cls.env["res.currency.rate"].create([
+            {"currency_id": cls.quick_ref("base.EUR").id, "company_rate": 1},
+            {"currency_id": cls.quick_ref("base.GBP").id, "company_rate": 1},
+        ])
 
     def test_compare_list_price_price_list_display(self):
         self.env["res.config.settings"].create({

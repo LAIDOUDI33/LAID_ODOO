@@ -10,7 +10,7 @@ registry.category("web_tour.tours").add('website_sale.compare_list_price_price_l
         tourUtils.assertProductPrice("price_reduce", "4,000", "test_product_with_pricelist_and_compare_list_price"),
         tourUtils.assertProductPrice("base_price",   "4,500", "test_product_with_pricelist_and_compare_list_price"),
 
-        ...tourUtils.selectPriceList('pricelist_with_discount'),
+        ...tourUtils.changeCurrency('EUR'),
 
         tourUtils.assertProductPrice("price_reduce", "1,000", "test_product_default"),
         tourUtils.assertProductPrice("price_reduce", "2,000", "test_product_with_compare_list_price"),
@@ -19,7 +19,7 @@ registry.category("web_tour.tours").add('website_sale.compare_list_price_price_l
         tourUtils.assertProductPrice("price_reduce", "3,500", "test_product_with_pricelist_and_compare_list_price"),
         tourUtils.assertProductPrice("base_price",   "4,000", "test_product_with_pricelist_and_compare_list_price"),
 
-        ...tourUtils.selectPriceList('pricelist_without_discount'),
+        ...tourUtils.changeCurrency('GBP'),
 
         tourUtils.assertProductPrice("price_reduce", "1,000", "test_product_default"),
         tourUtils.assertProductPrice("price_reduce", "2,000", "test_product_with_compare_list_price"),

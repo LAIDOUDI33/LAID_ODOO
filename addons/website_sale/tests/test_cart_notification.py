@@ -39,6 +39,7 @@ class TestWebsiteSaleCartNotification(HttpCase, ProductVariantsCommon):
                 })
             ],
         })
+        cls.company.country_id.tax_display = False
 
     def test_website_sale_cart_notification_tax_included(self):
         self.env.ref("website_sale.product_search").active = True

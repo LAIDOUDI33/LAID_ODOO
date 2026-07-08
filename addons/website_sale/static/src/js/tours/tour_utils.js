@@ -380,18 +380,41 @@ export function searchProduct(productName, { select = false, willOpenModel = fal
 }
 
 /**
- * Used to select a pricelist on the /shop view
+ * Select a pricelist by its currency code on the /shop view
+ *
+ * @param {string} currency - The currency code. E.g, USD.
  */
-export function selectPriceList(pricelist) {
+export function changeCurrency(currency) {
     return [
         {
-            content: "Click on pricelist dropdown",
-            trigger: "div.o_pricelist_dropdown a[data-bs-toggle=dropdown]",
+            content: "Click on currency dropup",
+            trigger: `[name="currency_dropup"] .dropdown-toggle`,
             run: "click",
         },
         {
-            content: "Click on pricelist",
-            trigger: `span:contains(${pricelist})`,
+            content: `Switch to ${currency}`,
+            trigger: `[name="currency_dropup"] .dropdown-item[data-code="${currency}"]`,
+            run: "click",
+            expectUnloadPage: true,
+        },
+    ];
+}
+
+/**
+ * Select a pricelist by its country on the /shop view
+ *
+ * @param {string} country - The country code. E.g., US.
+ */
+export function changeCountry(country) {
+    return [
+        {
+            content: "Click on country dropup",
+            trigger: `[name="country_dropup"] .dropdown-toggle`,
+            run: "click",
+        },
+        {
+            content: `Switch to ${country}`,
+            trigger: `[name="country_dropup"] .dropdown-item[data-code="${country}"]`,
             run: "click",
             expectUnloadPage: true,
         },

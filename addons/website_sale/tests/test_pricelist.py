@@ -964,11 +964,12 @@ class TestWebsiteSaleSession(HttpCaseWithUserPortal):
         # We need at least two selectable pricelists to display the dropdown
         self.env["product.pricelist"].create([
             {"name": "Public Pricelist 1", "selectable": True},
-            {"name": "Public Pricelist 2", "selectable": True},
+            {"name": "Public Pricelist 2", "currency_id": self.ref("base.EUR"), "selectable": True},
         ])
         user_pricelist = self.env["product.pricelist"].create({
             "name": "User Pricelist",
             "website_id": website.id,
+            "currency_id": self.ref("base.GBP"),
             "code": "User_pricelist",
         })
         test_user.partner_id.property_product_pricelist = user_pricelist
