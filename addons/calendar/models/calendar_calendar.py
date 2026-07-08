@@ -36,7 +36,7 @@ class CalendarCalendar(models.Model):
     event_ids = fields.One2many('calendar.event', 'calendar_id', "Events")
     recurrence_ids = fields.One2many('calendar.recurrence', 'calendar_id', "Recurrences")
     is_primary = fields.Boolean('Primary Calendar', compute="_compute_is_primary")
-    name = fields.Char('Name', compute='_compute_name', inverse='_inverse_name')
+    name = fields.Char('Name', compute='_compute_name', inverse='_inverse_name', search='_search_name')
     calendar_users = fields.One2many('calendar.calendar.user', inverse_name='calendar_id', string='Users')
     owners = fields.Many2many('res.users', compute='_compute_owners')
     user_access_role = fields.Selection([
@@ -88,6 +88,13 @@ class CalendarCalendar(models.Model):
         for calendar in self:
             if calendar.calendar_user:
                 calendar.calendar_user.label = calendar.name
+
+    def _search_name(self, operator, value):
+        calendar_users = self.env['calendar.calendar.user'].search([
+            ('user_id', '=', self.env.uid),
+            ('label', operator, value),
+        ])
+        return [('id', 'in', calendar_users.calendar_id.ids)]
 
     @api.depends('calendar_users.access_role', 'calendar_users.user_id')
     def _compute_owners(self):
