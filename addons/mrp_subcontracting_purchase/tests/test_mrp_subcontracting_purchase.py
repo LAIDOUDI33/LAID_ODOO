@@ -326,13 +326,19 @@ class MrpSubcontractingPurchaseTest(TestAccountSubcontractingFlows):
         amls = self.env['account.move.line'].search([
             ('product_id', 'in', (self.comp1 | self.comp2 | self.finished).ids)
         ]) - bill_amls
-        self.assertRecordValues(amls.sorted("account_id, product_id"), [
+        # The finished move is now valued at its full cost (components 60 + subcontracting
+        # 120), so the MO books 180 on stock valuation. Since the bill already booked the
+        # 120 subcontracting cost on stock valuation, a revert entry moves that 120 back to
+        # the production account, leaving stock valuation with the finished good's 180 once.
+        self.assertRecordValues(amls.sorted("balance").sorted("account_id, product_id"), [
             {'account_id': self.account_production.id, 'debit': 20, 'credit': 0, 'product_id': self.comp1.id},
             {'account_id': self.account_production.id, 'debit': 40, 'credit': 0, 'product_id': self.comp2.id},
-            {'account_id': self.account_production.id, 'debit': 0, 'credit': 60, 'product_id': self.finished.id},
+            {'account_id': self.account_production.id, 'debit': 0, 'credit': 180, 'product_id': self.finished.id},
+            {'account_id': self.account_production.id, 'debit': 120, 'credit': 0, 'product_id': self.finished.id},
             {'account_id': self.account_stock_valuation.id, 'debit': 0, 'credit': 20, 'product_id': self.comp1.id},
             {'account_id': self.account_stock_valuation.id, 'debit': 0, 'credit': 40, 'product_id': self.comp2.id},
-            {'account_id': self.account_stock_valuation.id, 'debit': 60, 'credit': 0, 'product_id': self.finished.id},
+            {'account_id': self.account_stock_valuation.id, 'debit': 0, 'credit': 120, 'product_id': self.finished.id},
+            {'account_id': self.account_stock_valuation.id, 'debit': 180, 'credit': 0, 'product_id': self.finished.id},
         ])
 
     def test_subcontracting_resupply_price_diff(self):
