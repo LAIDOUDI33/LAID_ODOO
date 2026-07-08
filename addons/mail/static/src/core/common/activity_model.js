@@ -60,6 +60,15 @@ export class Activity extends Record {
     state;
     /** @type {string} */
     summary;
+    thread = fields.One("mail.thread", {
+        /** @this {import("models").Activity} */
+        compute() {
+            if (this.res_model && this.res_id) {
+                return { model: this.res_model, id: this.res_id };
+            }
+            return undefined;
+        },
+    });
     user_id = fields.One("res.users");
     /** @type {string} */
     write_date;

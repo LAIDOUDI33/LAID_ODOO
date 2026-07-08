@@ -52,7 +52,11 @@ const chatterPatch = {
         super.setup(...arguments);
         // bind once so the references stay stable across renders
         this.onActivityChanged = this.onActivityChanged.bind(this);
+        this.onAddFollowers = this.onAddFollowers.bind(this);
+        this.onFollowerChanged = this.onFollowerChanged.bind(this);
+        this.onScheduledMessageChanged = this.onScheduledMessageChanged.bind(this);
         this.reloadParentView = this.reloadParentView.bind(this);
+        this.unlinkAttachment = this.unlinkAttachment.bind(this);
         this.webChatterProps = props({
             close: t.function([]).optional(),
             has_activities: t.boolean().optional(true),
@@ -310,15 +314,23 @@ const chatterPatch = {
         this.updateRecipients(this.webChatterProps.record);
     },
 
-    onActivityChanged(thread) {
+    /** @type {ReturnType<typeof import("@mail/core/web/activity_types").onActivityChangedType>["type"]} */
+    onActivityChanged({ thread }) {
+        if (thread && thread !== this.thread()) {
+            return;
+        }
         this.load(thread, [...this.requestList, "messages"]);
         if (this.webChatterProps.hasParentReloadOnActivityChanged) {
             this.reloadParentView();
         }
     },
 
-    onAddFollowers() {
-        this.load(this.state.thread, ["followers", "suggestedRecipients"]);
+    /** @type {ReturnType<typeof import("@mail/core/web/follower_types").onFollowerChangedType>["type"]} */
+    onAddFollowers({ thread }) {
+        if (thread && thread !== this.thread()) {
+            return;
+        }
+        this.load(this.thread(), ["followers", "suggestedRecipients"]);
         if (this.webChatterProps.hasParentReloadOnFollowersUpdate) {
             this.reloadParentView();
         }
@@ -363,8 +375,10 @@ const chatterPatch = {
         }
     },
 
-    /** @param {import("models").Thread} thread */
-    onFollowerChanged(thread) {
+    /**
+     * @type {ReturnType<typeof import("@mail/core/web/follower_types").onFollowerChangedType>["type"]}
+     */
+    onFollowerChanged({ thread }) {
         document.body.click(); // hack to close dropdown
         if (thread?.eq(this.state.thread)) {
             this.reloadParentView();
@@ -379,8 +393,10 @@ const chatterPatch = {
         super.onPostCallback();
     },
 
-    /** @param {import("models").Thread} thread */
-    onScheduledMessageChanged(thread) {
+    /**
+     * @type {ReturnType<typeof import("@mail/chatter/web/scheduled_message").onScheduledMessageChangedType>["type"]}
+     */
+    onScheduledMessageChanged({ thread }) {
         // reload messages as well as a scheduled message could have been sent
         this.load(thread, ["scheduledMessages", "messages"]);
         // sending a message could trigger another action (eg. move so to quotation sent)
@@ -470,7 +486,8 @@ const chatterPatch = {
         this.state.showScheduledMessages = !this.state.showScheduledMessages;
     },
 
-    async unlinkAttachment(attachment) {
+    /** @type {ReturnType<typeof import("@mail/core/common/attachment_list").unlinkAttachmentType>["type"]} */
+    async unlinkAttachment({ attachment }) {
         await this.attachmentUploader.unlink(attachment);
         if (this.webChatterProps.hasParentReloadOnAttachmentsChanged) {
             this.reloadParentView();

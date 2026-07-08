@@ -117,6 +117,7 @@ export class Composer extends Component {
 
     setup() {
         super.setup();
+        this.onSelectSuggestion = this.onSelectSuggestion.bind(this);
         this.dialogService = useService("dialog");
         /** @type {import("@html_editor/editor").Editor} */
         this.editor = undefined;
@@ -153,6 +154,7 @@ export class Composer extends Component {
             computed(() => this.thread ?? this.composer().message.thread),
             { composer: this.composer }
         );
+        this.unlinkAttachment = this.unlinkAttachment.bind(this);
         this.ui = useService("ui");
         this.composerService = useService("mail.composer");
         this.ref = useRef("textarea");
@@ -546,15 +548,18 @@ export class Composer extends Component {
         return Boolean(this.suggestion?.search.results);
     }
 
+    /** @type {ReturnType<typeof import("@mail/core/common/suggestion_hook").onSelectType>["type"]} */
+    onSelectSuggestion(ev, { option }) {
+        this.suggestion.insert(option);
+        markEventHandled(ev, "composer.selectSuggestion");
+    }
+
     get navigableListProps() {
         const { loading, searchTerm, results } = this.suggestion.search;
         const props = {
             anchorRef: this.inputContainerRef,
             position: this.env.inChatter ? "bottom-fit" : "top-fit",
-            onSelect: (ev, option) => {
-                this.suggestion.insert(option);
-                markEventHandled(ev, "composer.selectSuggestion");
-            },
+            onSelect: this.onSelectSuggestion,
             isLoading: !!searchTerm && loading,
             options: [],
             rememberPosition: false,
@@ -576,6 +581,11 @@ export class Composer extends Component {
                 this.attachmentUploader.uploadFile(file);
             }
         }
+    }
+
+    /** @type {ReturnType<typeof import("@mail/core/common/attachment_list").unlinkAttachmentType>["type"]} */
+    unlinkAttachment({ attachment }) {
+        this.attachmentUploader.unlink(attachment);
     }
 
     onCloseFullComposerCallback(isDiscard) {

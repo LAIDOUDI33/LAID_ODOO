@@ -1,3 +1,4 @@
+import { onActivityChangedType } from "@mail/core/web/activity_types";
 import { propSignal } from "@mail/utils/common/hooks";
 
 import { imageUrl } from "@web/core/utils/urls";
@@ -20,7 +21,7 @@ export class ActivityAssignPopover extends Component {
         this.hasHeader = props.static("hasHeader", t.boolean().optional(false));
         this.onActivityChanged = props.static(
             "onActivityChanged",
-            t.function([t.instanceOf(this.store["mail.thread"].Class)])
+            onActivityChangedType(this.store)
         );
         this.userId = signal(this.activity().user_id?.id || false);
         this.userName = signal(this.activity().user_id?.name || "");
@@ -52,19 +53,22 @@ export class ActivityAssignPopover extends Component {
         this.userName.set(record?.display_name || record?.name || "");
     }
 
-    async onClickAssign() {
+    /**
+     * @param {MouseEvent} ev
+     * @param {{ activityAtRender: import("models").Activity }} param1
+     */
+    async onClickAssign(ev, { activityAtRender }) {
         if (this.disableAssignButton()) {
             return;
         }
-        const { res_id, res_model } = this.activity();
-        const thread = this.store["mail.thread"].insert({ model: res_model, id: res_id });
+        const thread = activityAtRender.thread;
         this.disableAssignButton.set(true);
         try {
-            await this.orm.write("mail.activity", [this.activity().id], {
+            await this.orm.write("mail.activity", [activityAtRender.id], {
                 user_id: this.userId() || false,
             });
-            this.onActivityChanged(thread);
-            await thread.fetchNewMessages();
+            this.onActivityChanged({ thread });
+            await thread?.fetchNewMessages();
         } finally {
             this.disableAssignButton.set(false);
         }

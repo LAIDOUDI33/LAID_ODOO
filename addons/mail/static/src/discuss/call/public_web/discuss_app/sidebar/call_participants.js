@@ -117,5 +117,9 @@ export class DiscussSidebarCallParticipants extends Component {
         return this.expanded() ? _t("Collapse participants") : _t("Expand participants");
     }
 
-    onClickParticipant(ev, session) {}
+    /**
+     * @param {MouseEvent} ev
+     * @param {{ session: import("models").RtcSession }} param1
+     */
+    onClickParticipant(ev, { session }) {}
 }

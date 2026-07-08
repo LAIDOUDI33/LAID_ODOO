@@ -15,7 +15,9 @@ patch(DiscussSidebarCallParticipants.prototype, {
             "o-active cursor-pointer rounded-4": session.persona?.main_user_id,
         };
     },
-    onClickParticipant(ev, session) {
+    /** @override */
+    onClickParticipant(ev, { session }) {
+        super.onClickParticipant(...arguments);
         if (!session.persona?.main_user_id) {
             return;
         }
