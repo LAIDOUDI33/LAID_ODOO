@@ -35,6 +35,7 @@ WRITE_TIMEOUT = 15  # seconds
 SERVE_TIMEOUT = 15 * 60  # 15 minutes
 CHUNK_SIZE = 8192  # 8kiB, buffer size of paper-muncher
 MAX_INCOMPLETE_EVENT_SIZE = 8192  # 8kiB
+MIN_REQUIRED_VERSION = (0, 3)
 GET_DOCUMENT_RE = re.compile(br"^/paper-muncher/(\.|[0-9]+)\.(?:html|xhtml|xml)$")
 
 
@@ -354,13 +355,24 @@ def _normalize_header(header: str) -> bytes:
 class PaperMuncherInfo(NamedTuple):
     state: Literal['ok', 'install']
     bin: str
-    version: str
+    version: tuple
+
+
+def parse_version(output: str) -> tuple[int, ...]:
+    match = re.search(r'v(\d+(?:\.\d+)*)', output)
+    if not match:
+        raise ValueError(f"Could not find version in output: {output!r}")
+    return tuple(int(part) for part in match.group(1).split('.'))
+
+
+def format_version(version: tuple[int, ...]) -> str:
+    return '.'.join(str(part) for part in version)
 
 
 @cache
 def paper_muncher() -> PaperMuncherInfo:
     bin_path = ''
-    version = ''
+    version = ()
     try:  # noqa: PLW0717
         try:
             bin_path = find_in_path('paper-muncher')
@@ -371,10 +383,16 @@ def paper_muncher() -> PaperMuncherInfo:
             bin_path = FALLBACK_BIN_PATH
 
         result = sp.run([bin_path, '--version'], stdout=sp.PIPE, stderr=sp.DEVNULL, check=True)
-        version = result.stdout.decode('utf-8', errors='replace').strip()
+        version_str = result.stdout.decode('utf-8', errors='replace').strip()
+        version = parse_version(version_str)
     except (RuntimeError, OSError, sp.SubprocessError):
         _logger.info("You need paper-muncher to print a pdf version of the reports.",
                      exc_info=_logger.isEnabledFor(logging.DEBUG))
+        return PaperMuncherInfo(state='install', bin=bin_path, version=version)
+
+    if (version < MIN_REQUIRED_VERSION):
+        _logger.info("Your paper-muncher version %s is too old, please upgrade to at least %s",
+                     format_version(version), format_version(MIN_REQUIRED_VERSION))
         return PaperMuncherInfo(state='install', bin=bin_path, version=version)
 
     _logger.info("Will use the paper-muncher binary at %s", bin_path)
