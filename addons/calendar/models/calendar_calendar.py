@@ -79,7 +79,7 @@ class CalendarCalendar(models.Model):
             calendar.calendar_user = calendar_user_map.get(calendar.id, False)
 
     @api.depends_context('uid')
-    @api.depends('calendar_users.filter_color')
+    @api.depends('calendar_users.label')
     def _compute_name(self):
         for calendar in self:
             calendar.name = calendar.calendar_user.label
