@@ -372,16 +372,19 @@ class CalendarEvent(models.Model):
                 'awaiting_count': attendees_count - accepted_count - declined_count - tentative_count
             })
 
+    @api.depends_context('uid')
     @api.depends('user_id')
     def _compute_show_calendar_in_quickcreate(self):
         for event in self:
             event.show_calendar_in_quickcreate = len(event.user_id.writable_calendar_ids) > 1
 
+    @api.depends_context('uid')
     @api.depends('user_id')
     def _compute_show_calendar_in_form(self):
         for event in self:
             event.show_calendar_in_form = self.env.user in event.calendar_id.owners
 
+    @api.depends_context('uid')
     @api.depends('user_id')
     def _compute_available_calendar_ids(self):
         for event in self:
