@@ -1,5 +1,5 @@
-import { onWillRender, useExternalListener, useLayoutEffect } from "@web/owl2/utils";
-import { Component, props, proxy, signal, t } from "@odoo/owl";
+import { useExternalListener, useLayoutEffect } from "@web/owl2/utils";
+import { Component, computed, props, proxy, signal, t } from "@odoo/owl";
 import { CustomColorPicker } from "@html_editor/components/color_picker/custom_color_picker/custom_color_picker";
 import { usePopover } from "@web/core/popover/popover_hook";
 import { isCSSColor, isColorGradient, normalizeCSSColor } from "@web/core/utils/colors";
@@ -80,9 +80,6 @@ export class ColorPicker extends Component {
         this.DEFAULT_THEME_COLOR_VARS = this.props.useDefaultThemeColors
             ? DEFAULT_THEME_COLOR_VARS
             : [];
-        onWillRender(() => {
-            this.defaultColorSet = this.getDefaultColorSet();
-        });
         this.defaultColor = this.props.state.selectedColor;
         this.focusedBtn = null;
         this.onApplyCallback = () => {};
@@ -120,6 +117,11 @@ export class ColorPicker extends Component {
                 capture: true,
             });
         }
+    }
+    _defaultColorSet = computed(() => this.getDefaultColorSet());
+
+    get defaultColorSet() {
+        return this._defaultColorSet();
     }
 
     getDefaultTab() {
