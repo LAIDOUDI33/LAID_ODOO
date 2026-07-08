@@ -78,7 +78,7 @@ class CalendarCalendar(models.Model):
 
         # Create
         self._create_odoo_calendars(new)
-        # Delete
+        # Delete # FRBIN: TODO: Do not unlink the calendar if it has multiple owners, simply remove the current user's ownership record
         deleted_odoo = self.browse(deleted.odoo_ids(self.env)).filtered(lambda c: self.env.user in c.owners and not c.is_primary)
         if deleted_odoo:
             deleted_odoo.with_context(dont_notify=True).write({'google_id': False})

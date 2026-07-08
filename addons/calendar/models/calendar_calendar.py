@@ -57,7 +57,7 @@ class CalendarCalendar(models.Model):
 
     @api.ondelete(at_uninstall=False)
     def _unlink_except_primary(self):
-        if any(calendar.calendar_users.is_primary for calendar in self):
+        if any(user.is_primary for calendar in self for user in calendar.calendar_users ):
             raise UserError(_("A primary calendar cannot be deleted."))
 
     def write(self, vals):

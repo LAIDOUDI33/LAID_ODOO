@@ -17,7 +17,7 @@ class GoogleCalendarAccountReset(models.TransientModel):
             events = self.env['calendar.event'].search([
                 ('google_id', '!=', False),
                 '|',
-                    ('calendar_id', 'in', self.user_id.calendar_ids.ids),
+                    ('calendar_id', 'in', self.user_id.owned_calendar_ids.ids), # FRBIN TODO: check if owned by someone else
                     ('user_id', '=', self.user_id.id)
                 ])
             recurrences = self.env['calendar.recurrence'].search([
