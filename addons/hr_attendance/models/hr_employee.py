@@ -152,9 +152,12 @@ class HrEmployee(models.Model):
 
             for employee in employees:
                 current_month_attendances = employee.attendance_ids.filtered(
-                    lambda att: att.check_in >= start_naive and att.check_out and att.check_out <= end_naive
+                    lambda att: start_naive <= att.check_in <= end_naive
                 )
-                hours = sum(att.worked_hours or 0 for att in current_month_attendances)
+                hours = sum(
+                    ((min(att.check_out, end_naive) if att.check_out else end_naive) - att.check_in).total_seconds() / 3600
+                    for att in current_month_attendances
+                )
                 employee.hours_last_month = round(hours, 2)
                 employee.hours_last_month_display = self.env._("%(hours)g h in %(month)s") % {'hours': employee.hours_last_month, 'month': now_tz.strftime('%b')}
                 employee.hours_last_month_overtime = 0.0

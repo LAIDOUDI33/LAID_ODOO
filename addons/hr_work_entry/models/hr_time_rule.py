@@ -151,7 +151,7 @@ class HrTimeRule(models.Model):
         ('6', 'Sunday'),
     ], string="Week Starts On", default='0')
 
-    apply_monday = fields.Boolean(default=True, help="Define a condition based on the timing of the time entry.")
+    apply_monday = fields.Boolean(default=True)
     apply_tuesday = fields.Boolean(default=True)
     apply_wednesday = fields.Boolean(default=True)
     apply_thursday = fields.Boolean(default=True)

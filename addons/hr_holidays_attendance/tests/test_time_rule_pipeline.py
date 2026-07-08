@@ -383,6 +383,42 @@ class TestTimeRulePipeline(TransactionCase):
             (date(2022, 12, 12), 2, self.overtime_type),
         ])
 
+    def test_touching_attendances_no_overlap(self):
+        """Two attendances sharing an exact boundary must produce 2 distinct non-overlapping OT records."""
+        self.time_rule.active = False
+        self.env['hr.time.rule'].create({
+            'name': 'Full Day OT',
+            'working_hours_mode': 'day',
+            'expected_hours': 0.0,
+            'timing_start': 0.0,
+            'timing_stop': 24.0,
+            'work_entry_type_id': self.overtime_type.id,
+            'condition_work_entry_type_ids': [self.att_type.id],
+        })
+        self.env['hr.attendance'].create([
+            {
+                'employee_id': self.cal_emp.id,
+                'check_in': datetime(2022, 12, 12, 5, 59, 58),
+                'check_out': datetime(2022, 12, 12, 7, 6, 13),
+            },
+            {
+                'employee_id': self.cal_emp.id,
+                'check_in': datetime(2022, 12, 12, 7, 6, 13),
+                'check_out': datetime(2022, 12, 12, 14, 24, 5),
+            },
+        ])
+        outputs = self.env['hr.attendance'].search([
+            ('employee_id', '=', self.cal_emp.id),
+            ('work_entry_type_id', '=', self.overtime_type.id),
+            ('is_time_rule_output', '=', True),
+        ])
+        self.assertEqual(len(outputs), 2, "Expected 2 distinct OT records for two touching attendances")
+        sorted_out = sorted(outputs, key=lambda a: a.check_in)
+        self.assertLessEqual(
+            sorted_out[0].check_out, sorted_out[1].check_in,
+            "OT outputs must not overlap at the shared boundary",
+        )
+
     def test_flex_public_holiday_trimmed_by_attendance(self):
         """PH (06:00-18:00, 12h) trimmed by 4h attendance -> 8h PH + 4h att."""
         public_type = self.env['hr.work.entry.type'].create({
