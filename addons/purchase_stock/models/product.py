@@ -168,6 +168,21 @@ class ProductProduct(models.Model):
 
         qty_by_product_location, qty_by_product_wh = super()._get_quantity_in_progress(location_ids, warehouse_ids)
         domain = self._get_lines_domain(location_ids, warehouse_ids)
+        if 'purchase_group_id' in self.env['purchase.order']._fields:
+            po_lines = self.env['purchase.order.line'].sudo().search(domain)
+            for line, product_qty in po_lines._get_countable_rfq_qty_by_line().items():
+                if not product_qty:
+                    continue
+                if line.orderpoint_id:
+                    location = line.orderpoint_id.location_id
+                elif line.forecasted_location_id:
+                    location = line.forecasted_location_id
+                else:
+                    location = line.order_id.picking_type_id.default_location_dest_id
+                qty_by_product_location[line.product_id.id, location.id] += product_qty
+                qty_by_product_wh[line.product_id.id, location.warehouse_id.id] += product_qty
+            return qty_by_product_location, qty_by_product_wh
+
         groups = self.env['purchase.order.line'].sudo()._read_group(domain,
             ['order_id', 'product_id', 'uom_id', 'orderpoint_id', 'forecasted_location_id'],
             ['product_qty:sum'])
