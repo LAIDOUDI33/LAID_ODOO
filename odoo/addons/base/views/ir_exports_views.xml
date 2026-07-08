@@ -8,6 +8,7 @@
                     <sheet>
                         <group>
                             <field name="name" string="Template Name"/>
+                            <field name="export_language_ids" widget="many2many_tags" options="{'no_create': True}"/>
                         </group>
                         <notebook>
                             <page string="Fields" name="fields">

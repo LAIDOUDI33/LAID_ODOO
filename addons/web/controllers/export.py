@@ -316,6 +316,7 @@ class Export(Controller):
             attributes=[
                 'type', 'string', 'required', 'relation_field', 'default_export_compatible',
                 'relation', 'definition_record', 'definition_record_field', 'exportable', 'readonly',
+                'translate',
             ],
         )
 
@@ -367,6 +368,7 @@ class Export(Controller):
                 'required': field.get('required'),
                 'relation_field': field.get('relation_field'),
                 'default_export': import_compat and field.get('default_export_compatible'),
+                'translate': bool(field.get('translate')),
             }
             if len(ident.split('/')) < 3 and 'relation' in field:
                 field_dict['value'] += '/id'
@@ -384,8 +386,11 @@ class Export(Controller):
 
     @route('/web/export/namelist', type='jsonrpc', auth='user', readonly=True)
     def namelist(self, model, export_id):
-        export_fields = request.env['ir.exports'].browse([export_id]).export_fields.mapped('name')
-        return request.env['ir.exports']._get_fields_info(model, export_fields)
+        export = request.env['ir.exports'].browse([export_id])
+        return {
+            'fields': request.env['ir.exports']._get_fields_info(model, export.export_fields.mapped('name')),
+            'export_languages': export.export_language_ids.filtered('active').mapped('code'),
+        }
 
 
 class ExportFormat:

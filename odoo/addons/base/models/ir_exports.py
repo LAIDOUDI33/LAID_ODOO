@@ -15,6 +15,10 @@ class IrExports(models.Model):
     name = fields.Char(string='Export Name')
     resource = fields.Char(index=True)
     export_fields = fields.One2many('ir.exports.line', 'export_id', string='Export ID', copy=True)
+    export_language_ids = fields.Many2many(
+        'res.lang', string='Languages',
+        help="Each translatable field of the template is exported with one extra "
+             "column per selected language, using the import convention (field@lang).")
 
     @api.model
     def _get_property_fields(self, fields, model, domain=()):
@@ -76,14 +80,14 @@ class IrExports(models.Model):
     @api.model
     def _get_fields_info(self, model, export_fields):
         """Resolve a list of technical export paths (e.g. ``partner_id/name``)
-        into ``{'id', 'string', 'field_type'}`` dicts whose ``string`` is the
+        into ``{'id', 'string', 'field_type', 'translate'}`` dicts whose ``string`` is the
         human readable label of the (possibly nested) field.
         """
         field_info = []
         fields = self.env[model].fields_get(
             attributes=[
                 'type', 'string', 'required', 'relation_field', 'default_export_compatible',
-                'relation', 'definition_record', 'definition_record_field',
+                'relation', 'definition_record', 'definition_record_field', 'translate',
             ],
         )
         fields.update(self._get_property_fields(fields, model))
@@ -135,6 +139,7 @@ class IrExports(models.Model):
                     'id': base,
                     'string': field_dict['string'],
                     'field_type': field_dict['type'],
+                    'translate': bool(field_dict.get('translate')),
                 })
 
         indexes_dict = {fname: i for i, fname in enumerate(export_fields)}
