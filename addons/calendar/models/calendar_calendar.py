@@ -10,19 +10,17 @@ class CalendarCalendar(models.Model):
     def default_get(self, fields):
         defaults = super().default_get(fields)
 
+        user_id = defaults.get('user_id')
         if 'calendar_default_privacy' not in defaults and 'calendar_default_privacy' in fields:
-            user_id = defaults.get('user_id')
-            if not user_id:
-                return defaults
-
-            user = self.env['res.users'].browse(user_id)
-            privacy = user.sudo().res_users_settings_id.calendar_default_privacy
-            privacy_fallback = self.env['ir.config_parameter'].sudo().get_str('calendar.default_privacy', 'public')
-            defaults['calendar_default_privacy'] = privacy or privacy_fallback
+            if user_id:
+                user = self.env['res.users'].browse(user_id)
+                privacy = user.sudo().res_users_settings_id.calendar_default_privacy
+                privacy_fallback = self.env['ir.config_parameter'].sudo().get_str('calendar.default_privacy', 'public')
+                defaults['calendar_default_privacy'] = privacy or privacy_fallback
 
         if 'calendar_users' not in defaults and 'calendar_users' in fields:
             defaults['calendar_users'] = [Command.create({
-                'user_id': self.env.user.id,
+                'user_id': user_id or self.env.user.id,
                 'access_role': 'owner',
                 'is_filter_active': True,
                 'is_filter_checked': True,
@@ -52,7 +50,6 @@ class CalendarCalendar(models.Model):
         [('public', 'Public by default'),
          ('private', 'Private by default'),
          ('confidential', 'Internal users only')],
-        default='private',
     )
 
     @api.ondelete(at_uninstall=False)

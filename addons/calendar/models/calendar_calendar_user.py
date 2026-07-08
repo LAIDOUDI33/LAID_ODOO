@@ -47,7 +47,7 @@ class CalendarCalendarUser(models.Model):
         excluded_colors = []
         for vals in vals_list:
             if not vals.get('filter_color'):
-                color = self._get_random_unused_color(vals['user_id'], excluded_colors)
+                color = self._get_random_unused_color(vals.get('user_id'), excluded_colors)
                 vals['filter_color'] = color
             excluded_colors.append(vals.get('filter_color'))
 
@@ -66,12 +66,12 @@ class CalendarCalendarUser(models.Model):
 
     @api.model
     def _get_random_unused_color(self, user_id, excluded_colors):
-        used_colors = set(self.search([('user_id', '=', user_id)]).mapped('filter_color'))
+        used_colors = set(self.search([('user_id', '=', user_id)]).mapped('filter_color')) if user_id else set()
         available_colors = [color for color in range(1, 13) if color not in used_colors and color not in excluded_colors]
         return random.choice(available_colors) if available_colors else random.randint(1, 12)
 
     @api.model
     def toggle_filter(self, calendar_id):
-        calendar_filter = self.search([('calendar_id', '=', calendar_id), ('user_id', '=', self.env.user)])
+        calendar_filter = self.search([('calendar_id', '=', calendar_id), ('user_id', '=', self.env.user.id)])
         calendar_filter.is_filter_active = not calendar_filter.is_filter_active
         calendar_filter.is_filter_checked = True
