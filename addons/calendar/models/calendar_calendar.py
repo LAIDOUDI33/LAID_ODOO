@@ -70,12 +70,13 @@ class CalendarCalendar(models.Model):
 
     @api.depends_context('uid')
     def _compute_calendar_user(self):
+        user_calendars = self.env['calendar.calendar.user'].search([
+            ('calendar_id', 'in', self.ids),
+            ('user_id', '=', self.env.uid),
+        ])
+        calendar_user_map = {uc.calendar_id.id: uc for uc in user_calendars}
         for calendar in self:
-            user_calendar = self.env['calendar.calendar.user'].search([
-                ('calendar_id', 'in', calendar.ids),
-                ('user_id', '=', self.env.uid),
-            ], limit=1)
-            calendar.calendar_user = user_calendar
+            calendar.calendar_user = calendar_user_map.get(calendar.id, False)
 
     @api.depends_context('uid')
     @api.depends('calendar_users.filter_color')
