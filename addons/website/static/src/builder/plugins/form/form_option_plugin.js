@@ -810,9 +810,10 @@ export class FormOptionPlugin extends Plugin {
             const type = getFieldType(fieldEl);
 
             const [optionText, checkType] = selectEl
-                ? type === "many2many_selection"
-                    ? [_t("Option List"), "boolean"]
-                    : [_t("Option List"), "exclusive_boolean"]
+                ? [
+                      _t("Option List"),
+                      type === "many2many_selection" ? "boolean" : "exclusive_boolean",
+                  ]
                 : type === "selection"
                 ? [_t("Radio Button List"), "exclusive_boolean"]
                 : [_t("Checkbox List"), "boolean"];

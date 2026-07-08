@@ -4,43 +4,37 @@ import { registry } from "@web/core/registry";
 export class Many2ManySelection extends Interaction {
     static selector = ".s_website_form_m2m_selection";
     dynamicContent = {
-        ".dropdown-item[data-value]": { "t-on-click": this.onOptionClick },
+        ".dropdown-item[data-value]": {
+            "t-on-click": this.onOptionClick,
+            "t-att-aria-checked": (el) => String(this.isSelected(el.dataset.value)),
+        },
+        ".s_website_form_m2m_pill": {
+            "t-att-class": (el) => ({ "d-none": !this.isSelected(el.dataset.value) }),
+        },
         ".s_website_form_m2m_pill_remove": { "t-on-click.stop": this.onPillRemove },
-        ".s_website_form_m2m_select_all": { "t-on-click": this.toggleSelectAll },
-        ".s_website_form_m2m_remove_all": { "t-on-click.stop": this.deselectAll },
+        ".s_website_form_m2m_placeholder": {
+            "t-att-class": () => ({ "d-none": this.hasSelection() }),
+        },
+        ".s_website_form_m2m_remove_all": {
+            "t-on-click.stop": () => this.setAll(false),
+            "t-att-class": () => ({ "d-none": !this.hasSelection() }),
+        },
+        ".s_website_form_m2m_select_all": {
+            "t-on-click": () => this.setAll(!this.isAllSelected()),
+            "t-att-aria-checked": () => String(this.isAllSelected()),
+        },
     };
 
     setup() {
         this.selectEl = this.el.querySelector("select.s_website_form_input");
-        this.pillsContainer = this.el.querySelector(".s_website_form_m2m_pills_container");
-        this.placeholderEl = this.pillsContainer.querySelector(".s_website_form_m2m_placeholder");
-        this.removeAllEl = this.pillsContainer.querySelector(".s_website_form_m2m_remove_all");
-        this.selectAllEl = this.el.querySelector(".s_website_form_m2m_select_all");
-        const pillEls = new Map();
-        for (const pillEl of this.pillsContainer.querySelectorAll(".s_website_form_m2m_pill")) {
-            pillEls.set(pillEl.dataset.value, pillEl);
-        }
-        const itemEls = new Map();
-        for (const itemEl of this.el.querySelectorAll(".dropdown-item[data-value]")) {
-            itemEls.set(itemEl.dataset.value, itemEl);
-        }
-        this.elements = new Map();
-        this.initialSelection = new Map();
-        for (const optionEl of this.selectEl.options) {
-            if (optionEl.classList.contains("s_website_form_empty_option")) {
-                continue;
-            }
-            const value = optionEl.value;
-            this.elements.set(value, {
-                optionEl,
-                pillEl: pillEls.get(value),
-                itemEl: itemEls.get(value),
-            });
-            this.initialSelection.set(value, optionEl.hasAttribute("selected"));
-        }
+        this.options = new Map(
+            [...this.selectEl.options]
+                .filter((optionEl) => !optionEl.classList.contains("s_website_form_empty_option"))
+                .map((optionEl) => [optionEl.value, optionEl])
+        );
         this.registerCleanup(() => {
             const dropdown = window.Dropdown.getInstance(
-                this.pillsContainer.querySelector("button[data-bs-toggle='dropdown']")
+                this.el.querySelector("button[data-bs-toggle='dropdown']")
             );
             dropdown?.hide();
             dropdown?.dispose();
@@ -56,85 +50,58 @@ export class Many2ManySelection extends Interaction {
     }
 
     restoreInitialSelection() {
-        for (const [value, selected] of this.initialSelection) {
-            this.setSelection(value, selected);
+        for (const optionEl of this.options.values()) {
+            optionEl.selected = optionEl.defaultSelected;
         }
-        this.refreshControls();
     }
 
     /**
-     * Applies the selection state for a single option value across its three
-     * linked elements: the hidden `<select>` option, its pill, and its
-     * dropdown-item's aria-checked state.
-     *
-     * @param {string} value option value to update.
-     * @param {boolean} selected target selection state.
+     * @param {string} value option value
+     * @returns {boolean} whether the option is currently selected.
      */
-    setSelection(value, selected) {
-        const { optionEl, pillEl, itemEl } = this.elements.get(value);
-        optionEl.selected = selected;
-        pillEl?.classList.toggle("d-none", !selected);
-        itemEl?.setAttribute("aria-checked", selected);
+    isSelected(value) {
+        return !!this.options.get(value)?.selected;
     }
 
     /**
      * @returns {boolean} whether at least one option is currently selected.
      */
     hasSelection() {
-        return [...this.elements.values()].some(({ optionEl }) => optionEl.selected);
+        return this.selectEl.selectedOptions.length > 0;
     }
 
     /**
      * @returns {boolean} whether every option is currently selected.
      */
     isAllSelected() {
-        return (
-            this.elements.size > 0 &&
-            [...this.elements.values()].every(({ optionEl }) => optionEl.selected)
-        );
+        return this.options.size > 0 && this.selectEl.selectedOptions.length === this.options.size;
     }
 
     /**
-     * Recomputes the shared controls that depend on the overall selection
+     * Notifies the form of a selection change, e.g. to recompute the
+     * conditional visibility of dependent fields.
      */
-    refreshControls() {
-        const hasSelection = this.hasSelection();
-        const allSelected = this.isAllSelected();
-        this.placeholderEl.classList.toggle("d-none", hasSelection);
-        this.removeAllEl?.classList.toggle("d-none", !hasSelection);
-        this.selectAllEl?.setAttribute("aria-checked", allSelected ? "true" : "false");
-    }
-
-    commit() {
-        this.refreshControls();
+    notifyChange() {
         this.selectEl.dispatchEvent(new Event("input", { bubbles: true }));
     }
 
     setAll(selected) {
-        for (const value of this.elements.keys()) {
-            this.setSelection(value, selected);
+        for (const optionEl of this.options.values()) {
+            optionEl.selected = selected;
         }
-        this.commit();
-    }
-
-    toggleSelectAll() {
-        this.setAll(!this.isAllSelected());
-    }
-
-    deselectAll() {
-        this.setAll(false);
+        this.notifyChange();
     }
 
     onOptionClick(ev) {
-        const value = ev.currentTarget.dataset.value;
-        this.setSelection(value, !this.elements.get(value).optionEl.selected);
-        this.commit();
+        const optionEl = this.options.get(ev.currentTarget.dataset.value);
+        optionEl.selected = !optionEl.selected;
+        this.notifyChange();
     }
 
     onPillRemove(ev) {
-        const pillEl = ev.currentTarget.closest(".s_website_form_m2m_pill");
-        this.setSelection(pillEl.dataset.value, false);
-        this.commit();
+        const value = ev.currentTarget.closest(".s_website_form_m2m_pill").dataset.value;
+        this.options.get(value).selected = false;
+        this.notifyChange();
     }
 }
 

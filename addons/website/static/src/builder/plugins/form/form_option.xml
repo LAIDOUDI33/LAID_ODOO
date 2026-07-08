@@ -126,6 +126,7 @@
                 <BuilderSelectItem actionValue="'one2many'">Multiple Checkboxes</BuilderSelectItem>
                 <BuilderSelectItem actionValue="'selection'">Radio Buttons</BuilderSelectItem>
                 <BuilderSelectItem actionValue="'many2one'">Selection</BuilderSelectItem>
+                <BuilderSelectItem actionValue="'many2many_selection'">Multi Selection</BuilderSelectItem>
                 <BuilderSelectItem actionValue="'date'">Date</BuilderSelectItem>
                 <BuilderSelectItem actionValue="'datetime'">Date &amp; Time</BuilderSelectItem>
                 <BuilderSelectItem actionValue="'binary'">File Upload</BuilderSelectItem>
