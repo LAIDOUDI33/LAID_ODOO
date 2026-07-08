@@ -46,30 +46,6 @@ class GoogleCalendarService:
         items, data = self._fetch_paginated_items(url, params, headers, timeout)
         return GoogleCalendar(items), data
 
-    def _get_or_create_calendar(self, calendar_data):
-        calendar_id, primary = calendar_data.get('id'), calendar_data.get('primary')
-
-        if primary:
-            primary_calendar = self.google_service.env.user.primary_calendar
-            if primary_calendar:
-                return primary_calendar
-        else:
-            calendar = self.google_service.env.user.calendar_ids.filtered(lambda c: c.google_id == calendar_id)
-            if calendar:
-                return calendar
-
-        return self.google_service.env['calendar.calendar'].create({
-            'google_id': calendar_id,
-            'name': calendar_data.get('summary'),
-            'calendar_users': [Command.create({
-                'user_id': self.google_service.env.user.id,
-                'access_role': calendar_data.get('accessRole') or 'freeBusyReader',
-                'is_filter_active': True,
-                'is_filter_checked': True,
-                'label': calendar_data.get('summary'),
-            })],
-        })
-
     @requires_auth_token
     def insert_calendar(self, values, token, timeout=TIMEOUT):
         url = "/calendar/v3/calendars"
@@ -84,14 +60,6 @@ class GoogleCalendarService:
         headers = {'Content-type': 'application/json', 'Authorization': 'Bearer %s' % token}
         _logger.info("patch_calendar - values: %s", json.dumps(values))
         self.google_service._do_request(url, json.dumps(values), headers=headers, method='PATCH', timeout=timeout)
-
-    @requires_auth_token
-    def delete_calendar(self, calendar, token, timeout=TIMEOUT):
-        url = "/calendar/v3/calendars/%s" % calendar
-        headers = {'Content-type': 'application/json'}
-        params = {'access_token': token}
-        _logger.info("delete_calendar - calendar: %s", calendar.id)
-        self.google_service._do_request(url, params=params, headers=headers, method='DELETE', timeout=timeout)
 
     @requires_auth_token
     def get_events(self, sync_token=None, token=None, event_id=None, calendar=None, search_params=None, timeout=TIMEOUT):

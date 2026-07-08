@@ -17,9 +17,6 @@ class GoogleCalendar(GoogleApiResource):
     def _get_model(self, env):
         return env['calendar.calendar']
 
-    def get_odoo_calendar(self, env):
-        return env['calendar.calendar'].browse(self.odoo_id(self.env))
-
     def exists(self, env):
         self.odoo_ids(env)  # Load matching Ids
         return self.filter(lambda c: c._odoo_id)

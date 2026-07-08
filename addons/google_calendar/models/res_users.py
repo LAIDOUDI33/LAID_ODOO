@@ -85,9 +85,6 @@ class ResUsers(models.Model):
         _logger.info("User %s, Calendar sync - Odoo2Google : %s", self.env.user.login, calendars_to_sync)
         calendars_to_sync.with_user(self)._sync_calendars_odoo2google(calendar_service)
 
-    def _is_cancelled(self, event, active_events):
-        return event.cancelled() and event.id not in active_events
-
     def _sync_google_calendar(self, calendar_service: GoogleCalendarService):
         self.ensure_one()
         need_refresh = False

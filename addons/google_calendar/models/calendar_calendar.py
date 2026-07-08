@@ -148,17 +148,6 @@ class CalendarCalendar(models.Model):
                     self._google_error_handling(e)
 
     @after_commit
-    def _google_calendar_delete(self, calendar_service: GoogleCalendarService):
-        with google_calendar_token(self.env.user.sudo()) as token:
-            if not token:
-                return
-            try:
-                calendar_service.delete_calendar(self.get_google_path(), token=token)
-            except HTTPError as e:
-                if e.response.status_code in (400, 403):
-                    self._google_error_handling(e)
-
-    @after_commit
     def _google_calendar_insert(self, calendar_service: GoogleCalendarService):
         with google_calendar_token(self.env.user.sudo()) as token:
             if not token:
