@@ -8,8 +8,6 @@ from contextlib import ExitStack
 from typing import Literal
 from urllib.parse import urlsplit
 
-import lxml
-
 from odoo import api, fields, models
 from odoo.http import request
 from odoo.http.session import session_store, update_session_token
@@ -68,25 +66,33 @@ class IrActionsReport(models.Model):
             if report_ref else
             self.get_paperformat()
         )
-        header = header or ''
-        footer = footer or ''
+
+        report_args = specific_paperformat_args or {}
+        margin_top = str(report_args.get('data-report-margin-top', paperformat.margin_top))
+        margin_right = str(paperformat.margin_right)
+        margin_bottom = str(report_args.get('data-report-margin-bottom', paperformat.margin_bottom))
+        margin_left = str(paperformat.margin_left)
 
         if not isinstance(bodies, (list, tuple)):
             bodies = list(bodies)
 
-        if len(bodies) > 1:
-            documents = make_multi_docs_html(bodies, header, footer)
-        else:
-            header = partition_on_body(header)[1]
-            footer = partition_on_body(footer)[1]
-            open_body, body, close_body = partition_on_body(bodies[0])
-            documents = [f'{open_body}{header}{body}{footer}{close_body}\n']
+        header = header or ''
+        footer = footer or ''
 
-        names = [f'pipe:/paper-muncher/{i}.html' for i in range(len(documents))]
+        names = [f'pipe:/paper-muncher/{i}.html' for i in range(len(bodies))]
         extra_args = [
             '--scale', f'{scale}dpi',
-            '--margins', 'none',
+            '--margins', f'0mm {margin_right}mm 0mm {margin_left}mm',
+            '--header-size', f'{margin_top}mm',
+            '--footer-size', f'{margin_bottom}mm',
         ]
+
+        if header:
+            extra_args += ['--header', 'pipe:/paper-muncher/header.html']
+
+        if footer:
+            extra_args += ['--footer', 'pipe:/paper-muncher/footer.html']
+
         if landscape:
             extra_args += ['--orientation', 'landscape']
         elif paperformat and paperformat.orientation:
@@ -129,7 +135,7 @@ class IrActionsReport(models.Model):
                 os_env=os_env,
                 wsgi_environ=wsgi_environ,
             ) as server:
-                return server.serve(documents)  # TODO: ir.config_parameter
+                return server.serve(bodies, header, footer)  # TODO: ir.config_parameter
 
     def _run_pdf_engine_without_processing(
             self,
@@ -203,44 +209,3 @@ def partition_on_body(html: str) -> tuple[str, str, str]:
     if not sep:
         return html, '', ''
     return pre_body, body, sep + post_body
-
-
-def make_multi_docs_html(bodies: Sequence[str], header: str = '', footer: str = '') -> Sequence[str]:
-    """Inject per-page header/footer fragments into each body HTML document."""
-
-    footer_body = partition_on_body(footer)[1]
-    footers = [
-        lxml.etree.tostring(f, encoding='unicode')
-        for f in (lxml.html.fromstring(footer_body).findall('./div') if footer_body else [])
-    ]
-
-    header_body = partition_on_body(header)[1]
-    headers = [
-        lxml.etree.tostring(h, encoding='unicode')
-        for h in (lxml.html.fromstring(header_body).findall('./div') if header_body else [])
-    ]
-
-    is_same_length_header = (len(headers) == len(bodies))
-    if headers and not is_same_length_header:
-        _logger.warning(
-            "Header fragments count (%d) does not match body count (%d); reusing the first header fragment where needed.",
-            len(headers),
-            len(bodies),
-        )
-
-    is_same_length_footer = (len(footers) == len(bodies))
-    if footers and not is_same_length_footer:
-        _logger.warning(
-            "Footer fragments count (%d) does not match body count (%d); reusing the first footer fragment where needed.",
-            len(footers),
-            len(bodies),
-        )
-
-    documents = []
-    for i, body in enumerate(bodies):
-        pre_body, body, post_body = partition_on_body(body)
-        header_fragment = headers[i] if is_same_length_header else (headers[0] if headers else '')
-        footer_fragment = footers[i] if is_same_length_footer else (footers[0] if footers else '')
-        documents.append(f'{pre_body}{header_fragment}{body}{footer_fragment}{post_body}\n')
-
-    return documents

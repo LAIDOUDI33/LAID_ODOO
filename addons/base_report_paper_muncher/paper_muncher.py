@@ -35,8 +35,10 @@ WRITE_TIMEOUT = 15  # seconds
 SERVE_TIMEOUT = 15 * 60  # 15 minutes
 CHUNK_SIZE = 8192  # 8kiB, buffer size of paper-muncher
 MAX_INCOMPLETE_EVENT_SIZE = 8192  # 8kiB
-MIN_REQUIRED_VERSION = (0, 3)
+MIN_REQUIRED_VERSION = (0, 6)
 GET_DOCUMENT_RE = re.compile(br"^/paper-muncher/(\.|[0-9]+)\.(?:html|xhtml|xml)$")
+GET_HEADER_RE = re.compile(br"^/paper-muncher/header\.(?:html|xhtml|xml)$")
+GET_FOOTER_RE = re.compile(br"^/paper-muncher/footer\.(?:html|xhtml|xml)$")
 
 
 class PaperMuncherServer:
@@ -45,6 +47,8 @@ class PaperMuncherServer:
         '_conn',
         '_deadline',
         '_documents',
+        '_footer',
+        '_header',
         '_os_env',
         '_pdf',
         '_process',
@@ -92,7 +96,7 @@ class PaperMuncherServer:
                 self._process.kill()
         self._process = None
 
-    def serve(self, documents: Sequence[str], *, timeout: int = SERVE_TIMEOUT):
+    def serve(self, documents: Sequence[str], header: str, footer: str, *, timeout: int = SERVE_TIMEOUT):
         """Serve Paper Muncher requests until the rendered PDF is returned."""
         if not self._process:
             e = "this function cannot be called outside of the context manager"
@@ -106,6 +110,8 @@ class PaperMuncherServer:
         _logger.info("Starting request loop, %d documents available", len(documents))
         self._deadline = time.monotonic() + timeout
         self._documents = documents
+        self._header = header
+        self._footer = footer
         self._selector = selectors.DefaultSelector()
         with self._selector:
             self._selector.register(self._process.stdout, selectors.EVENT_READ, data='stdout')
@@ -147,7 +153,7 @@ class PaperMuncherServer:
                     self._request_body += event.data
                 case h11.EndOfMessage():
                     try:
-                        self._process_request()
+                        self._handle_request()
                     except Exception as exc:
                         exc.add_note("upon processing %s" % self._request)
                         raise
@@ -162,9 +168,15 @@ class PaperMuncherServer:
                     e = f"unexpected {event=} in states={self._conn.states}"
                     raise TypeError(e)
 
-    def _process_request(self):
-        if self._request.method == b'GET' and (match := GET_DOCUMENT_RE.match(self._request.target)):
-            response, bytes_sent = self._handle_get_document(match[1])
+    def _handle_request(self):
+        if self._request.method == b'GET' and GET_HEADER_RE.match(self._request.target):
+            response, bytes_sent = self._handle_get(self._header.encode())
+        elif self._request.method == b'GET' and GET_FOOTER_RE.match(self._request.target):
+            response, bytes_sent = self._handle_get(self._footer.encode())
+        elif self._request.method == b'GET' and (match := GET_DOCUMENT_RE.match(self._request.target)):
+            document_index = int(match[1]) if match[1] != b'.' else 0
+            content = self._documents[document_index].encode()
+            response, bytes_sent = self._handle_get(content)
         elif self._request.method == b'PUT' and self._request.target == b'/paper-muncher/output.pdf':
             response, bytes_sent = self._handle_put(self._request_body)
             _logger.info("Got a PDF of %s bytes", len(self._request_body))
@@ -179,11 +191,8 @@ class PaperMuncherServer:
             'http_headers': (),  # already printed at [RES]
         })
 
-    def _handle_get_document(self, document_index: str):
+    def _handle_get(self, content: bytes):
         """Serve one ``GET`` document request from the worker."""
-        index = int(document_index) if document_index != b'.' else 0
-        content = self._documents[index].encode()
-
         response = h11.Response(
             status_code=200,
             headers=[
