@@ -1,0 +1,11 @@
+.o_field_mailing_input_buttons {
+    align-items: center !important;
+    
+    .btn-link, .o_mail_emojis_buttons > .btn {
+        color: if($o-webclient-color-scheme == dark, $o-gray-900, black);
+    }
+
+    .o_mail_emojis_buttons:hover > .btn, .btn-link:hover {
+        color: $o-success;
+    }
+}

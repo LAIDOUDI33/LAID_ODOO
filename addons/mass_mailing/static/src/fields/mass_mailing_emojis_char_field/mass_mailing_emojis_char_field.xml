@@ -1,0 +1,5 @@
+<t t-name="mass_mailing.MassMailingEmojisCharField" t-inherit="mail.EmojisCharField" t-inherit-mode="primary">
+    <xpath expr="//div[hasclass('o_field_input_buttons')]" position="attributes">
+        <attribute name="class" add="o_field_mailing_input_buttons" separator=" "/>
+    </xpath>
+</t>
