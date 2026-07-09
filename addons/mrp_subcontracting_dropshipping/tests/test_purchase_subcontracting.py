@@ -143,6 +143,34 @@ class TestSubcontractingDropshippingFlows(TestMrpSubcontractingCommon, TestStock
         dropship_po = self.env['purchase.order'].search([('partner_id', '=', self.vendor.id)])
         self.assertEqual(dropship_po.dest_address_id, self.subcontractor_partner1)
 
+    def test_resupply_subcontractor_in_mtso_droppshipped_component(self):
+        """
+        Suppose:
+            - a subcontracted product and a component dropshipped to the subcontractor
+        This test ensures that the PO that brings the component to the subcontractor has a correct
+        destination address in a MTSO setting
+        """
+        dropship_route = self.env.ref('stock_dropshipping.route_drop_shipping')
+        dropship_route.warehouse_ids = [Command.set(self.warehouse.ids)]
+        dropship_route.rule_ids.procure_method = 'mts_else_mto'
+
+        self.comp1.route_ids = [Command.link(dropship_route.id)]
+        self.finished.route_ids = [Command.link(dropship_route.id)]
+
+        subcontract_po = self.env['purchase.order'].create({
+            "partner_id": self.subcontractor_partner1.id,
+            # "picking_type_id": self.warehouse.in_type_id.id,
+            "order_line": [Command.create({
+                'product_id': self.finished.id,
+                'name': self.finished.name,
+                'product_qty': 1.0,
+            })],
+        })
+        subcontract_po.button_confirm()
+
+        dropship_po = self.env['purchase.order'].search([('partner_id', '=', self.vendor.id)])
+        self.assertEqual(dropship_po.dest_address_id, self.subcontractor_partner1)
+
     def test_po_to_customer(self):
         """
         Create and confirm a PO with a subcontracted move. The picking type of
