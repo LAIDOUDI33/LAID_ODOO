@@ -506,6 +506,9 @@ class ResPartner(models.Model):
     def _get_company_currency_sql(self, table):
         return SQL("COALESCE(%s, %s)", table.company_id.currency_id, self.env.company.currency_id.id)
 
+    def _get_vat_label(self):
+        return self.env.company.account_fiscal_country_id.vat_label
+
     def _default_display_invoice_template_pdf_report_id(self):
         """ Show PDF template selection if there are more than 1 template available for invoices. """
         return len(self.available_invoice_template_pdf_report_ids) > 1

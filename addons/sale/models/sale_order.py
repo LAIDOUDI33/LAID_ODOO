@@ -2678,6 +2678,11 @@ class SaleOrder(models.Model):
     def _has_sections(self) -> bool:
         return True
 
+    def _get_vat_label(self):
+        """ Return the VAT label to be displayed on the portal and reports."""
+        self.ensure_one()
+        return self.partner_id.with_company(self.company_id)._get_vat_label()
+
     # === Product Documents === #
 
     def _get_product_documents(self):
