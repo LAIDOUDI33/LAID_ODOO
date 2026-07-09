@@ -1,4 +1,5 @@
 import { useComponent, useRef, useSubEnv } from "@web/owl2/utils";
+import { ViewPlugin } from "@web/views/view_plugin";
 import { _t } from "@web/core/l10n/translation";
 import { hasTouch } from "@web/core/browser/feature_detection";
 import { ConfirmationDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
@@ -165,7 +166,7 @@ export class FormController extends Component {
         this.actionService = useService("action");
         this.dialogService = useService("dialog");
         this.orm = useService("orm");
-        this.viewService = useService("view");
+        this.viewService = plugin(ViewPlugin);
         this.ui = useService("ui");
         this.offlinePlugin = plugin(OfflinePlugin);
         useBus(this.ui.bus, "resize", this.render);

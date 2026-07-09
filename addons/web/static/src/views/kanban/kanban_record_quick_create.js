@@ -1,3 +1,4 @@
+import { ViewPlugin } from "@web/views/view_plugin";
 import { useRef, useSubEnv } from "@web/owl2/utils";
 import { _t } from "@web/core/l10n/translation";
 import { parseXML } from "@web/core/utils/xml";
@@ -308,7 +309,7 @@ export class KanbanRecordQuickCreate extends Component {
         this.state = proxy({
             isLoaded: false,
         });
-        this.viewService = useService("view");
+        this.viewService = plugin(ViewPlugin);
         onMounted(() => {
             this.getQuickCreateProps(this.props).then(() => {
                 this.state.isLoaded = true;

@@ -1,9 +1,9 @@
+import { ViewPlugin } from "@web/views/view_plugin";
 import { useSubEnv } from "@web/owl2/utils";
 import { useDebugCategory } from "@web/core/debug/debug_context";
 import { evaluateBooleanExpr } from "@web/core/py_js/py";
 import { registry } from "@web/core/registry";
 import { KeepLast } from "@web/core/utils/concurrency";
-import { useService } from "@web/core/utils/hooks";
 import { deepCopy, pick } from "@web/core/utils/objects";
 import { nbsp } from "@web/core/utils/strings";
 import { parseXML } from "@web/core/utils/xml";
@@ -15,14 +15,15 @@ import { loadBundle } from "@web/core/assets";
 import { cookie } from "@web/core/browser/cookie";
 import {
     Component,
-    markRaw,
-    onWillUpdateProps,
-    onWillStart,
-    proxy,
-    props,
-    toRaw,
-    t,
     applyDefaults,
+    markRaw,
+    onWillStart,
+    onWillUpdateProps,
+    plugin,
+    props,
+    proxy,
+    t,
+    toRaw,
 } from "@odoo/owl";
 import { session } from "@web/session";
 
@@ -229,7 +230,7 @@ export class View extends Component {
             throw new Error(`"searchViewArch" and "searchViewFields" props must be given together`);
         }
 
-        this.viewService = useService("view");
+        this.viewService = plugin(ViewPlugin);
         this.withSearchProps = null;
 
         useSubEnv({

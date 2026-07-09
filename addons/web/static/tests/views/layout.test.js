@@ -1,7 +1,8 @@
+import { ViewPlugin } from "@web/views/view_plugin";
 import { useChildSubEnv, useSubEnv } from "@web/owl2/utils";
 import { expect, test } from "@odoo/hoot";
 import { animationFrame } from "@odoo/hoot-mock";
-import { Component, onWillStart, xml, proxy } from "@odoo/owl";
+import { Component, onWillStart, plugin, proxy, xml } from "@odoo/owl";
 import {
     assignTestEnv,
     defineModels,
@@ -102,7 +103,7 @@ test(`Rendering with default ControlPanel and SearchPanel`, async () => {
         setup() {
             this.searchModel = new SearchModel(this.env, {
                 orm: useService("orm"),
-                view: useService("view"),
+                view: plugin(ViewPlugin),
             });
             useSubEnv({ searchModel: this.searchModel });
             onWillStart(async () => {

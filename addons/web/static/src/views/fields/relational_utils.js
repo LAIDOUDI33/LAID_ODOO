@@ -1,3 +1,4 @@
+import { ViewPlugin } from "@web/views/view_plugin";
 import { render, useComponent, useEnv, useLayoutEffect, useSubEnv } from "@web/owl2/utils";
 import { AutoComplete } from "@web/core/autocomplete/autocomplete";
 import { makeContext } from "@web/core/context";
@@ -900,7 +901,7 @@ export function useOpenX2ManyRecord({
     saveRecord,
     isMany2Many,
 }) {
-    const viewService = useService("view");
+    const viewService = plugin(ViewPlugin);
     const env = useEnv();
     const component = useComponent();
 

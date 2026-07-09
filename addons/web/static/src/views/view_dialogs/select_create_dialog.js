@@ -1,3 +1,4 @@
+import { ViewPlugin } from "@web/views/view_plugin";
 import { Dialog } from "@web/core/dialog/dialog";
 import { useService } from "@web/core/utils/hooks";
 import { renderToMarkup } from "@web/core/utils/render";
@@ -5,7 +6,7 @@ import { View } from "@web/views/view";
 
 import { FormViewDialog } from "./form_view_dialog";
 
-import { Component, props, proxy, t } from "@odoo/owl";
+import { Component, plugin, props, proxy, t } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 
 let _defaultNoContentHelp;
@@ -38,7 +39,7 @@ export class SelectCreateDialog extends Component {
     props = props(selectCreateDialogProps);
 
     setup() {
-        this.viewService = useService("view");
+        this.viewService = plugin(ViewPlugin);
         this.dialogService = useService("dialog");
         this.uiService = useService("ui");
         this.state = proxy({ resIds: [] });

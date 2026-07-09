@@ -1,5 +1,6 @@
+import { ViewPlugin } from "@web/views/view_plugin";
 import { onWillRender, useLayoutEffect } from "@web/owl2/utils";
-import { Component, proxy, signal, toRaw } from "@odoo/owl";
+import { Component, plugin, proxy, signal, toRaw } from "@odoo/owl";
 import { browser } from "@web/core/browser/browser";
 import { ConfirmationDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
 import { useHotkey } from "@web/core/hotkeys/hotkey_hook";
@@ -40,7 +41,7 @@ export class MultiSelectionButtons extends Component {
     rootRef = signal(null);
 
     setup() {
-        this.viewService = useService("view");
+        this.viewService = plugin(ViewPlugin);
         this.dialogService = useService("dialog");
         this.state = proxy({ isReady: false });
         onWillRender(() => {
