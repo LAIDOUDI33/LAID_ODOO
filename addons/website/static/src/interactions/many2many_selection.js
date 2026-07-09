@@ -3,6 +3,10 @@ import { registry } from "@web/core/registry";
 
 export class Many2ManySelection extends Interaction {
     static selector = ".s_website_form_m2m_selection";
+    dynamicSelectors = {
+        ...this.dynamicSelectors,
+        _form: () => this.el.closest("form"),
+    };
     dynamicContent = {
         ".dropdown-item[data-value]": {
             "t-on-click": this.onOptionClick,
@@ -23,6 +27,7 @@ export class Many2ManySelection extends Interaction {
             "t-on-click": () => this.setAll(!this.isAllSelected()),
             "t-att-aria-checked": () => String(this.isAllSelected()),
         },
+        _form: { "t-on-reset": this.restoreInitialSelection },
     };
 
     setup() {
@@ -40,13 +45,6 @@ export class Many2ManySelection extends Interaction {
             dropdown?.dispose();
             this.restoreInitialSelection();
         });
-    }
-
-    start() {
-        const formEl = this.el.closest("form");
-        if (formEl) {
-            this.addListener(formEl, "reset", () => this.restoreInitialSelection());
-        }
     }
 
     restoreInitialSelection() {
@@ -67,14 +65,17 @@ export class Many2ManySelection extends Interaction {
      * @returns {boolean} whether at least one option is currently selected.
      */
     hasSelection() {
-        return this.selectEl.selectedOptions.length > 0;
+        return [...this.options.values()].some((optionEl) => optionEl.selected);
     }
 
     /**
      * @returns {boolean} whether every option is currently selected.
      */
     isAllSelected() {
-        return this.options.size > 0 && this.selectEl.selectedOptions.length === this.options.size;
+        return (
+            this.options.size > 0 &&
+            [...this.options.values()].every((optionEl) => optionEl.selected)
+        );
     }
 
     /**

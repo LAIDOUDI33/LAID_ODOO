@@ -46,7 +46,6 @@ function m2mFormHTML({ selectedIds, allowEmpty = false, required = false }) {
                         ).join("")}
                     </select>
                     <div class="s_website_form_m2m_pills_container form-select d-flex flex-wrap align-items-center gap-1">
-                        <button type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" data-bs-display="static" aria-haspopup="menu" aria-expanded="false" aria-label="Toggle options"></button>
                         <span class="s_website_form_m2m_placeholder${
                             hasSelection ? " d-none" : ""
                         }">Pick</span>
@@ -56,11 +55,14 @@ function m2mFormHTML({ selectedIds, allowEmpty = false, required = false }) {
                             isSelected(r) ? "" : " d-none"
                         }" data-value="${r.id}">${
                                 r.label
-                            }<button type="button" class="s_website_form_m2m_pill_remove" aria-label="Remove"><i class="fa fa-times"></i></button></span>`
+                            }<button type="button" class="s_website_form_m2m_pill_remove" aria-label="Remove ${
+                                r.label
+                            }"><i class="fa fa-times"></i></button></span>`
                         ).join("")}
                         <button type="button" class="s_website_form_m2m_remove_all${
                             hasSelection ? "" : " d-none"
                         }" aria-label="Remove all"><i class="fa fa-times"></i></button>
+                        <button type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" data-bs-display="static" aria-haspopup="menu" aria-expanded="false" aria-label="Toggle options"></button>
                         <div class="dropdown-menu w-100" role="menu">
                             <button type="button" class="s_website_form_m2m_select_all dropdown-item" role="menuitemcheckbox" aria-checked="${
                                 selectedIds.length === RECORDS.length
@@ -213,4 +215,17 @@ test("form submits the selected values", async () => {
     await clickItem(2);
     await contains(".s_website_form_send").click();
     expect.verifySteps(["submitted"]);
+});
+
+test("selection changes dispatch a bubbling input event on the select", async () => {
+    await startM2mForm({ selectedIds: [] });
+    const selectEl = queryOne("select.s_website_form_input");
+    const inputTargets = [];
+    queryOne("form").addEventListener("input", (ev) => inputTargets.push(ev.target));
+    await openDropdown();
+    await clickItem(1);
+    expect(inputTargets).toHaveLength(1);
+    expect(inputTargets[0]).toBe(selectEl);
+    await contains(".s_website_form_m2m_remove_all").click();
+    expect(inputTargets).toHaveLength(2);
 });
