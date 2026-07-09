@@ -540,14 +540,18 @@ class TestHrEmployee(TestHrCommon):
         self.assertFalse(employee.is_flexible)
         self.assertFalse(employee.is_fully_flexible)
 
-        employee.resource_calendar_id = False
-        employee.hours_per_week = 40
-        employee.hours_per_day = 8
+        flexible_calendar = self.env['resource.calendar'].create({
+            'name': 'Flexible Calendar',
+            'calendar_type': 'variable',
+            'attendance_ids': [],
+            'hours_per_week': 40,
+            'hours_per_day': 8,
+        })
+        employee.resource_calendar_id = flexible_calendar
         self.assertTrue(employee.is_flexible)
         self.assertFalse(employee.is_fully_flexible)
 
-        employee.hours_per_week = 0
-        employee.hours_per_day = 0
+        flexible_calendar.write({'hours_per_week': 0, 'hours_per_day': 0})
         self.assertTrue(employee.is_flexible)
         self.assertTrue(employee.is_fully_flexible)
 

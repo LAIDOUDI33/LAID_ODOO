@@ -9,6 +9,19 @@ class TestFlexibleResourceCalendar(TransactionCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        cls.flex_calendar, cls.fully_flex_calendar = cls.env['resource.calendar'].create([{
+            'name': 'Flex Calendar',
+            'calendar_type': 'variable',
+            'attendance_ids': [],
+            'hours_per_week': 40.0,
+            'hours_per_day': 8.0,
+        }, {
+            'name': 'Fully Flex Calendar',
+            'calendar_type': 'variable',
+            'attendance_ids': [],
+            'hours_per_week': 0.0,
+            'hours_per_day': 0.0,
+        }])
         cls.flex_resource, cls.fully_flex_resource = cls.env['resource.resource'].create([{
             'name': 'Flex',
             'tz': 'UTC',
@@ -28,9 +41,7 @@ class TestFlexibleResourceCalendar(TransactionCase):
             'contract_date_start': date(2025, 1, 1),
             'contract_date_end': date(2025, 7, 29),
             'wage': 10,
-            'resource_calendar_id': False,
-            'hours_per_week': 40,
-            'hours_per_day': 8.0,
+            'resource_calendar_id': self.flex_calendar.id,
             'resource_id': self.flex_resource.id,
         }, {
             'name': "fully flex employee",
@@ -38,23 +49,21 @@ class TestFlexibleResourceCalendar(TransactionCase):
             'contract_date_start': date(2025, 1, 1),
             'contract_date_end': date(2025, 7, 29),
             'wage': 10,
-            'resource_calendar_id': False,
+            'resource_calendar_id': self.fully_flex_calendar.id,
             'resource_id': self.fully_flex_resource.id,
         }])
         flex_employee.create_version({
             'date_version': date(2025, 8, 2),
             'contract_date_start': date(2025, 8, 2),
             'wage': 10,
-            'resource_calendar_id': False,
-            'hours_per_week': 40,
-            'hours_per_day': 8.0,
+            'resource_calendar_id': self.flex_calendar.id,
         })
 
         fully_flex_employee.create_version({
             'date_version': date(2025, 8, 2),
             'contract_date_start': date(2025, 8, 2),
             'wage': 10,
-            'resource_calendar_id': False,
+            'resource_calendar_id': self.fully_flex_calendar.id,
         })
 
         start_dt = datetime(2025, 7, 28).astimezone(UTC)
