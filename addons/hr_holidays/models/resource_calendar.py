@@ -11,10 +11,15 @@ class ResourceCalendar(models.Model):
     def _compute_associated_leaves_count(self):
         leaves_read_group = self.env['resource.calendar.leaves']._read_group(
             [('resource_id', '=', False), '|', ('calendar_id', 'in', self.ids), ('calendar_id', '=', False)],
-            ['calendar_id'],
+            ['calendar_id', 'company_id'],
             ['__count'],
         )
-        result = {calendar.id if calendar else 'global': count for calendar, count in leaves_read_group}
-        global_leave_count = result.get('global', 0)
+        calendar_leaves = {}
+        company_leaves = {}
+        for calendar, company, count in leaves_read_group:
+            if calendar:
+                calendar_leaves[calendar.id] = calendar_leaves.get(calendar.id, 0) + count
+            else:
+                company_leaves[company.id] = company_leaves.get(company.id, 0) + count
         for calendar in self:
-            calendar.associated_leaves_count = result.get(calendar.id, 0) + global_leave_count
+            calendar.associated_leaves_count = calendar_leaves.get(calendar.id, 0) + company_leaves.get(calendar.company_id.id, 0)

@@ -6,9 +6,16 @@ from odoo import api, models, fields
 class ResourceCalendarLeaves(models.Model):
     _inherit = 'resource.calendar.leaves'
 
+    def _get_default_work_entry_type(self):
+        country = self.calendar_id.company_id.country_id or self.company_id.country_id or self.env.company.country_id
+        if not country or self.resource_id:
+            return self.env['hr.work.entry.type']
+        return self.env['hr.work.entry.type'].sudo().search([('code', '=', 'LEAVE500'), ('country_id', '=', country.id)], limit=1)
+
     work_entry_type_id = fields.Many2one(
         'hr.work.entry.type', 'Time Type',
         domain="[('id', 'in', allowed_work_entry_type_ids)]",
+        default=_get_default_work_entry_type,
         groups="hr.group_hr_user")
     allowed_work_entry_type_ids = fields.Many2many(
         'hr.work.entry.type', compute='_compute_allowed_work_entry_type_ids')

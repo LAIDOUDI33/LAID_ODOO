@@ -1,10 +1,14 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-from datetime import datetime
+import csv
+from datetime import UTC, datetime, time
+from zoneinfo import ZoneInfo
 
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 from odoo.fields import Domain
+from odoo.tools import file_open, file_path
+from odoo.tools.date_utils import convert_timezone
 
 
 class ResourceCalendarLeaves(models.Model):
@@ -142,3 +146,63 @@ class ResourceCalendarLeaves(models.Model):
             'view_mode': 'form',
             'target': 'new',
         }
+
+    def _cron_generate_public_holidays(self):
+        start_date = fields.Date.today()
+        end_date = fields.Date.add(fields.Date.today(), years=1)
+        be_companies = self.env.companies.filtered(lambda c: c.country_code == 'BE')
+        existing_holidays_dict = dict(self.env["resource.calendar.leaves"]._read_group(
+            domain=[
+                ('company_id', 'in', be_companies.ids),
+                ('date_from', '<=', end_date),
+                ('date_to', '>=', start_date),
+                ('resource_id', '=', False),
+            ],
+            groupby=['company_id'],
+            aggregates=['id:recordset'],
+        ))
+
+        for company in be_companies:
+            if not self.sudo().env['hr.work.entry.type'].search([('code', '=', 'LEAVE500'), ('country_code', '!=', company.country_code)], limit=1):
+                continue
+            try:
+                csv_file_path = file_path(f"hr_holidays/data/public_holidays/public_holidays_{company.country_code.lower()}.csv")
+            except FileNotFoundError:
+                continue
+
+            company_tz = ZoneInfo(company.tz or self.env.user.tz or 'UTC')
+            public_holidays_values_dict = {}
+            with file_open(csv_file_path) as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    if not row.get("date") or not row.get("holiday"):
+                        continue
+                    holiday_date = datetime.strptime(row["date"], "%Y-%m-%d").date()
+                    if holiday_date > end_date:
+                        break
+                    if holiday_date < start_date:
+                        continue
+
+                    holiday_start_utc = convert_timezone(datetime.combine(holiday_date, time.min), UTC, company_tz)
+                    holiday_end_utc = convert_timezone(datetime.combine(holiday_date, time.max), UTC, company_tz)
+                    overlapping = any(
+                        holiday.date_from <= holiday_end_utc and holiday.date_to >= holiday_start_utc
+                        for holiday in existing_holidays_dict.get(company, [])
+                    )
+                    if overlapping:
+                        continue
+
+                    holiday_name = row["holiday"].strip()
+                    if holiday_date in public_holidays_values_dict:
+                        public_holidays_values_dict[holiday_date]['name'] += f" / {holiday_name}"
+                    else:
+                        public_holidays_values_dict[holiday_date] = {
+                            'name': holiday_name,
+                            'date_from': holiday_start_utc,
+                            'date_to': holiday_end_utc,
+                            'company_id': company.id,
+                        }
+
+            if public_holidays_values_dict:
+                create_values = list(public_holidays_values_dict.values())
+                self.env['resource.calendar.leaves'].sudo().create(create_values)
