@@ -67,8 +67,8 @@ test("DatetimeField in form view", async () => {
         resModel: "partner",
         resId: 1,
         arch: `<form>
-            <field name="datetime"/>
-            <field name="datetime" readonly="1"/>
+            <field name="datetime" options="{'show_seconds': true}"/>
+            <field name="datetime" readonly="1" options="{'show_seconds': true}"/>
         </form>`,
     });
 
@@ -697,7 +697,7 @@ test("list datetime: column widths (numeric format)", async () => {
         resModel: "partner",
         arch: /* xml */ `
             <list>
-                <field name="datetime" widget="datetime" options="{'numeric': true }" />
+                <field name="datetime" widget="datetime" options="{'numeric': true, 'show_seconds': true }" />
                 <field name="display_name" />
             </list>`,
     });
@@ -795,4 +795,25 @@ test("DateField: incoherent state and record value", async () => {
     await edit("10/10", { confirm: "Enter" });
     await animationFrame();
     expect(".o_field_widget[name=datetime] button").toHaveValue("10/10/2019 00:00:00");
+});
+
+test("numeric datetime field shouldn't show seconds with show_seconds set to false", async () => {
+    mockTimeZone(+2);
+
+    await mountView({
+        type: "form",
+        resModel: "partner",
+        arch: `
+            <form>
+                <field name="datetime" widget="datetime"/>
+            </form>`,
+    });
+
+    await contains(".o_input:eq(0)").click();
+    await animationFrame();
+    expect(queryFirst(".o_time_picker_input").value).toBe("11:00");
+
+    await edit("07/09/2026 11:00:00", { confirm: "Enter" });
+    await animationFrame();
+    expect(queryFirst("button.o_daterange_start").textContent).toBe("Jul 9, 2026, 11:00 AM");
 });
