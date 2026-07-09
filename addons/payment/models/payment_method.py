@@ -84,6 +84,9 @@ class PaymentMethod(models.Model):
         default="none",
         required=True,
     )
+    support_split_payments = fields.Boolean(
+        string="Allow Split Payments", help="Allow payment with multiple payment methods"
+    )
     support_refund = fields.Selection(
         string="Refund",
         help="Refund is a feature allowing to refund customers directly from the payment in Odoo.",
@@ -252,6 +255,19 @@ class PaymentMethod(models.Model):
             }
 
         return deduplicated_payment_methods
+
+    def _get_allowed_amount(self, amount):
+        """Return the amount allowed to be paid with this payment method.
+
+        By default, the whole amount to pay is allowed. To be overridden by specific
+        payment methods that need to restrict it (e.g. eco-vouchers, gift cards).
+
+        :param float amount: The total amount to pay.
+        :return: The allowed amount.
+        :rtype: float
+        """
+        self.ensure_one()
+        return amount
 
     def _sort_by_display_order(self):
         """Sort payment methods by their display order.

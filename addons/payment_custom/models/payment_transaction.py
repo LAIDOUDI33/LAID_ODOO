@@ -81,6 +81,7 @@ class PaymentTransaction(models.Model):
             and self.state == "pending"
             and is_html_empty(status_message)
         ):
+            # TODO-PDA where do we display the amount still to pay now != amount_total
             return Markup("<h4>%s</h4>") % self.env._("Finalize your payment")
         return status_message
 

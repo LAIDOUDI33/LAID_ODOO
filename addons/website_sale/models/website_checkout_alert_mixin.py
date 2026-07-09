@@ -12,6 +12,9 @@ class WebsiteCheckoutAlertMixin(models.AbstractModel):
 
     alerts = fields.Json()
 
+    def _add_success_alert(self, message: str, /, **kwargs):
+        return self._add_alert("success", message, **kwargs)
+
     def _add_info_alert(self, message: str, /, **kwargs):
         return self._add_alert("info", message, **kwargs)
 
@@ -21,16 +24,18 @@ class WebsiteCheckoutAlertMixin(models.AbstractModel):
     def _add_danger_alert(self, message: str, /, **kwargs):
         return self._add_alert("danger", message, **kwargs)
 
-    def _add_alert(self, level: Literal["info", "warning", "danger"], message: str, /, **kwargs):
+    def _add_alert(
+        self, level: Literal["info", "warning", "danger", "success"], message: str, /, **kwargs
+    ):
         """Add an alert to the current records.
 
-        Alerts are ordered by level of severity, `danger` to `info`.
+        Alerts are ordered by level of severity, `danger` to `success`.
 
         :param level: Severity of the alert.
         :param message: The message text to display to the customer.
         :param kwargs: Extra info added in the alert dictionary.
         """
-        LEVEL_SEQUENCE_MAPPING = {"danger": 0, "warning": 500, "info": 1000}
+        LEVEL_SEQUENCE_MAPPING = {"danger": 0, "warning": 500, "info": 1000, "success": 1500}
         level_sequence = LEVEL_SEQUENCE_MAPPING[level]
         for record in self:
             alerts = record._get_alerts()

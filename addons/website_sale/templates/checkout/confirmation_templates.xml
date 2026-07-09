@@ -111,13 +111,17 @@
             t-att-data-order-id="order.id"
             t-att-data-order-tracking-info="json.dumps(order_tracking_info)"
         >
+            <!--TODO-PDA last tx not accurate with split payments
+            Consider 100 paid with 50 pending then 50 done: warning (is_paid_or_in_payment=success?)
+            Consider 100 paid with 50 done then 50 pending: info
+            -->
             <t t-set="tx_sudo" t-value="order.get_portal_last_transaction()"/>
             <t
                 t-set="alert_class"
                 t-value="
                     (tx_sudo.state == 'pending' and 'alert-info') or
-                    (tx_sudo.state == 'done' and order.amount_total == tx_sudo.amount and 'alert-success') or
-                    (tx_sudo.state == 'done' and order.amount_total != tx_sudo.amount and 'alert-warning') or
+                    (tx_sudo.state == 'done' and order._is_paid() and 'alert-success') or
+                    (tx_sudo.state == 'done' and not order._is_paid() and 'alert-warning') or
                     (tx_sudo.state == 'authorized' and 'alert-success') or
                     'alert-danger'"
             />
