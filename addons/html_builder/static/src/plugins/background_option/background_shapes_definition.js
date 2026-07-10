@@ -27,6 +27,7 @@ export const backgroundShapesDefinition = {
                     "html_builder/Connections/18": { selectLabel: _t("Connections 18") },
                     "html_builder/Connections/19": { selectLabel: _t("Connections 19") },
                     "html_builder/Connections/20": { selectLabel: _t("Connections 20") },
+                    "html_builder/Connections/21": { selectLabel: _t("Connections 21") },
                 },
             },
             containers: {
