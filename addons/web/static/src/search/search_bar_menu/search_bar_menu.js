@@ -67,7 +67,7 @@ export class SearchBarMenu extends Component {
         );
     }
 
-    async onAddCustomFilterClick() {
+    onAddCustomFilterClick() {
         this.env.searchModel.spawnCustomFilterDialog();
     }
 
