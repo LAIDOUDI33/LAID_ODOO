@@ -19,9 +19,10 @@ class TestPackingCommon(TestStockCommon):
         cls.warehouse_1.delivery_steps = 'pick_pack_ship'
         cls.picking_type_int.reservation_method = 'manual'
         cls.picking_type_out.reservation_method = 'at_confirm'
-        cls.pack_type_box, cls.pack_type_pallet = cls.env['stock.package.type'].create([
+        cls.pack_type_box, cls.pack_type_pallet, cls.pack_type_container = cls.env['stock.package.type'].create([
             {'name': 'Test Box', 'sequence_code': 'TBOX'},
             {'name': 'Test Pallet', 'sequence_code': 'TPAL'},
+            {'name': 'Test Container', 'sequence_code': 'TCON'},
         ])
 
 
@@ -2037,6 +2038,7 @@ class TestPackagePropagation(TestPackingCommon):
         self.productA.weight = 2
         self.pack_type_box.base_weight = 5
         self.pack_type_pallet.base_weight = 10
+        self.pack_type_container.base_weight = 20
         box, box2, pallet, pallet2 = self.env['stock.package'].create([{
             'package_type_id': pack_type.id,
         } for pack_type in [self.pack_type_box, self.pack_type_box, self.pack_type_pallet, self.pack_type_pallet]])
@@ -2068,14 +2070,14 @@ class TestPackagePropagation(TestPackingCommon):
         self.assertEqual(delivery2.shipping_weight, 17)
 
         # Changing the package type should update the weight
-        delivery2.move_line_ids.result_package_id.package_type_id = self.pack_type_pallet
-        self.assertEqual(delivery2.shipping_weight, 22)
+        delivery2.move_line_ids.result_package_id.package_type_id = self.pack_type_container
+        self.assertEqual(delivery2.shipping_weight, 32)
         # Weight should also update when doing pack-ception shenanigans
         delivery2.action_put_in_pack()
         delivery2.move_line_ids.result_package_id.outermost_package_id.package_type_id = self.pack_type_pallet
-        self.assertEqual(delivery2.shipping_weight, 32)
+        self.assertEqual(delivery2.shipping_weight, 42)
         delivery2.move_line_ids.result_package_id.outermost_package_id.package_type_id = self.pack_type_box
-        self.assertEqual(delivery2.shipping_weight, 27)
+        self.assertEqual(delivery2.shipping_weight, 37)
 
     def test_package_removal(self):
         """ Checks that the button 'Remove' in the package view in pickings behaves as expected:
