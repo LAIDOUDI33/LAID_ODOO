@@ -1101,6 +1101,7 @@ MISC_WHITELIST = {
 # serviceName: [PluginClass, ImportPath]
 SERVICES_MAPPING = {
     "currency": ['CurrencyPlugin', '@web/webclient/currency_plugin'],
+    "frequent_emoji": ['FrequentEmojiPlugin', '@web/core/emoji_picker/frequent_emoji_plugin'],
     "notification": ['NotificationPlugin', '@web/core/notifications/notification_plugin'],
     "mobile": ['MobilePlugin', '@web_mobile/js/mobile_plugin'],
 }
