@@ -2,11 +2,11 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 from odoo.addons.mail.tests.common import MailCommon
+from odoo.exceptions import UserError
 from odoo.tests import tagged, users
 
 
 @tagged('mail_tools', 'res_partner')
-@tagged('at_install', '-post_install')  # LEGACY at_install
 class TestMailTools(MailCommon):
 
     @classmethod
@@ -20,6 +20,27 @@ class TestMailTools(MailCommon):
             'name': 'Alfred Astaire',
             'phone': '0456334455',
         })
+
+    @users('employee')
+    def test_find_field_from_field_path(self):
+        """ Test '_find_field_from_field_path' tooling method available on BaseModel """
+        field = self.env['res.partner']._find_field_from_field_path('country_id.name')
+        self.assertEqual(field, self.env['ir.model.fields']._get('res.country', 'name'))
+        with self.assertRaises(UserError):
+            self.env['res.partner']._find_field_from_field_path('not_existing_field')
+        with self.assertRaises(UserError):
+            self.env['res.partner']._find_field_from_field_path('country_id.not_existing_field')
+
+    @users('employee')
+    def test_find_value_from_field_path(self):
+        """ Test '_find_value_from_field_path' tooling method available on BaseModel """
+        test_partner = self.test_partner.with_env(self.env)
+        value = test_partner._find_value_from_field_path('country_id.name')
+        self.assertEqual(value, 'Belgium')
+        with self.assertRaises(UserError):
+            test_partner._find_value_from_field_path('not_existing_field')
+        with self.assertRaises(UserError):
+            test_partner._find_value_from_field_path('country_id.not_existing_field')
 
     @users('employee')
     def test_find_partner_from_emails(self):
@@ -225,7 +246,6 @@ class TestMailTools(MailCommon):
 
 
 @tagged('mail_tools', 'mail_init')
-@tagged('at_install', '-post_install')  # LEGACY at_install
 class TestMailUtils(MailCommon):
 
     def test_migrate_icp_to_domain(self):
