@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="ir_exports_view_form" model="ir.ui.view">
+            <field name="model">ir.exports</field>
+            <field name="arch" type="xml">
+                <form string="Export Template" create="0">
+                    <sheet>
+                        <group>
+                            <field name="name" string="Template Name"/>
+                            <field name="export_language_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                        </group>
+                        <notebook>
+                            <page string="Fields" name="fields">
+                                <field name="export_fields">
+                                    <list editable="bottom">
+                                        <field name="sequence" widget="handle"/>
+                                        <field name="field_label" string="Name"/>
+                                        <field name="name" string="Technical Name"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>

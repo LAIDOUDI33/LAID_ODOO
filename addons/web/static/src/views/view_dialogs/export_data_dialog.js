@@ -1,9 +1,13 @@
 import { useRef } from "@web/owl2/utils";
 import { _t } from "@web/core/l10n/translation";
 import { browser } from "@web/core/browser/browser";
+import { AutoComplete } from "@web/core/autocomplete/autocomplete";
 import { CheckBox } from "@web/core/checkbox/checkbox";
 import { Dialog } from "@web/core/dialog/dialog";
+import { BadgeTag } from "@web/core/tags_list/badge_tag";
+import { TagsList } from "@web/core/tags_list/tags_list";
 import { rpc } from "@web/core/network/rpc";
+import { user } from "@web/core/user";
 import { unique } from "@web/core/utils/arrays";
 import { useService } from "@web/core/utils/hooks";
 import { fuzzyLookup } from "@web/core/utils/search";
@@ -11,20 +15,6 @@ import { useSortable } from "@web/core/utils/sortable_owl";
 import { useDebounced } from "@web/core/utils/timing";
 
 import { Component, onMounted, onWillStart, onWillUnmount, proxy } from "@odoo/owl";
-
-class DeleteExportListDialog extends Component {
-    static components = { Dialog };
-    static template = "web.DeleteExportListDialog";
-    static props = {
-        text: String,
-        close: Function,
-        delete: Function,
-    };
-    async onDelete() {
-        await this.props.delete();
-        this.props.close();
-    }
-}
 
 class ExportDataItem extends Component {
     static template = "web.ExportDataItem";
@@ -83,7 +73,7 @@ class ExportDataItem extends Component {
 
 export class ExportDataDialog extends Component {
     static template = "web.ExportDataDialog";
-    static components = { CheckBox, Dialog, ExportDataItem };
+    static components = { AutoComplete, BadgeTag, CheckBox, Dialog, ExportDataItem, TagsList };
     static props = {
         close: { type: Function },
         context: { type: Object, optional: true },
@@ -94,7 +84,7 @@ export class ExportDataDialog extends Component {
     };
 
     setup() {
-        this.dialog = useService("dialog");
+        this.action = useService("action");
         this.notification = useService("notification");
         this.orm = useService("orm");
         this.draggableRef = useRef("draggable");
@@ -105,10 +95,12 @@ export class ExportDataDialog extends Component {
         this.expandedFields = {};
         this.availableFormats = [];
         this.templates = [];
+        this.languagesInstalled = [];
         this.isCompatible = false;
 
         this.state = proxy({
             exportList: [],
+            exportLanguages: [],
             isEditingTemplate: false,
             search: [],
             selectedFormat: 0,
@@ -126,6 +118,7 @@ export class ExportDataDialog extends Component {
             // Params
             ref: this.draggableRef,
             elements: ".o_export_field",
+            ignore: ".o_remove_field",
             enable: !this.state.isSmall,
             cursor: "grabbing",
             // Hooks
@@ -148,15 +141,18 @@ export class ExportDataDialog extends Component {
         });
 
         onWillStart(async () => {
-            this.availableFormats = await rpc("/web/export/formats");
-            this.templates = await this.orm.searchRead(
-                "ir.exports",
-                [["resource", "=", this.props.root.resModel]],
-                [],
-                {
-                    context: this.props.context,
-                }
-            );
+            [this.availableFormats, this.templates, this.languagesInstalled] = await Promise.all([
+                rpc("/web/export/formats"),
+                this.orm.searchRead(
+                    "ir.exports",
+                    [["resource", "=", this.props.root.resModel]],
+                    [],
+                    {
+                        context: this.props.context,
+                    }
+                ),
+                this.orm.searchRead("res.lang", [], ["code", "name"], { order: "name" }),
+            ]);
             await this.fetchFields();
         });
 
@@ -177,6 +173,47 @@ export class ExportDataDialog extends Component {
 
     get isDebug() {
         return Boolean(odoo.debug);
+    }
+
+    get languageChoices() {
+        return this.languagesInstalled
+            .filter(({ code }) => !this.state.exportLanguages.includes(code))
+            .map(({ code, name }) => ({ value: code, label: name }));
+    }
+
+    get userLanguageName() {
+        const userLanguage = user.lang.replace("-", "_");
+        return (
+            this.languagesInstalled.find(({ code }) => code === userLanguage)?.name || userLanguage
+        );
+    }
+
+    get languageSources() {
+        return [{ options: this.loadLanguageOptions.bind(this) }];
+    }
+
+    loadLanguageOptions(request) {
+        const choices = request
+            ? fuzzyLookup(request, this.languageChoices, (choice) => choice.label)
+            : this.languageChoices;
+        return choices.map(({ value, label }) => ({
+            label,
+            onSelect: () => this.onAddLanguage(value),
+        }));
+    }
+
+    get languageTags() {
+        const languageNames = Object.fromEntries(
+            this.languagesInstalled.map(({ code, name }) => [code, name])
+        );
+        return this.state.exportLanguages.map((code) => ({
+            id: code,
+            text: languageNames[code],
+            onDelete: () => {
+                this.state.exportLanguages = this.state.exportLanguages.filter((c) => c !== code);
+                this.enterTemplateEdition();
+            },
+        }));
     }
 
     get rootFields() {
@@ -214,18 +251,25 @@ export class ExportDataDialog extends Component {
     }
 
     /**
-     * Load fields to display and (re)set the list of available fields
+     * Load fields to display and (re)set the list of available fields.
+     *
+     * @param {boolean} [keepExportList=false] when true, the current export
+     *  list is left untouched. This is used when only the available fields
+     *  change (e.g. toggling the "Updatable fields only" switch), which must
+     *  not affect the fields the user already chose to export.
      */
-    async fetchFields() {
+    async fetchFields(keepExportList = false) {
         this.knownFields = {};
         this.expandedFields = {};
         await this.loadFields();
-        await this.setDefaultExportList();
+        if (!keepExportList) {
+            await this.setDefaultExportList();
+        }
         this.state.search = [];
         if (this.searchRef.el) {
             this.searchRef.el.value = "";
         }
-        if (this.state.templateId) {
+        if (this.state.templateId && !keepExportList) {
             this.loadExportList(this.state.templateId);
         }
     }
@@ -246,12 +290,13 @@ export class ExportDataDialog extends Component {
         if (!value || value === "new_template") {
             return;
         }
-        const fields = await rpc("/web/export/namelist", {
+        const { fields, export_languages } = await rpc("/web/export/namelist", {
             model: this.props.root.resModel,
             export_id: Number(value),
         });
         // Don't safe the result in this.knownFields because, the result is only partial
         this.state.exportList = fields;
+        this.state.exportLanguages = export_languages;
     }
 
     async loadFields(id, preventLoad = false) {
@@ -312,6 +357,9 @@ export class ExportDataDialog extends Component {
                 type: "danger",
             });
         }
+        const exportLanguageIds = this.languagesInstalled
+            .filter(({ code }) => this.state.exportLanguages.includes(code))
+            .map(({ id }) => id);
         const [id] = await this.orm.create(
             "ir.exports",
             [
@@ -324,6 +372,7 @@ export class ExportDataDialog extends Component {
                             name: field.id,
                         },
                     ]),
+                    export_language_ids: [[6, false, exportLanguageIds]],
                     resource: this.props.root.resModel,
                 },
             ],
@@ -351,26 +400,51 @@ export class ExportDataDialog extends Component {
         }
         this.state.disabled = true;
         await this.props.download(
-            this.state.exportList,
+            this.getFieldsToExport(),
             this.isCompatible,
             this.availableFormats[this.state.selectedFormat].tag
         );
         this.state.disabled = false;
     }
 
-    async onDeleteExportTemplate() {
-        this.dialog.add(DeleteExportListDialog, {
-            text: _t("Do you really want to delete this export template?"),
-            delete: async () => {
-                const id = Number(this.state.templateId);
-                await this.orm.unlink("ir.exports", [id], { context: this.props.context });
-                this.templates.splice(
-                    this.templates.findIndex((i) => i.id === id),
-                    1
-                );
-                this.state.templateId = null;
-                this.setDefaultExportList();
-            },
+    /**
+     * Return the fields to export: each translatable field of the export list
+     * is replaced by one column per selected export language, using the same
+     * `@lang` suffix convention as the import (e.g. `name@fr_FR`) on both the
+     * technical name and the label, so the columns stay import-compatible.
+     * The unsuffixed column (in the active language) is dropped to avoid
+     * exporting the same column twice under different headers.
+     */
+    getFieldsToExport() {
+        if (!this.state.exportLanguages.length) {
+            return this.state.exportList;
+        }
+        return this.state.exportList.flatMap((field) => {
+            if (!field.translate) {
+                return [field];
+            }
+            return this.state.exportLanguages.map((code) => ({
+                ...field,
+                id: `${field.id}@${code}`,
+                string: `${field.string}@${code}`,
+            }));
+        });
+    }
+
+    onAddLanguage(code) {
+        this.state.exportLanguages.push(code);
+        this.enterTemplateEdition();
+    }
+
+    onEditExportTemplate() {
+        const resId = Number(this.state.templateId);
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            name: _t("Export Templates"),
+            res_model: "ir.exports",
+            res_id: resId,
+            target: "new",
+            views: [[false, "form"]],
         });
     }
 
@@ -397,7 +471,7 @@ export class ExportDataDialog extends Component {
 
     onToggleCompatibleExport(value) {
         this.isCompatible = value;
-        this.fetchFields();
+        this.fetchFields(true);
     }
 
     async setDefaultExportList() {
@@ -413,10 +487,8 @@ export class ExportDataDialog extends Component {
     }
 
     setFormat(ev) {
-        if (ev.target.checked) {
-            this.state.selectedFormat = this.availableFormats.findIndex(
-                ({ tag }) => tag === ev.target.value
-            );
-        }
+        this.state.selectedFormat = this.availableFormats.findIndex(
+            ({ tag }) => tag === ev.target.value
+        );
     }
 }
