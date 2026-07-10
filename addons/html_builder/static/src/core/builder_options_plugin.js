@@ -5,6 +5,7 @@ import { isRemovable } from "./remove_plugin";
 import { getElementsWithOption, isElementInViewport } from "@html_builder/utils/utils";
 import { OptionsContainer } from "@html_builder/sidebar/option_container";
 import { shouldEditableMediaBeEditable } from "@html_builder/utils/utils_css";
+import { scrollTo } from "@html_builder/utils/scrolling";
 import { _t } from "@web/core/l10n/translation";
 import { closestElement } from "@html_editor/utils/dom_traversal";
 import { BaseOptionComponent } from "@html_builder/core/base_option_component";
@@ -566,6 +567,7 @@ export class BuilderOptionsPlugin extends Plugin {
      *
      * @param {Object} lastCommitReversed the last commit to have been reversed
      */
+<<<<<<< 965ce4369e71eab6e162b3f691a48cd11289c373
     restoreContainers(lastCommitReversed) {
         const targetEl =
             lastCommitReversed.data.currentTarget ?? lastCommitReversed.data.nextTarget;
@@ -576,6 +578,46 @@ export class BuilderOptionsPlugin extends Plugin {
             if (!isElementInViewport(targetEl)) {
                 // Firefox mis-scrolls with block "center" on tall snippets; keep "start".
                 targetEl.scrollIntoView({ behavior: "smooth", block: "start" });
+||||||| 8d45159be1f70ef285199371967792a6f47dd8c2
+    restoreContainers(revertedStep, mode) {
+        if (revertedStep && revertedStep.extraStepInfos.currentTarget) {
+            let targetEl = revertedStep.extraStepInfos.currentTarget;
+            // If the step was supposed to activate another target, activate
+            // this one instead.
+            const nextTarget = revertedStep.extraStepInfos.nextTarget;
+            if (mode === "redo" && (nextTarget || nextTarget === false)) {
+                targetEl = nextTarget;
+            }
+            if (targetEl) {
+                this.trigger("on_will_restore_containers_handlers", targetEl);
+                this.updateContainers(targetEl, { forceUpdate: true });
+                // Scroll to the target if not visible.
+                if (!isElementInViewport(targetEl)) {
+                    // Firefox mis-scrolls with block "center" on tall snippets; keep "start".
+                    targetEl.scrollIntoView({ behavior: "smooth", block: "start" });
+                }
+            } else {
+                this.deactivateContainers();
+=======
+    restoreContainers(revertedStep, mode) {
+        if (revertedStep && revertedStep.extraStepInfos.currentTarget) {
+            let targetEl = revertedStep.extraStepInfos.currentTarget;
+            // If the step was supposed to activate another target, activate
+            // this one instead.
+            const nextTarget = revertedStep.extraStepInfos.nextTarget;
+            if (mode === "redo" && (nextTarget || nextTarget === false)) {
+                targetEl = nextTarget;
+            }
+            if (targetEl) {
+                this.trigger("on_will_restore_containers_handlers", targetEl);
+                this.updateContainers(targetEl, { forceUpdate: true });
+                // Scroll to the target if not visible.
+                if (!isElementInViewport(targetEl)) {
+                    scrollTo(targetEl);
+                }
+            } else {
+                this.deactivateContainers();
+>>>>>>> 122605eadce429b0a58d00841865b921eae6aec0
             }
         }
     }
