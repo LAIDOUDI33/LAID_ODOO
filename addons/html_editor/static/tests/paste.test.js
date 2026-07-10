@@ -84,11 +84,11 @@ describe("Html Paste cleaning - whitelist", () => {
             stepFunction: async (editor) => {
                 pasteHtml(
                     editor,
-                    "a<table><thead><tr><th>h</th></tr></thead><tbody><tr><td>b</td></tr></tbody></table>d"
+                    'a<div class="o_table_wrapper"><table><thead><tr><th>h</th></tr></thead><tbody><tr><td>b</td></tr></tbody></table></div>d'
                 );
             },
             contentAfter:
-                '<p>123a</p><table class="table table-bordered o_table"><tbody><tr><th class="o_table_header">h</th></tr><tr><td>b</td></tr></tbody></table><p>d[]</p>',
+                '<p>123a</p><div class="o_table_wrapper"><table class="table table-bordered o_table"><tbody><tr><th class="o_table_header">h</th></tr><tr><td>b</td></tr></tbody></table></div><p>d[]</p>',
         });
     });
 
@@ -101,24 +101,24 @@ describe("Html Paste cleaning - whitelist", () => {
                 pasteHtml(
                     editor,
                     unformat(`
-                        <table>
+                        <div class="o_table_wrapper"><table>
                             <tbody>
                                 <tr>
                                     <td></td>
                                 </tr>
                             </tbody>
-                        </table>
+                        </table></div>
                     `)
                 );
             },
             contentAfter: unformat(`
-                <table class="table table-bordered o_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table">
                     <tbody>
                         <tr>
                             <td><p>[]<br></p></td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
             `),
         });
     });
@@ -4153,7 +4153,7 @@ describe("Paste HTML tables", () => {
     </head>
 
     <body link="#0563C1" vlink="#954F72">
-        <table width=398 style='border-collapse:collapse;width:299pt'><!--StartFragment-->
+        <div class="o_table_wrapper"><table width=398 style='border-collapse:collapse;width:299pt'><!--StartFragment-->
             <col width=187 style='width:140pt'>
             <col width=211 style='width:158pt'>
             <tr height=20 style='height:15.0pt'>
@@ -4178,14 +4178,14 @@ describe("Paste HTML tables", () => {
                 <td colspan=2 width=398 height=27 class=xl87 dir=LTR style='width:299pt;height:20.25pt'>14pt MONO TEXT
                 </td>
             </tr><!--EndFragment-->
-        </table>
+        </table></div>
     </body>
 
     </html>
 </div>`
                 );
             },
-            contentAfter: `<table class="table table-bordered o_table">
+            contentAfter: `<div class="o_table_wrapper"><table class="table table-bordered o_table">
             <colgroup><col style="width: 187px;">
             <col style="width: 211px;">
             <col style="width: 187px;"><col style="width: 211px;"></colgroup><tbody><tr style="height: 15pt;">
@@ -4209,7 +4209,7 @@ describe("Paste HTML tables", () => {
                 <td colspan="2">14pt MONO TEXT
                 []</td>
             </tr>
-        </tbody></table>`,
+        </tbody></table></div>`,
         });
     });
 
@@ -4229,7 +4229,7 @@ describe("Paste HTML tables", () => {
             mso-data-placement: same-cell;
         }
     </style>
-    <table xmlns="http://www.w3.org/1999/xhtml" cellspacing="0" cellpadding="0" dir="ltr" border="1"
+    <div class="o_table_wrapper"><table xmlns="http://www.w3.org/1999/xhtml" cellspacing="0" cellpadding="0" dir="ltr" border="1"
         style="table-layout:fixed;font-size:10pt;font-family:Arial;width:0px;border-collapse:collapse;border:none">
         <colgroup>
             <col width="170" />
@@ -4280,11 +4280,11 @@ describe("Paste HTML tables", () => {
                     data-sheets-value="{&quot;1&quot;:2,&quot;2&quot;:&quot;14pt MONO TEXT&quot;}">14pt MONO TEXT</td>
             </tr>
         </tbody>
-    </table>
+    </table></div>
 </google-sheets-html-origin>`
                 );
             },
-            contentAfter: `<table class="table table-bordered o_table">
+            contentAfter: `<div class="o_table_wrapper"><table class="table table-bordered o_table">
         <colgroup>
             <col style="width: 170px;">
             <col style="width: 187px;">
@@ -4320,7 +4320,7 @@ describe("Paste HTML tables", () => {
                 <td rowspan="1" colspan="2">14pt MONO TEXT[]</td>
             </tr>
         </tbody>
-    </table>`,
+    </table></div>`,
         });
     });
 
@@ -4375,7 +4375,7 @@ describe("Paste HTML tables", () => {
 </head>
 
 <body>
-    <table cellspacing="0" border="0">
+    <div class="o_table_wrapper"><table cellspacing="0" border="0">
         <colgroup width="212"></colgroup>
         <colgroup width="209"></colgroup>
         <tr>
@@ -4413,13 +4413,13 @@ describe("Paste HTML tables", () => {
                 <font face="Andale Mono" size=4>14pt MONO TEXT</font>
             </td>
         </tr>
-    </table>
+    </table></div>
 </body>
 
 </html>`
                 );
             },
-            contentAfter: `<table class="table table-bordered o_table">
+            contentAfter: `<div class="o_table_wrapper"><table class="table table-bordered o_table">
         <colgroup></colgroup>
         <colgroup></colgroup>
         <tbody><tr>
@@ -4449,7 +4449,7 @@ describe("Paste HTML tables", () => {
                 14pt MONO TEXT[]
             </td>
         </tr>
-    </tbody></table>`,
+    </tbody></table></div>`,
         });
     });
     test("should apply default table classes (table, table-bordered, o_table) on paste", async () => {
@@ -4461,24 +4461,24 @@ describe("Paste HTML tables", () => {
                 pasteHtml(
                     editor,
                     unformat(`
-                        <table>
+                        <div class="o_table_wrapper"><table>
                             <tbody>
                                 <tr>
                                     <td></td>
                                 </tr>
                             </tbody>
-                        </table>
+                        </table></div>
                     `)
                 );
             },
             contentAfter: unformat(`
-                <table class="table table-bordered o_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table">
                     <tbody>
                         <tr>
                             <td><p>[]<br></p></td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
             `),
         });
     });
@@ -4489,7 +4489,7 @@ describe("Paste HTML tables", () => {
                 pasteHtml(
                     editor,
                     unformat(`
-                        <table>
+                        <div class="o_table_wrapper"><table>
                             <thead>
                                 <tr>
                                     <th>1</th>
@@ -4506,12 +4506,12 @@ describe("Paste HTML tables", () => {
                                     <td>2</td>
                                 </tr>
                             </tbody>
-                        </table>
+                        </table></div>
                     `)
                 );
             },
             contentAfter: unformat(`
-                        <table class="table table-bordered o_table">
+                        <div class="o_table_wrapper"><table class="table table-bordered o_table">
                             <tbody>
                                 <tr>
                                     <th class="o_table_header">1</th>
@@ -4526,7 +4526,7 @@ describe("Paste HTML tables", () => {
                                     <td>2[]</td>
                                 </tr>
                             </tbody>
-                        </table>
+                        </table></div>
                     `),
         });
     });
@@ -4537,26 +4537,26 @@ describe("Paste HTML tables", () => {
                 pasteHtml(
                     editor,
                     unformat(`
-                        <table>
+                        <div class="o_table_wrapper"><table>
                             <thead>
                                 <tr>
                                     <th>1</th>
                                     <th>2</th>
                                 </tr>
                             </thead>
-                        </table>
+                        </table></div>
                     `)
                 );
             },
             contentAfter: unformat(`
-                        <table class="table table-bordered o_table">
+                        <div class="o_table_wrapper"><table class="table table-bordered o_table">
                             <tbody>
                                 <tr>
                                     <th>1</th>
                                     <th>2[]</th>
                                 </tr>
                             </tbody>
-                        </table>
+                        </table></div>
                     `),
         });
     });
@@ -4859,29 +4859,29 @@ describe("paste table cells into an existing table", () => {
     test("should paste table content cell-by-cell when the selection is collapsed in a target cell", async () => {
         const { editor, el } = await setupEditor(
             unformat(`
-                <table class="table table-bordered o_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table">
                     <tbody>
                         <tr><td><p>a1[]</p></td><td><p>a2</p></td></tr>
                         <tr><td><p>b1</p></td><td><p>b2</p></td></tr>
                     </tbody>
-                </table>
+                </table></div>
             `)
         );
         pasteHtml(
             editor,
             unformat(`
-                <table>
+                <div class="o_table_wrapper"><table>
                     <tbody>
                         <tr><td><p>x1</p></td><td><p><strong>x2</strong></p></td></tr>
                     </tbody>
-                </table>
+                </table></div>
             `)
         );
         await animationFrame();
         expect(getContent(el)).toBe(
             unformat(`
                 <p data-selection-placeholder=""><br></p>
-                <table class="table table-bordered o_table o_selected_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table o_selected_table">
                     <tbody>
                         <tr>
                             <td class="o_selected_td"><p>[x1</p></td>
@@ -4892,7 +4892,7 @@ describe("paste table cells into an existing table", () => {
                             <td><p>b2</p></td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
                 <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>
             `)
         );
@@ -4901,30 +4901,30 @@ describe("paste table cells into an existing table", () => {
     test("should paste table content cell-by-cell when the selection is a partial (non-collapsed) range inside a cell", async () => {
         const { editor, el } = await setupEditor(
             unformat(`
-                <table class="table table-bordered o_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table">
                     <tbody>
                         <tr><td><p>[a]1</p></td><td><p>a2</p></td></tr>
                         <tr><td><p>b1</p></td><td><p>b2</p></td></tr>
                     </tbody>
-                </table>
+                </table></div>
             `)
         );
         pasteHtml(
             editor,
             unformat(`
-                <table>
+                <div class="o_table_wrapper"><table>
                     <tbody>
                         <tr><td><p><strong>x11</strong></p></td><td><ul><li>x12</li></ul></td></tr>
                         <tr><td><p><a href="#">x21</a></p></td><td><p>x22</p></td></tr>
                     </tbody>
-                </table>
+                </table></div>
             `)
         );
         await animationFrame();
         expect(getContent(el)).toBe(
             unformat(`
                 <p data-selection-placeholder=""><br></p>
-                <table class="table table-bordered o_table o_selected_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table o_selected_table">
                     <tbody>
                         <tr>
                             <td class="o_selected_td"><p><strong>[x11</strong></p></td>
@@ -4935,7 +4935,7 @@ describe("paste table cells into an existing table", () => {
                             <td class="o_selected_td"><p>x22]</p></td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
                 <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>
             `)
         );
@@ -4944,44 +4944,44 @@ describe("paste table cells into an existing table", () => {
     test("should fallback to default paste when the clipboard contains non-table siblings", async () => {
         const { editor, el } = await setupEditor(
             unformat(`
-                <table class="table table-bordered o_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table">
                     <tbody>
                         <tr><td><p>[]a</p></td><td><p>b</p></td></tr>
                     </tbody>
-                </table>
+                </table></div>
             `)
         );
         pasteHtml(
             editor,
             unformat(`
                 <p>before</p>
-                <table>
+                <div class="o_table_wrapper"><table>
                     <tbody>
                         <tr><td><p>x</p></td></tr>
                     </tbody>
-                </table>
+                </table></div>
             `)
         );
         await animationFrame();
         expect(getContent(el)).toBe(
             unformat(`
                 <p data-selection-placeholder=""><br></p>
-                <table class="table table-bordered o_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table">
                     <tbody>
                         <tr>
                             <td>
                                 <p>before</p>
-                                <table class="table table-bordered o_table">
+                                <div class="o_table_wrapper"><table class="table table-bordered o_table">
                                     <tbody>
                                         <tr><td><p>x</p></td></tr>
                                     </tbody>
-                                </table>[]
+                                </table></div>[]
                                 <p>a</p>
                             </td>
                             <td><p>b</p></td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
                 <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>
             `)
         );
@@ -4990,12 +4990,12 @@ describe("paste table cells into an existing table", () => {
     test("should expand the paste range when the clipboard table is larger than the current cell selection", async () => {
         const { editor, el } = await setupEditor(
             unformat(`
-                <table class="table table-bordered o_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table">
                     <tbody>
                         <tr><td><p>[a1</p></td><td><p>a2]</p></td></tr>
                         <tr><td><p>b1</p></td><td><p>b2</p></td></tr>
                     </tbody>
-                </table>
+                </table></div>
             `)
         );
         pasteOdooEditorHtml(
@@ -5013,7 +5013,7 @@ describe("paste table cells into an existing table", () => {
         expect(getContent(el)).toBe(
             unformat(`
                 <p data-selection-placeholder=""><br></p>
-                <table class="table table-bordered o_table o_selected_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table o_selected_table">
                     <tbody>
                         <tr>
                             <td class="o_selected_td"><p>[x11</p></td>
@@ -5024,7 +5024,7 @@ describe("paste table cells into an existing table", () => {
                             <td class="o_selected_td"><p>x22]</p></td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
                 <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>
             `)
         );
@@ -5033,12 +5033,12 @@ describe("paste table cells into an existing table", () => {
     test("should limit pasting to the clipboard table dimensions when selection is larger", async () => {
         const { editor, el } = await setupEditor(
             unformat(`
-                <table class="table table-bordered o_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table">
                     <tbody>
                         <tr><td><p>[a1</p></td><td><p>a2</p></td></tr>
                         <tr><td><p>b1</p></td><td><p>b2]</p></td></tr>
                     </tbody>
-                </table>
+                </table></div>
             `)
         );
         pasteHtml(
@@ -5055,7 +5055,7 @@ describe("paste table cells into an existing table", () => {
         expect(getContent(el)).toBe(
             unformat(`
                 <p data-selection-placeholder=""><br></p>
-                <table class="table table-bordered o_table o_selected_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table o_selected_table">
                     <tbody>
                         <tr>
                             <td class="o_selected_td"><p>[x1</p></td>
@@ -5066,7 +5066,7 @@ describe("paste table cells into an existing table", () => {
                             <td><p>b2</p></td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
                 <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>
             `)
         );
@@ -5075,12 +5075,12 @@ describe("paste table cells into an existing table", () => {
     test("should add rows and columns when the pasted table exceeds the remaining target table dimensions", async () => {
         const { editor, el } = await setupEditor(
             unformat(`
-                <table class="table table-bordered o_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table">
                     <tbody>
                         <tr><td><p>a1</p></td><td><p>a2</p></td></tr>
                         <tr><td><p>[]b1</p></td><td><p>b2</p></td></tr>
                     </tbody>
-                </table>
+                </table></div>
             `)
         );
         pasteOdooEditorHtml(
@@ -5098,7 +5098,7 @@ describe("paste table cells into an existing table", () => {
         expect(getContent(el)).toBe(
             unformat(`
                 <p data-selection-placeholder=""><br></p>
-                <table class="table table-bordered o_table o_selected_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table o_selected_table">
                     <tbody>
                         <tr>
                             <td><p>a1</p></td>
@@ -5116,7 +5116,7 @@ describe("paste table cells into an existing table", () => {
                             <td class="o_selected_td"><p>x23]</p></td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
                 <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>
             `)
         );

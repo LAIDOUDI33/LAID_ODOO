@@ -23,9 +23,9 @@ function availableCommands(menu) {
 
 test("should only display the table ui menu if the table isContentEditable=true", async () => {
     const { el } = await setupEditor(`
-        <table><tbody><tr>
+        <div class="o_table_wrapper"><table><tbody><tr>
             <td>11[]</td>
-        </tr></tbody></table>`);
+        </tr></tbody></table></div>`);
     await expectElementCount(".o-we-table-menu", 0);
 
     await hover(el.querySelector("td"));
@@ -35,12 +35,12 @@ test("should only display the table ui menu if the table isContentEditable=true"
 
 test("should display the table ui menu only if hover on first row/col", async () => {
     const { el } = await setupEditor(`
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
             <tr><td class="a">1[]</td><td class="b">2</td></tr>
             <tr><td class="c">3</td><td class="d">4</td></tr>
             </tbody>
-        </table>`);
+        </table></div>`);
     await expectElementCount(".o-we-table-menu", 0);
 
     await hover(el.querySelector("td.a"));
@@ -62,13 +62,13 @@ test("should display the table ui menu only if hover on first row/col", async ()
 
 test("should not display the table UI menu when hovering over non-first row/col cells", async () => {
     const { el } = await setupEditor(`
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr><td rowspan="3">1</td><td>2</td><td>3</td></tr>
                 <tr><td class="a">4[]</td><td>5</td></tr>
                 <tr><td class="b">6</td><td>7</td></tr>
             </tbody>
-        </table>`);
+        </table></div>`);
     await expectElementCount(".o-we-table-menu", 0);
 
     await hover(el.querySelector("td.a"));
@@ -82,9 +82,9 @@ test("should not display the table UI menu when hovering over non-first row/col 
 
 test("should not display the table ui menu if the table element isContentEditable=false", async () => {
     const { el } = await setupEditor(`
-        <table contenteditable="false"><tbody><tr>
+        <div class="o_table_wrapper"><table contenteditable="false"><tbody><tr>
             <td>11[]</td>
-        </tr></tbody></table>`);
+        </tr></tbody></table></div>`);
     await expectElementCount(".o-we-table-menu", 0);
 
     await hover(el.querySelector("td"));
@@ -94,9 +94,9 @@ test("should not display the table ui menu if the table element isContentEditabl
 
 test("should not display the table ui menu if we leave the editor content", async () => {
     const { el } = await setupEditor(`
-        <table><tbody><tr>
+        <div class="o_table_wrapper"><table><tbody><tr>
             <td>11[]</td>
-        </tr></tbody></table>`);
+        </tr></tbody></table></div>`);
     await expectElementCount(".o-we-table-menu", 0);
 
     await hover(el.querySelector("td"));
@@ -110,9 +110,9 @@ test("should not display the table ui menu if we leave the editor content", asyn
 
 test("should display the table ui menu when hovering on TH", async () => {
     const { el } = await setupEditor(`
-        <table><tbody><tr>
+        <div class="o_table_wrapper"><table><tbody><tr>
             <th>11[]</th>
-        </tr></tbody></table>`);
+        </tr></tbody></table></div>`);
     await expectElementCount(".o-we-table-menu", 0);
 
     await hover(el.querySelector("th"));
@@ -123,9 +123,9 @@ test("should display the table ui menu when hovering on TH", async () => {
 test.tags("desktop");
 test("should display the resizeCursor if the table element isContentEditable=true", async () => {
     const { el } = await setupEditor(`
-        <table><tbody><tr>
+        <div class="o_table_wrapper"><table><tbody><tr>
             <td>11[]</td>
-        </tr></tbody></table>`);
+        </tr></tbody></table></div>`);
 
     expect(".o_col_resize").toHaveCount(0);
     expect(".o_row_resize").toHaveCount(0);
@@ -143,9 +143,9 @@ test("should display the resizeCursor if the table element isContentEditable=tru
 
 test("should not display the resizeCursor if the table element isContentEditable=false", async () => {
     const { el } = await setupEditor(`
-        <table contenteditable="false"><tbody><tr>
+        <div class="o_table_wrapper"><table contenteditable="false"><tbody><tr>
             <td>11[]</td>
-        </tr></tbody></table>`);
+        </tr></tbody></table></div>`);
 
     expect(".o_col_resize").toHaveCount(0);
     expect(".o_row_resize").toHaveCount(0);
@@ -158,7 +158,7 @@ test("should not display the resizeCursor if the table element isContentEditable
 
 test("should not resize a table with a non-primary mouse button", async () => {
     const content = unformat(`
-        <table class="table table-bordered o_table">
+        <div class="o_table_wrapper"><table class="table table-bordered o_table">
             <tbody>
                 <tr>
                     <td>
@@ -171,7 +171,7 @@ test("should not resize a table with a non-primary mouse button", async () => {
                     <td><p><br></p></td>
                 </tr>
             </tbody>
-        </table>
+        </table></div>
     `);
     const { el } = await setupEditor(content);
 
@@ -206,7 +206,7 @@ test("should not resize a table with a non-primary mouse button", async () => {
 
 test("should stop resize after table removal", async () => {
     const content = unformat(`
-        <table class="table table-bordered o_table">
+        <div class="o_table_wrapper"><table class="table table-bordered o_table">
             <tbody>
                 <tr>
                     <td>
@@ -219,7 +219,7 @@ test("should stop resize after table removal", async () => {
                     <td><p><br>]</p></td>
                 </tr>
             </tbody>
-        </table>
+        </table></div>
     `);
     const { el } = await setupEditor(content);
 
@@ -253,7 +253,7 @@ test("should stop resize after table removal", async () => {
 
 test("should show the table UI menus when hovering a list inside a table cell", async () => {
     const { el } = await setupEditor(`
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr>
                     <td>
@@ -261,7 +261,7 @@ test("should show the table UI menus when hovering a list inside a table cell", 
                     </td>
                 </tr>
             </tbody>
-        </table>
+        </table></div>
     `);
 
     await expectElementCount(".o-we-table-menu", 0);
@@ -274,11 +274,11 @@ test("should show the table UI menus when hovering a list inside a table cell", 
 test("list of table commands in first column", async () => {
     const { el } = await setupEditor(`
         <p><br></p>
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
             <tr><td class="a">1[]</td><td class="b">2</td><td class="c">3</td></tr>
             </tbody>
-        </table>`);
+        </table></div>`);
     await expectElementCount(".o-we-table-menu", 0);
 
     // check list of commands on first column
@@ -304,11 +304,11 @@ test("list of table commands in first column", async () => {
 
 test("list of table commands in second column", async () => {
     const { el } = await setupEditor(`
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
             <tr><td class="a">1[]</td><td class="b">2</td><td class="c">3</td></tr>
             </tbody>
-        </table>`);
+        </table></div>`);
     await expectElementCount(".o-we-table-menu", 0);
 
     // check list of commands on second column
@@ -329,11 +329,11 @@ test("list of table commands in second column", async () => {
 
 test("list of table commands in last column", async () => {
     const { el } = await setupEditor(`
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
             <tr><td class="a">1[]</td><td class="b">2</td><td class="c">3</td></tr>
             </tbody>
-        </table>`);
+        </table></div>`);
     await expectElementCount(".o-we-table-menu", 0);
 
     // check list of commands on last column
@@ -355,11 +355,11 @@ test("list of table commands in last column", async () => {
 test("list of commands updates when hovering different table columns", async () => {
     const { el } = await setupEditor(`
         <p><br></p>
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
             <tr><td class="a">1[]</td><td class="b">2</td><td class="c">3</td></tr>
             </tbody>
-        </table>`);
+        </table></div>`);
     await expectElementCount(".o-we-table-menu", 0);
 
     // check list of commands on first column
@@ -421,13 +421,13 @@ test("list of commands updates when hovering different table columns", async () 
 
 test("list of table commands in first row", async () => {
     const { el } = await setupEditor(`
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
             <tr><td class="a">1[]</td></tr>
             <tr><td class="b">2</td></tr>
             <tr><td class="c">3</td></tr>
             </tbody>
-        </table>`);
+        </table></div>`);
     await expectElementCount(".o-we-table-menu", 0);
 
     // check list of commands on first row
@@ -456,13 +456,13 @@ test("list of table commands in first row", async () => {
 
 test("list of table commands in first row if it's table header (TH)", async () => {
     const { el } = await setupEditor(`
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr><th class="a o_table_header">1[]</th></tr>
                 <tr><th class="b o_table_header">2</th></tr>
                 <tr><th class="c o_table_header">3</th></tr>
             </tbody>
-        </table>`);
+        </table></div>`);
     await expectElementCount(".o-we-table-menu", 0);
 
     // check list of commands on table header row
@@ -487,13 +487,13 @@ test("list of table commands in first row if it's table header (TH)", async () =
 
 test("list of table commands in second row", async () => {
     const { el } = await setupEditor(`
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
             <tr><td class="a">1[]</td></tr>
             <tr><td class="b">2</td></tr>
             <tr><td class="c">3</td></tr>
             </tbody>
-        </table>`);
+        </table></div>`);
     await expectElementCount(".o-we-table-menu", 0);
 
     // check list of commands on second row
@@ -515,13 +515,13 @@ test("list of table commands in second row", async () => {
 
 test("list of table commands in last row", async () => {
     const { el } = await setupEditor(`
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
             <tr><td class="a">1[]</td></tr>
             <tr><td class="b">2</td></tr>
             <tr><td class="c">3</td></tr>
             </tbody>
-        </table>`);
+        </table></div>`);
     await expectElementCount(".o-we-table-menu", 0);
 
     // check list of commands on last row
@@ -543,13 +543,13 @@ test("list of table commands in last row", async () => {
 
 test("list of commands updates when hovering different table rows", async () => {
     const { el } = await setupEditor(`
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
             <tr><td class="a">1[]</td></tr>
             <tr><td class="b">2</td></tr>
             <tr><td class="c">3</td></tr>
             </tbody>
-        </table>`);
+        </table></div>`);
     await expectElementCount(".o-we-table-menu", 0);
 
     // check list of commands on first row
@@ -615,13 +615,13 @@ test("list of commands updates when hovering different table rows", async () => 
 
 test("open/close table menu", async () => {
     const { el } = await setupEditor(`
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
             <tr><td class="a">1[]</td></tr>
             <tr><td class="b">2</td></tr>
             <tr><td class="c">3</td></tr>
             </tbody>
-        </table>`);
+        </table></div>`);
     await expectElementCount(".o-we-table-menu", 0);
 
     // check list of commands on first row
@@ -647,7 +647,7 @@ test("open/close table menu", async () => {
 
 test("clear content is hidden in row menu when row has no content", async () => {
     const { el } = await setupEditor(`
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr>
                     <td class="a"><p>[]<br></p></td>
@@ -658,7 +658,7 @@ test("clear content is hidden in row menu when row has no content", async () => 
                     <td class="d"><p><br></p></td>
                 </tr>
             </tbody>
-        </table>`);
+        </table></div>`);
 
     await hover(el.querySelector("td.a"));
     await expectElementCount("[data-type='row'].o-we-table-menu", 1);
@@ -677,7 +677,7 @@ test("clear content is hidden in row menu when row has no content", async () => 
 
 test("clear content is hidden in column menu when column has no content", async () => {
     const { el } = await setupEditor(`
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr>
                     <td class="a"><p>[]<br></p></td>
@@ -688,7 +688,7 @@ test("clear content is hidden in column menu when column has no content", async 
                     <td class="d"><p><br></p></td>
                 </tr>
             </tbody>
-        </table>`);
+        </table></div>`);
 
     await hover(el.querySelector("td.a"));
     await expectElementCount("[data-type='row'].o-we-table-menu", 1);
@@ -706,12 +706,12 @@ test("clear content is hidden in column menu when column has no content", async 
 test("basic delete column operation", async () => {
     const { el, editor } = await setupEditor(
         unformat(`
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr><td class="a">1[]</td><td class="b">2</td></tr>
                 <tr><td class="c">3</td><td class="d">4</td></tr>
             </tbody>
-        </table>`)
+        </table></div>`)
     );
     await expectElementCount(".o-we-table-menu", 0);
 
@@ -729,38 +729,38 @@ test("basic delete column operation", async () => {
     expect(getContent(el)).toBe(
         unformat(`
         <p data-selection-placeholder=""><br></p>
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr><td class="a">1[]</td></tr>
                 <tr><td class="c">3</td></tr>
             </tbody>
-        </table>
-        <p data-selection-placeholder=""><br></p>`)
+        </table></div>
+        <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
     );
 
     undo(editor);
     expect(getContent(el)).toBe(
         unformat(`
         <p data-selection-placeholder=""><br></p>
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr><td class="a">1[]</td><td class="b">2</td></tr>
                 <tr><td class="c">3</td><td class="d">4</td></tr>
             </tbody>
-        </table>
-        <p data-selection-placeholder=""><br></p>`)
+        </table></div>
+        <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
     );
 });
 
 test("basic clear column content operation", async () => {
     const { el, editor } = await setupEditor(
         unformat(`
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr><td class="a"><p>1[]</p></td><td class="b"><p>2</p></td></tr>
                 <tr><td class="c"><p>3</p></td><td class="d"><h1>4</h1></td></tr>
             </tbody>
-        </table>`)
+        </table></div>`)
     );
     await expectElementCount(".o-we-table-menu", 0);
 
@@ -778,38 +778,38 @@ test("basic clear column content operation", async () => {
     expect(getContent(el)).toBe(
         unformat(`
         <p data-selection-placeholder=""><br></p>
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr><td class="a"><p>1[]</p></td><td class="b"><p><br></p></td></tr>
                 <tr><td class="c"><p>3</p></td><td class="d"><p><br></p></td></tr>
             </tbody>
-        </table>
-        <p data-selection-placeholder=""><br></p>`)
+        </table></div>
+        <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
     );
 
     undo(editor);
     expect(getContent(el)).toBe(
         unformat(`
         <p data-selection-placeholder=""><br></p>
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr><td class="a"><p>1[]</p></td><td class="b"><p>2</p></td></tr>
                 <tr><td class="c"><p>3</p></td><td class="d"><h1>4</h1></td></tr>
             </tbody>
-        </table>
-        <p data-selection-placeholder=""><br></p>`)
+        </table></div>
+        <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
     );
 });
 
 test("basic delete row operation", async () => {
     const { el, editor } = await setupEditor(
         unformat(`
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr><td class="a">1[]</td><td class="b">2</td></tr>
                 <tr><td class="c">3</td><td class="d">4</td></tr>
             </tbody>
-        </table>`)
+        </table></div>`)
     );
     await expectElementCount(".o-we-table-menu", 0);
 
@@ -827,37 +827,37 @@ test("basic delete row operation", async () => {
     expect(getContent(el)).toBe(
         unformat(`
         <p data-selection-placeholder=""><br></p>
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr><td class="a">1[]</td><td class="b">2</td></tr>
             </tbody>
-        </table>
-        <p data-selection-placeholder=""><br></p>`)
+        </table></div>
+        <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
     );
 
     undo(editor);
     expect(getContent(el)).toBe(
         unformat(`
         <p data-selection-placeholder=""><br></p>
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr><td class="a">1[]</td><td class="b">2</td></tr>
                 <tr><td class="c">3</td><td class="d">4</td></tr>
             </tbody>
-        </table>
-        <p data-selection-placeholder=""><br></p>`)
+        </table></div>
+        <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
     );
 });
 
 test("basic clear row content operation", async () => {
     const { el, editor } = await setupEditor(
         unformat(`
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr><td class="a"><p>1[]</p></td><td class="b"><p>2</p></td></tr>
                 <tr><td class="c"><p>3</p></td><td class="d"><h2>4</h2></td></tr>
             </tbody>
-        </table>`)
+        </table></div>`)
     );
     await expectElementCount(".o-we-table-menu", 0);
 
@@ -875,38 +875,38 @@ test("basic clear row content operation", async () => {
     expect(getContent(el)).toBe(
         unformat(`
         <p data-selection-placeholder=""><br></p>
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr><td class="a"><p>1[]</p></td><td class="b"><p>2</p></td></tr>
                 <tr><td class="c"><p><br></p></td><td class="d"><p><br></p></td></tr>
             </tbody>
-        </table>
-        <p data-selection-placeholder=""><br></p>`)
+        </table></div>
+        <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
     );
 
     undo(editor);
     expect(getContent(el)).toBe(
         unformat(`
         <p data-selection-placeholder=""><br></p>
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr><td class="a"><p>1[]</p></td><td class="b"><p>2</p></td></tr>
                 <tr><td class="c"><p>3</p></td><td class="d"><h2>4</h2></td></tr>
             </tbody>
-        </table>
-        <p data-selection-placeholder=""><br></p>`)
+        </table></div>
+        <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
     );
 });
 
 test("insert column left operation", async () => {
     const { el, editor } = await setupEditor(
         unformat(`
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr><td class="a">1[]</td><td class="b">2</td></tr>
                 <tr><td class="c">3</td><td class="d">4</td></tr>
             </tbody>
-        </table>`)
+        </table></div>`)
     );
     await expectElementCount(".o-we-table-menu", 0);
 
@@ -923,7 +923,7 @@ test("insert column left operation", async () => {
     expect(getContent(el)).toBe(
         unformat(`
         <p data-selection-placeholder=""><br></p>
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr>
                     <td class="a">1[]</td>
@@ -936,21 +936,21 @@ test("insert column left operation", async () => {
                     <td class="d">4</td>
                 </tr>
             </tbody>
-        </table>
-        <p data-selection-placeholder=""><br></p>`)
+        </table></div>
+        <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
     );
 
     undo(editor);
     expect(getContent(el)).toBe(
         unformat(`
         <p data-selection-placeholder=""><br></p>
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr><td class="a">1[]</td><td class="b">2</td></tr>
                 <tr><td class="c">3</td><td class="d">4</td></tr>
             </tbody>
-        </table>
-        <p data-selection-placeholder=""><br></p>`)
+        </table></div>
+        <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
     );
 });
 
@@ -958,12 +958,12 @@ test("editable should be focused after delete operation", async () => {
     const { el } = await setupEditor(
         unformat(`
         <p><br></p>
-        <table class="table table-bordered o_table">
+        <div class="o_table_wrapper"><table class="table table-bordered o_table">
             <tbody>
                 <tr><td><p>[]<br></p></td><td class="a"><p><br></p></td></tr>
                 <tr><td><p><br></p></td><td><p><br></p></td></tr>
             </tbody>
-        </table>`)
+        </table></div>`)
     );
 
     // hover on td to show col ui
@@ -979,12 +979,12 @@ test("editable should be focused after delete operation", async () => {
     expect(getContent(el)).toBe(
         unformat(`
         <p><br></p>
-        <table class="table table-bordered o_table">
+        <div class="o_table_wrapper"><table class="table table-bordered o_table">
             <tbody>
                 <tr><td><p o-we-hint-text='Type "/" for commands' class="o-we-hint">[]<br></p></td></tr>
                 <tr><td><p><br></p></td></tr>
             </tbody>
-        </table>
+        </table></div>
         <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
     );
     expect(document.activeElement).toBe(el);
@@ -993,12 +993,12 @@ test("editable should be focused after delete operation", async () => {
 test("insert column right operation", async () => {
     const { el, editor } = await setupEditor(
         unformat(`
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr><td class="a">1[]</td><td class="b">2</td></tr>
                 <tr><td class="c">3</td><td class="d">4</td></tr>
             </tbody>
-        </table>`)
+        </table></div>`)
     );
     await expectElementCount(".o-we-table-menu", 0);
 
@@ -1015,7 +1015,7 @@ test("insert column right operation", async () => {
     expect(getContent(el)).toBe(
         unformat(`
         <p data-selection-placeholder=""><br></p>
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr>
                     <td class="a">1[]</td>
@@ -1028,33 +1028,33 @@ test("insert column right operation", async () => {
                     <td class="d">4</td>
                 </tr>
             </tbody>
-        </table>
-        <p data-selection-placeholder=""><br></p>`)
+        </table></div>
+        <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
     );
 
     undo(editor);
     expect(getContent(el)).toBe(
         unformat(`
         <p data-selection-placeholder=""><br></p>
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr><td class="a">1[]</td><td class="b">2</td></tr>
                 <tr><td class="c">3</td><td class="d">4</td></tr>
             </tbody>
-        </table>
-        <p data-selection-placeholder=""><br></p>`)
+        </table></div>
+        <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
     );
 });
 
 test("insert column at the start of a merge column", async () => {
     const { el } = await setupEditor(
         unformat(`
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr><td class="a">1[]</td><td>2</td><td>3</td></tr>
                 <tr><td colspan="3">4</td></tr>
             </tbody>
-        </table>`)
+        </table></div>`)
     );
     await expectElementCount(".o-we-table-menu", 0);
 
@@ -1071,7 +1071,7 @@ test("insert column at the start of a merge column", async () => {
     expect(getContent(el)).toBe(
         unformat(`
         <p data-selection-placeholder=""><br></p>
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr>
                     <td><p><br></p></td>
@@ -1084,20 +1084,20 @@ test("insert column at the start of a merge column", async () => {
                     <td colspan="3">4</td>
                 </tr>
             </tbody>
-        </table>
-        <p data-selection-placeholder=""><br></p>`)
+        </table></div>
+        <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
     );
 });
 
 test("insert column in the middle of a a merged column", async () => {
     const { el } = await setupEditor(
         unformat(`
-        <table class="table table-bordered o_table">
+        <div class="o_table_wrapper"><table class="table table-bordered o_table">
             <tbody>
                 <tr><td class="a">1[]</td><td>2</td><td>3</td></tr>
                 <tr><td colspan="3">4</td></tr>
             </tbody>
-        </table>`)
+        </table></div>`)
     );
     await expectElementCount(".o-we-table-menu", 0);
 
@@ -1114,7 +1114,7 @@ test("insert column in the middle of a a merged column", async () => {
     expect(getContent(el)).toBe(
         unformat(`
         <p data-selection-placeholder=""><br></p>
-        <table class="table table-bordered o_table">
+        <div class="o_table_wrapper"><table class="table table-bordered o_table">
             <tbody>
                 <tr>
                     <td class="a">1[]</td>
@@ -1126,7 +1126,7 @@ test("insert column in the middle of a a merged column", async () => {
                     <td colspan="4">4</td>
                 </tr>
             </tbody>
-        </table>
+        </table></div>
         <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
     );
 });
@@ -1134,12 +1134,12 @@ test("insert column in the middle of a a merged column", async () => {
 test("insert column at the end of a merged column below", async () => {
     const { el } = await setupEditor(
         unformat(`
-        <table class="table table-bordered o_table">
+        <div class="o_table_wrapper"><table class="table table-bordered o_table">
             <tbody>
                 <tr><td>1</td><td>2</td><td class="a">3[]</td></tr>
                 <tr><td colspan="3">4</td></tr>
             </tbody>
-        </table>`)
+        </table></div>`)
     );
     await expectElementCount(".o-we-table-menu", 0);
 
@@ -1156,7 +1156,7 @@ test("insert column at the end of a merged column below", async () => {
     expect(getContent(el)).toBe(
         unformat(`
         <p data-selection-placeholder=""><br></p>
-        <table class="table table-bordered o_table">
+        <div class="o_table_wrapper"><table class="table table-bordered o_table">
             <tbody>
                 <tr>
                     <td>1</td>
@@ -1169,7 +1169,7 @@ test("insert column at the end of a merged column below", async () => {
                     <td><p><br></p></td>
                 </tr>
             </tbody>
-        </table>
+        </table></div>
         <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
     );
 });
@@ -1177,12 +1177,12 @@ test("insert column at the end of a merged column below", async () => {
 test("insert column right operation when table header exists", async () => {
     const { el } = await setupEditor(
         unformat(`
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr><th class="a o_table_header">1[]</th><th class="b o_table_header">2</th></tr>
                 <tr><td class="c">3</td><td class="d">4</td></tr>
             </tbody>
-        </table>`)
+        </table></div>`)
     );
     await expectElementCount(".o-we-table-menu", 0);
 
@@ -1199,7 +1199,7 @@ test("insert column right operation when table header exists", async () => {
     expect(getContent(el)).toBe(
         unformat(`
         <p data-selection-placeholder=""><br></p>
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr>
                     <th class="a o_table_header">1[]</th>
@@ -1212,20 +1212,20 @@ test("insert column right operation when table header exists", async () => {
                     <td class="d">4</td>
                 </tr>
             </tbody>
-        </table>
-        <p data-selection-placeholder=""><br></p>`)
+        </table></div>
+        <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
     );
 });
 
 test("insert row above operation", async () => {
     const { el, editor } = await setupEditor(
         unformat(`
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr><td class="a">1[]</td><td class="b">2</td></tr>
                 <tr><td class="c">3</td><td class="d">4</td></tr>
             </tbody>
-        </table>`)
+        </table></div>`)
     );
     await expectElementCount(".o-we-table-menu", 0);
 
@@ -1242,7 +1242,7 @@ test("insert row above operation", async () => {
     expect(getContent(el)).toBe(
         unformat(`
         <p data-selection-placeholder=""><br></p>
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr>
                     <td class="a">1[]</td>
@@ -1257,33 +1257,33 @@ test("insert row above operation", async () => {
                     <td class="d">4</td>
                 </tr>
             </tbody>
-        </table>
-        <p data-selection-placeholder=""><br></p>`)
+        </table></div>
+        <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
     );
 
     undo(editor);
     expect(getContent(el)).toBe(
         unformat(`
         <p data-selection-placeholder=""><br></p>
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr><td class="a">1[]</td><td class="b">2</td></tr>
                 <tr><td class="c">3</td><td class="d">4</td></tr>
             </tbody>
-        </table>
-        <p data-selection-placeholder=""><br></p>`)
+        </table></div>
+        <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
     );
 });
 
 test("insert row above operation should not retain height and width styles", async () => {
     const { el } = await setupEditor(
         unformat(`
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr><td class="a">1[]</td><td class="b">2</td></tr>
                 <tr><td class="c">3</td><td class="d">4</td></tr>
             </tbody>
-        </table>`)
+        </table></div>`)
     );
     await expectElementCount(".o-we-table-menu", 0);
 
@@ -1300,7 +1300,7 @@ test("insert row above operation should not retain height and width styles", asy
     expect(getContent(el)).toBe(
         unformat(`
         <p data-selection-placeholder=""><br></p>
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr>
                     <td><p><br></p></td>
@@ -1315,20 +1315,20 @@ test("insert row above operation should not retain height and width styles", asy
                     <td class="d">4</td>
                 </tr>
             </tbody>
-        </table>
-        <p data-selection-placeholder=""><br></p>`)
+        </table></div>
+        <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
     );
 });
 
 test("insert row below operation", async () => {
     const { el, editor } = await setupEditor(
         unformat(`
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr><td class="a">1[]</td><td class="b">2</td></tr>
                 <tr><td class="c">3</td><td class="d">4</td></tr>
             </tbody>
-        </table>`)
+        </table></div>`)
     );
     await expectElementCount(".o-we-table-menu", 0);
 
@@ -1345,7 +1345,7 @@ test("insert row below operation", async () => {
     expect(getContent(el)).toBe(
         unformat(`
         <p data-selection-placeholder=""><br></p>
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr>
                     <td class="a">1[]</td>
@@ -1360,34 +1360,34 @@ test("insert row below operation", async () => {
                     <td class="d">4</td>
                 </tr>
             </tbody>
-        </table>
-        <p data-selection-placeholder=""><br></p>`)
+        </table></div>
+        <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
     );
 
     undo(editor);
     expect(getContent(el)).toBe(
         unformat(`
         <p data-selection-placeholder=""><br></p>
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr><td class="a">1[]</td><td class="b">2</td></tr>
                 <tr><td class="c">3</td><td class="d">4</td></tr>
             </tbody>
-        </table>
-        <p data-selection-placeholder=""><br></p>`)
+        </table></div>
+        <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
     );
 });
 
 test("insert row above the rowspan cell", async () => {
     const { el } = await setupEditor(
         unformat(`
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr><td class="a" rowspan="3">1[]</td><td class="b">2</td></tr>
                 <tr><td class="c">3</td></tr>
                 <tr><td class="d">4</td></tr>
             </tbody>
-        </table>`)
+        </table></div>`)
     );
     await expectElementCount(".o-we-table-menu", 0);
 
@@ -1404,7 +1404,7 @@ test("insert row above the rowspan cell", async () => {
     expect(getContent(el)).toBe(
         unformat(`
         <p data-selection-placeholder=""><br></p>
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr>
                     <td><p><br></p></td>
@@ -1421,21 +1421,21 @@ test("insert row above the rowspan cell", async () => {
                     <td class="d">4</td>
                 </tr>
             </tbody>
-        </table>
-        <p data-selection-placeholder=""><br></p>`)
+        </table></div>
+        <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
     );
 });
 
 test("insert row in the middle of a rowspan cell", async () => {
     const { el } = await setupEditor(
         unformat(`
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr><td class="a">1[]</td><td class="b" rowspan="3">2</td></tr>
                 <tr><td class="c">3</td></tr>
                 <tr><td class="d">4</td></tr>
             </tbody>
-        </table>`)
+        </table></div>`)
     );
     await expectElementCount(".o-we-table-menu", 0);
 
@@ -1452,7 +1452,7 @@ test("insert row in the middle of a rowspan cell", async () => {
     expect(getContent(el)).toBe(
         unformat(`
         <p data-selection-placeholder=""><br></p>
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr>
                     <td class="a">1[]</td>
@@ -1468,21 +1468,21 @@ test("insert row in the middle of a rowspan cell", async () => {
                     <td class="d">4</td>
                 </tr>
             </tbody>
-        </table>
-        <p data-selection-placeholder=""><br></p>`)
+        </table></div>
+        <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
     );
 });
 
 test("insert row at the end of a rowspan cell", async () => {
     const { el } = await setupEditor(
         unformat(`
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr><td class="a">1[]</td><td class="b" rowspan="3">2</td></tr>
                 <tr><td class="c">3</td></tr>
                 <tr><td class="d">4</td></tr>
             </tbody>
-        </table>`)
+        </table></div>`)
     );
     await expectElementCount(".o-we-table-menu", 0);
 
@@ -1499,7 +1499,7 @@ test("insert row at the end of a rowspan cell", async () => {
     expect(getContent(el)).toBe(
         unformat(`
         <p data-selection-placeholder=""><br></p>
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr>
                     <td class="a">1[]</td>
@@ -1516,20 +1516,20 @@ test("insert row at the end of a rowspan cell", async () => {
                     <td><p><br></p></td>
                 </tr>
             </tbody>
-        </table>
-        <p data-selection-placeholder=""><br></p>`)
+        </table></div>
+        <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
     );
 });
 
 test("move column left operation", async () => {
     const { el, editor } = await setupEditor(
         unformat(`
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr><td class="a">1</td><td class="b">2[]</td></tr>
                 <tr><td class="c">3</td><td class="d">4</td></tr>
             </tbody>
-        </table>`)
+        </table></div>`)
     );
     await expectElementCount(".o-we-table-menu", 0);
 
@@ -1546,38 +1546,38 @@ test("move column left operation", async () => {
     expect(getContent(el)).toBe(
         unformat(`
         <p data-selection-placeholder=""><br></p>
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
             <tr><td class="b">2[]</td><td class="a">1</td></tr>
             <tr><td class="d">4</td><td class="c">3</td></tr>
             </tbody>
-        </table>
-        <p data-selection-placeholder=""><br></p>`)
+        </table></div>
+        <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
     );
 
     undo(editor);
     expect(getContent(el)).toBe(
         unformat(`
         <p data-selection-placeholder=""><br></p>
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr><td class="a">1</td><td class="b">2[]</td></tr>
                 <tr><td class="c">3</td><td class="d">4</td></tr>
             </tbody>
-        </table>
-        <p data-selection-placeholder=""><br></p>`)
+        </table></div>
+        <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
     );
 });
 
 test("move column right operation", async () => {
     const { el, editor } = await setupEditor(
         unformat(`
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr><td class="a">1</td><td class="b">2[]</td></tr>
                 <tr><td class="c">3</td><td class="d">4</td></tr>
             </tbody>
-        </table>`)
+        </table></div>`)
     );
     await expectElementCount(".o-we-table-menu", 0);
 
@@ -1594,33 +1594,33 @@ test("move column right operation", async () => {
     expect(getContent(el)).toBe(
         unformat(`
         <p data-selection-placeholder=""><br></p>
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
             <tr><td class="b">2[]</td><td class="a">1</td></tr>
             <tr><td class="d">4</td><td class="c">3</td></tr>
             </tbody>
-        </table>
-        <p data-selection-placeholder=""><br></p>`)
+        </table></div>
+        <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
     );
 
     undo(editor);
     expect(getContent(el)).toBe(
         unformat(`
         <p data-selection-placeholder=""><br></p>
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr><td class="a">1</td><td class="b">2[]</td></tr>
                 <tr><td class="c">3</td><td class="d">4</td></tr>
             </tbody>
-        </table>
-        <p data-selection-placeholder=""><br></p>`)
+        </table></div>
+        <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
     );
 });
 
 test("disables move column left/right when current or adjacent columns are affected by colspan", async () => {
     const { el } = await setupEditor(
         unformat(`
-        <table class="table table-bordered o_table">
+        <div class="o_table_wrapper"><table class="table table-bordered o_table">
             <tbody>
                 <tr>
                     <td><br></td>
@@ -1638,7 +1638,7 @@ test("disables move column left/right when current or adjacent columns are affec
                     <td><br></td>
                 </tr>
             </tbody>
-        </table>`)
+        </table></div>`)
     );
 
     await expectElementCount(".o-we-table-menu", 0);
@@ -1685,12 +1685,12 @@ test("disables move column left/right when current or adjacent columns are affec
 test("move row above operation", async () => {
     const { el, editor } = await setupEditor(
         unformat(`
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr><td class="a">1[]</td><td class="b">2</td></tr>
                 <tr><td class="c">3</td><td class="d">4</td></tr>
             </tbody>
-        </table>`)
+        </table></div>`)
     );
     await expectElementCount(".o-we-table-menu", 0);
 
@@ -1707,38 +1707,38 @@ test("move row above operation", async () => {
     expect(getContent(el)).toBe(
         unformat(`
         <p data-selection-placeholder=""><br></p>
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
             <tr><td class="c">3</td><td class="d">4</td></tr>
             <tr><td class="a">1[]</td><td class="b">2</td></tr>
             </tbody>
-        </table>
-        <p data-selection-placeholder=""><br></p>`)
+        </table></div>
+        <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
     );
 
     undo(editor);
     expect(getContent(el)).toBe(
         unformat(`
         <p data-selection-placeholder=""><br></p>
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr><td class="a">1[]</td><td class="b">2</td></tr>
                 <tr><td class="c">3</td><td class="d">4</td></tr>
             </tbody>
-        </table>
-        <p data-selection-placeholder=""><br></p>`)
+        </table></div>
+        <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
     );
 });
 
 test("move second row to top when first row is header row", async () => {
     const { el } = await setupEditor(
         unformat(`
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr><th class="o_table_header">1[]</th><th class="o_table_header">2</th></tr>
                 <tr><td class="a">3</td><td>4</td></tr>
             </tbody>
-        </table>`)
+        </table></div>`)
     );
     await expectElementCount(".o-we-table-menu", 0);
 
@@ -1755,25 +1755,25 @@ test("move second row to top when first row is header row", async () => {
     expect(getContent(el)).toBe(
         unformat(`
         <p data-selection-placeholder=""><br></p>
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr><th class="a o_table_header">3</th><th class="o_table_header">4</th></tr>
                 <tr><td>1[]</td><td>2</td></tr>
             </tbody>
-        </table>
-        <p data-selection-placeholder=""><br></p>`)
+        </table></div>
+        <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
     );
 });
 
 test("move row below operation", async () => {
     const { el, editor } = await setupEditor(
         unformat(`
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr><td class="a">1[]</td><td class="b">2</td></tr>
                 <tr><td class="c">3</td><td class="d">4</td></tr>
             </tbody>
-        </table>`)
+        </table></div>`)
     );
     await expectElementCount(".o-we-table-menu", 0);
 
@@ -1790,33 +1790,33 @@ test("move row below operation", async () => {
     expect(getContent(el)).toBe(
         unformat(`
         <p data-selection-placeholder=""><br></p>
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
             <tr><td class="c">3</td><td class="d">4</td></tr>
             <tr><td class="a">1[]</td><td class="b">2</td></tr>
             </tbody>
-        </table>
-        <p data-selection-placeholder=""><br></p>`)
+        </table></div>
+        <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
     );
 
     undo(editor);
     expect(getContent(el)).toBe(
         unformat(`
         <p data-selection-placeholder=""><br></p>
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr><td class="a">1[]</td><td class="b">2</td></tr>
                 <tr><td class="c">3</td><td class="d">4</td></tr>
             </tbody>
-        </table>
-        <p data-selection-placeholder=""><br></p>`)
+        </table></div>
+        <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
     );
 });
 
 test("disables row move up or down when affected by rowspan in current or adjacent rows", async () => {
     const { el } = await setupEditor(
         unformat(`
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr><td><br></td><td><br></td></tr>
                 <tr><td class="a"><br></td><td><br></td></tr>
@@ -1825,7 +1825,7 @@ test("disables row move up or down when affected by rowspan in current or adjace
                 <tr><td class="c"><br></td><td><br></td></tr>
                 <tr><td><br></td><td><br></td></tr>
             </tbody>
-        </table>`)
+        </table></div>`)
     );
     // Initially no menu visible
     await expectElementCount(".o-we-table-menu", 0);
@@ -1868,12 +1868,12 @@ test("disables row move up or down when affected by rowspan in current or adjace
 test("move header row below operation", async () => {
     const { el } = await setupEditor(
         unformat(`
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr><th class="a o_table_header">1[]</th><th class="o_table_header">2</th></tr>
                 <tr><td>3</td><td>4</td></tr>
             </tbody>
-        </table>`)
+        </table></div>`)
     );
     await expectElementCount(".o-we-table-menu", 0);
 
@@ -1890,25 +1890,25 @@ test("move header row below operation", async () => {
     expect(getContent(el)).toBe(
         unformat(`
         <p data-selection-placeholder=""><br></p>
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr><th class="o_table_header">3</th><th class="o_table_header">4</th></tr>
                 <tr><td class="a">1[]</td><td>2</td></tr>
             </tbody>
-        </table>
-        <p data-selection-placeholder=""><br></p>`)
+        </table></div>
+        <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
     );
 });
 
 test("should revert a converted header row back to normal after undo", async () => {
     const { el, editor } = await setupEditor(
         unformat(`
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr><td class="a">1[]</td><td>2</td></tr>
                 <tr><td>3</td><td>4</td></tr>
             </tbody>
-        </table>`)
+        </table></div>`)
     );
     await expectElementCount(".o-we-table-menu", 0);
 
@@ -1926,13 +1926,13 @@ test("should revert a converted header row back to normal after undo", async () 
     expect(getContent(el)).toBe(
         unformat(`
             <p data-selection-placeholder=""><br></p>
-            <table>
+            <div class="o_table_wrapper"><table>
                 <tbody>
                     <tr><th class="a o_table_header">1[]</th><th class="o_table_header">2</th></tr>
                     <tr><td>3</td><td>4</td></tr>
                 </tbody>
-            </table>
-            <p data-selection-placeholder=""><br></p>
+            </table></div>
+            <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>
         `)
     );
 
@@ -1940,13 +1940,13 @@ test("should revert a converted header row back to normal after undo", async () 
     expect(getContent(el)).toBe(
         unformat(`
             <p data-selection-placeholder=""><br></p>
-            <table>
+            <div class="o_table_wrapper"><table>
                 <tbody>
                     <tr><td class="a">1[]</td><td>2</td></tr>
                     <tr><td>3</td><td>4</td></tr>
                 </tbody>
-            </table>
-            <p data-selection-placeholder=""><br></p>
+            </table></div>
+            <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>
         `)
     );
 });
@@ -1954,7 +1954,7 @@ test("should revert a converted header row back to normal after undo", async () 
 test("preserve table rows width on move row below operation", async () => {
     const { el } = await setupEditor(
         unformat(`
-        <table>
+        <div class="o_table_wrapper"><table>
             <colgroup>
                 <col style="width: 100px;">
                 <col style="width: 200px;">
@@ -1964,7 +1964,7 @@ test("preserve table rows width on move row below operation", async () => {
                 <tr><td class="c">3</td><td class="d">4</td></tr>
                 <tr><td class="e">5</td><td class="f">6</td></tr>
             </tbody>
-        </table>`)
+        </table></div>`)
     );
     await expectElementCount(".o-we-table-menu", 0);
 
@@ -1981,7 +1981,7 @@ test("preserve table rows width on move row below operation", async () => {
     expect(getContent(el)).toBe(
         unformat(`
         <p data-selection-placeholder=""><br></p>
-        <table>
+        <div class="o_table_wrapper"><table>
             <colgroup>
                 <col style="width: 100px;">
                 <col style="width: 200px;">
@@ -1991,15 +1991,15 @@ test("preserve table rows width on move row below operation", async () => {
                 <tr><td class="a">1[]</td><td class="b">2</td></tr>
                 <tr><td class="e">5</td><td class="f">6</td></tr>
             </tbody>
-        </table>
-        <p data-selection-placeholder=""><br></p>`)
+        </table></div>
+        <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
     );
 });
 
 test("reset table size to remove custom width", async () => {
     const { el, editor } = await setupEditor(
         unformat(`
-        <table style="width: 150px;">
+        <div class="o_table_wrapper"><table style="width: 150px;">
             <colgroup>
             <col style="width: 100px;"><col style="width: 50px;">
             </colgroup>
@@ -2007,7 +2007,7 @@ test("reset table size to remove custom width", async () => {
             <tr><td class="a">1[]</td></tr>
             <tr><td class="b">2</td></tr>
             </tbody>
-        </table>`)
+        </table></div>`)
     );
     await expectElementCount(".o-we-table-menu", 0);
 
@@ -2021,20 +2021,20 @@ test("reset table size to remove custom width", async () => {
     expect(getContent(el)).toBe(
         unformat(`
         <p data-selection-placeholder=""><br></p>
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr><td class="a">1[]</td></tr>
                 <tr><td class="b">2</td></tr>
             </tbody>
-        </table>
-        <p data-selection-placeholder=""><br></p>`)
+        </table></div>
+        <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
     );
 
     undo(editor);
     expect(getContent(el)).toBe(
         unformat(
             `<p data-selection-placeholder=""><br></p>
-            <table style="width: 150px;">
+            <div class="o_table_wrapper"><table style="width: 150px;">
             <colgroup>
             <col style="width: 100px;"><col style="width: 50px;">
             </colgroup>
@@ -2042,8 +2042,8 @@ test("reset table size to remove custom width", async () => {
             <tr><td class="a">1[]</td></tr>
             <tr><td class="b">2</td></tr>
             </tbody>
-        </table>
-        <p data-selection-placeholder=""><br></p>`
+        </table></div>
+        <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`
         )
     );
 });
@@ -2051,12 +2051,12 @@ test("reset table size to remove custom width", async () => {
 test("reset table size to remove custom height", async () => {
     const { el, editor } = await setupEditor(
         unformat(`
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
             <tr style="height: 100px;"><td class="a">1[]</td></tr>
             <tr style="height: 50px;"><td class="b">2</td></tr>
             </tbody>
-        </table>`)
+        </table></div>`)
     );
     await expectElementCount(".o-we-table-menu", 0);
 
@@ -2070,33 +2070,33 @@ test("reset table size to remove custom height", async () => {
     expect(getContent(el)).toBe(
         unformat(`
         <p data-selection-placeholder=""><br></p>
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr style=""><td class="a">1[]</td></tr>
                 <tr style=""><td class="b">2</td></tr>
             </tbody>
-        </table>
-        <p data-selection-placeholder=""><br></p>`)
+        </table></div>
+        <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
     );
 
     undo(editor);
     expect(getContent(el)).toBe(
         unformat(`
         <p data-selection-placeholder=""><br></p>
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
             <tr style="height: 100px;"><td class="a">1[]</td></tr>
             <tr style="height: 50px;"><td class="b">2</td></tr>
             </tbody>
-        </table>
-        <p data-selection-placeholder=""><br></p>`)
+        </table></div>
+        <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
     );
 });
 
 test("reset row size to remove custom height", async () => {
     const { el } = await setupEditor(
         unformat(`
-        <table class="table table-bordered o_table">
+        <div class="o_table_wrapper"><table class="table table-bordered o_table">
             <tbody>
                 <tr style="height: 38px;">
                     <td class="a">1</td>
@@ -2114,7 +2114,7 @@ test("reset row size to remove custom height", async () => {
                     <td class="i">9</td>
                 </tr>
             </tbody>
-        </table>`)
+        </table></div>`)
     );
     await expectElementCount(".o-we-table-menu", 0);
 
@@ -2128,7 +2128,7 @@ test("reset row size to remove custom height", async () => {
     expect(getContent(el)).toBe(
         unformat(
             `<p data-selection-placeholder=""><br></p>
-            <table class="table table-bordered o_table">
+            <div class="o_table_wrapper"><table class="table table-bordered o_table">
                 <tbody>
                     <tr style="">
                         <td class="a">1</td>
@@ -2146,7 +2146,7 @@ test("reset row size to remove custom height", async () => {
                         <td class="i">9</td>
                     </tr>
                 </tbody>
-            </table>
+            </table></div>
             <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`
         )
     );
@@ -2155,7 +2155,7 @@ test("reset row size to remove custom height", async () => {
 test("should redistribute excess width from current column to smaller columns", async () => {
     const { el } = await setupEditor(
         unformat(`
-            <table class="table table-bordered o_table" style="width: 500px">
+            <div class="o_table_wrapper"><table class="table table-bordered o_table" style="width: 500px">
                 <colgroup>
                     <col style="width: 100px;">
                     <col style="width: 120px;">
@@ -2179,7 +2179,7 @@ test("should redistribute excess width from current column to smaller columns", 
                         <td class="j">10</td>
                     </tr>
                 </tbody>
-            </table>`)
+            </table></div>`)
     );
     await expectElementCount(".o-we-table-menu", 0);
 
@@ -2193,7 +2193,7 @@ test("should redistribute excess width from current column to smaller columns", 
     expect(getContent(el)).toBe(
         unformat(
             `<p data-selection-placeholder=""><br></p>
-            <table class="table table-bordered o_table" style="width: 500px">
+            <div class="o_table_wrapper"><table class="table table-bordered o_table" style="width: 500px">
                 <tbody>
                     <tr>
                         <td class="a">1</td>
@@ -2210,7 +2210,7 @@ test("should redistribute excess width from current column to smaller columns", 
                         <td class="j">10</td>
                     </tr>
                 </tbody>
-            </table>
+            </table></div>
             <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`
         )
     );
@@ -2219,7 +2219,7 @@ test("should redistribute excess width from current column to smaller columns", 
 test("should redistribute excess width from the current colspan column when resetting column sizes", async () => {
     const { el } = await setupEditor(
         unformat(`
-            <table class="table table-bordered o_table" style="width: 1182px">
+            <div class="o_table_wrapper"><table class="table table-bordered o_table" style="width: 1182px">
                 <colgroup>
                     <col style="width: 236.188px;">
                     <col style="width: 236.188px;">
@@ -2254,7 +2254,7 @@ test("should redistribute excess width from the current colspan column when rese
                         <td>17</td>
                     </tr>
                 </tbody>
-            </table>`)
+            </table></div>`)
     );
     await expectElementCount(".o-we-table-menu", 0);
 
@@ -2268,7 +2268,7 @@ test("should redistribute excess width from the current colspan column when rese
     expect(getContent(el)).toBe(
         unformat(`
             <p data-selection-placeholder="" class="o-horizontal-caret"><br></p>
-            <table class="table table-bordered o_table" style="width: 1182px">
+            <div class="o_table_wrapper"><table class="table table-bordered o_table" style="width: 1182px">
                 <tbody>
                     <tr>
                         <td>1</td>
@@ -2296,7 +2296,7 @@ test("should redistribute excess width from the current colspan column when rese
                         <td>17</td>
                     </tr>
                 </tbody>
-            </table>
+            </table></div>
             <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
     );
 });
@@ -2304,7 +2304,7 @@ test("should redistribute excess width from the current colspan column when rese
 test("should redistribute excess width from larger columns to current column", async () => {
     const { el } = await setupEditor(
         unformat(`
-            <table class="table table-bordered o_table" style="width: 700px">
+            <div class="o_table_wrapper"><table class="table table-bordered o_table" style="width: 700px">
                 <colgroup>
                     <col style="width: 120px;">
                     <col style="width: 80px;">
@@ -2334,7 +2334,7 @@ test("should redistribute excess width from larger columns to current column", a
                         <td class="n">14</td>
                     </tr>
                 </tbody>
-            </table>`)
+            </table></div>`)
     );
     await expectElementCount(".o-we-table-menu", 0);
 
@@ -2348,7 +2348,7 @@ test("should redistribute excess width from larger columns to current column", a
     expect(getContent(el)).toBe(
         unformat(
             `<p data-selection-placeholder=""><br></p>
-            <table class="table table-bordered o_table" style="width: 700px">
+            <div class="o_table_wrapper"><table class="table table-bordered o_table" style="width: 700px">
                 <colgroup>
                     <col style="width: 120px;">
                     <col style="width: 80px;">
@@ -2378,7 +2378,7 @@ test("should redistribute excess width from larger columns to current column", a
                         <td class="n">14</td>
                     </tr>
                 </tbody>
-            </table>
+            </table></div>
             <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`
         )
     );
@@ -2387,14 +2387,14 @@ test("should redistribute excess width from larger columns to current column", a
 test("applies alternating row colors when 'Insert Alternate Colors' option is clicked", async () => {
     const { el } = await setupEditor(
         unformat(`
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr><td class="a">1[]</td></tr>
                 <tr><td>2</td></tr>
                 <tr><td>3</td></tr>
                 <tr><td>4</td></tr>
             </tbody>
-        </table>`)
+        </table></div>`)
     );
     await expectElementCount(".o-we-table-menu", 0);
     const cells = queryAll("tr > :first-child");
@@ -2415,15 +2415,15 @@ test("applies alternating row colors when 'Insert Alternate Colors' option is cl
     expect(getContent(el)).toBe(
         unformat(`
             <p data-selection-placeholder=""><br></p>
-            <table class="o_alternating_rows">
+            <div class="o_table_wrapper"><table class="o_alternating_rows">
                 <tbody>
                     <tr><td class="a">1[]</td></tr>
                     <tr><td>2</td></tr>
                     <tr><td>3</td></tr>
                     <tr><td>4</td></tr>
                 </tbody>
-            </table>
-            <p data-selection-placeholder=""><br></p>`)
+            </table></div>
+            <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
     );
     const firstRowCellColor = getComputedStyle(cells[0]).backgroundColor;
     expect(getComputedStyle(cells[2]).backgroundColor).toBe(firstRowCellColor);
@@ -2434,14 +2434,14 @@ test("applies alternating row colors when 'Insert Alternate Colors' option is cl
 test("removes alternating row colors when 'Clear Alternate Colors' option is clicked", async () => {
     const { el } = await setupEditor(
         unformat(`
-        <table class="o_alternating_rows">
+        <div class="o_table_wrapper"><table class="o_alternating_rows">
             <tbody>
                 <tr><td class="a">1[]</td></tr>
                 <tr><td>2</td></tr>
                 <tr><td>3</td></tr>
                 <tr><td>4</td></tr>
             </tbody>
-        </table>`)
+        </table></div>`)
     );
     await expectElementCount(".o-we-table-menu", 0);
 
@@ -2464,15 +2464,15 @@ test("removes alternating row colors when 'Clear Alternate Colors' option is cli
     expect(getContent(el)).toBe(
         unformat(`
             <p data-selection-placeholder=""><br></p>
-            <table class="">
+            <div class="o_table_wrapper"><table class="">
                 <tbody>
                     <tr><td class="a">1[]</td></tr>
                     <tr><td>2</td></tr>
                     <tr><td>3</td></tr>
                     <tr><td>4</td></tr>
                 </tbody>
-            </table>
-            <p data-selection-placeholder=""><br></p>`)
+            </table></div>
+            <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
     );
     expect(
         cells.every((cell) => getComputedStyle(cell).backgroundColor === secondRowCellColor)
@@ -2482,7 +2482,7 @@ test("removes alternating row colors when 'Clear Alternate Colors' option is cli
 test("should redistribute excess width from the current column to a colspan column when resetting column sizes", async () => {
     const { el } = await setupEditor(
         unformat(`
-            <table class="table table-bordered o_table" style="width: 500px">
+            <div class="o_table_wrapper"><table class="table table-bordered o_table" style="width: 500px">
                 <colgroup>
                     <col style="width: 100px;">
                     <col style="width: 50px;">
@@ -2504,7 +2504,7 @@ test("should redistribute excess width from the current column to a colspan colu
                         <td colspan="2">8</td>
                     </tr>
                 </tbody>
-            </table>`)
+            </table></div>`)
     );
     await expectElementCount(".o-we-table-menu", 0);
 
@@ -2518,7 +2518,7 @@ test("should redistribute excess width from the current column to a colspan colu
     expect(getContent(el)).toBe(
         unformat(`
             <p data-selection-placeholder="" class="o-horizontal-caret"><br></p>
-            <table class="table table-bordered o_table" style="width: 500px">
+            <div class="o_table_wrapper"><table class="table table-bordered o_table" style="width: 500px">
                 <tbody>
                     <tr>
                         <td colspan="2">1</td>
@@ -2533,7 +2533,7 @@ test("should redistribute excess width from the current column to a colspan colu
                         <td colspan="2">8</td>
                     </tr>
                 </tbody>
-            </table>
+            </table></div>
             <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
     );
 });
@@ -2542,7 +2542,7 @@ describe("Disable table merge options", () => {
     test("disables both merge options when selection spans multiple rows and columns", async () => {
         const { el } = await setupEditor(
             unformat(`
-                <table class="table table-bordered o_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table">
                     <tbody>
                         <tr>
                             <td class="a"><p>[<br></p></td>
@@ -2555,12 +2555,12 @@ describe("Disable table merge options", () => {
                             <td><p><br></p></td>
                         </tr>
                     </tbody>
-                </table>`)
+                </table></div>`)
         );
         expect(getContent(el)).toBe(
             unformat(`
                 <p data-selection-placeholder=""><br></p>
-                <table class="table table-bordered o_table o_selected_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table o_selected_table">
                     <tbody>
                         <tr>
                             <td class="a o_selected_td"><p>[<br></p></td>
@@ -2573,7 +2573,7 @@ describe("Disable table merge options", () => {
                             <td><p><br></p></td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
                 <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
         );
         await expectElementCount(".o-we-table-menu", 0);
@@ -2606,7 +2606,7 @@ describe("Disable table merge options", () => {
     test("disables merge row option when selection includes cells with rowspan", async () => {
         const { el } = await setupEditor(
             unformat(`
-                <table class="table table-bordered o_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table">
                     <tbody>
                         <tr>
                             <td><p><br></p></td>
@@ -2618,12 +2618,12 @@ describe("Disable table merge options", () => {
                             <td><p><br></p>]</td>
                         </tr>
                     </tbody>
-                </table>`)
+                </table></div>`)
         );
         expect(getContent(el)).toBe(
             unformat(`
                 <p data-selection-placeholder=""><br></p>
-                <table class="table table-bordered o_table o_selected_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table o_selected_table">
                     <tbody>
                         <tr>
                             <td><p><br></p></td>
@@ -2635,7 +2635,7 @@ describe("Disable table merge options", () => {
                             <td class="o_selected_td"><p><br></p>]</td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
                 <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
         );
 
@@ -2654,7 +2654,7 @@ describe("Disable table merge options", () => {
     test("disables merge column option when selection includes cells with colspan", async () => {
         const { el } = await setupEditor(
             unformat(`
-                <table class="table table-bordered o_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table">
                     <tbody>
                         <tr>
                             <td class="a"><p>[<br></p></td>
@@ -2665,12 +2665,12 @@ describe("Disable table merge options", () => {
                             <td colspan="3"><p>]<br></p></td>
                         </tr>
                     </tbody>
-                </table>`)
+                </table></div>`)
         );
         expect(getContent(el)).toBe(
             unformat(`
                 <p data-selection-placeholder=""><br></p>
-                <table class="table table-bordered o_table o_selected_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table o_selected_table">
                     <tbody>
                         <tr>
                             <td class="a o_selected_td"><p>[<br></p></td>
@@ -2681,7 +2681,7 @@ describe("Disable table merge options", () => {
                             <td colspan="3" class="o_selected_td"><p>]<br></p></td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
                 <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
         );
 
@@ -2703,7 +2703,7 @@ describe("Merge column cells", () => {
     test("merges selected cells in a single row into one with colspan", async () => {
         const { el } = await setupEditor(
             unformat(`
-                <table class="table table-bordered o_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table">
                     <tbody>
                         <tr>
                             <td><p><br></p></td>
@@ -2716,12 +2716,12 @@ describe("Merge column cells", () => {
                             <td><p><br></p>]</td>
                         </tr>
                     </tbody>
-                </table>`)
+                </table></div>`)
         );
         expect(getContent(el)).toBe(
             unformat(`
                 <p data-selection-placeholder=""><br></p>
-                <table class="table table-bordered o_table o_selected_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table o_selected_table">
                     <tbody>
                         <tr>
                             <td><p><br></p></td>
@@ -2734,7 +2734,7 @@ describe("Merge column cells", () => {
                             <td class="o_selected_td"><p><br></p>]</td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
                 <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
         );
 
@@ -2752,7 +2752,7 @@ describe("Merge column cells", () => {
         expect(getContent(el)).toBe(
             unformat(`
                 <p data-selection-placeholder=""><br></p>
-                <table class="table table-bordered o_table o_selected_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table o_selected_table">
                     <tbody>
                         <tr>
                             <td><p><br></p></td>
@@ -2763,7 +2763,7 @@ describe("Merge column cells", () => {
                             <td class="a o_selected_td" colspan="3"><p o-we-hint-text='Type "/" for commands' class="o-we-hint">[]<br></p></td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
                 <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
         );
     });
@@ -2771,7 +2771,7 @@ describe("Merge column cells", () => {
     test("merges selected filled cells by combining their content into one cell with colspan", async () => {
         const { el } = await setupEditor(
             unformat(`
-                <table class="table table-bordered o_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table">
                     <tbody>
                         <tr>
                             <td><p><br></p></td>
@@ -2784,12 +2784,12 @@ describe("Merge column cells", () => {
                             <td><p>c</p>]</td>
                         </tr>
                     </tbody>
-                </table>`)
+                </table></div>`)
         );
         expect(getContent(el)).toBe(
             unformat(`
                 <p data-selection-placeholder=""><br></p>
-                <table class="table table-bordered o_table o_selected_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table o_selected_table">
                     <tbody>
                         <tr>
                             <td><p><br></p></td>
@@ -2802,7 +2802,7 @@ describe("Merge column cells", () => {
                             <td class="o_selected_td"><p>c</p>]</td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
                 <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
         );
         await expectElementCount(".o-we-table-menu", 0);
@@ -2819,7 +2819,7 @@ describe("Merge column cells", () => {
         expect(getContent(el)).toBe(
             unformat(`
                 <p data-selection-placeholder=""><br></p>
-                <table class="table table-bordered o_table o_selected_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table o_selected_table">
                     <tbody>
                         <tr>
                             <td><p><br></p></td>
@@ -2830,7 +2830,7 @@ describe("Merge column cells", () => {
                             <td class="a o_selected_td" colspan="3"><p>[a</p><p>b</p><p>c]</p></td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
                 <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
         );
     });
@@ -2840,7 +2840,7 @@ describe("Merge row cells", () => {
     test("merges selected cells vertically in a column by applying rowspan", async () => {
         const { el } = await setupEditor(
             unformat(`
-                <table class="table table-bordered o_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table">
                     <tbody>
                         <tr>
                             <td class="a"><p>[<br></p></td>
@@ -2853,12 +2853,12 @@ describe("Merge row cells", () => {
                             <td><p><br></p></td>
                         </tr>
                     </tbody>
-                </table>`)
+                </table></div>`)
         );
         expect(getContent(el)).toBe(
             unformat(`
                 <p data-selection-placeholder=""><br></p>
-                <table class="table table-bordered o_table o_selected_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table o_selected_table">
                     <tbody>
                         <tr>
                             <td class="a o_selected_td"><p>[<br></p></td>
@@ -2871,7 +2871,7 @@ describe("Merge row cells", () => {
                             <td><p><br></p></td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
                 <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
         );
 
@@ -2889,7 +2889,7 @@ describe("Merge row cells", () => {
         expect(getContent(el)).toBe(
             unformat(`
                 <p data-selection-placeholder=""><br></p>
-                <table class="table table-bordered o_table o_selected_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table o_selected_table">
                     <tbody>
                         <tr>
                             <td class="a o_selected_td" rowspan="2"><p o-we-hint-text='Type "/" for commands' class="o-we-hint">[]<br></p></td>
@@ -2901,7 +2901,7 @@ describe("Merge row cells", () => {
                             <td><p><br></p></td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
                 <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
         );
     });
@@ -2909,7 +2909,7 @@ describe("Merge row cells", () => {
     test("merges filled cells vertically by combining their content into one cell with rowspan", async () => {
         const { el } = await setupEditor(
             unformat(`
-                <table class="table table-bordered o_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table">
                     <tbody>
                         <tr>
                             <td class="a"><p>[a</p></td>
@@ -2922,12 +2922,12 @@ describe("Merge row cells", () => {
                             <td><p><br></p></td>
                         </tr>
                     </tbody>
-                </table>`)
+                </table></div>`)
         );
         expect(getContent(el)).toBe(
             unformat(`
                 <p data-selection-placeholder=""><br></p>
-                <table class="table table-bordered o_table o_selected_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table o_selected_table">
                     <tbody>
                         <tr>
                             <td class="a o_selected_td"><p>[a</p></td>
@@ -2940,7 +2940,7 @@ describe("Merge row cells", () => {
                             <td><p><br></p></td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
                 <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
         );
         await expectElementCount(".o-we-table-menu", 0);
@@ -2957,7 +2957,7 @@ describe("Merge row cells", () => {
         expect(getContent(el)).toBe(
             unformat(`
                 <p data-selection-placeholder=""><br></p>
-                <table class="table table-bordered o_table o_selected_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table o_selected_table">
                     <tbody>
                         <tr>
                             <td class="a o_selected_td" rowspan="2"><p>[a</p><p>b]</p></td>
@@ -2969,7 +2969,7 @@ describe("Merge row cells", () => {
                             <td><p><br></p></td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
                 <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
         );
     });
@@ -2978,43 +2978,43 @@ describe("Merge row cells", () => {
         const { el } = await setupEditor(
             unformat(`
                 <p><br></p>
-                <table class="table table-bordered o_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table">
                     <tbody>
                         <tr>
                             <td class="a"><p>[<br></p></td>
                             <td><p><br>]</p></td>
                         </tr>
                     </tbody>
-                </table>
-                <table class="table table-bordered o_table">
+                </table></div>
+                <div class="o_table_wrapper"><table class="table table-bordered o_table">
                     <tbody>
                         <tr>
                             <td class="b"><p><br></p></td>
                             <td><p><br></p></td>
                         </tr>
                     </tbody>
-                </table>`)
+                </table></div>`)
         );
         expect(getContent(el)).toBe(
             unformat(`
                 <p><br></p>
-                <table class="table table-bordered o_table o_selected_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table o_selected_table">
                     <tbody>
                         <tr>
                             <td class="a o_selected_td"><p>[<br></p></td>
                             <td class="o_selected_td"><p><br>]</p></td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
                 <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>
-                <table class="table table-bordered o_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table">
                     <tbody>
                         <tr>
                             <td class="b"><p><br></p></td>
                             <td><p><br></p></td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
                 <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
         );
         await expectElementCount(".o-we-table-menu", 0);
@@ -3032,7 +3032,7 @@ describe("unmerge cells option", () => {
     test("unmerge merged row cells via column menu", async () => {
         const { el } = await setupEditor(
             unformat(`
-                <table class="table table-bordered o_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table">
                     <tbody>
                         <tr>
                             <td class="a" rowspan="2"><p>[]<br></p></td>
@@ -3044,12 +3044,12 @@ describe("unmerge cells option", () => {
                             <td><p><br></p></td>
                         </tr>
                     </tbody>
-                </table>`)
+                </table></div>`)
         );
         expect(getContent(el)).toBe(
             unformat(`
                 <p data-selection-placeholder=""><br></p>
-                <table class="table table-bordered o_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table">
                     <tbody>
                         <tr>
                             <td class="a" rowspan="2"><p o-we-hint-text='Type "/" for commands' class="o-we-hint">[]<br></p></td>
@@ -3061,7 +3061,7 @@ describe("unmerge cells option", () => {
                             <td><p><br></p></td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
                 <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
         );
         await expectElementCount(".o-we-table-menu", 0);
@@ -3079,7 +3079,7 @@ describe("unmerge cells option", () => {
         expect(getContent(el)).toBe(
             unformat(`
                 <p data-selection-placeholder=""><br></p>
-                <table class="table table-bordered o_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table">
                     <tbody>
                         <tr>
                             <td class="a"><p o-we-hint-text='Type "/" for commands' class="o-we-hint">[]<br></p></td>
@@ -3092,14 +3092,14 @@ describe("unmerge cells option", () => {
                             <td><p><br></p></td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
                 <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
         );
     });
     test("unmerge merged column cells via row menu", async () => {
         const { el } = await setupEditor(
             unformat(`
-                <table class="table table-bordered o_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table">
                     <tbody>
                         <tr>
                             <td><p><br></p></td>
@@ -3110,12 +3110,12 @@ describe("unmerge cells option", () => {
                             <td class="a" colspan="3"><p>[]<br></p></td>
                         </tr>
                     </tbody>
-                </table>`)
+                </table></div>`)
         );
         expect(getContent(el)).toBe(
             unformat(`
                 <p data-selection-placeholder=""><br></p>
-                <table class="table table-bordered o_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table">
                     <tbody>
                         <tr>
                             <td><p><br></p></td>
@@ -3126,7 +3126,7 @@ describe("unmerge cells option", () => {
                             <td class="a" colspan="3"><p o-we-hint-text='Type "/" for commands' class="o-we-hint">[]<br></p></td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
                 <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
         );
         await expectElementCount(".o-we-table-menu", 0);
@@ -3145,7 +3145,7 @@ describe("unmerge cells option", () => {
         expect(getContent(el)).toBe(
             unformat(`
                 <p data-selection-placeholder=""><br></p>
-                <table class="table table-bordered o_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table">
                     <tbody>
                         <tr>
                             <td><p><br></p></td>
@@ -3158,14 +3158,14 @@ describe("unmerge cells option", () => {
                             <td><p><br></p></td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
                 <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
         );
     });
     test("unmerge merged filled row cells via column menu", async () => {
         const { el } = await setupEditor(
             unformat(`
-                <table class="table table-bordered o_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table">
                     <tbody>
                         <tr>
                             <td class="a" rowspan="2"><p>a[]</p><p>b</p></td>
@@ -3177,12 +3177,12 @@ describe("unmerge cells option", () => {
                             <td><p><br></p></td>
                         </tr>
                     </tbody>
-                </table>`)
+                </table></div>`)
         );
         expect(getContent(el)).toBe(
             unformat(`
                 <p data-selection-placeholder=""><br></p>
-                <table class="table table-bordered o_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table">
                     <tbody>
                         <tr>
                             <td class="a" rowspan="2"><p>a[]</p><p>b</p></td>
@@ -3194,7 +3194,7 @@ describe("unmerge cells option", () => {
                             <td><p><br></p></td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
                 <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
         );
         await expectElementCount(".o-we-table-menu", 0);
@@ -3212,7 +3212,7 @@ describe("unmerge cells option", () => {
         expect(getContent(el)).toBe(
             unformat(`
                 <p data-selection-placeholder=""><br></p>
-                <table class="table table-bordered o_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table">
                     <tbody>
                         <tr>
                             <td class="a"><p>a[]</p><p>b</p></td>
@@ -3225,14 +3225,14 @@ describe("unmerge cells option", () => {
                             <td><p><br></p></td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
                 <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
         );
     });
     test("unmerge merged filled column cells via row menu", async () => {
         const { el } = await setupEditor(
             unformat(`
-                <table class="table table-bordered o_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table">
                     <tbody>
                         <tr>
                             <td><p><br></p></td>
@@ -3243,12 +3243,12 @@ describe("unmerge cells option", () => {
                             <td class="a" colspan="3"><p>a[]</p><p>b</p></td>
                         </tr>
                     </tbody>
-                </table>`)
+                </table></div>`)
         );
         expect(getContent(el)).toBe(
             unformat(`
                 <p data-selection-placeholder=""><br></p>
-                <table class="table table-bordered o_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table">
                     <tbody>
                         <tr>
                             <td><p><br></p></td>
@@ -3259,7 +3259,7 @@ describe("unmerge cells option", () => {
                             <td class="a" colspan="3"><p>a[]</p><p>b</p></td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
                 <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
         );
         await expectElementCount(".o-we-table-menu", 0);
@@ -3278,7 +3278,7 @@ describe("unmerge cells option", () => {
         expect(getContent(el)).toBe(
             unformat(`
                 <p data-selection-placeholder=""><br></p>
-                <table class="table table-bordered o_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table">
                     <tbody>
                         <tr>
                             <td><p><br></p></td>
@@ -3291,7 +3291,7 @@ describe("unmerge cells option", () => {
                             <td><p><br></p></td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
                 <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
         );
     });

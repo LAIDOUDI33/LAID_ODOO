@@ -31,12 +31,12 @@ class Test extends models.Model {
             id: 2,
             name: "Test",
             txt: unformat(`
-                <table><tbody>
+                <div class="o_table_wrapper"><table><tbody>
                     <tr>
                         <td><p>cell 0</p></td>
                         <td><p>cell 1</p></td>
                     </tr>
-                </tbody></table>
+                </tbody></table></div>
                 ${"<p>text</p>".repeat(50)}`),
         },
         { id: 3, name: "Test", txt: "<p>text</p>" },

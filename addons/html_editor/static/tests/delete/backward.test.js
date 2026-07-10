@@ -155,7 +155,8 @@ describe("Selection collapsed", () => {
                     '<p data-selection-placeholder=""><br></p>' +
                     '<div><p>uv</p><br><span class="style" data-oe-zws-empty-inline="">[]\u200B</span></div>' +
                     '<p data-selection-placeholder=""><br></p>',
-                contentAfter: '<div><p>uv</p><br><span class="style" data-oe-zws-empty-inline="">[]\u200B</span></div>',
+                contentAfter:
+                    '<div><p>uv</p><br><span class="style" data-oe-zws-empty-inline="">[]\u200B</span></div>',
             });
         });
 
@@ -246,7 +247,8 @@ describe("Selection collapsed", () => {
                 },
                 contentAfterEdit:
                     '<p>ab<span class="style" data-oe-zws-empty-inline="">[]\u200B</span>ef</p>',
-                contentAfter: '<p>ab<span class="style" data-oe-zws-empty-inline="">[]\u200B</span>ef</p>',
+                contentAfter:
+                    '<p>ab<span class="style" data-oe-zws-empty-inline="">[]\u200B</span>ef</p>',
             });
         });
 
@@ -1222,7 +1224,7 @@ describe("Selection collapsed", () => {
         test("should delete a h1 inside a td immediately after insertion", async () => {
             await testEditor({
                 contentBefore:
-                    "<table><tbody><tr><td>[]<br></td><td><br></td><td><br></td></tr><tr><td><br></td><td><br></td><td><br></td></tr><tr><td><br></td><td><br></td><td><br></td></tr></tbody></table>",
+                    '<div class="o_table_wrapper"><table><tbody><tr><td>[]<br></td><td><br></td><td><br></td></tr><tr><td><br></td><td><br></td><td><br></td></tr><tr><td><br></td><td><br></td><td><br></td></tr></tbody></table></div>',
                 stepFunction: async (editor) => {
                     await insertText(editor, "/");
                     await insertText(editor, "Heading");
@@ -1231,7 +1233,7 @@ describe("Selection collapsed", () => {
                     deleteBackward(editor);
                 },
                 contentAfter:
-                    "<table><tbody><tr><td><p>[]<br></p></td><td><br></td><td><br></td></tr><tr><td><br></td><td><br></td><td><br></td></tr><tr><td><br></td><td><br></td><td><br></td></tr></tbody></table>",
+                    '<div class="o_table_wrapper"><table><tbody><tr><td><p>[]<br></p></td><td><br></td><td><br></td></tr><tr><td><br></td><td><br></td><td><br></td></tr><tr><td><br></td><td><br></td><td><br></td></tr></tbody></table></div>',
             });
         });
 
@@ -1542,9 +1544,10 @@ describe("Selection collapsed", () => {
         test("should delete an empty paragraph in a table cell", async () =>
             await testEditor({
                 contentBefore:
-                    "<table><tbody><tr><td><p>a<br></p><p>[]<br></p></td></tr></tbody></table>",
+                    '<div class="o_table_wrapper"><table><tbody><tr><td><p>a<br></p><p>[]<br></p></td></tr></tbody></table></div>',
                 stepFunction: deleteBackward,
-                contentAfter: "<table><tbody><tr><td><p>a[]</p></td></tr></tbody></table>",
+                contentAfter:
+                    '<div class="o_table_wrapper"><table><tbody><tr><td><p>a[]</p></td></tr></tbody></table></div>',
             }));
 
         test("should fill empty block with a <br> (1)", async () => {
@@ -1674,19 +1677,19 @@ describe("Selection collapsed", () => {
             await testEditor({
                 contentBefore: unformat(
                     `<p>ab</p>
-                        <table><tbody>
+                        <div class="o_table_wrapper"><table><tbody>
                             <tr><td>cd</td><td>ef</td></tr>
                             <tr><td>gh</td><td>ij</td></tr>
-                        </tbody></table>
+                        </tbody></table></div>
                         <p>[]kl</p>`
                 ),
                 stepFunction: deleteBackward,
                 contentAfter: unformat(
                     `<p>ab</p>
-                        <table><tbody>
+                        <div class="o_table_wrapper"><table><tbody>
                             <tr><td>cd</td><td>ef</td></tr>
                             <tr><td>gh</td><td>ij</td></tr>
-                        </tbody></table>
+                        </tbody></table></div>
                         <p>[]kl</p>`
                 ),
             });
@@ -1696,19 +1699,19 @@ describe("Selection collapsed", () => {
             await testEditor({
                 contentBefore: unformat(
                     `<p>ab</p>
-                        <table><tbody>
+                        <div class="o_table_wrapper"><table><tbody>
                             <tr><td>[]cd</td><td>ef</td></tr>
                             <tr><td>gh</td><td>ij</td></tr>
-                        </tbody></table>
+                        </tbody></table></div>
                         <p>kl</p>`
                 ),
                 stepFunction: deleteBackward,
                 contentAfter: unformat(
                     `<p>ab</p>
-                        <table><tbody>
+                        <div class="o_table_wrapper"><table><tbody>
                             <tr><td>[]cd</td><td>ef</td></tr>
                             <tr><td>gh</td><td>ij</td></tr>
-                        </tbody></table>
+                        </tbody></table></div>
                         <p>kl</p>`
                 ),
             });
@@ -1736,7 +1739,8 @@ describe("Selection not collapsed", () => {
                 '<p data-selection-placeholder=""><br></p>' +
                 '<div><p>ab <span class="style" data-oe-zws-empty-inline="">[]\u200B</span> d</p></div>' +
                 '<p data-selection-placeholder=""><br></p>',
-            contentAfter: '<div><p>ab <span class="style" data-oe-zws-empty-inline="">[]\u200B</span> d</p></div>',
+            contentAfter:
+                '<div><p>ab <span class="style" data-oe-zws-empty-inline="">[]\u200B</span> d</p></div>',
         });
     });
 
@@ -1949,10 +1953,10 @@ describe("Selection not collapsed", () => {
         await testEditor({
             contentBefore: unformat(
                 `<p>a[b</p>
-                    <table><tbody>
+                    <div class="o_table_wrapper"><table><tbody>
                         <tr><td>cd</td><td>ef</td></tr>
                         <tr><td>gh</td><td>ij</td></tr>
-                    </tbody></table>
+                    </tbody></table></div>
                     <p>k]l</p>`
             ),
             stepFunction: deleteBackward,
@@ -1964,7 +1968,7 @@ describe("Selection not collapsed", () => {
         await testEditor({
             contentBefore: unformat(
                 `<p>a[b</p>
-                    <table><tbody>
+                    <div class="o_table_wrapper"><table><tbody>
                         <tr>
                             <td>
                                 <table><tbody>
@@ -1974,7 +1978,7 @@ describe("Selection not collapsed", () => {
                             </td>
                         <td>ef</td></tr>
                         <tr><td>gh</td><td>ij</td></tr>
-                    </tbody></table>
+                    </tbody></table></div>
                     <p>k]l</p>`
             ),
             stepFunction: deleteBackward,
@@ -1985,39 +1989,39 @@ describe("Selection not collapsed", () => {
     test("should delete nothing when in an empty table cell", async () => {
         await testEditor({
             contentBefore:
-                "<table><tbody><tr><td>abc</td><td>[]<br></td><td>abc</td></tr></tbody></table>",
+                '<div class="o_table_wrapper"><table><tbody><tr><td>abc</td><td>[]<br></td><td>abc</td></tr></tbody></table></div>',
             stepFunction: deleteBackward,
             contentAfter:
-                "<table><tbody><tr><td>abc</td><td>[]<br></td><td>abc</td></tr></tbody></table>",
+                '<div class="o_table_wrapper"><table><tbody><tr><td>abc</td><td>[]<br></td><td>abc</td></tr></tbody></table></div>',
         });
     });
 
     test("should delete nothing when in an empty paragraph in a table cell", async () => {
         await testEditor({
             contentBefore:
-                "<table><tbody><tr><td>abc</td><td><p>[]<br></p></td></tr></tbody></table>",
+                '<div class="o_table_wrapper"><table><tbody><tr><td>abc</td><td><p>[]<br></p></td></tr></tbody></table></div>',
             stepFunction: deleteBackward,
             contentAfter:
-                "<table><tbody><tr><td>abc</td><td><p>[]<br></p></td></tr></tbody></table>",
+                '<div class="o_table_wrapper"><table><tbody><tr><td>abc</td><td><p>[]<br></p></td></tr></tbody></table></div>',
         });
     });
 
     test("should only remove the text content of cells in a partly selected table", async () => {
         await testEditor({
             contentBefore: unformat(
-                `<table><tbody>
+                `<div class="o_table_wrapper"><table><tbody>
                         <tr><td>cd</td><td class="o_selected_td">e[f</td><td>gh</td></tr>
                         <tr><td>ij</td><td class="o_selected_td">k]l</td><td>mn</td></tr>
                         <tr><td>op</td><td>qr</td><td>st</td></tr>
-                    </tbody></table>`
+                    </tbody></table></div>`
             ),
             stepFunction: deleteBackward,
             contentAfter: unformat(
-                `<table><tbody>
+                `<div class="o_table_wrapper"><table><tbody>
                         <tr><td>cd</td><td><p>[]<br></p></td><td>gh</td></tr>
                         <tr><td>ij</td><td><p><br></p></td><td>mn</td></tr>
                         <tr><td>op</td><td>qr</td><td>st</td></tr>
-                    </tbody></table>`
+                    </tbody></table></div>`
             ),
         });
     });
@@ -2025,16 +2029,16 @@ describe("Selection not collapsed", () => {
     test("should remove a row in a partly selected table", async () => {
         await testEditor({
             contentBefore: unformat(
-                `<table><tbody>
+                `<div class="o_table_wrapper"><table><tbody>
                     <tr><td class="o_selected_td">[ab</td><td class="o_selected_td">cd]</td></tr>
                     <tr><td>ef</td><td>gh</td></tr>
-                </tbody></table>`
+                </tbody></table></div>`
             ),
             stepFunction: deleteBackward,
             contentAfter: unformat(
-                `<table><tbody>
+                `<div class="o_table_wrapper"><table><tbody>
                     <tr><td>ef[]</td><td>gh</td></tr>
-                </tbody></table>`
+                </tbody></table></div>`
             ),
         });
     });
@@ -2042,17 +2046,17 @@ describe("Selection not collapsed", () => {
     test("should remove a column in a partly selected table", async () => {
         await testEditor({
             contentBefore: unformat(
-                `<table><tbody>
+                `<div class="o_table_wrapper"><table><tbody>
                     <tr><td class="o_selected_td">[ab</td> <td>cd</td></tr>
                     <tr><td class="o_selected_td">ef]</td> <td>gh</td></tr>
-                </tbody></table>`
+                </tbody></table></div>`
             ),
             stepFunction: deleteBackward,
             contentAfter: unformat(
-                `<table><tbody>
+                `<div class="o_table_wrapper"><table><tbody>
                     <tr><td>cd[]</td></tr>
                     <tr><td>gh</td></tr>
-                </tbody></table>`
+                </tbody></table></div>`
             ),
         });
     });
@@ -2061,10 +2065,10 @@ describe("Selection not collapsed", () => {
         await testEditor({
             contentBefore: unformat(
                 `<p>a[b</p>
-                    <table><tbody>
+                    <div class="o_table_wrapper"><table><tbody>
                         <tr><td>cd</td><td>ef</td></tr>
                         <tr><td>g]h</td><td>ij</td></tr>
-                    </tbody></table>
+                    </tbody></table></div>
                     <p>kl</p>`
             ),
             stepFunction: deleteBackward,
@@ -2079,10 +2083,10 @@ describe("Selection not collapsed", () => {
         await testEditor({
             contentBefore: unformat(
                 `<p>ab</p>
-                    <table><tbody>
+                    <div class="o_table_wrapper"><table><tbody>
                         <tr><td>cd</td><td>ef</td></tr>
                         <tr><td>gh</td><td>i[j</td></tr>
-                    </tbody></table>
+                    </tbody></table></div>
                     <p>k]l</p>`
             ),
             stepFunction: deleteBackward,
@@ -2097,10 +2101,10 @@ describe("Selection not collapsed", () => {
         await testEditor({
             contentBefore: unformat(
                 `<p>a[b</p>
-                    <table><tbody>
+                    <div class="o_table_wrapper"><table><tbody>
                         <tr><td>cd</td><td>ef</td></tr>
                         <tr><td>gh</td><td>ij</td></tr>
-                    </tbody></table>
+                    </tbody></table></div>
                     <p>k]l</p>`
             ),
             stepFunction: deleteBackward,
@@ -2111,18 +2115,18 @@ describe("Selection not collapsed", () => {
     test("should remove a selection of several tables", async () => {
         await testEditor({
             contentBefore: unformat(
-                `<table><tbody>
-                        <tr><td>cd</td><td>e[f</td></tr>
-                        <tr><td>gh</td><td>ij</td></tr>
-                    </tbody></table>
-                    <table><tbody>
-                        <tr><td>cd</td><td>ef</td></tr>
-                        <tr><td>gh</td><td>ij</td></tr>
-                    </tbody></table>
-                    <table><tbody>
-                        <tr><td>cd</td><td>e]f</td></tr>
-                        <tr><td>gh</td><td>ij</td></tr>
-                    </tbody></table>`
+                `<div class="o_table_wrapper"><table><tbody>
+                    <tr><td>cd</td><td>e[f</td></tr>
+                    <tr><td>gh</td><td>ij</td></tr>
+                    </tbody></table></div>
+                <div class="o_table_wrapper"><table><tbody>
+                    <tr><td>cd</td><td>ef</td></tr>
+                    <tr><td>gh</td><td>ij</td></tr>
+                    </tbody></table></div>
+                <div class="o_table_wrapper"><table><tbody>
+                    <tr><td>cd</td><td>e]f</td></tr>
+                    <tr><td>gh</td><td>ij</td></tr>
+                </tbody></table></div>`
             ),
             stepFunction: deleteBackward,
             contentAfter: `<p>[]<br></p>`,
@@ -2133,20 +2137,20 @@ describe("Selection not collapsed", () => {
         await testEditor({
             contentBefore: unformat(
                 `<p>0[1</p>
-                    <table><tbody>
+                    <div class="o_table_wrapper"><table><tbody>
                         <tr><td>cd</td><td>ef</td></tr>
                         <tr><td>gh</td><td>ij</td></tr>
-                    </tbody></table>
+                    </tbody></table></div>
                     <p>23</p>
-                    <table><tbody>
+                    <div class="o_table_wrapper"><table><tbody>
                         <tr><td>cd</td><td>ef</td></tr>
                         <tr><td>gh</td><td>ij</td></tr>
-                    </tbody></table>
+                    </tbody></table></div>
                     <p>45</p>
-                    <table><tbody>
+                    <div class="o_table_wrapper"><table><tbody>
                         <tr><td>cd</td><td>ef</td></tr>
                         <tr><td>gh</td><td>ij</td></tr>
-                    </tbody></table>
+                    </tbody></table></div>
                     <p>67]</p>`
             ),
             stepFunction: deleteBackward,
@@ -2158,20 +2162,20 @@ describe("Selection not collapsed", () => {
         await testEditor({
             contentBefore: unformat(
                 `<p>[01</p>
-                    <table><tbody>
+                    <div class="o_table_wrapper"><table><tbody>
                         <tr><td>cd</td><td>ef</td></tr>
                         <tr><td>gh</td><td>ij</td></tr>
-                    </tbody></table>
+                    </tbody></table></div>
                     <p>23</p>
-                    <table><tbody>
+                    <div class="o_table_wrapper"><table><tbody>
                         <tr><td>cd</td><td>ef</td></tr>
                         <tr><td>gh</td><td>ij</td></tr>
-                    </tbody></table>
+                    </tbody></table></div>
                     <p>45</p>
-                    <table><tbody>
+                    <div class="o_table_wrapper"><table><tbody>
                         <tr><td>cd</td><td>ef</td></tr>
                         <tr><td>gh</td><td>ij</td></tr>
-                    </tbody></table>
+                    </tbody></table></div>
                     <p>67]</p>`
             ),
             stepFunction: deleteBackward,
@@ -2182,18 +2186,18 @@ describe("Selection not collapsed", () => {
     test("should do nothing with selection before table and start of middle cell", async () => {
         await testEditor({
             contentBefore: unformat(
-                `[<table><tbody>
+                `[<div class="o_table_wrapper"><table><tbody>
                     <tr><td><br></td><td><br></td></tr>
                     <tr><td><br></td><td>]<br></td></tr>
-                </tbody></table>`
+                </tbody></table></div>`
             ),
             contentBeforeEdit: unformat(
                 `[<p data-selection-placeholder=""><br></p>
-                <table class="o_selected_table"><tbody>
+                <div class="o_table_wrapper"><table class="o_selected_table"><tbody>
                     <tr><td class="o_selected_td"><br></td><td class="o_selected_td"><br></td></tr>
                     <tr><td class="o_selected_td"><br></td><td class="o_selected_td">]<br></td></tr>
-                </tbody></table>
-                <p data-selection-placeholder=""><br></p>`
+                </tbody></table></div>
+                <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`
             ),
             stepFunction: deleteBackward,
             contentAfter: unformat("<p>[]<br></p>"),
@@ -2204,7 +2208,8 @@ describe("Selection not collapsed", () => {
         await testEditor({
             contentBefore: '<p>ab<b class="oe_unremovable">[cd]</b>ef</p>',
             stepFunction: deleteBackward,
-            contentAfter: '<p>ab<b class="oe_unremovable" data-oe-zws-empty-inline="">[]\u200B</b>ef</p>',
+            contentAfter:
+                '<p>ab<b class="oe_unremovable" data-oe-zws-empty-inline="">[]\u200B</b>ef</p>',
         });
     });
 
@@ -2268,9 +2273,9 @@ describe("Selection not collapsed", () => {
 
     test("should not delete the block and appends a paragraph if the element has textContent (3)", async () => {
         await testEditor({
-            contentBefore: `<table><tbody><tr><td><h1>[]ab</h1></td><td>cd</td><td>ef</td></tr><tr><td><br></td><td><br></td><td><br></td></tr></tbody></table>`,
+            contentBefore: `<div class="o_table_wrapper"><table><tbody><tr><td><h1>[]ab</h1></td><td>cd</td><td>ef</td></tr><tr><td><br></td><td><br></td><td><br></td></tr></tbody></table></div>`,
             stepFunction: deleteBackward,
-            contentAfter: `<table><tbody><tr><td><h1>[]ab</h1></td><td>cd</td><td>ef</td></tr><tr><td><br></td><td><br></td><td><br></td></tr></tbody></table>`,
+            contentAfter: `<div class="o_table_wrapper"><table><tbody><tr><td><h1>[]ab</h1></td><td>cd</td><td>ef</td></tr><tr><td><br></td><td><br></td><td><br></td></tr></tbody></table></div>`,
         });
     });
 
@@ -2279,7 +2284,8 @@ describe("Selection not collapsed", () => {
         await testEditor({
             contentBefore: '<p>a<span class="style-class">[bcde]</span>f</p>',
             stepFunction: deleteBackward,
-            contentAfter: '<p>a<span class="style-class" data-oe-zws-empty-inline="">[]\u200B</span>f</p>',
+            contentAfter:
+                '<p>a<span class="style-class" data-oe-zws-empty-inline="">[]\u200B</span>f</p>',
         });
     });
 

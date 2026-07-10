@@ -401,7 +401,7 @@ describe("table", () => {
     test("should remove all contents of an anchor td and insert a line break", async () => {
         await testEditor({
             contentBefore: `
-                <table>
+                <div class="o_table_wrapper"><table>
                     <tbody>
                         <tr>
                             <td><p>[abc</p><p>def</p></td>
@@ -414,10 +414,10 @@ describe("table", () => {
                             <td><p><br></p></td>
                         </tr>
                     </tbody>
-                </table>`,
+                </table></div>`,
             stepFunction: insertLineBreak,
             contentAfter: `
-                <table>
+                <div class="o_table_wrapper"><table>
                     <tbody>
                         <tr>
                             <td><p><br>[]<br></p></td>
@@ -430,7 +430,7 @@ describe("table", () => {
                             <td><p><br></p></td>
                         </tr>
                     </tbody>
-                </table>`,
+                </table></div>`,
             testInBothDirections: false,
         });
     });
@@ -438,7 +438,7 @@ describe("table", () => {
     test("should remove all contents of an anchor td and insert a line break (reversed selection)", async () => {
         await testEditor({
             contentBefore: `
-                <table>
+                <div class="o_table_wrapper"><table>
                     <tbody>
                         <tr>
                             <td><p>]abc</p><p>def</p></td>
@@ -451,10 +451,10 @@ describe("table", () => {
                             <td><p><br></p></td>
                         </tr>
                     </tbody>
-                </table>`,
+                </table></div>`,
             stepFunction: insertLineBreak,
             contentAfter: `
-                <table>
+                <div class="o_table_wrapper"><table>
                     <tbody>
                         <tr>
                             <td><p>abc</p><p>def</p></td>
@@ -467,7 +467,7 @@ describe("table", () => {
                             <td><p><br></p></td>
                         </tr>
                     </tbody>
-                </table>`,
+                </table></div>`,
             testInBothDirections: false,
         });
     });

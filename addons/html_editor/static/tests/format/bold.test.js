@@ -215,7 +215,7 @@ test("should not format non-editable text (bold)", async () => {
 test("should make a few characters bold inside table (bold)", async () => {
     await testEditor({
         contentBefore: unformat(`
-            <table class="table table-bordered o_table o_selected_table">
+            <div class="o_table_wrapper"><table class="table table-bordered o_table o_selected_table">
                 <tbody>
                     <tr>
                         <td class="o_selected_td"><p>[abc</p></td>
@@ -233,11 +233,11 @@ test("should make a few characters bold inside table (bold)", async () => {
                         <td><p><br></p></td>
                     </tr>
                 </tbody>
-            </table>`),
+            </table></div>`),
         stepFunction: bold,
         contentAfterEdit: unformat(`
             <p data-selection-placeholder=""><br></p>
-            <table class="table table-bordered o_table o_selected_table">
+            <div class="o_table_wrapper"><table class="table table-bordered o_table o_selected_table">
                 <tbody>
                     <tr>
                         <td class="o_selected_td"><p><strong>[abc</strong></p></td>
@@ -254,8 +254,8 @@ test("should make a few characters bold inside table (bold)", async () => {
                         <td><p><br></p></td>
                         <td><p><br></p></td>
                     </tr>
-            </tbody>
-            </table>
+                </tbody>
+            </table></div>
             <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`),
     });
 });
@@ -550,13 +550,13 @@ test("Should properly apply bold format if closest element is bold but not close
 test("should not apply bold to selection placeholder nodes", async () => {
     const { el } = await setupEditor(
         unformat(`
-            <table>
+            <div class="o_table_wrapper"><table>
                 <tbody>
                     <tr>
                         <td>1[]</td>
                     </tr>
                 </tbody>
-            </table>
+            </table></div>
         `)
     );
     await press(["ctrl", "a"]);
@@ -564,28 +564,28 @@ test("should not apply bold to selection placeholder nodes", async () => {
     expect(getContent(el)).toBe(
         unformat(`
             <p data-selection-placeholder="">[<br></p>
-            <table class="o_selected_table">
+            <div class="o_table_wrapper"><table class="o_selected_table">
                 <tbody>
                     <tr>
                         <td class="o_selected_td">1</td>
                     </tr>
                 </tbody>
-            </table>
-            <p data-selection-placeholder="">]<br></p>
+            </table></div>
+            <p data-selection-placeholder="" style="margin: -9px 0px 8px;">]<br></p>
         `)
     );
     await press(["ctrl", "b"]);
     expect(getContent(el)).toBe(
         unformat(`
             <p data-selection-placeholder="">[<br></p>
-            <table class="o_selected_table">
+            <div class="o_table_wrapper"><table class="o_selected_table">
                 <tbody>
                     <tr>
                         <td class="o_selected_td"><strong>1</strong></td>
                     </tr>
                 </tbody>
-            </table>
-            <p data-selection-placeholder="">]<br></p>
+            </table></div>
+            <p data-selection-placeholder="" style="margin: -9px 0px 8px;">]<br></p>
         `)
     );
 });

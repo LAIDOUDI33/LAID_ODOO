@@ -815,7 +815,7 @@ describe("getTargetedNodes", () => {
         describe("in tables", () => {
             test("should return the targeted nodes across two adjacent table cells", async () => {
                 const { el: editable, editor } = await setupEditor(
-                    "<table><tbody><tr><td>abcd[e</td><td>f]g</td></tr></tbody></table>"
+                    '<div class="o_table_wrapper"><table><tbody><tr><td>abcd[e</td><td>f]g</td></tr></tbody></table></div>'
                 );
                 // Table selection happens on selectionchange
                 // event which is fired in the next tick.
@@ -832,7 +832,7 @@ describe("getTargetedNodes", () => {
 
             test("should return the targeted nodes across two adjacent table cells, with line breaks", async () => {
                 const { el: editable, editor } = await setupEditor(
-                    "<table><tbody><tr><td>abcd<br>[<br>e</td><td>f]g</td></tr></tbody></table>"
+                    '<div class="o_table_wrapper"><table><tbody><tr><td>abcd<br>[<br>e</td><td>f]g</td></tr></tbody></table></div>'
                 );
                 // Table selection happens on selectionchange
                 // event which is fired in the next tick.

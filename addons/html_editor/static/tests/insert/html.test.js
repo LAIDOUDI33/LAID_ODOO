@@ -186,9 +186,11 @@ describe("collapsed selection", () => {
         // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/p
         // https://developer.mozilla.org/en-US/docs/Web/HTML/Content_categories#phrasing_content
         const { editor } = await setupEditor(`<p>cont[]ent</p>`, {});
-        insertHTML("<table><tbody><tr><td/></tr></tbody></table>")(editor);
+        insertHTML(
+            '<div class="o_table_wrapper"><table><tbody><tr><td/></tr></tbody></table></div>'
+        )(editor);
         expect(getContent(editor.editable)).toBe(
-            `<p>cont</p><table><tbody><tr><td><br></td></tr></tbody></table><p>[]ent</p>`
+            `<p>cont</p><div class="o_table_wrapper"><table><tbody><tr><td><br></td></tr></tbody></table></div><p>[]ent</p>`
         );
     });
 
@@ -199,10 +201,12 @@ describe("collapsed selection", () => {
         // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/p
         // https://developer.mozilla.org/en-US/docs/Web/HTML/Content_categories#phrasing_content
         const { editor } = await setupEditor(`<p class="oe_unbreakable">cont[]ent</p>`, {});
-        insertHTML("<table><tbody><tr><td/></tr></tbody></table>")(editor);
+        insertHTML(
+            '<div class="o_table_wrapper"><table><tbody><tr><td/></tr></tbody></table></div>'
+        )(editor);
         await tick();
         expect(getContent(editor.editable)).toBe(
-            `<p data-selection-placeholder=""><br></p><p class="oe_unbreakable">content</p><p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p><table><tbody><tr><td><br></td></tr></tbody></table><p o-we-hint-text='Type "/" for commands' class="o-we-hint">[]<br></p>`
+            `<p data-selection-placeholder=""><br></p><p class="oe_unbreakable">content</p><p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p><div class="o_table_wrapper"><table><tbody><tr><td><br></td></tr></tbody></table></div><p o-we-hint-text='Type "/" for commands' class="o-we-hint">[]<br></p>`
         );
     });
 
@@ -216,10 +220,12 @@ describe("collapsed selection", () => {
             {}
         );
 
-        insertHTML("<table><tbody><tr><td/></tr></tbody></table>")(editor);
+        insertHTML(
+            '<div class="o_table_wrapper"><table><tbody><tr><td/></tr></tbody></table></div>'
+        )(editor);
         expect(getContent(editor.editable)).toBe(
             '<p data-selection-placeholder=""><br></p>' +
-                `<div><p class="oe_unbreakable" contenteditable="true"><b class="oe_unbreakable">content</b><table><tbody><tr><td>[]<br></td></tr></tbody></table></p></div>` +
+                `<div><p class="oe_unbreakable" contenteditable="true"><b class="oe_unbreakable">content</b><div class="o_table_wrapper"><table><tbody><tr><td>[]<br></td></tr></tbody></table></div></p></div>` +
                 '<p data-selection-placeholder=""><br></p>'
         );
     });
@@ -441,10 +447,10 @@ describe("not collapsed selection", () => {
         await testEditor({
             contentBefore: unformat(
                 `<p>a[b</p>
-                    <table><tbody>
+                    <div class="o_table_wrapper"><table><tbody>
                         <tr><td>cd</td><td>ef</td></tr>
                         <tr><td>gh</td><td>ij</td></tr>
-                    </tbody></table>
+                    </tbody></table></div>
                     <p>k]l</p>`
             ),
             stepFunction: (editor) => {
@@ -458,22 +464,22 @@ describe("not collapsed selection", () => {
     test("should only remove the text content of cells in a partly selected table", async () => {
         await testEditor({
             contentBefore: unformat(
-                `<table><tbody>
+                `<div class="o_table_wrapper"><table><tbody>
                         <tr><td>cd</td><td class="o_selected_td">e[f</td><td>gh</td></tr>
                         <tr><td>ij</td><td class="o_selected_td">k]l</td><td>mn</td></tr>
                         <tr><td>op</td><td>qr</td><td>st</td></tr>
-                    </tbody></table>`
+                </tbody></table></div>`
             ),
             stepFunction: (editor) => {
                 editor.shared.dom.insert(span("TEST"));
                 editor.shared.history.addStep();
             },
             contentAfter: unformat(
-                `<table><tbody>
+                `<div class="o_table_wrapper"><table><tbody>
                         <tr><td>cd</td><td><p><span class="a">TEST</span>[]</p></td><td>gh</td></tr>
                         <tr><td>ij</td><td><p><br></p></td><td>mn</td></tr>
                         <tr><td>op</td><td>qr</td><td>st</td></tr>
-                    </tbody></table>`
+                </tbody></table></div>`
             ),
         });
     });
@@ -482,10 +488,10 @@ describe("not collapsed selection", () => {
         await testEditor({
             contentBefore: unformat(
                 `<p>a[b</p>
-                    <table><tbody>
+                    <div class="o_table_wrapper"><table><tbody>
                         <tr><td>cd</td><td>ef</td></tr>
                         <tr><td>g]h</td><td>ij</td></tr>
-                    </tbody></table>
+                    </tbody></table></div>
                     <p>kl</p>`
             ),
             stepFunction: (editor) => {
@@ -503,10 +509,10 @@ describe("not collapsed selection", () => {
         await testEditor({
             contentBefore: unformat(
                 `<p>ab</p>
-                    <table><tbody>
+                    <div class="o_table_wrapper"><table><tbody>
                         <tr><td>cd</td><td>ef</td></tr>
                         <tr><td>gh</td><td>i[j</td></tr>
-                    </tbody></table>
+                    </tbody></table></div>
                     <p>k]l</p>`
             ),
             stepFunction: (editor) => {
@@ -524,10 +530,10 @@ describe("not collapsed selection", () => {
         await testEditor({
             contentBefore: unformat(
                 `<p>a[b</p>
-                    <table><tbody>
+                    <div class="o_table_wrapper"><table><tbody>
                         <tr><td>cd</td><td>ef</td></tr>
                         <tr><td>gh</td><td>ij</td></tr>
-                    </tbody></table>
+                    </tbody></table></div>
                     <p>k]l</p>`
             ),
             stepFunction: (editor) => {
@@ -541,18 +547,18 @@ describe("not collapsed selection", () => {
     test("should remove a selection of several tables", async () => {
         await testEditor({
             contentBefore: unformat(
-                `<table><tbody>
+                `<div class="o_table_wrapper"><table><tbody>
                         <tr><td>cd</td><td>e[f</td></tr>
                         <tr><td>gh</td><td>ij</td></tr>
-                    </tbody></table>
-                    <table><tbody>
+                </tbody></table></div>
+                <div class="o_table_wrapper"><table><tbody>
                         <tr><td>cd</td><td>ef</td></tr>
                         <tr><td>gh</td><td>ij</td></tr>
-                    </tbody></table>
-                    <table><tbody>
+                </tbody></table></div>
+                <div class="o_table_wrapper"><table><tbody>
                         <tr><td>cd</td><td>e]f</td></tr>
                         <tr><td>gh</td><td>ij</td></tr>
-                    </tbody></table>`
+                </tbody></table></div>`
             ),
             stepFunction: async (editor) => {
                 // Table selection happens on selectionchange event which is
@@ -569,20 +575,20 @@ describe("not collapsed selection", () => {
         await testEditor({
             contentBefore: unformat(
                 `<p>0[1</p>
-                    <table><tbody>
+                    <div class="o_table_wrapper"><table><tbody>
                         <tr><td>cd</td><td>ef</td></tr>
                         <tr><td>gh</td><td>ij</td></tr>
-                    </tbody></table>
+                    </tbody></table></div>
                     <p>23</p>
-                    <table><tbody>
+                    <div class="o_table_wrapper"><table><tbody>
                         <tr><td>cd</td><td>ef</td></tr>
                         <tr><td>gh</td><td>ij</td></tr>
-                    </tbody></table>
+                    </tbody></table></div>
                     <p>45</p>
-                    <table><tbody>
+                    <div class="o_table_wrapper"><table><tbody>
                         <tr><td>cd</td><td>ef</td></tr>
                         <tr><td>gh</td><td>ij</td></tr>
-                    </tbody></table>
+                    </tbody></table></div>
                     <p>67]</p>`
             ),
             stepFunction: (editor) => {
@@ -597,20 +603,20 @@ describe("not collapsed selection", () => {
         await testEditor({
             contentBefore: unformat(
                 `<p>[01</p>
-                    <table><tbody>
+                    <div class="o_table_wrapper"><table><tbody>
                         <tr><td>cd</td><td>ef</td></tr>
                         <tr><td>gh</td><td>ij</td></tr>
-                    </tbody></table>
+                    </tbody></table></div>
                     <p>23</p>
-                    <table><tbody>
+                    <div class="o_table_wrapper"><table><tbody>
                         <tr><td>cd</td><td>ef</td></tr>
                         <tr><td>gh</td><td>ij</td></tr>
-                    </tbody></table>
+                    </tbody></table></div>
                     <p>45</p>
-                    <table><tbody>
+                    <div class="o_table_wrapper"><table><tbody>
                         <tr><td>cd</td><td>ef</td></tr>
                         <tr><td>gh</td><td>ij</td></tr>
-                    </tbody></table>
+                    </tbody></table></div>
                     <p>67]</p>`
             ),
             stepFunction: (editor) => {

@@ -8,7 +8,7 @@ describe("move selection with tab/shift+tab", () => {
         test("should move cursor to the next th", async () => {
             await testEditor({
                 contentBefore: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr>
                                 <th>[]ab</th>
@@ -16,11 +16,11 @@ describe("move selection with tab/shift+tab", () => {
                                 <th>ef</th>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
                 stepFunction: async () => press("Tab"),
                 contentAfter: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr>
                                 <th>ab</th>
@@ -28,14 +28,14 @@ describe("move selection with tab/shift+tab", () => {
                                 <th>ef</th>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
             });
         });
         test("should move cursor to the next td", async () => {
             await testEditor({
                 contentBefore: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr>
                                 <th>[]ab</th>
@@ -43,11 +43,11 @@ describe("move selection with tab/shift+tab", () => {
                                 <td>ef</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
                 stepFunction: async () => press("Tab"),
                 contentAfter: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr>
                                 <th>ab</th>
@@ -55,14 +55,14 @@ describe("move selection with tab/shift+tab", () => {
                                 <td>ef</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
             });
         });
         test("should move cursor to the end of next cell", async () => {
             await testEditor({
                 contentBefore: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr>
                                 <td>[]ab</td>
@@ -70,11 +70,11 @@ describe("move selection with tab/shift+tab", () => {
                                 <td>ef</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
                 stepFunction: async () => press("Tab"),
                 contentAfter: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr>
                                 <td>ab</td>
@@ -82,7 +82,7 @@ describe("move selection with tab/shift+tab", () => {
                                 <td>ef</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
             });
         });
@@ -91,7 +91,7 @@ describe("move selection with tab/shift+tab", () => {
             await testEditor({
                 props: { iframe: true },
                 contentBefore: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr>
                                 <td>[]ab</td>
@@ -99,11 +99,11 @@ describe("move selection with tab/shift+tab", () => {
                                 <td>ef</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
                 stepFunction: async () => press("Tab"),
                 contentAfter: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr>
                                 <td>ab</td>
@@ -111,7 +111,7 @@ describe("move selection with tab/shift+tab", () => {
                                 <td>ef</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
             });
         });
@@ -120,7 +120,7 @@ describe("move selection with tab/shift+tab", () => {
             await testEditor({
                 props: { iframe: true, mobile: true },
                 contentBefore: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr>
                                 <td>[]ab</td>
@@ -128,11 +128,11 @@ describe("move selection with tab/shift+tab", () => {
                                 <td>ef</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
                 stepFunction: async () => press("Tab"),
                 contentAfter: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr>
                                 <td>ab</td>
@@ -140,14 +140,14 @@ describe("move selection with tab/shift+tab", () => {
                                 <td>ef</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
             });
         });
         test("should move cursor to the end of next cell in the row below", async () => {
             await testEditor({
                 contentBefore: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr>
                                 <td>ab</td>
@@ -158,11 +158,11 @@ describe("move selection with tab/shift+tab", () => {
                                 <td>gh</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
                 stepFunction: async () => press("Tab"),
                 contentAfter: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr>
                                 <td>ab</td>
@@ -173,7 +173,7 @@ describe("move selection with tab/shift+tab", () => {
                                 <td>gh</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
             });
         });
@@ -183,14 +183,14 @@ describe("move selection with tab/shift+tab", () => {
                     <ul>
                         <li>
                             <br>
-                            <table>
+                            <div class="o_table_wrapper"><table>
                                 <tbody>
                                     <tr>
                                         <td><p>[]ab</p></td>
                                         <td><p>cd</p></td>
                                     </tr>
                                 </tbody>
-                            </table>
+                            </table></div>
                             <br>
                         </li>
                     </ul>
@@ -200,14 +200,14 @@ describe("move selection with tab/shift+tab", () => {
                     <ul>
                         <li>
                             <br>
-                            <table>
+                            <div class="o_table_wrapper"><table>
                                 <tbody>
                                     <tr>
                                         <td><p>ab</p></td>
                                         <td><p>cd[]</p></td>
                                     </tr>
                                 </tbody>
-                            </table>
+                            </table></div>
                             <br>
                         </li>
                     </ul>
@@ -219,7 +219,7 @@ describe("move selection with tab/shift+tab", () => {
         test("should move cursor to the end of previous cell", async () => {
             await testEditor({
                 contentBefore: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr>
                                 <td>ab</td>
@@ -227,11 +227,11 @@ describe("move selection with tab/shift+tab", () => {
                                 <td>ef</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
                 stepFunction: async () => press(["Shift", "Tab"]),
                 contentAfter: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr>
                                 <td>ab[]</td>
@@ -239,14 +239,14 @@ describe("move selection with tab/shift+tab", () => {
                                 <td>ef</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
             });
         });
         test("should move cursor to the end of previous cell in the row above", async () => {
             await testEditor({
                 contentBefore: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr>
                                 <td>ab</td>
@@ -257,11 +257,11 @@ describe("move selection with tab/shift+tab", () => {
                                 <td>gh</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
                 stepFunction: async () => press(["Shift", "Tab"]),
                 contentAfter: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr>
                                 <td>ab</td>
@@ -272,14 +272,14 @@ describe("move selection with tab/shift+tab", () => {
                                 <td>gh</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
             });
         });
         test("should not cursor if there is no previous cell", async () => {
             await testEditor({
                 contentBefore: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr>
                                 <td>[ab]</td>
@@ -287,11 +287,11 @@ describe("move selection with tab/shift+tab", () => {
                                 <td>ef</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
                 stepFunction: async () => press(["Shift", "Tab"]),
                 contentAfter: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr>
                                 <td>[ab]</td>
@@ -299,7 +299,7 @@ describe("move selection with tab/shift+tab", () => {
                                 <td>ef</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
             });
         });
@@ -309,14 +309,14 @@ describe("move selection with tab/shift+tab", () => {
                     <ul>
                         <li>
                             <br>
-                            <table>
+                            <div class="o_table_wrapper"><table>
                                 <tbody>
                                     <tr>
                                         <td><p>ab</p></td>
                                         <td><p>[]cd</p></td>
                                     </tr>
                                 </tbody>
-                            </table>
+                            </table></div>
                             <br>
                         </li>
                     </ul>
@@ -326,14 +326,14 @@ describe("move selection with tab/shift+tab", () => {
                     <ul>
                         <li>
                             <br>
-                            <table>
+                            <div class="o_table_wrapper"><table>
                                 <tbody>
                                     <tr>
                                         <td><p>ab[]</p></td>
                                         <td><p>cd</p></td>
                                     </tr>
                                 </tbody>
-                            </table>
+                            </table></div>
                             <br>
                         </li>
                     </ul>

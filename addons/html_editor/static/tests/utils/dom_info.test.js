@@ -298,12 +298,12 @@ describe("isVisible", () => {
         test("should identify a table containing only zero-width spaces as visible", () => {
             const [table] = insertTestHtml(
                 unformat(`
-                    <table class="o_table">
+                    <div class="o_table_wrapper"><table class="o_table">
                         <tbody>
                             <tr><td><p><font>\u200b</font></p></td><td><p><font>\u200b</font></p></td></tr>
                             <tr><td><p><font>\u200b</font></p></td><td><p><font>\u200b</font></p></td></tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `)
             );
             const result = isVisible(table);

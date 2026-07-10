@@ -229,10 +229,10 @@ describe("deleteRange method", () => {
             // on selection normaliztion.  It should not assume that the cursor
             // is never inside a BR.
             const contentBefore = unformat(
-                `<table><tbody>
+                `<div class="o_table_wrapper"><table><tbody>
                     <tr><td><br></td><td><br></td></tr>
                     <tr><td><br></td><td><br></td></tr>
-                </tbody></table>`
+                </tbody></table></div>`
             );
             const { editor, el } = await setupEditor(contentBefore);
             // Place the cursor inside the BR.
@@ -242,18 +242,18 @@ describe("deleteRange method", () => {
                 focusNode: el.querySelector("tr:nth-child(2) td br"),
                 focusOffset: 0,
             });
-            /* [<table><tbody>
+            /* [<div class="o_table_wrapper"><table><tbody>
                     <tr><td><br></td><td><br></td></tr>
                     <tr><td><]br></td><td><br></td></tr>
-                </tbody></table>
+                </tbody></table></div>
             */
             deleteRange(editor);
             const contentAfter = unformat(
-                `[<table><tbody>
+                `[<div class="o_table_wrapper"><table><tbody>
                     <tr><td><br></td><td><br></td></tr>
                     <tr><td>]<br></td><td><br></td></tr>
-                </tbody></table>
-                <p data-selection-placeholder=""><br></p>`
+                </tbody></table></div>
+                <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`
             );
             expect(getContent(el)).toBe(contentAfter);
         });
@@ -467,25 +467,25 @@ describe("deleteSelection", () => {
                 // involve the unremovable mechanism.
                 await testEditor({
                     contentBefore: unformat(
-                        `<table><tbody>
+                        `<div class="o_table_wrapper"><table><tbody>
                             <tr>
                                 <td>[a</td> <td>b]</td> <td>c</td> 
                             </tr>
                             <tr>
                                 <td>d</td> <td>e</td> <td>f</td> 
                             </tr>
-                        </tbody></table>`
+                        </tbody></table></div>`
                     ),
                     stepFunction: deleteSelection,
                     contentAfter: unformat(
-                        `<table><tbody>
+                        `<div class="o_table_wrapper"><table><tbody>
                             <tr>
                                 <td><p>[]<br></p></td> <td><p><br></p></td> <td>c</td>
                             </tr>
                             <tr>
                                 <td>d</td> <td>e</td> <td>f</td> 
                             </tr>
-                        </tbody></table>`
+                        </tbody></table></div>`
                     ),
                 });
             });
@@ -493,11 +493,11 @@ describe("deleteSelection", () => {
                 await testEditor({
                     contentBefore: unformat(
                         `<p>a[bc</p>
-                        <table><tbody>
+                        <div class="o_table_wrapper"><table><tbody>
                             <tr>
                                 <td><p>abc</p></td><td><p>def</p></td>
                             </tr>
-                        </tbody></table>
+                        </tbody></table></div>
                         <p>gh]i</p>`
                     ),
                     stepFunction: deleteSelection,

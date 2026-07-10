@@ -40,7 +40,7 @@ test("can add a table using the powerbox and keyboard", async () => {
     expectContentToBe(
         el,
         `<p>a</p>
-        <table class="table table-bordered o_table">
+        <div class="o_table_wrapper"><table class="table table-bordered o_table">
             <tbody>
                 <tr>
                     <td><p o-we-hint-text='Type "/" for commands' class="o-we-hint">[]<br></p></td>
@@ -58,7 +58,7 @@ test("can add a table using the powerbox and keyboard", async () => {
                     <td><p><br></p></td>
                 </tr>
             </tbody>
-        </table>
+        </table></div>
         <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`
     );
 });
@@ -91,7 +91,7 @@ test("can add a table using the powerbox and keyboard (mobile)", async () => {
     expectContentToBe(
         el,
         `<p>a</p>
-        <table class="table table-bordered o_table">
+        <div class="o_table_wrapper"><table class="table table-bordered o_table">
             <tbody>
                 <tr>
                     <td><p o-we-hint-text='Type "/" for commands' class="o-we-hint">[]<br></p></td>
@@ -109,7 +109,7 @@ test("can add a table using the powerbox and keyboard (mobile)", async () => {
                     <td><p><br></p></td>
                 </tr>
             </tbody>
-        </table>
+        </table></div>
         <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`
     );
 });
@@ -142,7 +142,7 @@ test("can add a table using the powerbox and apply (mobile)", async () => {
     expectContentToBe(
         el,
         `<p>a</p>
-        <table class="table table-bordered o_table">
+        <div class="o_table_wrapper"><table class="table table-bordered o_table">
             <tbody>
                 <tr>
                     <td><p o-we-hint-text='Type "/" for commands' class="o-we-hint">[]<br></p></td>
@@ -160,7 +160,7 @@ test("can add a table using the powerbox and apply (mobile)", async () => {
                     <td><p><br></p></td>
                 </tr>
             </tbody>
-        </table>
+        </table></div>
         <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`
     );
 });
@@ -311,7 +311,7 @@ test("add table inside empty list", async () => {
         `<ul>
             <li>
                 <br>
-                <table class="table table-bordered o_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table">
                     <tbody>
                         <tr>
                             <td><p o-we-hint-text='Type "/" for commands' class="o-we-hint">[]<br></p></td>
@@ -329,7 +329,7 @@ test("add table inside empty list", async () => {
                             <td><p><br></p></td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
             </li>
         </ul>`
     );
@@ -363,7 +363,7 @@ test("add table inside non-empty list", async () => {
         `<ul>
             <li>
                 abc
-                <table class="table table-bordered o_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table">
                     <tbody>
                         <tr>
                             <td><p o-we-hint-text='Type "/" for commands' class="o-we-hint">[]<br></p></td>
@@ -381,7 +381,7 @@ test("add table inside non-empty list", async () => {
                             <td><p><br></p></td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
             </li>
         </ul>`
     );
@@ -419,7 +419,7 @@ test.tags("desktop");
 test("should not navigate table cells when table picker is open", async () => {
     const { el, editor } = await setupEditor(
         unformat(`
-            <table class="table table-bordered o_table">
+            <div class="o_table_wrapper"><table class="table table-bordered o_table">
                 <tbody>
                     <tr>
                         <td><p><br></p></td>
@@ -431,7 +431,7 @@ test("should not navigate table cells when table picker is open", async () => {
                         <td><p>[]<br></p></td>
                     </tr>
                 </tbody>
-            </table>
+            </table></div>
         `)
     );
     // open powerbox
@@ -457,7 +457,7 @@ test("should not navigate table cells when table picker is open", async () => {
         el,
         `
             <p data-selection-placeholder=""><br></p>
-            <table class="table table-bordered o_table">
+            <div class="o_table_wrapper"><table class="table table-bordered o_table">
                 <tbody>
                     <tr>
                         <td><p><br></p></td>
@@ -468,7 +468,7 @@ test("should not navigate table cells when table picker is open", async () => {
                     <tr>
                         <td>
                             <p data-selection-placeholder=""><br></p>
-                            <table class="table table-bordered o_table">
+                            <div class="o_table_wrapper"><table class="table table-bordered o_table">
                                 <tbody>
                                     <tr>
                                         <td><p o-we-hint-text='Type "/" for commands' class="o-we-hint">[]<br></p></td>
@@ -476,12 +476,12 @@ test("should not navigate table cells when table picker is open", async () => {
                                         <td><p><br></p></td>
                                     </tr>
                                 </tbody>
-                            </table>
+                            </table></div>
                             <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>
                         </td>
                     </tr>
                 </tbody>
-            </table>
+            </table></div>
             <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>
         `
     );
@@ -491,7 +491,7 @@ test.tags("desktop");
 test("should not navigate table cells when powerbox is open", async () => {
     const { el, editor } = await setupEditor(
         unformat(`
-            <table class="table table-bordered o_table">
+            <div class="o_table_wrapper"><table class="table table-bordered o_table">
                 <tbody>
                     <tr>
                         <td><p><br></p></td>
@@ -503,7 +503,8 @@ test("should not navigate table cells when powerbox is open", async () => {
                         <td><p><br></p></td>
                     </tr>
                 </tbody>
-            </table>
+            </table></div>
+            <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>
         `)
     );
 
@@ -540,7 +541,7 @@ test("should not navigate table cells when powerbox is open", async () => {
         el,
         `
             <p data-selection-placeholder=""><br></p>
-            <table class="table table-bordered o_table">
+            <div class="o_table_wrapper"><table class="table table-bordered o_table">
                 <tbody>
                     <tr>
                         <td><p><br></p></td>
@@ -552,7 +553,7 @@ test("should not navigate table cells when powerbox is open", async () => {
                         <td><p><br></p></td>
                     </tr>
                 </tbody>
-            </table>
+            </table></div>
             <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>
         `
     );

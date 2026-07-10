@@ -1285,7 +1285,7 @@ test("removing an image caption inside a table should wrap image in a base conta
     await testEditor({
         config: configWithEmbeddedCaption,
         contentBefore: unformat(
-            `<table>
+            `<div class="o_table_wrapper"><table>
                 <tbody>
                     <tr>
                         <td>
@@ -1299,7 +1299,7 @@ test("removing an image caption inside a table should wrap image in a base conta
                         <td><p>c</p></td>
                     </tr>
                 </tbody>
-            </table>`
+            </table></div>`
         ),
         stepFunction: async () => {
             await click("img");
@@ -1307,7 +1307,7 @@ test("removing an image caption inside a table should wrap image in a base conta
             await click(".o-we-toolbar button[name='image_caption']");
         },
         contentAfter: unformat(
-            `<table>
+            `<div class="o_table_wrapper"><table>
                 <tbody>
                     <tr>
                         <td>
@@ -1320,7 +1320,7 @@ test("removing an image caption inside a table should wrap image in a base conta
                         <td><p>c</p></td>
                     </tr>
                 </tbody>
-            </table>`
+            </table></div>`
         ),
     });
 });

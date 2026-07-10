@@ -249,7 +249,7 @@ describe("with selection collapsed", () => {
     test("should outdent unordered list inside a table cell", async () => {
         await testEditor({
             contentBefore: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr>
                                 <td>
@@ -269,11 +269,11 @@ describe("with selection collapsed", () => {
                                 </td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
             stepFunction: (editor) => keydownShiftTab(editor),
             contentAfter: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr>
                                 <td>
@@ -290,7 +290,7 @@ describe("with selection collapsed", () => {
                                 </td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
         });
     });
@@ -298,7 +298,7 @@ describe("with selection collapsed", () => {
     test("should outdent checklist inside a table cell", async () => {
         await testEditor({
             contentBefore: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr>
                                 <td>
@@ -318,11 +318,11 @@ describe("with selection collapsed", () => {
                                 </td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
             stepFunction: (editor) => keydownShiftTab(editor),
             contentAfter: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr>
                                 <td>
@@ -339,7 +339,7 @@ describe("with selection collapsed", () => {
                                 </td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
         });
     });
@@ -867,7 +867,7 @@ describe("with selection", () => {
     test("should outdent a ordered list inside a table cell", async () => {
         await testEditor({
             contentBefore: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr>
                                 <td>
@@ -887,11 +887,11 @@ describe("with selection", () => {
                                 </td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
             stepFunction: (editor) => keydownShiftTab(editor),
             contentAfter: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr>
                                 <td>
@@ -908,7 +908,7 @@ describe("with selection", () => {
                                 </td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
         });
     });

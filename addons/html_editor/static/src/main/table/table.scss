@@ -1,6 +1,9 @@
-th.o_table_header {
-    background-color: #F7F7F7;
-    font-weight: 900;
+.o_table_wrapper {
+    overflow-x: auto;
+    margin-bottom: $spacer;
+    .o_table {
+        margin-bottom: 0;
+    }
 }
 
 .o_table {
@@ -8,6 +11,13 @@ th.o_table_header {
         > *:last-child {
             margin-bottom: 0;
         }
+        > .o_table_wrapper {
+            overflow-x: visible;
+        }
+    }
+    th.o_table_header {
+        background-color: #F7F7F7;
+        font-weight: 900;
     }
 }
 

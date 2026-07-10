@@ -13,20 +13,20 @@ test("should remove empty class attribute", async () => {
 test("should remove `style.color` from table and apply it to tds", async () => {
     await testEditor({
         contentBefore: unformat(`
-                <table style="color: red;" class="o_selected_table"><tbody>
+                <div class="o_table_wrapper"><table style="color: red;" class="o_selected_table"><tbody>
                     <tr><td class="o_selected_td">ab</td></tr>
                     <tr><td>ab</td></tr>
-                </tbody></table>
+                </tbody></table></div>
             `),
         contentBeforeEdit: unformat(`
             <p data-selection-placeholder=""><br></p>
-            <table style="" class="o_selected_table">
+            <div class="o_table_wrapper"><table style="" class="o_selected_table">
                 <tbody>
                     <tr><td class="o_selected_td" style="color: red;">ab</td></tr>
                     <tr><td style="color: red;">ab</td></tr>
                 </tbody>
-            </table>
-            <p data-selection-placeholder=""><br></p>
+            </table></div>
+            <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>
         `),
     });
 });
@@ -34,20 +34,20 @@ test("should remove `style.color` from table and apply it to tds", async () => {
 test("should remove `style.color` from table and apply it to td without `style.color`", async () => {
     await testEditor({
         contentBefore: unformat(`
-                <table style="color: red;"><tbody>
+                <div class="o_table_wrapper"><table style="color: red;"><tbody>
                     <tr><td>ab</td></tr>
                     <tr><td style="color: green;">ab</td></tr>
-                </tbody></table>
+                </tbody></table></div>
             `),
         contentBeforeEdit: unformat(`
             <p data-selection-placeholder=""><br></p>
-            <table style="">
+            <div class="o_table_wrapper"><table style="">
                 <tbody>
                     <tr><td style="color: red;">ab</td></tr>
                     <tr><td style="color: green;">ab</td></tr>
                 </tbody>
-            </table>
-            <p data-selection-placeholder=""><br></p>
+            </table></div>
+            <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>
         `),
     });
 });
