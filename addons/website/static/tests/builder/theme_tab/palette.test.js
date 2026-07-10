@@ -27,14 +27,38 @@ test("theme tab: warning on palette change", async () => {
     });
     await contains(".o-snippets-tabs button[data-name=theme]").click();
     await contains(".o-tab-content .o-hb-theme-color-slider-btn").click();
+<<<<<<< 4cf65471e42cf3170ee1f8a555a13d55e9daaa95
     await contains(".o_theme_tab [data-icon='palette']").click();
     await contains(`[data-action-value="'default-light-1'"] .o-color-palette-pill span`).click();
+||||||| 90b18d8b6df2a41b53304d3efa8117450e098411
+    await contains(
+        ".o_theme_tab [data-src='/website/static/src/img/snippets_options/palette.svg']"
+    ).click();
+    await contains(`[data-action-value="'default-light-1'"] .o-color-palette-pill span`).click();
+=======
+    await contains(
+        ".o_theme_tab [data-src='/website/static/src/img/snippets_options/palette.svg']"
+    ).click();
+    await contains(`[data-action-value="'default-light-1'"] .o-color-palette-card span`).click();
+>>>>>>> 40425b9df1b7a2cc08224d66e47dc0de89510878
     expect(".o_dialog").toHaveCount(1);
     await contains(".o_dialog .btn-secondary").click();
     expect(".o_dialog").toHaveCount(0);
     expect.verifySteps([]);
+<<<<<<< 4cf65471e42cf3170ee1f8a555a13d55e9daaa95
     await contains(".o_theme_tab [data-icon='palette']").click();
     await contains(`[data-action-value="'default-light-1'"] .o-color-palette-pill span`).click();
+||||||| 90b18d8b6df2a41b53304d3efa8117450e098411
+    await contains(
+        ".o_theme_tab [data-src='/website/static/src/img/snippets_options/palette.svg']"
+    ).click();
+    await contains(`[data-action-value="'default-light-1'"] .o-color-palette-pill span`).click();
+=======
+    await contains(
+        ".o_theme_tab [data-src='/website/static/src/img/snippets_options/palette.svg']"
+    ).click();
+    await contains(`[data-action-value="'default-light-1'"] .o-color-palette-card span`).click();
+>>>>>>> 40425b9df1b7a2cc08224d66e47dc0de89510878
     expect(".o_dialog").toHaveCount(1);
     await contains(".o_dialog .btn-primary").click();
     await def.promise;
@@ -62,8 +86,20 @@ test("theme tab: no warning on palette change", async () => {
     await setupWebsiteBuilder("");
     await contains(".o-snippets-tabs button[data-name=theme]").click();
     await contains(".o-tab-content .o-hb-theme-color-slider-btn").click();
+<<<<<<< 4cf65471e42cf3170ee1f8a555a13d55e9daaa95
     await contains(".o_theme_tab [data-icon='palette']").click();
     await contains(`[data-action-value="'default-light-1'"] .o-color-palette-pill span`).click();
+||||||| 90b18d8b6df2a41b53304d3efa8117450e098411
+    await contains(
+        ".o_theme_tab [data-src='/website/static/src/img/snippets_options/palette.svg']"
+    ).click();
+    await contains(`[data-action-value="'default-light-1'"] .o-color-palette-pill span`).click();
+=======
+    await contains(
+        ".o_theme_tab [data-src='/website/static/src/img/snippets_options/palette.svg']"
+    ).click();
+    await contains(`[data-action-value="'default-light-1'"] .o-color-palette-card span`).click();
+>>>>>>> 40425b9df1b7a2cc08224d66e47dc0de89510878
     await def.promise;
     expect(".o_dialog").toHaveCount(0);
     expect.verifySteps([
