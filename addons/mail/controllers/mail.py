@@ -271,10 +271,12 @@ class MailController(http.Controller):
         '/mail/font_to_img/<icon>/<color>/<bg>',
         '/mail/font_to_img/<icon>/<color>/<bg>/<int:size>',
         '/mail/font_to_img/<icon>/<color>/<bg>/<int:width>x<int:height>',
+        '/mail/font_to_img/<icon>/<color>/<bg>/<int:width>x<int:height>fs<int:font_size>',
         '/mail/font_to_img/<icon>/<color>/<bg>/<int:width>x<int:height>/<int:alpha>',
+        '/mail/font_to_img/<icon>/<color>/<bg>/<int:width>x<int:height>fs<int:font_size>/<int:alpha>',
         ], type='http', auth="none")
     # TODO: Adapt the code to make it work with Material Symbol library
-    def export_icon_to_png(self, icon, color='#000', bg=None, size=100, alpha=255, font='/web/static/src/libs/fontawesome/fonts/fontawesome-webfont.ttf', width=None, height=None):
+    def export_icon_to_png(self, icon, color='#000', bg=None, size=100, alpha=255, font='/web/static/src/libs/fontawesome/fonts/fontawesome-webfont.ttf', width=None, height=None, font_size=None):
         """ This method converts an unicode character to an image (using Font
             Awesome font by default) and is used only for mass mailing because
             custom fonts are not supported in mail.
@@ -303,9 +305,11 @@ class MailController(http.Controller):
                 "59409": "59409",  # E811: oi_discord
                 "59416": "59416",  # E818: oi_threads
                 "59417": "59417",  # E819: oi_kickstarter
+                "59418": "59418",  # E81A: oi_twitter
                 "59419": "59419",  # E81B: oi_tiktok
                 "59420": "59420",  # E81C: oi_bluesky
                 "59421": "59421",  # E81D: oi_google-play
+                "59464": "59464",  # E848: oi_twitter-square
             }
             if icon in oi_font_char_codes:
                 icon = oi_font_char_codes[icon]
@@ -317,10 +321,10 @@ class MailController(http.Controller):
         # Make sure we have at least size=1
         width = max(1, min(width, 512))
         height = max(1, min(height, 512))
+        font_size = font_size or height
         # Initialize font
         if font.startswith('/'):
             font = font[1:]
-        font_obj = ImageFont.truetype(file_open(font, 'rb'), height)
 
         # if received character is not a number, keep old behaviour (icon is character)
         icon = chr(int(icon)) if icon.isdigit() else icon
@@ -341,12 +345,22 @@ class MailController(http.Controller):
         image = Image.new("RGBA", (width, height), color)
         draw = ImageDraw.Draw(image)
 
+        font_obj = ImageFont.truetype(file_open(font, 'rb'), font_size)
+
         if hasattr(draw, 'textbbox'):
             box = draw.textbbox((0, 0), icon, font=font_obj)
-            left = box[0]
-            top = box[1]
             boxw = box[2] - box[0]
             boxh = box[3] - box[1]
+            max_ratio = max(boxw / width, boxh / height)
+            if max_ratio > 1:
+                # adjust the font_size to fit in requested dimensions
+                font_size /= max_ratio
+                font_obj = ImageFont.truetype(file_open(font, 'rb'), font_size)
+                box = draw.textbbox((0, 0), icon, font=font_obj)
+                boxw = box[2] - box[0]
+                boxh = box[3] - box[1]
+            left = box[0]
+            top = box[1]
         else:  # pillow < 8.00 (Focal)
             left, top, _right, _bottom = image.getbbox()
             boxw, boxh = draw.textsize(icon, font=font_obj)
@@ -365,9 +379,14 @@ class MailController(http.Controller):
         iconimage = Image.new("RGBA", (boxw, boxh), color)
         iconimage.putalpha(imagemask)
 
+        out_w = max(width, boxw)
+        out_h = max(height, boxh)
+        x = round((out_w - boxw) / 2)
+        y = round((out_h - boxh) / 2)
+
         # Create output image
-        outimage = Image.new("RGBA", (boxw, height), bg or (0, 0, 0, 0))
-        outimage.paste(iconimage, (left, top), iconimage)
+        outimage = Image.new("RGBA", (out_w, out_h), bg or (0, 0, 0, 0))
+        outimage.paste(iconimage, (x, y), iconimage)
 
         # output image
         output = io.BytesIO()
