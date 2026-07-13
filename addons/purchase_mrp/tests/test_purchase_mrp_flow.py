@@ -1091,17 +1091,35 @@ class TestPurchaseMrpFlow(AccountTestInvoicingCommon):
             pol_form.product_id = kit
             pol_form.product_qty = 30
             pol_form.product_uom_id = self.uom_kg
+<<<<<<< 3c6eb613784dc6482a269bc45de071642b03c371
             pol_form.price_unit = 100
             pol_form.tax_ids.clear()
+||||||| 07b5c04bb7c149ca1a084bf8abdf489c1b264fe5
+            pol_form.price_unit = 90000
+            pol_form.tax_ids.clear()
+=======
+            pol_form.price_unit = 100
+>>>>>>> 54e43839fc5aed5454c8defff7558b6e0e974212
         po = po_form.save()
         po.button_confirm()
 
         receipt = po.picking_ids
+<<<<<<< 3c6eb613784dc6482a269bc45de071642b03c371
         # Update the quantity on the moves (not the move lines) so the reservation is forced.
         receipt.move_ids.filtered(lambda m: m.product_id == cmp1).quantity = 4
         receipt.move_ids.filtered(lambda m: m.product_id == cmp2).quantity = 2000
         receipt.move_ids.filtered(lambda m: m.product_id == cmp3).quantity = 4
+||||||| 07b5c04bb7c149ca1a084bf8abdf489c1b264fe5
+        receipt.move_line_ids[0].quantity = 4
+        receipt.move_line_ids[1].quantity = 2
+=======
+        # Update the quantity on the moves (not the move lines) so the reservation is forced.
+        receipt.move_ids.filtered(lambda m: m.product_id == cmp1).quantity = 4
+        receipt.move_ids.filtered(lambda m: m.product_id == cmp2).quantity = 2000
+        receipt.move_ids.filtered(lambda m: m.product_id == cmp3).quantity = 2
+>>>>>>> 54e43839fc5aed5454c8defff7558b6e0e974212
         Form.from_action(self.env, receipt.button_validate()).save().process()
+<<<<<<< 3c6eb613784dc6482a269bc45de071642b03c371
 
         # The kit is bought at 100 per kg for 30 kg, so its 3000 value is spread
         # over the components by cost share (Cmp1 and Cmp2 get half each, Cmp3
@@ -1117,6 +1135,31 @@ class TestPurchaseMrpFlow(AccountTestInvoicingCommon):
             {'qty_available': 2.0, 'standard_price': 150.0, 'total_value': 300.0},
             {'qty_available': 0.0, 'standard_price': 0.0, 'total_value': 0.0},
         ])
+||||||| 07b5c04bb7c149ca1a084bf8abdf489c1b264fe5
+        # Price Unit for 1 gm of the kit = 90000/1000 = 90
+        # unit_cost for cmp1 = 90 *1000* 3 / 2 / 2 / 1000 = 67.5
+        # unit_cost for cmp2  = 90 *1000* 3 / 2 / 1  * 1000 = 135000000
+        svl = po.picking_ids[0].move_ids.stock_valuation_layer_ids
+        self.assertEqual(svl[0].unit_cost, 67.5)
+        self.assertEqual(svl[1].unit_cost, 135000000)
+=======
+
+        # The kit is bought at 100 per kg for 30 kg, so its 3000 value is spread
+        # over the components by cost share (Cmp1 and Cmp2 get half each, Cmp3
+        # none). Only 1/5 th of each component's demand is received here, so
+        # each valued component gets a 1/5 th of its share (300); Cmp3 is unvalued.
+        svl = receipt.move_ids.stock_valuation_layer_ids
+        self.assertRecordValues(svl, [
+            {'product_id': cmp1.id, 'value': 300.0},
+            {'product_id': cmp2.id, 'value': 300.0},
+            {'product_id': cmp3.id, 'value': 0.0},
+        ])
+        self.assertRecordValues(cmp1 + cmp2 + cmp3, [
+            {'qty_available': 4000.0, 'standard_price': 0.075, 'total_value': 300.0},
+            {'qty_available': 2.0, 'standard_price': 150.0, 'total_value': 300.0},
+            {'qty_available': 0.0, 'standard_price': 0.0, 'total_value': 0.0},
+        ])
+>>>>>>> 54e43839fc5aed5454c8defff7558b6e0e974212
 
     def test_mo_overview_mto_purchase_with_backorders(self):
         self.warehouse.reception_steps = 'two_steps'
