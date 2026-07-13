@@ -25,6 +25,7 @@ class BaseDocumentLayout(models.TransientModel):
     vat = fields.Char(related='company_id.vat', readonly=False,)
     account_number = fields.Char(compute='_compute_account_number', inverse='_inverse_account_number',)
     country_code = fields.Char(related="company_id.account_fiscal_country_id.code")
+    can_configure_later = fields.Boolean(compute='_compute_can_configure_later')
 
     def document_layout_save(self):
         """Save layout and onboarding step progress, return super() result"""
@@ -90,6 +91,12 @@ class BaseDocumentLayout(models.TransientModel):
                 )
             else:
                 wizard.preview = False
+
+    @api.depends_context('can_configure_later')
+    def _compute_can_configure_later(self):
+        can_configure_later = bool(self.env.context.get('can_configure_later'))
+        for wizard in self:
+            wizard.can_configure_later = can_configure_later
 
     def _inverse_account_number(self):
         for record in self:
@@ -199,3 +206,13 @@ class BaseDocumentLayout(models.TransientModel):
             self.mapped('company_id').sudo().write(company_vals)
 
         return res
+
+    def action_configure_later(self):
+        self.ensure_one()
+        report_action = self.env.context.get('report_action')
+        if not report_action:
+            return {'type': 'ir.actions.act_window_close'}
+
+        self.check_access('write')
+        self.company_id.sudo().external_report_layout_id = False
+        return report_action
