@@ -15,7 +15,7 @@
                     <i class="oi oi-filled" data-icon="person" role="img" aria-label="Assign"/>
                 </button>
                 <t t-if="this.activity().can_write">
-                    <FileUploader t-if="this.hasFileUploader" onUploaded.bind="this.onFileUploaded">
+                    <FileUploader t-if="this.hasFileUploader" onUploaded.bind="this.onFileUploaded" multiUpload="true">
                         <t t-set-slot="toggler">
                             <button class="btn btn-sm btn-success btn-link" title="Upload file" aria-label="Upload File">
                                 <i class="oi" data-icon="upload"/>
