@@ -5,6 +5,7 @@ import {
     getCSSVariableValue,
     getHtmlStyle,
 } from "@html_editor/utils/formatting";
+import { onMounted, signal } from "@odoo/owl";
 
 export const BORDER_RADIUS_MULTIPLIERS = {
     "border-radius": 1,
@@ -20,12 +21,21 @@ export class ThemeRoundnessOption extends BaseOptionComponent {
 
     setup() {
         super.setup();
+        this.rootRef = signal.ref();
         this.state = useDomState(() => ({
             isCustomized: {
                 "border-radius-sm": isBorderRadiusCustomized("border-radius-sm", this.document),
                 "border-radius-lg": isBorderRadiusCustomized("border-radius-lg", this.document),
             },
         }));
+        this.borderRadiusToShow = this.env.themeOptionToShow.borderRadius;
+        this.expandRow = ["border-radius-sm", "border-radius-lg"].includes(this.borderRadiusToShow);
+
+        onMounted(() => {
+            if (this.borderRadiusToShow) {
+                this.rootRef().scrollIntoView({ behavior: "instant", block: "center" });
+            }
+        });
     }
 }
 

@@ -10,7 +10,9 @@
                     <BuilderSelect>
                         <t t-foreach="this.borderRadiusOptions" t-as="option" t-key="option.label">
                             <BuilderSelectItem classAction="option.class">
-                                <t t-out="option.label"/>
+                                <ThemeEditOptionButton onClick="this.getOnEditButtonClick(option.variable)">
+                                    <t t-out="option.label"/>
+                                </ThemeEditOptionButton>
                             </BuilderSelectItem>
                         </t>
                         <BuilderSelectItem

@@ -1,5 +1,6 @@
 import { BorderConfigurator } from "@html_builder/plugins/border_configurator_option";
 import { registry } from "@web/core/registry";
+import { ThemeEditOptionButton } from "@html_builder/plugins/theme_edit_option_button";
 
 const BORDER_RADIUS_OPTIONS = [
     { label: "Small", class: "rounded-1", variable: "border-radius-sm" },
@@ -10,6 +11,7 @@ const BORDER_RADIUS_OPTIONS = [
 export class WebsiteBorderConfigurator extends BorderConfigurator {
     static id = "website_border_configurator";
     static template = "website.WebsiteBorderConfiguratorOption";
+    static components = { ThemeEditOptionButton };
     static dependencies = [...super.dependencies, "customizeWebsite"];
 
     setup() {
@@ -29,6 +31,10 @@ export class WebsiteBorderConfigurator extends BorderConfigurator {
             return false;
         }
         return ["--box-border-radius", "border-radius"].includes(this.radiusActionParam.mainParam);
+    }
+
+    getOnEditButtonClick(variable) {
+        return () => this.env.showThemeOption({ borderRadius: variable });
     }
 }
 registry.category("website-options").add(WebsiteBorderConfigurator.id, WebsiteBorderConfigurator);
