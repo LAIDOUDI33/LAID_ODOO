@@ -6,6 +6,7 @@ import {
     onWillUnmount,
     props,
     proxy,
+    signal,
     t,
     untrack,
     useEffect,
@@ -21,6 +22,7 @@ import { browser } from "@web/core/browser/browser";
 import { OVERLAY_SYMBOL } from "@web/core/overlay/overlay_container";
 import { makeDraggableHook } from "@web/core/utils/draggable_hook_builder_owl";
 import { useService } from "@web/core/utils/hooks";
+import { useDropdownState } from "@web/core/dropdown/dropdown_hooks";
 
 /**
  * @param {() => HTMLElement} target
@@ -1045,4 +1047,71 @@ export function propComputed(name, shape) {
 export function propSignal(name, shape, { optional = false } = {}) {
     const type = t.signal(shape);
     return props.static(name, optional ? type.optional() : type);
+}
+
+/**
+ * This hook makes it easier to enable right-click to open a dropdown at position of cursor
+ *
+ * @param {Object} param0
+ * @param {import("@odoo/owl").Signal<Element>} param0.rootRef - The root ref of the element that has right-click.
+ *   This rootRef defines the node where the right-click should work and needs to have `.position-relative`, so that
+ *   the anchor of right-click dropdown can position itself with absolute positioning inside rootRef's node.
+ * @param {() => Object} [param0.extraMenuProps={}] - Optional object of extra props provided to the DropdownMenuFromRightClick component.
+ * @param {() => void} [param0.onClose] - Optional function invoked when the dropdown closes.
+ */
+export function useRightClickMenu({
+    rootRef,
+    extraMenuProps = () => {},
+    onClose: onCloseParam,
+} = {}) {
+    /**
+     * @type {boolean} Whether the right-click drodpown is being closed.
+     * Useful to detect when close comes from another right-click on the same element,
+     * in order to show the browser right-click instead.
+     */
+    let isOngoingClose = false;
+    const anchor = signal.ref();
+    const dropdownState = useDropdownState({
+        onClose: async () => {
+            if (isOngoingClose) {
+                return; // onClose can be called more than once. Limiting to a single onClose to prevent race-condition in tests.
+            }
+            onCloseParam?.();
+            isOngoingClose = true;
+            await new Promise((resolve) => setTimeout(() => requestAnimationFrame(resolve)));
+            isOngoingClose = false;
+            delete rootRef().dataset.rightClicking;
+        },
+    });
+    return {
+        get anchor() {
+            return anchor;
+        },
+        get isOngoingClose() {
+            return isOngoingClose;
+        },
+        get isOpen() {
+            return dropdownState.isOpen;
+        },
+        get menuProps() {
+            return {
+                anchorRef: anchor,
+                dropdownState,
+                ...extraMenuProps(),
+            };
+        },
+        /**
+         * @param {Event} ev
+         * @param {() => void} [onOpenCb]
+         */
+        open(ev, onOpenCb) {
+            rootRef().dataset.rightClicking = true;
+            const el = anchor();
+            el.style.left = ev.clientX + "px";
+            el.style.top = ev.clientY + "px";
+            dropdownState.open();
+            onOpenCb?.();
+            ev.preventDefault();
+        },
+    };
 }
