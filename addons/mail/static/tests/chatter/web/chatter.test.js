@@ -787,3 +787,35 @@ test("can mark message as unread from chatter", async () => {
     await click(".o-mail-MessagingMenu-counter:text(1)");
     await contains(".o-mail-NotificationItem-text:text(John Doe: lorem ipsum)");
 });
+
+test("composer input is cleared after logging a note via full composer", async () => {
+    const pyEnv = await startServer();
+    const partnerId = pyEnv["res.partner"].create({ name: "John Doe" });
+
+    mockService("action", {
+        async doAction(action, options) {
+            if (action.res_model === "mail.compose.message") {
+                expect.step("open_full_composer");
+                expect(action.target).toBe("new");
+                expect(action.context.default_subtype_xmlid).toBe("mail.mt_note");
+                
+                // Simulate clicking "Log" inside the full composer wizard popup modal:
+                if (options && options.onClose) {
+                    await options.onClose({ special: false, dismiss: false });
+                }
+                return;
+            }
+            return super.doAction(...arguments);
+        },
+    });
+
+    await start();
+    await openFormView("res.partner", partnerId);
+    await click("button:text('Log note')");
+    await contains(".o-mail-Composer");
+    await insertText(".o-mail-Composer-input", "Testing Full Composer Note Deletion");
+    await click("button[aria-label='Open Full Composer']");
+    await expect.waitForSteps(["open_full_composer"]);
+    await click("button:text('Log note')");
+    await contains(".o-mail-Composer-input", { value: "" });
+});

@@ -738,6 +738,7 @@ export class Composer extends Component {
     clear() {
         this.props.composer.clear();
         browser.localStorage.removeItem(this.props.composer.localId);
+        this.deleteSavedContent();
     }
 
     notifySendFromMailbox() {
