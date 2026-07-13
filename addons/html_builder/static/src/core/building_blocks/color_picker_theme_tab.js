@@ -1,3 +1,4 @@
+import { ThemeEditOptionButton } from "@html_builder/plugins/theme_edit_option_button";
 import { Component } from "@odoo/owl";
 import { _t } from "@web/core/l10n/translation";
 import { registry } from "@web/core/registry";
@@ -14,6 +15,7 @@ export class ColorPickerThemeTab extends Component {
         selectedColorCombination: { type: String, optional: true },
         "*": { optional: true },
     };
+    static components = { ThemeEditOptionButton };
 }
 
 registry.category("color_picker_tabs").add(

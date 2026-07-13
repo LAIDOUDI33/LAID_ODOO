@@ -50,7 +50,7 @@
             onColorPreview: this.onColorPreview.bind(this),
             setOnCloseCallback: this.props.setOnCloseCallback.bind(this),
             setOperationCallbacks: this.setOperationCallbacks.bind(this),
-            editColorCombination: this.props.editColorCombination,
+            showThemeOption: this.props.showThemeOption,
             selectedColorCombination: this.props.state.selectedColorCombination,
             defaultOpacity: this.props.defaultOpacity,
             noTransparency: this.props.noTransparency,

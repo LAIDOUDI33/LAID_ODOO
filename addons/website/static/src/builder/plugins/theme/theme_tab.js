@@ -8,17 +8,13 @@ export class ThemeTab extends Component {
     static components = { OptionsContainer };
     props = props({
         // optionsContainers: t.array().optional([]),
-        colorPresetToShow: t.or([t.number(), t.literal(null)]).optional(),
-        shadowSizeToShow: t.or([t.string(), t.literal(null)]).optional(),
+        optionToShow: t.object().optional({}),
     });
     contentRef = signal(null);
 
     setup() {
         useOptionsSubEnv(() => [this.env.editor.document.body]);
-        useSubEnv({
-            colorPresetToShow: this.props.colorPresetToShow,
-            shadowSizeToShow: this.props.shadowSizeToShow,
-        });
+        useSubEnv({ themeOptionToShow: this.props.optionToShow });
         this.state = proxy({
             fontsData: {},
         });

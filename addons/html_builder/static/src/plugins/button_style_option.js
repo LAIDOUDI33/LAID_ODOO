@@ -9,6 +9,7 @@ import { StyleAction, withoutTransition } from "@html_builder/core/core_builder_
 import { Plugin } from "@html_editor/plugin";
 import { registry } from "@web/core/registry";
 import { BorderConfigurator } from "@html_builder/plugins/border_configurator_option";
+import { ThemeEditOptionButton } from "@html_builder/plugins/theme_edit_option_button";
 import {
     BUTTON_SHAPES,
     BUTTON_SIZES,
@@ -35,6 +36,7 @@ export class ButtonStyleOption extends BaseOptionComponent {
         BuilderSelectItem,
         BuilderNumberInput,
         BorderConfigurator,
+        ThemeEditOptionButton,
     };
     static dependencies = ["domObserver"];
 
@@ -62,9 +64,9 @@ export class ButtonStyleOption extends BaseOptionComponent {
     }
 
     goToThemeTab() {
-        this.env.editColorCombination(
-            parseInt(this.state.buttonCombinationClass.replace("o_cc", ""))
-        );
+        this.env.showThemeOption({
+            colorPreset: parseInt(this.state.buttonCombinationClass.replace("o_cc", "")),
+        });
     }
 
     async getButtonStyles(el) {

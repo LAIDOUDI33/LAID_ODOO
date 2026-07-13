@@ -1,0 +1,20 @@
+.o-hb-select-wrapper {
+    .o-hb-theme-edit-option-button {
+        display: none;
+    }
+}
+
+.o-hb-select-dropdown-item {
+    &:has(.o-hb-theme-edit-option-button) {
+        padding-right: 1px;
+    }
+}
+
+.o-hb-theme-edit-option-button {
+    color: $o-we-color-global;
+    border: none;
+
+    &:hover {
+        color: $o-we-fg-lighter;
+    }
+}   
