@@ -69,3 +69,19 @@ class TestWebsiteSaleStockDeliveryController(PaymentCommon, WebsiteSaleCommon):
             request.cart = sale_order
             with self.assertRaises(ValidationError):
                 WebsiteSaleController.shop_payment_validate()
+
+    def test_pickup_address_excluded_from_delivery_address_list(self):
+        """Pickup addresses must not appear in the selectable delivery address list."""
+        pickup_address = self.env["res.partner"]._address_from_json(
+            {
+                **self.dummy_partner_address_values,
+                "name": "DHL Locker",
+                "zip_code": self.dummy_partner_address_values["zip"],
+                "country_code": self.country_us.code,
+            },
+            self.partner,
+            pickup_delivery_method_id=self.free_delivery.id,
+        )
+        with self.mock_request():
+            address_data = WebsiteSale()._prepare_address_data(self.partner)
+        self.assertNotIn(pickup_address, address_data["delivery_addresses"])
