@@ -1,10 +1,13 @@
 import { Chatter } from "@mail/chatter/web_portal_project/chatter";
 import { ProjectSharingPlugin } from "@project/project_sharing/chatter/project_sharing_plugin";
+import { RecipientsInput } from "@mail/core/web/recipients_input";
 
 import { plugin, props, providePlugins, t } from "@odoo/owl";
 
 import { patch } from "@web/core/utils/patch";
 import { useService } from "@web/core/utils/hooks";
+
+Object.assign(Chatter.components, { RecipientsInput });
 
 patch(Chatter.prototype, {
     setup() {
