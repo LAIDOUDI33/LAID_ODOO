@@ -2,7 +2,6 @@
 
 import logging
 import os
-import re
 from collections.abc import Sequence
 from contextlib import ExitStack
 from typing import Literal
@@ -55,23 +54,12 @@ class IrActionsReport(models.Model):
         :returns: PDF bytes returned by Paper Muncher.
         :raises RuntimeError: If Paper Muncher fails during any phase.
         """
-        if specific_paperformat_args:
-            if not landscape and specific_paperformat_args.get('data-report-landscape'):
-                landscape = specific_paperformat_args['data-report-landscape']
-            if specific_paperformat_args.get('data-report-dpi'):
-                scale = int(specific_paperformat_args['data-report-dpi'])
-
+        specific_paperformat_args = specific_paperformat_args or {}
         paperformat = (
             self._get_report(report_ref).get_paperformat()
             if report_ref else
             self.get_paperformat()
         )
-
-        report_args = specific_paperformat_args or {}
-        margin_top = str(report_args.get('data-report-margin-top', paperformat.margin_top))
-        margin_right = str(paperformat.margin_right)
-        margin_bottom = str(report_args.get('data-report-margin-bottom', paperformat.margin_bottom))
-        margin_left = str(paperformat.margin_left)
 
         if not isinstance(bodies, (list, tuple)):
             bodies = list(bodies)
@@ -81,10 +69,10 @@ class IrActionsReport(models.Model):
 
         names = [f'pipe:/paper-muncher/{i}.html' for i in range(len(bodies))]
         extra_args = [
-            '--scale', f'{scale}dpi',
-            '--margins', f'0mm {margin_right}mm 0mm {margin_left}mm',
-            '--header-size', f'{margin_top}mm',
-            '--footer-size', f'{margin_bottom}mm',
+            '--scale', f'{76. / float(specific_paperformat_args.get('data-report-dpi', paperformat.dpi))}x',
+            '--margins', f'0mm {paperformat.margin_right}mm 0mm {paperformat.margin_left}mm',
+            '--header-size', f'{specific_paperformat_args.get('data-report-margin-top', paperformat.margin_top)}mm',
+            '--footer-size', f'{specific_paperformat_args.get('data-report-margin-bottom', paperformat.margin_bottom)}mm',
         ]
 
         if header:
@@ -93,7 +81,7 @@ class IrActionsReport(models.Model):
         if footer:
             extra_args += ['--footer', 'pipe:/paper-muncher/footer.html']
 
-        if landscape:
+        if landscape or specific_paperformat_args.get('data-report-landscape', False):
             extra_args += ['--orientation', 'landscape']
         elif paperformat and paperformat.orientation:
             extra_args += ['--orientation', paperformat.orientation.lower()]
@@ -130,8 +118,10 @@ class IrActionsReport(models.Model):
             else:
                 wsgi_environ['HTTP_X_ODOO_DATABASE'] = self.env.cr.dbname
 
+            command = [paper_muncher().bin, *names, '-o', 'pipe:/paper-muncher/output.pdf', *extra_args]
+            print(f"----------- PM {command}")
             with PaperMuncherServer(
-                args=[paper_muncher().bin, *names, '-o', 'pipe:/paper-muncher/output.pdf', *extra_args],
+                args=command,
                 os_env=os_env,
                 wsgi_environ=wsgi_environ,
             ) as server:
@@ -189,23 +179,3 @@ class IrActionsReport(models.Model):
             )
             return content, html_ids
         return super()._run_pdf_engine(engine_name, html, report_ref, landscape, **kwargs)
-
-
-_BODY_TAG_RE = re.compile(r'<body(?:\s[^>]*)?>', re.IGNORECASE)
-
-
-def partition_on_body(html: str) -> tuple[str, str, str]:
-    """
-    Get what's before the body, the body and what's after the body.
-    When no ``<body>`` was found, it returns ``(html, "", "")``.
-    """
-    html = str(html)
-    m = _BODY_TAG_RE.search(html)
-    if not m:
-        return html, '', ''
-    pre_body = html[:m.end()]
-    rest = html[m.end():]
-    body, sep, post_body = rest.rpartition('</body>')
-    if not sep:
-        return html, '', ''
-    return pre_body, body, sep + post_body
