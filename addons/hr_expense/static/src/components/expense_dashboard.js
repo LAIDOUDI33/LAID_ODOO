@@ -1,6 +1,6 @@
 import { useService } from '@web/core/utils/hooks';
 import { formatMonetary } from "@web/views/fields/formatters";
-import { Component, onWillStart, proxy, onWillUpdateProps } from "@odoo/owl";
+import { Component, asyncComputed, onWillStart } from "@odoo/owl";
 import { Domain } from "@web/core/domain";
 
 export class ExpenseDashboard extends Component {
@@ -12,16 +12,10 @@ export class ExpenseDashboard extends Component {
         this.orm = useService('orm');
         this.actionService = useService("action");
 
-        this.state = proxy({
-            expenses: {}
-        });
+        this.expenses = asyncComputed(() => this.fetchExpenseDashboardData(), { initial: [] });
 
         onWillStart(async () => {
-            await this.fetchExpenseDashboardData();
-        });
-
-        onWillUpdateProps(async () => {
-            await this.fetchExpenseDashboardData();
+            await this.expenses.currentPromise();
         });
     }
 
@@ -37,7 +31,7 @@ export class ExpenseDashboard extends Component {
             [domain],
         );
 
-        this.state.expenses = expense_states;
+        return expense_states;
     }
 
     async applyFilter(filterName) {
