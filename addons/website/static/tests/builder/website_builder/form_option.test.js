@@ -1468,3 +1468,65 @@ test("incomplete field requirements are discarded on save", async () => {
     queryOne(":iframe .s_website_form").classList.add("o_dirty");
     await contains(".o-snippets-top-actions button:contains(Save)").click();
 });
+
+test("change action of form keeps the fields modified by the user and replaces the rest", async () => {
+    onRpc("get_authorized_fields", () => ({}));
+    function withIframeRegistry(registry) {
+        registry.category("website.form_editor_actions").add("apply_job", {
+            formFields: [
+                {
+                    type: "char",
+                    modelRequired: true,
+                    fillWith: "name",
+                    name: "partner_name",
+                    string: "Your Name",
+                },
+                {
+                    type: "email",
+                    modelRequired: true,
+                    fillWith: "email",
+                    name: "email_from",
+                    string: "Your Email",
+                },
+            ],
+        });
+    }
+
+    await setupWebsiteBuilderWithSnippet("s_website_form", { withIframeRegistry });
+
+    await contains(":iframe section").click();
+    await contains("button[title='Add a new field at the end']").click();
+    expect(":iframe input[name='Custom Text']").toHaveCount(1);
+
+    await contains(":iframe span.s_website_form_label_content:contains('Your Name')").click();
+    await contains("[data-action-id='setLabelText'] input").edit("Full Name");
+    await contains(":iframe span.s_website_form_label_content:contains('Phone Number')").click();
+    await contains("[data-action-id='setLabelText'] input").edit("Mobile");
+
+    await contains(":iframe section").click();
+    await contains(".hb-row[data-label='Action'] button").click();
+    await contains("div.o-dropdown-item:contains('Apply for a Job')").click();
+    await animationFrame();
+
+    expect(":iframe form").toHaveAttribute("data-model_name", "hr.applicant");
+    expect(queryAllTexts(":iframe .s_website_form_label_content")).toEqual([
+        "Full Name",
+        "Mobile",
+        "Your Email",
+        "Custom Text",
+    ]);
+
+    // The modified "Your Name" field was superseded by the "partner_name"
+    // field of the new action, but keeps the label set by the user.
+    expect(
+        ":iframe .s_website_form_field:has(input[name='partner_name']) .s_website_form_label_content"
+    ).toHaveText("Full Name");
+    expect(":iframe .s_website_form_field:has(input[name='partner_name'])").toHaveClass(
+        "s_website_form_model_required"
+    );
+    expect(":iframe input[name='name']").toHaveCount(0);
+    // The unmodified "Your Email" field was superseded by the matching field
+    // of the new action.
+    expect(":iframe input[name='email_from']").toHaveCount(1);
+    expect(":iframe input[name='email_to']").toHaveCount(0);
+});
