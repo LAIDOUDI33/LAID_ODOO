@@ -499,8 +499,8 @@ export function makeActionManager(env, router = _router) {
                 },
                 get url() {
                     const state = controller.state;
-                    if (env.debug) {
-                        state.debug = env.debug;
+                    if (odoo.debug) {
+                        state.debug = odoo.debug;
                     }
                     return router.stateToUrl(state);
                 },
@@ -863,8 +863,8 @@ export function makeActionManager(env, router = _router) {
         // "After creating a new auxiliary browsing context and document, the session storage is copied over."
 
         // copy debug flag from current state
-        if (env.debug) {
-            state.debug = env.debug;
+        if (odoo.debug) {
+            state.debug = odoo.debug;
         }
 
         // Store current action of the current window

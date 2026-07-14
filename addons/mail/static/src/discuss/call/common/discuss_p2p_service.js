@@ -9,7 +9,7 @@ export const discussP2P = {
      */
     start(env, services) {
         const p2p = new PeerToPeer({
-            logLevel: env.debug ? "info" : undefined,
+            logLevel: odoo.debug ? "info" : undefined,
             notificationRoute: "/mail/rtc/session/notify_call_members",
         });
         services["bus_service"].subscribe(

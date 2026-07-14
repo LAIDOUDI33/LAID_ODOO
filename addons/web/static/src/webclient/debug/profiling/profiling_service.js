@@ -11,7 +11,7 @@ export const profilingService = {
     dependencies: ["orm"],
     start(env, { orm }) {
         // Only set up profiling when in debug mode
-        if (!env.debug) {
+        if (!odoo.debug) {
             return;
         }
 

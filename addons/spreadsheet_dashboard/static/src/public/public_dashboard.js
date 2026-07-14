@@ -50,7 +50,7 @@ export class PublicDashboard extends Component {
             },
             this.data.revisions || []
         );
-        if (this.env.debug) {
+        if (odoo.debug) {
             // eslint-disable-next-line no-import-assign
             spreadsheet.__DEBUG__ = spreadsheet.__DEBUG__ || {};
             spreadsheet.__DEBUG__.model = this.model;

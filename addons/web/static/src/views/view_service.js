@@ -86,7 +86,7 @@ export const viewService = {
             if (ui.isSmall) {
                 loadViewsOptions.mobile = true;
             }
-            if (env.debug) {
+            if (odoo.debug) {
                 loadViewsOptions.debug = true;
             }
             const filteredContext = Object.fromEntries(

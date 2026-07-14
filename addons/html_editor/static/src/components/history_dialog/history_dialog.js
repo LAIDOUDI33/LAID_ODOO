@@ -118,7 +118,7 @@ export class HistoryDialog extends Component {
 
     async init() {
         // Load diff2html only in debug mode, as the side-by-side comparison is only available in debug mode.
-        if (this.env.debug) {
+        if (odoo.debug) {
             await loadBundle("html_editor.assets_history_diff");
         }
         await this.updateCurrentRevision(this.state.revisionsData[0]["revision_id"]);
@@ -161,7 +161,7 @@ export class HistoryDialog extends Component {
 
     getRevisionComparisonSplit = memoize(
         async function getRevisionComparisonSplit(revisionId) {
-            if (!this.env.debug || revisionId === -1) {
+            if (!odoo.debug || revisionId === -1) {
                 return "";
             }
             let unifiedDiffString = await this.orm.call(

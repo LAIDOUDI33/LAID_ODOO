@@ -486,7 +486,7 @@ export class SearchModel extends EventBus {
     }
 
     get isDebugMode() {
-        return !!this.env.debug;
+        return !!odoo.debug;
     }
     //--------------------------------------------------------------------------
     // Public

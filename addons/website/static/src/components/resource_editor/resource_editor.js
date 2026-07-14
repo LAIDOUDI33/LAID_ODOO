@@ -54,7 +54,7 @@ export class ResourceEditor extends Component {
 
         this.keepLast = new KeepLast();
 
-        this.debug = this.env.debug;
+        this.debug = odoo.debug;
         this.viewKey =
             this.website.pageDocument &&
             this.website.pageDocument.documentElement.dataset.viewXmlid;

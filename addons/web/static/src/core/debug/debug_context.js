@@ -2,7 +2,6 @@ import { config, onWillDestroy, plugin, Plugin, providePlugins } from "@odoo/owl
 import { registry } from "@web/core/registry";
 import { services } from "@web/core/services";
 import { user } from "@web/core/user";
-import { useEnv } from "@web/owl2/utils";
 
 const debugRegistry = registry.category("debug");
 
@@ -65,8 +64,7 @@ export function useEnvDebugContext() {
 }
 
 export function useDebugCategory(category, context = {}) {
-    const env = useEnv();
-    if (env.debug) {
+    if (odoo.debug) {
         const debugContext = useEnvDebugContext();
         onWillDestroy(debugContext.activateCategory(category, context));
     }

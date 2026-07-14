@@ -14,7 +14,7 @@
                     <i class="fa fa-angle-right fa-3x"/>
                 </div>
             </t>
-            <div class="fa fa-question-circle-o flex-grow-0.5 d-flex flex-column p-3 border-bottom text-center" t-if="this.env.debug" data-tooltip="Numbers computed from your personal expenses."/>
+            <div class="fa fa-question-circle-o flex-grow-0.5 d-flex flex-column p-3 border-bottom text-center" t-if="__globals__.debug" data-tooltip="Numbers computed from your personal expenses."/>
         </div>
     </t>
 </templates>

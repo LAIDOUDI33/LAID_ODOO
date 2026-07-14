@@ -185,7 +185,7 @@ export class MassMailingHtmlField extends HtmlField {
             saveRecord: this.saveRecord.bind(this),
             discardRecord: this.discardRecord.bind(this),
         };
-        if (this.env.debug) {
+        if (odoo.debug) {
             Object.assign(props, {
                 toggleCodeView: () => this.toggleCodeView(),
             });
@@ -266,7 +266,7 @@ export class MassMailingHtmlField extends HtmlField {
             .flat()
             .find((cmd) => cmd.id === "codeview");
         if (codeViewCommand) {
-            codeViewCommand.isAvailable = () => this.env.debug;
+            codeViewCommand.isAvailable = () => odoo.debug;
         }
         return {
             ...config,

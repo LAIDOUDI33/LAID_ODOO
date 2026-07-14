@@ -82,7 +82,7 @@ export class ImageSelector extends FileSelector {
             "Uploaded image's format is not supported. Try with: " + IMAGE_EXTENSIONS.join(", ")
         );
         this.allLoadedText = _t("All images have been loaded");
-        this.showOptimizedOption = this.env.debug;
+        this.showOptimizedOption = odoo.debug;
         this.MIN_ROW_HEIGHT = 128;
 
         this.fileMimetypes = IMAGE_MIMETYPES.join(",");
@@ -148,7 +148,7 @@ export class ImageSelector extends FileSelector {
         // mode. Worst, it leads to bugs: it might fetch only optimized images
         // when clicking on "load more" which will look like it's bugged as no
         // images will appear on screen (they all will be hidden).
-        if (!this.env.debug) {
+        if (!odoo.debug) {
             const subDomain = [false];
 
             // Particular exception: if the edited image is an optimized

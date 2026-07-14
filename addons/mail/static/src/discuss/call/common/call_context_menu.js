@@ -32,7 +32,7 @@ export class CallContextMenu extends Component {
             rangeVolume: this.volume,
         });
         onMounted(() => {
-            if (!this.env.debug) {
+            if (!odoo.debug) {
                 return;
             }
             this.updateStats();

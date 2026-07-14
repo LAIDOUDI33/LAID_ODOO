@@ -70,7 +70,7 @@ patch(PropertyValue.prototype, {
 
         return {
             content: this.propertyValue,
-            debug: !!this.env.debug,
+            debug: !!odoo.debug,
             direction: localization.direction || "ltr",
             onChange: this.onWysiwygChange.bind(this),
             placeholder: this.props.placeholder,

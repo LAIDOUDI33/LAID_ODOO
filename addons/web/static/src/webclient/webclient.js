@@ -26,7 +26,7 @@ export class WebClient extends Component {
         this.actionService = useService("action");
         this.title = useService("title");
         useOwnDebugContext({ categories: ["default"] });
-        if (this.env.debug) {
+        if (odoo.debug) {
             registry.category("systray").add(
                 "web.debug_mode_menu",
                 {

@@ -158,7 +158,7 @@ export class DomainField extends Component {
         let promises = [];
         const domain = this.getDomain(props);
         try {
-            const tree = await this.treeProcessor.treeFromDomain(resModel, domain, !this.env.debug);
+            const tree = await this.treeProcessor.treeFromDomain(resModel, domain, !odoo.debug);
             const trees = !tree.negate && tree.value === "&" ? tree.children : [tree];
             promises = trees.map((tree) =>
                 this.treeProcessor.getDomainTreeDescription(resModel, tree)
@@ -241,7 +241,7 @@ export class DomainField extends Component {
         this.addDialog(DomainSelectorDialog, {
             resModel: this.getResModel(),
             domain: this.getDomain(),
-            isDebugMode: !!this.env.debug,
+            isDebugMode: !!odoo.debug,
             onConfirm: this.update.bind(this),
         });
     }

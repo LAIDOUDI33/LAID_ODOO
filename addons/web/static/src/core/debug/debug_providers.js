@@ -8,8 +8,8 @@ const commandProviderRegistry = registry.category("command_provider");
 commandProviderRegistry.add("debug", {
     provide: (env, options) => {
         const result = [];
-        if (env.debug) {
-            if (!env.debug.includes("assets")) {
+        if (odoo.debug) {
+            if (!odoo.debug.includes("assets")) {
                 result.push({
                     action() {
                         router.pushState({ debug: "assets" }, { reload: true });
