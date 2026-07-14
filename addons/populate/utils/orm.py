@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 from odoo.fields import Domain
 from odoo.tools.safe_eval import expr_eval
 
-from .expression import check_eval_kwargs, get_undefined_names
+from .expression import check_eval_args, get_undefined_names
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable
@@ -76,7 +76,7 @@ class DynamicDomain:
         object.__setattr__(self, 'dynamic_fields', dynamic_fields)
 
         def checked(**eval_kwargs):
-            check_eval_kwargs(eval_kwargs)
+            check_eval_args(**eval_kwargs)
             return expr_eval(domain_expr, eval_kwargs)
 
         object.__setattr__(self, '_resolver', checked)
