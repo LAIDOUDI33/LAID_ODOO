@@ -1,3 +1,4 @@
+import { _t } from "@web/core/l10n/translation";
 import { onWillRender } from "@web/owl2/utils";
 import { Component, onMounted, Portal, signal } from "@odoo/owl";
 import { formatFloat, formatMonetary } from "@web/views/fields/formatters";
@@ -8,14 +9,11 @@ export class ProductCatalogOrderLine extends Component {
         isSample: { type: Boolean, optional: true },
         productId: Number,
         quantity: Number,
+        minimumQuantity: { type: Number, optional: true },
         price: Number,
-        productType: String,
         uomId: { type: Number, optional: true },
-        uomDisplayName: { type: String, optional: true },
+        productUomId: { type: Number, optional: true },
         availableUoms: { type: Array, optional: true },
-        productUomFactor: { type: Number, optional: true },
-        productUomDisplayName: { type: String, optional: true },
-        sellerUomFactor: { type: Number, optional: true },
         code: { type: String, optional: true },
         readOnly: { type: Boolean, optional: true },
         warning: { type: String, optional: true },
@@ -56,6 +54,12 @@ export class ProductCatalogOrderLine extends Component {
     }
 
     get disabledButtonTooltip() {
+        if (this.disableRemove) {
+            return _t(
+                "You cannot decrease the quantity below %(minimum_quantity)s.",
+                { minimum_quantity : this.props.minimumQuantity }
+            );
+        }
         return "";
     }
 
@@ -66,7 +70,7 @@ export class ProductCatalogOrderLine extends Component {
 
     get productUnitPrice() {
         const { currencyId, digits } = this.env;
-        const productUnitPrice = this.props.price * (this.props.productUomFactor || 1);
+        const productUnitPrice = this.props.price * (this.productUomFactor || 1);
         return formatMonetary(productUnitPrice, { currencyId, digits });
     }
 
@@ -74,6 +78,26 @@ export class ProductCatalogOrderLine extends Component {
         const digits = [false, this.env.precision];
         const options = { digits, decimalPoint: ".", thousandsSep: "" };
         return parseFloat(formatFloat(this.props.quantity, options));
+    }
+
+    get uom() {
+        return this.props.availableUoms?.find((elem) => elem.id == this.props.uomId);
+    }
+
+    get uomDisplayName() {
+        return this.uom.display_name;
+    }
+
+    get productUom() {
+        return this.props.availableUoms?.find((elem) => elem.id == this.props.productUomId)
+    }
+
+    get productUomDisplayName() {
+        return this.productUom.display_name;
+    }
+
+    get productUomFactor() {
+        return this.productUom.factor / this.uom.factor;
     }
 
     get uomSelectStyle() {
@@ -90,12 +114,11 @@ export class ProductCatalogOrderLine extends Component {
     }
 
     get displayPriceByProductUoM() {
-        const { uomDisplayName, productUomDisplayName } = this.props;
         return (
-            uomDisplayName != productUomDisplayName &&
-            this.productUnitPrice &&
-            productUomDisplayName &&
-            this.showPrice
+            this.uomDisplayName != this.productUomDisplayName
+            && this.productUnitPrice
+            && this.productUomDisplayName
+            && this.showPrice
         );
     }
 }

@@ -98,10 +98,6 @@ export class ProductCatalogKanbanRecord extends KanbanRecord {
         const oldUom = data.availableUoms.find(u => u.id === data.uomId);
         if (newUom && oldUom) {
             data.uomId = newUom.id;
-            data.uomDisplayName = newUom.name;
-            if (data.productUomFactor !== undefined) {
-                data.productUomFactor = data.productUomFactor * oldUom.factor / newUom.factor;
-            }
             const price = await this._updateQuantityAndGetPrice();
             data.price = parseFloat(price);
         }
@@ -111,19 +107,37 @@ export class ProductCatalogKanbanRecord extends KanbanRecord {
         if (this.productCatalogData.readOnly) {
             return;
         }
-        this.productCatalogData.quantity = quantity || 0;
+        if (
+            this.productCatalogData.quantity === this.productCatalogData.minimumQuantity
+            && quantity < this.productCatalogData.quantity
+        ) {
+            // This condition is only triggered when the product was already at the minimum quantity
+            // possible, as stated in the sale_stock module, then the user inputs a quantity lower
+            // than this limit, in this case we need the record to forcefully update the record.
+            this.props.record.load();
+            this.props.record.model.notify();
+            return;
+        }
+        if (this.props.minimumQuantity) {
+            this.productCatalogData.quantity = Math.max(quantity || 0, this.props.minimumQuantity);
+        } else {
+            this.productCatalogData.quantity = quantity || 0;
+        }
         this.debouncedUpdateQuantity();
     }
 
     /**
      * Add the product to the order
      */
-    addProduct(qty=1) {
+    addProduct(qty = 1) {
+        if (this.productCatalogData.quantity === 0 && qty < this.productCatalogData.minimumQuantity) {
+            qty = this.productCatalogData.minimumQuantity; // Take minimum quantity when trying to add less.
+        }
         this.updateQuantity(qty);
     }
 
     /**
-     * Remove the product to the order
+     * Remove the product from the order
      */
     removeProduct() {
         this.updateQuantity(0);
