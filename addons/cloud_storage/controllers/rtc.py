@@ -15,9 +15,9 @@ class CloudStorageRtcController(RtcController):
             "start_ms": start_ms,
             "end_ms": end_ms,
         })
-        content_type = self.httprequest.content_type or "audio/ogg"
+        content_type = self.httprequest.content_type or "application/octet-stream"
         attachment_sudo = self.env["ir.attachment"].sudo().create({
-            "name": f"audio_{call_history.id}",
+            "name": f"media_{call_history.id}",
             "type": "cloud_storage",
             "raw": False,
             "res_model": "mail.call.artifact",

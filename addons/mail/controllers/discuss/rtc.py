@@ -199,10 +199,31 @@ class RtcController(Controller):
         """Save the recording, to be overriden by (cloud) storage modules"""
         pass
 
-    def _handle_audio_recording(self, call_history, start_ms, end_ms, transcribe=False):
-        """
-        TODO move to call_history model
-        Handle the audio file received from the SFU, to be overriden by the AI for transcription"""
+    @route(
+        '/mail/rtc/recording/<model("discuss.call.history"):call_history>/routing',
+        type="http",
+        auth="public",
+        cors="*",
+    )
+    def get_routing(self, call_history, start_ms, end_ms):
+        _check_jwt(request, call_history.channel_id)
+        return request.make_json_response({
+            "destination": self._get_recording_destination(call_history, start_ms, end_ms),
+        }, status=200)
+
+    @route(
+        '/mail/rtc/recording/<model("discuss.call.history"):call_history>/transcribe',
+        type="http",
+        auth="public",
+        methods=["POST"],
+        cors="*",
+        csrf=False,
+        max_content_length=30 * 1024 * 1024,  # 30MB decent margin, expecting 1h of 32k audio (~15MB)
+    )
+    def transcribe_audio(self, call_history, start_ms, end_ms):
+        _check_jwt(request, call_history.channel_id)
+        if not start_ms or not end_ms:
+            raise BadRequest()
         file_data = request.httprequest.get_data()
         if not file_data:
             raise BadRequest()
@@ -221,30 +242,3 @@ class RtcController(Controller):
             "mimetype": content_type,
         })
         return artifact_sudo.sudo(False)
-
-    @route(
-        '/mail/rtc/recording/<model("discuss.call.history"):call_history>/audio',
-        type="http",
-        auth="public",
-        methods=["POST"],
-        cors="*",
-        csrf=False,
-        max_content_length=30 * 1024 * 1024,  # 30MB decent margin, expecting 1h of 32k audio (~15MB)
-    )
-    def audio_recording(self, call_history, start_ms, end_ms, transcribe=False):
-        _check_jwt(request, call_history.channel_id)
-        if not start_ms or not end_ms:
-            raise BadRequest()
-        self._handle_audio_recording(call_history, start_ms, end_ms, transcribe)
-
-    @route(
-        '/mail/rtc/recording/<model("discuss.call.history"):call_history>/routing',
-        type="http",
-        auth="public",
-        cors="*",
-    )
-    def get_routing(self, call_history, start_ms, end_ms):
-        _check_jwt(request, call_history.channel_id)
-        return request.make_json_response({
-            "destination": self._get_recording_destination(call_history, start_ms, end_ms),
-        }, status=200)
