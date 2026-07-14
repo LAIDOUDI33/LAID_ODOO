@@ -26,6 +26,10 @@ function searchParamsCheck() {
 
 registry.category("web_tour.tours").add("alt_a_edit", {
     steps: () => [
+        {
+            content: "Check that the apps button has the correct hotkey attribute",
+            trigger: ".o_frontend_to_backend_apps_btn[data-hotkey='h']",
+        },
         pressAltA(),
         {
             content: "Check that the sidebar is in edit mode",

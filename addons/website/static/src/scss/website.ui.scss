@@ -5,6 +5,14 @@
 
 $-mini-nav-size: 40px;
 
+@mixin frontend-to-backend-icon-open {
+    &:before, .o_frontend_to_backend_icon {
+        transform: scale(.3);
+        transition-delay: 0ms;
+        transition-duration: 400ms;
+    }
+}
+
 .o_frontend_to_backend_nav {
     @include o-position-absolute(0, auto, auto, 0);
     z-index: $zindex-modal;
@@ -62,17 +70,22 @@ $-mini-nav-size: 40px;
         border-radius: 0.25rem;
     }
 
-    &:hover, &:focus-within {
-        &:before, .o_frontend_to_backend_icon {
-            transform: scale(.3);
-            transition-delay: 0ms;
-            transition-duration: 400ms;
-        }
+    &:hover {
+        @include frontend-to-backend-icon-open;
 
         .o_frontend_to_backend_buttons {
             transform: translateX(0);
             transition-delay: 0ms;
             transition-duration: 400ms;
+        }
+    }
+
+    &:focus-within {
+        @include frontend-to-backend-icon-open;
+
+        .o_frontend_to_backend_buttons {
+            transform: translateX(0);
+            transition: none;
         }
     }
 }
