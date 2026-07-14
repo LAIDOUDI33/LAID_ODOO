@@ -210,6 +210,14 @@ export class TablePlugin extends Plugin {
                 return true;
             }
         },
+        has_content_selection_predicates: (selection) => {
+            // Cells selected via ctrl+click keep the DOM selection collapsed
+            // inside a selected cell (see onMousedown). Report it as ranged so
+            // operations act on the whole cell selection at once.
+            if (closestElement(selection.anchorNode, ".o_selected_td")) {
+                return true;
+            }
+        },
         is_selection_blocker_predicates: (node) => {
             if (node.nodeName === "TABLE") {
                 return true;
