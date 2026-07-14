@@ -1,5 +1,3 @@
-// @ts-check
-
 import { EventBus, markRaw, plugin, toRaw } from "@odoo/owl";
 import { makeContext } from "@web/core/context";
 import { Domain } from "@web/core/domain";

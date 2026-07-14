@@ -21,6 +21,7 @@ import { registry } from "@web/core/registry";
  * @typedef {ReturnType<popoverService["start"]>["add"]} PopoverServiceAddFunction
  */
 
+/** @satisfies {import("registries").ServicesRegistryItemShape} */
 export const popoverService = {
     dependencies: ["overlay"],
     start(_, { overlay }) {

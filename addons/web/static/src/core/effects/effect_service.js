@@ -61,6 +61,7 @@ effectRegistry.add("rainbow_man", rainbowMan);
 // Effect service
 // -----------------------------------------------------------------------------
 
+/** @satisfies {import("registries").ServicesRegistryItemShape} */
 export const effectService = {
     dependencies: ["overlay"],
     start(env, { overlay }) {
