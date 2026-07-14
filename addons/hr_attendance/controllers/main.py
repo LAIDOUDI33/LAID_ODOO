@@ -2,6 +2,7 @@
 
 import base64
 import binascii
+import math
 import re
 
 from requests.exceptions import RequestException
@@ -26,15 +27,23 @@ class HrAttendance(http.Controller):
         return company
 
     @staticmethod
-    def _get_user_attendance_data(employee):
+    def _get_user_attendance_data(employee, include_attendance_details=False):
         response = {}
         if employee:
+            attendance_fields = ['check_in', 'check_out', 'worked_hours']
+            if include_attendance_details:
+                attendance_fields += [
+                    'break_duration',
+                    'can_edit',
+                    'in_location',
+                    'out_location',
+                ]
             response = {
                 'id': employee.id,
                 'name': employee.name,
                 'hours_today': float_round(employee.hours_today, precision_digits=3),
                 'hours_previously_today': float_round(employee.hours_previously_today, precision_digits=2),
-                'today_attendance_ids': employee.today_attendance_ids.read(['check_in', 'check_out', 'worked_hours']),
+                'today_attendance_ids': employee.today_attendance_ids.read(attendance_fields),
                 'last_attendance_worked_hours': float_round(employee.last_attendance_worked_hours, precision_digits=2),
                 'last_check_in': employee.last_check_in,
                 'attendance_state': employee.attendance_state,
@@ -43,6 +52,13 @@ class HrAttendance(http.Controller):
                 'capture_check_in_image': employee.company_id.attendance_capture_check_in,
                 'has_attendance_check_in_ability': employee._has_attendance_check_in_ability(),
             }
+            if include_attendance_details:
+                response['break_management_enabled'] = employee.company_id.attendance_break_management
+                response['last_attendance'] = (
+                    employee.last_attendance_id.read(attendance_fields)[0]
+                    if employee.last_attendance_id
+                    else False
+                )
         return response
 
     @staticmethod
@@ -55,14 +71,18 @@ class HrAttendance(http.Controller):
                 'employee_avatar': employee.image_256 and image_data_uri(employee.image_256),
                 'total_overtime': float_round(employee.total_overtime, precision_digits=2),
                 'kiosk_delay': employee.company_id.attendance_kiosk_delay * 1000,
-                'attendance': {'check_in': employee.last_attendance_id.check_in,
-                               'check_out': employee.last_attendance_id.check_out},
+                'attendance': {
+                    'id': employee.last_attendance_id.id,
+                    'check_in': employee.last_attendance_id.check_in,
+                    'check_out': employee.last_attendance_id.check_out,
+                },
                 'overtime_today': sum(request.env['hr.attendance.overtime.line'].sudo().search([
                     ('employee_id', '=', employee.id), ('date', '=', fields.Date.context_today(request.env.user))]).mapped('duration')) or 0,
                 'use_pin': employee.company_id.attendance_kiosk_use_pin,
                 'display_overtime': employee.company_id.hr_attendance_display_overtime,
                 'device_tracking_enabled': employee.company_id.attendance_device_tracking,
                 'is_employee_single_checkin': not employee.version_id.is_flexible and employee.company_id.single_check_in,
+                'break_management_enabled': employee.company_id.attendance_break_management,
             }
         return response
 
@@ -93,6 +113,22 @@ class HrAttendance(http.Controller):
         })
 
         return response
+
+    @staticmethod
+    def _normalize_break_duration(break_duration):
+        if (
+            break_duration is None
+            or break_duration is False
+            or (isinstance(break_duration, str) and not break_duration)
+        ):
+            return None
+        try:
+            duration = float(break_duration)
+        except (TypeError, ValueError):
+            return None
+        if not math.isfinite(duration) or duration < 0.0:
+            return None
+        return duration
 
     @staticmethod
     def _get_validated_check_in_image_and_type(check_in_image, capture_check_in_image):
@@ -248,6 +284,7 @@ class HrAttendance(http.Controller):
                         'barcode_source': company.attendance_barcode_source,
                         'device_tracking_enabled': company.attendance_device_tracking,
                         'capture_check_in_image': company.attendance_capture_check_in,
+                        'break_management_enabled': company.attendance_break_management,
                         'lang': py_to_js_locale(company.partner_id.lang or company.env.lang),
                         'server_version_info': odoo.release.version_info,
                     },
@@ -294,6 +331,43 @@ class HrAttendance(http.Controller):
                 return self._get_attendance_action_response(employee, notification)
         return {}
 
+    @http.route('/hr_attendance/update_break_duration', type="jsonrpc", auth="public")
+    def update_break_duration(
+        self, token, attendance_id=False, break_duration=False,
+        employee_id=False, pin_code=False, barcode=False,
+    ):
+        company = self._get_company(token)
+        if not company or not company.attendance_break_management:
+            return {}
+        employee = request.env['hr.employee'].sudo()
+        if barcode:
+            employee = employee.search([
+                ('barcode', '=', barcode),
+                ('company_id', '=', company.id),
+            ], limit=1)
+        elif employee_id:
+            employee = employee.browse(employee_id)
+            if employee.company_id != company or (
+                company.attendance_kiosk_use_pin and employee.pin != pin_code
+            ):
+                employee = request.env['hr.employee'].sudo()
+        if not employee:
+            return {}
+        if isinstance(attendance_id, bool) or not isinstance(attendance_id, int):
+            return {}
+        attendance = request.env['hr.attendance'].sudo().browse(attendance_id).exists()
+        duration = self._normalize_break_duration(break_duration)
+        if (
+            not attendance
+            or attendance.employee_id != employee
+            or attendance != employee.last_attendance_id
+            or not attendance.check_out
+            or duration is None
+        ):
+            return {}
+        attendance.write({'break_duration': duration})
+        return self._get_attendance_action_response(employee)
+
     @http.route('/hr_attendance/employees_infos', type="jsonrpc", auth="public")
     def employees_infos(self, token, limit, offset, domain):
         for condition in domain:
@@ -336,7 +410,7 @@ class HrAttendance(http.Controller):
     @http.route('/hr_attendance/attendance_user_data', type="jsonrpc", auth="user", readonly=True)
     def user_attendance_data(self):
         employee = request.env.user.employee_id
-        return self._get_user_attendance_data(employee)
+        return self._get_user_attendance_data(employee, include_attendance_details=True)
 
     def has_password(self):
         # With this method we try to know whether it's the user is on trial mode or not.

@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
-from datetime import datetime, UTC
+from datetime import UTC, datetime, timedelta
 from unittest.mock import patch
 from zoneinfo import ZoneInfo
 
 from odoo import fields
+from odoo.addons.hr_attendance.controllers.main import HrAttendance
+from odoo.exceptions import ValidationError
 from odoo.tests import Form, new_test_user
 from odoo.tests.common import tagged, TransactionCase, freeze_time
 
@@ -128,6 +130,50 @@ class TestHrAttendance(TransactionCase):
             self.test_employee.action_archive()
             self.assertEqual(test_attendance.check_out, fields.Datetime.now())
             self.assertEqual(test_attendance.worked_hours, 8.0)
+
+    def test_break_duration_updates_worked_hours(self):
+        attendance = self.env['hr.attendance'].create({
+            'employee_id': self.test_employee.id,
+            'check_in': '2024-01-01 08:00:00',
+            'check_out': '2024-01-01 17:00:00',
+        })
+        initial_hours = attendance.worked_hours
+        attendance.break_duration = 1.0
+        self.assertAlmostEqual(attendance.worked_hours, max(initial_hours - 1.0, 0.0))
+        with patch.object(fields.Datetime, 'now', lambda: datetime(2024, 1, 1, 18, 0, 0)):
+            self.assertAlmostEqual(self.test_employee.hours_today, attendance.worked_hours)
+        with self.assertRaises(ValidationError):
+            attendance.break_duration = -1
+        with self.assertRaises(ValidationError):
+            attendance.break_duration = 12
+
+    def test_break_duration_normalization(self):
+        self.assertEqual(HrAttendance._normalize_break_duration(0), 0.0)
+        self.assertEqual(HrAttendance._normalize_break_duration("0.5"), 0.5)
+        for duration in (None, False, "", "invalid", -1, float("inf"), float("nan")):
+            with self.subTest(duration=duration):
+                self.assertIsNone(HrAttendance._normalize_break_duration(duration))
+
+    def test_user_attendance_details_are_opt_in(self):
+        now = fields.Datetime.now()
+        self.env['hr.attendance'].create({
+            'employee_id': self.test_employee.id,
+            'check_in': now - timedelta(hours=2),
+            'check_out': now - timedelta(hours=1),
+        })
+
+        public_payload = HrAttendance._get_user_attendance_data(self.test_employee)
+        self.assertNotIn('last_attendance', public_payload)
+        self.assertNotIn('in_location', public_payload['today_attendance_ids'][0])
+        self.assertNotIn('can_edit', public_payload['today_attendance_ids'][0])
+
+        user_payload = HrAttendance._get_user_attendance_data(
+            self.test_employee,
+            include_attendance_details=True,
+        )
+        self.assertIn('last_attendance', user_payload)
+        self.assertIn('in_location', user_payload['last_attendance'])
+        self.assertIn('can_edit', user_payload['last_attendance'])
 
     # @freeze_time("2024-02-1")
     # def test_change_in_out_mode_when_manual_modification(self):
