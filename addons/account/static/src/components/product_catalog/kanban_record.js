@@ -12,9 +12,9 @@ patch(ProductCatalogKanbanRecord.prototype, {
         });
     },
 
-    _getUpdateQuantityAndGetPriceParams() {
+    _getUpdateCatalogQuantityParams() {
         return {
-            ...super._getUpdateQuantityAndGetPriceParams(),
+            ...super._getUpdateCatalogQuantityParams(),
             section_id: this.env.selectedSectionId ?? this.env.searchModel.selectedSection.sectionId,
         };
     },

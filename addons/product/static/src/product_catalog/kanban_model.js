@@ -76,9 +76,6 @@ export class ProductCatalogKanbanModel extends RelationalModel {
                 isSample: true,
                 quantity: Math.floor(Math.random() * 10),
                 price: Math.floor(Math.random() * 500) + 100,
-                readOnly: false,
-                uomId: 1,
-                availableUoms: [{ id: 1, name: _t("Units") }],
             };
         }
         return sampleOrderLineInfo;

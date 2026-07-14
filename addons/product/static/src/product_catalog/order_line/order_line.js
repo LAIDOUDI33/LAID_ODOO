@@ -9,12 +9,18 @@ export class ProductCatalogOrderLine extends Component {
         isSample: { type: Boolean, optional: true },
         productId: Number,
         quantity: Number,
-        minimumQuantity: { type: Number, optional: true },
-        price: Number,
+
+        // price data (only shown if provided)
+        price: { type: Number, optional: true },
+
+        // uom data (if feature enabled)
         uomId: { type: Number, optional: true },
         productUomId: { type: Number, optional: true },
         availableUoms: { type: Array, optional: true },
+
+        // other optional data
         code: { type: String, optional: true },
+        minimumQuantity: { type: Number, optional: true },
         readOnly: { type: Boolean, optional: true },
         warning: { type: String, optional: true },
     };
@@ -24,7 +30,6 @@ export class ProductCatalogOrderLine extends Component {
     rev = 0;
 
     setup() {
-        this.hasMultipleUoms = this.props.availableUoms && this.props.availableUoms.length > 1;
         onMounted(() => {
             this.portalTarget.set(document.querySelector(`#product-${this.props.productId}-price`));
         });
@@ -80,12 +85,20 @@ export class ProductCatalogOrderLine extends Component {
         return parseFloat(formatFloat(this.props.quantity, options));
     }
 
+    get isUoMFeatureEnabled() {
+        return this.props.availableUoms?.length > 0;
+    }
+
+    get hasMultipleUoms() {
+        return this.props.availableUoms && this.props.availableUoms.length > 1;
+    }
+
     get uom() {
         return this.props.availableUoms?.find((elem) => elem.id == this.props.uomId);
     }
 
     get uomDisplayName() {
-        return this.uom.display_name;
+        return this.uom?.display_name;
     }
 
     get productUom() {
@@ -93,7 +106,7 @@ export class ProductCatalogOrderLine extends Component {
     }
 
     get productUomDisplayName() {
-        return this.productUom.display_name;
+        return this.productUom?.display_name;
     }
 
     get productUomFactor() {
@@ -110,15 +123,15 @@ export class ProductCatalogOrderLine extends Component {
     }
 
     get showPrice() {
-        return true;
+        return this.props.price !== undefined;
     }
 
     get displayPriceByProductUoM() {
         return (
-            this.uomDisplayName != this.productUomDisplayName
+            this.showPrice
+            && this.isUoMFeatureEnabled
+            && this.uomDisplayName != this.productUomDisplayName
             && this.productUnitPrice
-            && this.productUomDisplayName
-            && this.showPrice
         );
     }
 }

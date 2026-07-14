@@ -60,21 +60,26 @@ export class ProductCatalogKanbanRecord extends KanbanRecord {
     //--------------------------------------------------------------------------
 
     async _onQuantityChange() {
-        const price = await this._updateQuantityAndGetPrice();
-        this.productCatalogData.price = parseFloat(price);
+        const update_values = await this._updateCatalogQuantity();
+
+        if (update_values.price) {
+            this.productCatalogData.price = parseFloat(price);
+        }
+
+        return update_values;
     }
 
-    _updateQuantityAndGetPrice() {
+    _updateCatalogQuantity() {
         // Chain RPC calls to ensure that each request is completed before starting the next one.
         // This prevents race conditions and ensures the server processes updates sequentially.
         this._pendingUpdate = this._pendingUpdate.then(() => rpc(
             "/product/catalog/update_order_line_info",
-            this._getUpdateQuantityAndGetPriceParams(),
+            this._getUpdateCatalogQuantityParams(),
         ));
         return this._pendingUpdate;
     }
 
-    _getUpdateQuantityAndGetPriceParams() {
+    _getUpdateCatalogQuantityParams() {
         return {
             res_model: this.env.orderResModel,
             order_id: this.env.orderId,
@@ -98,7 +103,7 @@ export class ProductCatalogKanbanRecord extends KanbanRecord {
         const oldUom = data.availableUoms.find(u => u.id === data.uomId);
         if (newUom && oldUom) {
             data.uomId = newUom.id;
-            const price = await this._updateQuantityAndGetPrice();
+            const price = await this._updateCatalogQuantity();
             data.price = parseFloat(price);
         }
     }

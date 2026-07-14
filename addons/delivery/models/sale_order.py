@@ -211,8 +211,8 @@ class SaleOrder(models.Model):
             weight += order_line.product_qty * order_line.product_id.weight
         return weight
 
-    def _update_order_line_info(self, *args, **kwargs):
+    def _update_order_line_info(self, *args, **kwargs) -> dict:
         """Override of `sale` to recompute the delivery prices."""
-        price_unit = super()._update_order_line_info(*args, **kwargs)
+        res = super()._update_order_line_info(*args, **kwargs)
         self.onchange_order_line()
-        return price_unit
+        return res

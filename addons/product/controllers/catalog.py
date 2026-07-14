@@ -40,10 +40,11 @@ class ProductCatalogController(Controller):
         :param string res_model: The order model.
         :param int order_id: The order id.
         :param int product_id: The product, as a `product.product` id.
-        :return: The unit price price of the product, based on the pricelist of the order and
-                 the quantity selected.
+        :param float quantity: the new product quantity.
+        :param int uom_id: the chosen uom (if any), as an `uom.uom` id.
 
-        :rtype: float
+        :return: The updated product data.
+        :rtype: dict
         """
         request.update_context(catalog_update=True)
         order = self.env[res_model].browse(order_id)

@@ -1319,20 +1319,19 @@ class PurchaseOrder(models.Model):
         res['availableUoms'] = available_uoms.read(["name", "factor"])
         return res
 
-    def _get_product_catalog_seller_data(self, product, *, uom=None, **kwargs):
+    def _get_product_catalog_seller_data(self, product, *, uom=None, **kwargs) -> dict:
         """Return a dict containing the updated product data according to the seller (if found).
 
         :param object product: Recordset of `product.product`.
         :param recordset uom: Recordset of `uom.uom`.
-        :rtype: dict
-        :return: A dict with the following structure:
+        :return: A dict with the following structure (can be empty):
             {
-                'price': float,
-                'uomDisplayName': string,
-                'uomId' : int,
+                'uomId': int (optional),
+                'productUomId': int (optional),
+                'availableUoms': list (optional),
+                'price': float (optional),
                 'sellerUomFactor': float (optional),
-                'productUomDisplayName': string (optional),
-                'min_qty': float (optional)
+                'minimumQty': float (optional),
             }
         """
         self.ensure_one()
@@ -1358,7 +1357,7 @@ class PurchaseOrder(models.Model):
                 product_infos.update(
                     self._get_product_catalog_uom_data(product, target_uom, **kwargs),
                     price=product.uom_id._compute_price(seller_price, target_uom),
-                    min_qty=seller.min_qty,
+                    minimumQuantity=seller.min_qty,
                     sellerUomFactor=seller.uom_id.factor / product.uom_id.factor,
                 )
         return product_infos
