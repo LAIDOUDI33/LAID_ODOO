@@ -319,7 +319,13 @@ export class CustomizeWebsitePlugin extends Plugin {
     withCustomHistory(action) {
         const applyFn = action.apply.bind(action);
         action.apply = async (arg) => {
-            const oldValue = action.getValue(arg);
+            // `getValue` returns the value used to display the current
+            // selection, which is not always the value that must be re-applied
+            // to restore the previous state (e.g. a color combination is stored
+            // in a separate variable). Actions can expose `getRevertValue` to
+            // provide the value undo/redo must re-apply.
+            const getRevertValue = action.getRevertValue || action.getValue;
+            const oldValue = getRevertValue.call(action, arg);
             const { value } = arg;
             const blockedApply = (v) => {
                 this.services.ui.block({ delay: 2500 });
@@ -926,6 +932,17 @@ export class CustomizeWebsiteColorAction extends BuilderAction {
             }
         }
         return getCSSVariableValue(color, style);
+    }
+    getRevertValue(arg) {
+        const value = this.getValue(arg);
+        const { combinationColor } = arg.params;
+        if (!value && combinationColor) {
+            const combination = getCSSVariableValue(combinationColor, getHtmlStyle(this.document));
+            if (combination) {
+                return `o_cc${combination}`;
+            }
+        }
+        return value;
     }
     async apply({
         params: { mainParam: color, colorType, gradientColor, combinationColor, nullValue },
