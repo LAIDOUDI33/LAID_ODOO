@@ -18,18 +18,33 @@ export class AccountDashboardKpis extends Component {
         });
 
         onWillStart(async () => {
-            this.state.cards = await this.orm.call(
-                "account.journal",
-                "get_account_dashboard_kpis",
-                []
-            );
+            await this.loadCards();
         });
     }
 
+    async loadCards() {
+        this.state.cards = await this.orm.call(
+            "account.journal",
+            "get_account_dashboard_kpis",
+            []
+        );
+    }
+
     onClickCard(card) {
-        if (card.action_id) {
-            this.action.doAction(card.action_id);
+        if (!card.action_id) {
+            return;
         }
+
+        if (card.is_invoice_layout_card) {
+            this.action.doAction(card.action_id, {
+                onClose: async () => {
+                    await this.loadCards();
+                },
+            });
+            return;
+        }
+
+        this.action.doAction(card.action_id);
     }
 
     hideKpis() {
