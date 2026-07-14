@@ -1316,7 +1316,7 @@ class PurchaseOrder(models.Model):
             return res
 
         available_uoms = product._get_available_uoms() | product.seller_ids.uom_id
-        res['availableUoms'] = available_uoms.read(["name", "factor"])
+        res['availableUoms'] = available_uoms.read(["display_name", "factor"])
         return res
 
     def _get_product_catalog_seller_data(self, product, *, uom=None, **kwargs) -> dict:
@@ -1357,6 +1357,8 @@ class PurchaseOrder(models.Model):
                 product_infos.update(
                     self._get_product_catalog_uom_data(product, target_uom, **kwargs),
                     price=product.uom_id._compute_price(seller_price, target_uom),
+
+                    # FIXME VFE is not reset according to the chosen uom, but should be
                     minimumQuantity=seller.min_qty,
                     sellerUomFactor=seller.uom_id.factor / product.uom_id.factor,
                 )
