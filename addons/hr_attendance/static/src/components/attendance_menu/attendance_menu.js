@@ -38,6 +38,7 @@ export class ActivityMenu extends Component {
             streamAvailable: null,
             activeAttendanceId: null,
             editingAttendanceId: null,
+            inlineEditDirty: false,
             editDraft: {
                 checkIn: null,
                 checkOut: null,
@@ -49,7 +50,6 @@ export class ActivityMenu extends Component {
         this.cameraCapture = null;
         this.inlineEditOriginal = null;
         this.inlineEditHasChanges = false;
-        this.inlineEditSavePending = false;
         this.saveMutex = new Mutex();
         this.scheduleInlineAutosave = useDebounced(this.saveInlineEdit, 400, {
             execBeforeUnmount: true,
@@ -91,15 +91,12 @@ export class ActivityMenu extends Component {
                 deserializeDateTime(attendanceB.check_in).ts
         );
 
-        const fallbackAttendanceId =
-            this.state.employee.last_attendance?.id ||
-            this.state.todayAttendanceRecords.at(-1)?.id ||
-            null;
+        const fallbackAttendanceId = this.state.todayAttendanceRecords.at(-1)?.id || null;
         if (!this._getAttendanceById(this.state.activeAttendanceId)) {
             this.state.activeAttendanceId = fallbackAttendanceId;
         }
         if (this.state.editingAttendanceId && !this._getAttendanceById(this.state.editingAttendanceId)) {
-            this.state.editingAttendanceId = null;
+            this._stopInlineEdit();
         }
     }
 
@@ -108,25 +105,27 @@ export class ActivityMenu extends Component {
         if (!this.state.todayAttendanceRecords.length) {
             return null;
         }
+        let totalDisplayMinutes = 0;
         const sessions = this.state.todayAttendanceRecords.map((att) => {
             const checkInDate = deserializeDateTime(att.check_in);
             const checkOutDate = att.check_out ? deserializeDateTime(att.check_out) : null;
             const duration = att.check_out
                 ? att.worked_hours
                 : this.state.employee.last_attendance_worked_hours;
+            const displayMinutes = Math.round((duration || 0) * 60);
+            totalDisplayMinutes += displayMinutes;
             return {
                 id: att.id,
                 selected: att.id === this.state.activeAttendanceId,
                 rangeLabel: `${this._formatAttendanceTime(checkInDate)} - ${
                     checkOutDate ? this._formatAttendanceTime(checkOutDate) : _t("Now")
                 }`,
-                durationLabel: formatFloatTime(duration || 0, { numeric: true }).replace(":", "h"),
+                durationLabel: formatFloatTime(displayMinutes, {
+                    numeric: true,
+                    unit: "minutes",
+                }).replace(":", "h"),
             };
         });
-        const breakDuration = this.state.todayAttendanceRecords.reduce(
-            (total, record) => total + (record.check_out ? record.break_duration || 0 : 0),
-            0
-        );
         const entries = [];
         if (attendance?.check_in) {
             const checkIn = deserializeDateTime(attendance.check_in);
@@ -155,8 +154,11 @@ export class ActivityMenu extends Component {
             selectedBreakDisplay: attendance?.break_duration
                 ? formatFloatTime(attendance.break_duration, { numeric: true })
                 : _t("No break"),
-            breakDisplay: formatFloatTime(breakDuration, { numeric: true }),
-            totalDisplay: formatFloatTime(this.state.employee.hours_today, { numeric: true }),
+            breakDisplay: formatFloatTime(this.state.employee.break_today, { numeric: true }),
+            totalDisplay: formatFloatTime(totalDisplayMinutes, {
+                numeric: true,
+                unit: "minutes",
+            }),
             sessions,
         };
     }
@@ -175,9 +177,7 @@ export class ActivityMenu extends Component {
         }
         return (
             this.state.todayAttendanceRecords.find((attendance) => attendance.id === attendanceId) ||
-            (this.state.employee?.last_attendance?.id === attendanceId
-                ? this.state.employee.last_attendance
-                : null)
+            null
         );
     }
 
@@ -196,7 +196,7 @@ export class ActivityMenu extends Component {
     async beforeDropdownOpen() {
         this.setStreamAvailable(null);
         await this.searchReadEmployee();
-        const latestAttendance = this.state.employee?.last_attendance;
+        const latestAttendance = this.state.todayAttendanceRecords.at(-1);
         if (latestAttendance) {
             this.state.activeAttendanceId = latestAttendance.id;
             if (latestAttendance.can_edit) {
@@ -247,7 +247,7 @@ export class ActivityMenu extends Component {
         if (!dateTime) {
             return false;
         }
-        return serializeDateTime(dateTime.set({ second: 0, millisecond: 0 }));
+        return serializeDateTime(dateTime);
     }
 
     updateInlineDateTimeDraft(fieldName, value) {
@@ -265,64 +265,56 @@ export class ActivityMenu extends Component {
             }
         }
         this.state.editDraft[fieldName] = nextDateTime;
-    }
-
-    onInlineDateTimeChange(fieldName, value) {
-        this.updateInlineDateTimeDraft(fieldName, value);
-        this.inlineEditHasChanges = true;
+        this.state.inlineEditDirty = true;
         this.scheduleInlineAutosave();
     }
 
     onInlineBreakDurationInput(value) {
         this.state.editDraft.breakDuration = value;
-        this.inlineEditHasChanges = true;
+        this.state.inlineEditDirty = true;
         this.scheduleInlineAutosave();
     }
 
-    async flushInlineAutosave() {
-        this.scheduleInlineAutosave.cancel(true);
-        await this.saveMutex.getUnlockedDef();
+    flushInlineAutosave() {
+        this.scheduleInlineAutosave.cancel();
+        return this.saveInlineEdit();
     }
 
     async selectAttendance(attendanceId) {
-        if (this.state.activeAttendanceId === attendanceId) {
-            await this.flushInlineAutosave();
-            this.state.editingAttendanceId = null;
-            this.state.activeAttendanceId = null;
-            this.inlineEditOriginal = null;
-            this.inlineEditHasChanges = false;
+        const collapseAttendance = this.state.activeAttendanceId === attendanceId;
+        const wasEditing = Boolean(this.state.editingAttendanceId);
+        if (wasEditing && !(await this.flushInlineAutosave())) {
             return;
         }
-        if (this.state.editingAttendanceId && this.state.editingAttendanceId !== attendanceId) {
-            await this.flushInlineAutosave();
+        if (collapseAttendance) {
+            this._stopInlineEdit();
+            this.state.activeAttendanceId = null;
+            return;
+        }
+        if (wasEditing) {
             this.startInlineEdit(attendanceId);
             return;
         }
-        if (this.state.editingAttendanceId) {
+        const attendance = this._getAttendanceById(attendanceId);
+        if (!attendance) {
             return;
         }
-        const attendance = this._getAttendanceById(attendanceId);
-        if (attendance) {
-            if (attendance.can_edit) {
-                this.startInlineEdit(attendance.id);
-            } else {
-                this.state.activeAttendanceId = attendance.id;
-            }
+        if (attendance.can_edit) {
+            this.startInlineEdit(attendance.id);
+        } else {
+            this.state.activeAttendanceId = attendance.id;
         }
     }
 
     startInlineEdit(attendanceId = this.state.activeAttendanceId) {
         const attendance = this._getAttendanceById(attendanceId);
-        if (!(attendance && attendance.can_edit)) {
+        if (!attendance?.can_edit) {
             return;
         }
         this.state.activeAttendanceId = attendance.id;
         this.state.editingAttendanceId = attendance.id;
-        this.state.editDraft.checkIn = deserializeDateTime(attendance.check_in);
-        this.state.editDraft.checkOut = attendance.check_out ? deserializeDateTime(attendance.check_out) : null;
-        this.state.editDraft.breakDuration = formatFloatTime(
-            Math.max(attendance.break_duration || 0, 0)
-        );
+        this._setInlineEditDraft(attendance);
+        this.state.inlineEditDirty = false;
         this.inlineEditOriginal = {
             attendanceId: attendance.id,
             values: {
@@ -334,74 +326,107 @@ export class ActivityMenu extends Component {
         this.inlineEditHasChanges = false;
     }
 
+    _setInlineEditDraft(attendance) {
+        this.state.editDraft.checkIn = deserializeDateTime(attendance.check_in);
+        this.state.editDraft.checkOut = attendance.check_out
+            ? deserializeDateTime(attendance.check_out)
+            : null;
+        this.state.editDraft.breakDuration = formatFloatTime(attendance.break_duration || 0);
+    }
+
+    _stopInlineEdit() {
+        this.state.editingAttendanceId = null;
+        this.state.inlineEditDirty = false;
+        this.inlineEditOriginal = null;
+        this.inlineEditHasChanges = false;
+    }
+
     async discardInlineEdit() {
         this.scheduleInlineAutosave.cancel();
-        await this.saveMutex.getUnlockedDef();
-        const original = this.inlineEditOriginal;
-        try {
-            if (original && this.inlineEditHasChanges) {
-                await this.orm.write("hr.attendance", [original.attendanceId], original.values);
-                await this.searchReadEmployee();
-            }
-            this.state.editingAttendanceId = null;
-            this.inlineEditOriginal = null;
-            this.inlineEditHasChanges = false;
-            this.dropdown.close();
-        } catch (error) {
-            this.notification.add(
-                error?.data?.message || error?.message || _t("Could not discard the attendance changes."),
-                {
-                    title: _t("Attendance Error"),
-                    type: "danger",
+        return this.saveMutex.exec(async () => {
+            try {
+                if (this.inlineEditOriginal && this.inlineEditHasChanges) {
+                    await this.orm.write(
+                        "hr.attendance",
+                        [this.inlineEditOriginal.attendanceId],
+                        this.inlineEditOriginal.values
+                    );
+                    await this.searchReadEmployee();
                 }
-            );
-        }
+                this._stopInlineEdit();
+                this.dropdown.close();
+            } catch (error) {
+                this._notifyInlineEditError(error);
+            }
+        });
     }
 
     saveInlineEdit() {
-        this.inlineEditSavePending = true;
-        return this.saveMutex.exec(async () => {
-            if (!this.inlineEditSavePending) {
-                return;
-            }
-            this.inlineEditSavePending = false;
-            await this._saveInlineEdit();
-        });
+        return this.saveMutex.exec(() => this._saveInlineEdit());
     }
 
     async _saveInlineEdit() {
         const attendanceId = this.state.editingAttendanceId;
         if (!attendanceId) {
-            return;
+            return true;
         }
-        if (!this._parseDateTimeInputValue(this.state.editDraft.checkIn)) {
+        if (!this.state.inlineEditDirty) {
+            return true;
+        }
+        const draft = this.state.editDraft;
+        if (!this._parseDateTimeInputValue(draft.checkIn)) {
             this.notification.add(_t("Check-in is required."), {
                 title: _t("Attendance Error"),
                 type: "danger",
             });
-            return;
+            return false;
         }
+        this.state.inlineEditDirty = false;
         try {
+            const attendance = this._getAttendanceById(attendanceId);
+            const checkOut =
+                this._parseDateTimeInputValue(draft.checkOut) ||
+                this._getAttendanceFieldDateTime(attendance, "checkOut");
             const vals = {
-                check_in: this._serializeDateTimeInputValue(this.state.editDraft.checkIn),
-                check_out: this.state.editDraft.checkOut
-                    ? this._serializeDateTimeInputValue(this.state.editDraft.checkOut)
-                    : false,
-                break_duration: this.state.editDraft.checkOut
-                    ? Math.max(parseFloatTime(this.state.editDraft.breakDuration) || 0, 0)
+                check_in: this._serializeDateTimeInputValue(draft.checkIn),
+                check_out: checkOut ? this._serializeDateTimeInputValue(checkOut) : false,
+                break_duration: checkOut
+                    ? parseFloatTime(draft.breakDuration) || 0
                     : 0,
             };
             await this.orm.write("hr.attendance", [attendanceId], vals);
-            await this.searchReadEmployee();
+            this.inlineEditHasChanges = true;
         } catch (error) {
-            this.notification.add(
-                error?.data?.message || error?.message || _t("Could not update this attendance."),
-                {
-                    title: _t("Attendance Error"),
-                    type: "danger",
-                }
-            );
+            this.state.inlineEditDirty = true;
+            this._notifyInlineEditError(error);
+            return false;
         }
+        try {
+            await this.searchReadEmployee();
+        } catch {
+            this.notification.add(_t("Attendance saved, but the display could not be refreshed."), {
+                title: _t("Attendance Error"),
+                type: "warning",
+            });
+            return true;
+        }
+        if (!this.state.inlineEditDirty) {
+            const attendance = this._getAttendanceById(attendanceId);
+            if (attendance) {
+                this._setInlineEditDraft(attendance);
+            }
+        }
+        return true;
+    }
+
+    _notifyInlineEditError(error) {
+        this.notification.add(
+            error?.data?.message || error?.message || _t("Could not update this attendance."),
+            {
+                title: _t("Attendance Error"),
+                type: "danger",
+            }
+        );
     }
 
     async checking({ latitude = false, longitude = false, checkInImage = null } = {}) {
@@ -412,6 +437,11 @@ export class ActivityMenu extends Component {
                 check_in_image: checkInImage,
             });
             this._searchReadEmployeeFill();
+            this._stopInlineEdit();
+            const latestAttendance = this.state.todayAttendanceRecords.at(-1);
+            if (this.dropdown.isOpen && latestAttendance?.can_edit) {
+                this.startInlineEdit(latestAttendance.id);
+            }
             if (this.employee?.notification?.message) {
                 this.notification.add(this.employee.notification.message, {
                     type: this.employee.notification.type,
@@ -454,17 +484,17 @@ export class ActivityMenu extends Component {
         this._attendanceInProgress = true;
         const attendanceWasCheckedIn = this.state.checkedIn;
         if (this.state.editingAttendanceId) {
-            await this.flushInlineAutosave();
+            if (!(await this.flushInlineAutosave())) {
+                this._attendanceInProgress = false;
+                return;
+            }
             if (attendanceWasCheckedIn && !this.state.checkedIn) {
-                this.state.editingAttendanceId = null;
-                this.inlineEditOriginal = null;
-                this.inlineEditHasChanges = false;
+                this._stopInlineEdit();
                 this.dropdown.close();
                 this._attendanceInProgress = false;
                 return;
             }
         }
-
         const checkInImage = this.cameraCapture?.();
         if (this.closeSystrayOnCheckIn) {
             this.dropdown.close();

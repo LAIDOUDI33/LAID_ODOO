@@ -41,6 +41,9 @@ class HrEmployee(models.Model):
     hours_today = fields.Float(
         compute='_compute_hours_today',
         groups="hr_attendance.group_hr_attendance_own,hr_attendance.group_hr_attendance_officer,hr.group_hr_user")
+    break_today = fields.Float(
+        compute='_compute_hours_today',
+        groups="hr_attendance.group_hr_attendance_own,hr_attendance.group_hr_attendance_officer,hr.group_hr_user")
     hours_previously_today = fields.Float(
         compute='_compute_hours_today',
         groups="hr_attendance.group_hr_attendance_own,hr_attendance.group_hr_attendance_officer,hr.group_hr_user")
@@ -156,7 +159,12 @@ class HrEmployee(models.Model):
                 employee.hours_last_month_display = "%g" % employee.hours_last_month
                 employee.hours_last_month_overtime = round(overtime_hours, 2)
 
-    @api.depends('attendance_ids', 'attendance_ids.check_in', 'attendance_ids.check_out')
+    @api.depends(
+        'attendance_ids',
+        'attendance_ids.break_duration',
+        'attendance_ids.check_in',
+        'attendance_ids.check_out',
+    )
     def _compute_hours_today(self):
         now = fields.Datetime.now()
         now_utc = now.replace(tzinfo=datetime.UTC)
@@ -181,28 +189,29 @@ class HrEmployee(models.Model):
                 employee.today_attendance_ids = attendances
                 hours_previously_today = 0
                 worked_hours = 0
+                break_today = 0
                 attendance_worked_hours = 0
                 for attendance in attendances:
                     interval_start = max(attendance.check_in, start_naive)
-                    interval_end = min(attendance.check_out or now, now)
-                    if interval_end <= interval_start:
-                        attendance_worked_hours = 0.0
-                    else:
-                        attendance_worked_hours = (interval_end - interval_start).total_seconds() / 3600.0
-                        total_duration = (
-                            (attendance.check_out - attendance.check_in).total_seconds() / 3600.0
-                            if attendance.check_out
-                            else 0.0
-                        )
-                        if attendance.break_duration and total_duration > 0:
-                            break_duration = attendance.break_duration * attendance_worked_hours / total_duration
-                            attendance_worked_hours = max(attendance_worked_hours - break_duration, 0.0)
+                    attendance_worked_hours = (
+                        (attendance.check_out or now) - interval_start
+                    ).total_seconds() / 3600.0
+                    total_duration = (
+                        (attendance.check_out - attendance.check_in).total_seconds() / 3600.0
+                        if attendance.check_out
+                        else 0.0
+                    )
+                    if attendance.break_duration and total_duration > 0:
+                        break_duration = attendance.break_duration * attendance_worked_hours / total_duration
+                        attendance_worked_hours = max(attendance_worked_hours - break_duration, 0.0)
+                        break_today += break_duration
                     worked_hours += attendance_worked_hours
                     hours_previously_today += attendance_worked_hours
                 employee.last_attendance_worked_hours = attendance_worked_hours
                 hours_previously_today -= attendance_worked_hours
                 employee.hours_previously_today = hours_previously_today
                 employee.hours_today = worked_hours
+                employee.break_today = break_today
 
     @api.depends('attendance_ids')
     def _compute_last_attendance_id(self):

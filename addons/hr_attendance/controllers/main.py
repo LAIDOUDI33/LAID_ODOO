@@ -54,11 +54,7 @@ class HrAttendance(http.Controller):
             }
             if include_attendance_details:
                 response['break_management_enabled'] = employee.company_id.attendance_break_management
-                response['last_attendance'] = (
-                    employee.last_attendance_id.read(attendance_fields)[0]
-                    if employee.last_attendance_id
-                    else False
-                )
+                response['break_today'] = float_round(employee.break_today, precision_digits=3)
         return response
 
     @staticmethod
@@ -118,7 +114,7 @@ class HrAttendance(http.Controller):
     def _normalize_break_duration(break_duration):
         if (
             break_duration is None
-            or break_duration is False
+            or isinstance(break_duration, bool)
             or (isinstance(break_duration, str) and not break_duration)
         ):
             return None
@@ -284,7 +280,6 @@ class HrAttendance(http.Controller):
                         'barcode_source': company.attendance_barcode_source,
                         'device_tracking_enabled': company.attendance_device_tracking,
                         'capture_check_in_image': company.attendance_capture_check_in,
-                        'break_management_enabled': company.attendance_break_management,
                         'lang': py_to_js_locale(company.partner_id.lang or company.env.lang),
                         'server_version_info': odoo.release.version_info,
                     },
@@ -405,7 +400,11 @@ class HrAttendance(http.Controller):
                                                   device_tracking_enabled=employee.company_id.attendance_device_tracking)
         check_in_image_data = self._get_validated_check_in_image_and_type(check_in_image, employee.company_id.attendance_capture_check_in)
         notification = employee.with_context({'is_from_systray_check_in_out': True})._attendance_action_change(geo_ip_response, check_in_image_data)
-        return self._get_attendance_action_response(employee, notification)
+        response = self._get_attendance_action_response(employee, notification)
+        response.update(
+            self._get_user_attendance_data(employee, include_attendance_details=True)
+        )
+        return response
 
     @http.route('/hr_attendance/attendance_user_data', type="jsonrpc", auth="user", readonly=True)
     def user_attendance_data(self):

@@ -7,11 +7,14 @@
             t-value="attendanceReviewState.editingAttendanceId === attendanceReviewDetails.id"/>
         <div class="d-flex justify-content-end text-end mb-2">
             <div>
-                <strong class="fs-5 lh-1">
-                    <t t-out="attendanceReviewDetails.totalDisplay"/>
-                </strong>
+                <div class="d-flex align-items-baseline justify-content-end gap-2">
+                    <span class="small text-muted">Worked</span>
+                    <strong class="fs-5 lh-1">
+                        <t t-out="attendanceReviewDetails.totalDisplay"/>
+                    </strong>
+                </div>
                 <div t-if="attendanceReviewDetails.showBreakSummary" class="small text-muted">
-                    (<t t-out="attendanceReviewDetails.breakDisplay"/>)
+                    Break: <t t-out="attendanceReviewDetails.breakDisplay"/>
                 </div>
             </div>
         </div>
@@ -36,7 +39,7 @@
                     </strong>
                 </div>
                 <div t-if="session.selected" class="border-top p-2">
-                    <div class="row g-2 align-items-end">
+                    <div class="row g-2 align-items-start">
                         <div t-foreach="attendanceReviewDetails.entries"
                             t-as="entry" t-key="entry.key" class="col-6 min-w-0">
                             <label class="small fw-semibold text-muted mb-1">
@@ -47,7 +50,7 @@
                                     cssClass="'w-100 min-w-0'"
                                     inputCssClass="'o_input border-0 border-bottom rounded-0 bg-transparent py-1 w-100'"
                                     value="this._getInlineTimeValue(attendanceReviewState.editDraft.checkIn)"
-                                    onChange="(value) => this.onInlineDateTimeChange('checkIn', value)"
+                                    onChange="(value) => this.updateInlineDateTimeDraft('checkIn', value)"
                                     onInvalid="() => this.updateInlineDateTimeDraft('checkIn', null)"
                                     showSeconds="false"
                                     minutesRounding="1"/>
@@ -57,7 +60,7 @@
                                     cssClass="'w-100 min-w-0'"
                                     inputCssClass="'o_input border-0 border-bottom rounded-0 bg-transparent py-1 w-100'"
                                     value="this._getInlineTimeValue(attendanceReviewState.editDraft.checkOut)"
-                                    onChange="(value) => this.onInlineDateTimeChange('checkOut', value)"
+                                    onChange="(value) => this.updateInlineDateTimeDraft('checkOut', value)"
                                     onInvalid="() => this.updateInlineDateTimeDraft('checkOut', null)"
                                     showSeconds="false"
                                     minutesRounding="1"/>
@@ -93,7 +96,6 @@
                 </div>
             </div>
         </div>
-
     </div>
 </t>
 

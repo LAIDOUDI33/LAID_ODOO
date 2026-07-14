@@ -138,22 +138,41 @@ class TestHrAttendance(TransactionCase):
             'check_out': '2024-01-01 17:00:00',
         })
         initial_hours = attendance.worked_hours
-        attendance.break_duration = 1.0
-        self.assertAlmostEqual(attendance.worked_hours, max(initial_hours - 1.0, 0.0))
         with patch.object(fields.Datetime, 'now', lambda: datetime(2024, 1, 1, 18, 0, 0)):
+            self.test_employee.invalidate_recordset(['break_today', 'hours_today'])
+            initial_hours_today = self.test_employee.hours_today
+            attendance.break_duration = 1.0
+            self.assertAlmostEqual(attendance.worked_hours, max(initial_hours - 1.0, 0.0))
             self.assertAlmostEqual(self.test_employee.hours_today, attendance.worked_hours)
+            self.assertAlmostEqual(self.test_employee.hours_today, initial_hours_today - 1.0)
+            self.assertEqual(self.test_employee.break_today, 1.0)
         with self.assertRaises(ValidationError):
             attendance.break_duration = -1
         with self.assertRaises(ValidationError):
             attendance.break_duration = 12
 
+    def test_hours_today_prorates_break_for_cross_midnight_attendance(self):
+        employee = self.env['hr.employee'].create({'name': 'Cross Midnight', 'tz': 'UTC'})
+        self.env['hr.attendance'].create({
+            'employee_id': employee.id,
+            'check_in': datetime(2024, 1, 1, 22),
+            'check_out': datetime(2024, 1, 2, 2),
+            'break_duration': 1,
+        })
+
+        with patch.object(fields.Datetime, 'now', lambda: datetime(2024, 1, 2, 3)):
+            employee.invalidate_recordset(['break_today', 'hours_today'])
+            self.assertEqual(employee.break_today, 0.5)
+            self.assertEqual(employee.hours_today, 1.5)
+
     def test_break_duration_normalization(self):
         self.assertEqual(HrAttendance._normalize_break_duration(0), 0.0)
         self.assertEqual(HrAttendance._normalize_break_duration("0.5"), 0.5)
-        for duration in (None, False, "", "invalid", -1, float("inf"), float("nan")):
+        for duration in (None, False, True, "", "invalid", -1, float("inf"), float("nan")):
             with self.subTest(duration=duration):
                 self.assertIsNone(HrAttendance._normalize_break_duration(duration))
 
+    @freeze_time("2024-01-02 12:00:00")
     def test_user_attendance_details_are_opt_in(self):
         now = fields.Datetime.now()
         self.env['hr.attendance'].create({
@@ -164,6 +183,7 @@ class TestHrAttendance(TransactionCase):
 
         public_payload = HrAttendance._get_user_attendance_data(self.test_employee)
         self.assertNotIn('last_attendance', public_payload)
+        self.assertNotIn('break_today', public_payload)
         self.assertNotIn('in_location', public_payload['today_attendance_ids'][0])
         self.assertNotIn('can_edit', public_payload['today_attendance_ids'][0])
 
@@ -171,9 +191,10 @@ class TestHrAttendance(TransactionCase):
             self.test_employee,
             include_attendance_details=True,
         )
-        self.assertIn('last_attendance', user_payload)
-        self.assertIn('in_location', user_payload['last_attendance'])
-        self.assertIn('can_edit', user_payload['last_attendance'])
+        self.assertNotIn('last_attendance', user_payload)
+        self.assertIn('break_today', user_payload)
+        self.assertIn('in_location', user_payload['today_attendance_ids'][0])
+        self.assertIn('can_edit', user_payload['today_attendance_ids'][0])
 
     # @freeze_time("2024-02-1")
     # def test_change_in_out_mode_when_manual_modification(self):
