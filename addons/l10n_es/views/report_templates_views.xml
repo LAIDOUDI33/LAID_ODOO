@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="l10n_es_external_layout_folder" inherit_id="web.external_layout_folder">
+        <xpath expr="//t[@t-set='header_shape_height']" position="after">
+            <t t-if="res_company.country_code == 'ES'">
+                <t t-set="header_shape_height" t-value="'198'"/>
+            </t>
+        </xpath>
+    </template>
+</odoo>

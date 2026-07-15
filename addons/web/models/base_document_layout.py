@@ -179,10 +179,15 @@ class BaseDocumentLayout(models.TransientModel):
                 wizard.primary_color = wizard.logo_primary_color or DEFAULT_PRIMARY
                 wizard.secondary_color = wizard.logo_secondary_color or DEFAULT_SECONDARY
 
+    def _adapt_paperformat(self):
+        """Automatically change paper format based on report layout"""
+        pass
+
     @api.onchange('report_layout_id')
     def _onchange_report_layout_id(self):
         for wizard in self:
             wizard.external_report_layout_id = wizard.report_layout_id.view_id
+        self._adapt_paperformat()
 
     @api.onchange('logo')
     def _onchange_logo(self):

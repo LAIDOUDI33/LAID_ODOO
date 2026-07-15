@@ -36,6 +36,8 @@ Spanish charts of accounts (PGCE 2008).
         'data/product_data.xml',
         'views/report_invoice.xml',
         'views/res_config_settings_views.xml',
+        'views/report_templates_views.xml',
+        'data/report_paperformat_data.xml',
         'data/mod111.xml',
         'data/mod115.xml',
         'data/mod303.xml',
