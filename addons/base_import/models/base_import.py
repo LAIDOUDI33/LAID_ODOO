@@ -24,6 +24,7 @@ from PIL import Image
 
 from odoo import api, fields, models
 from odoo.tools.translate import _
+from odoo.tools.image import get_webp_size
 from odoo.tools.mimetypes import guess_mimetype
 from odoo.tools import config, DEFAULT_SERVER_DATE_FORMAT, DEFAULT_SERVER_DATETIME_FORMAT, pycompat, parse_version
 
@@ -1285,6 +1286,19 @@ class Import(models.TransientModel):
                     field=name, field_type=field_type
                 )
 
+    def _validate_webp_image(self, content, field):
+        size = get_webp_size(content)
+        if not size:
+            raise ImportValidationError(
+                _("This file could not be decoded as an image file."),
+                field=field,
+            )
+        if size[0] * size[1] > 42e6:  # Nokia Lumia 1020 photo resolution
+            raise ImportValidationError(
+                _("Image size excessive, imported images must be smaller than 42 million pixel"),
+                field=field,
+            )
+
     def _import_image_by_url(self, url, session, field, line_number):
         """ Imports an image by URL
 
@@ -1315,6 +1329,10 @@ class Import(models.TransientModel):
                         _("File size exceeds configured maximum (%s bytes)", maxsize),
                         field=field
                     )
+
+            if content[0:4] == b'RIFF' and content[8:15] == b'WEBPVP8':
+                self._validate_webp_image(content, field)
+                return base64.b64encode(content)
 
             image = Image.open(io.BytesIO(content))
             w, h = image.size
