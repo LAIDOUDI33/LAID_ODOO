@@ -85,7 +85,10 @@ class HrLeaveReportCalendar(models.Model):
     def _compute_display_name(self):
         if self.env.context.get('hide_employee_name') and 'employee_id' in self.env.context.get('group_by', []):
             for record in self:
-                record.display_name = record.name.removeprefix(f"{record.employee_id.name}").lstrip(": ")
+                if self.env.context['scale'] in ['month', 'quarter'] and record.duration <= 1:
+                    record.display_name = record.duration
+                else:
+                    record.display_name = record.name.removeprefix(f"{record.employee_id.name}").lstrip(": ")
         else:
             super()._compute_display_name()
 
