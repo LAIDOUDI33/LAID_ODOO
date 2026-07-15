@@ -1,6 +1,6 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-from odoo import models
+from odoo import api, models
 
 
 class StockRule(models.Model):
@@ -21,3 +21,21 @@ class StockMove(models.Model):
         if res.get('group_id') and len(res['group_id'].mrp_production_ids) == 1:
             res['project_id'] = res['group_id'].mrp_production_ids.project_id.id
         return res
+
+    @api.depends('production_id.project_id')
+    def _compute_project_id(self):
+        super()._compute_project_id()
+        for move in self:
+            if move.production_id:
+                move.project_id = move.production_id.project_id
+
+
+class StockMoveLine(models.Model):
+    _inherit = 'stock.move.line'
+
+    @api.depends('production_id.project_id')
+    def _compute_project_id(self):
+        super()._compute_project_id()
+        for move_line in self:
+            if move_line.production_id:
+                move_line.project_id = move_line.production_id.project_id
