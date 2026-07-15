@@ -282,7 +282,7 @@
                         <h6 class="bg-secondary p-1 fw-bold w-50 ms-auto">Payments</h6>
                         <table class="table table-sm table-borderless w-50 ms-auto" >
                             <tbody>
-                            <tr t-foreach='payments' t-as='payment'>
+                            <tr t-if="payment['total']" t-foreach='payments' t-as='payment'>
                                 <td class="ps-2 fw-bold" ><span t-out="payment['name']">Payment Name Demo</span></td>
                                 <td class="text-end">
                                     <span t-if="currency['position']">
@@ -414,13 +414,14 @@
                     </div>
                     <br/>
                     <div class="oe_structure"></div>
+                    <h6 class="bg-secondary p-1 fw-bold">Payment Summery</h6>
                     <table class="table table-sm table-borderless" >
                         <thead><tr>
-                            <th class="text-start">Name</th>
+                            <th class="text-start fw-bold">Name</th>
                             <th/>
-                            <th class="text-end">Expected</th>
-                            <th t-if="(state == 'closed' or state == 'multiple') and payments" class="text-end">Counted</th>
-                            <th t-if="(state == 'closed' or state == 'multiple') and payments" class="text-end">Difference</th>
+                            <th class="text-end fw-bold">Expected</th>
+                            <th t-if="(state == 'closed' or state == 'multiple') and payments" class="text-end fw-bold">Counted</th>
+                            <th t-if="(state == 'closed' or state == 'multiple') and payments" class="text-end fw-bold">Difference</th>
                         </tr></thead>
                         <tbody>
                             <t t-foreach="payments" t-as="method">

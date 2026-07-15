@@ -207,9 +207,6 @@ class ReportPoint_Of_SaleReport_Saledetails(models.AbstractModel):
                             payment['count'] = True
                     else:
                         is_cash_method = True
-                        payment['final_count'] = payment['total'] + session.opening_balance
-                        payment['money_counted'] = cash_counted
-                        payment['money_difference'] = payment['money_counted'] - payment['final_count']
                         cash_moves = self.env['account.bank.statement.line'].search([('pos_session_id', '=', session.id)])
                         cash_in_out_list = []
                         cash_in_count = 0
@@ -219,6 +216,7 @@ class ReportPoint_Of_SaleReport_Saledetails(models.AbstractModel):
                                 'name': _('Cash Opening'),
                                 'amount': session.opening_balance,
                             })
+                        cash_moves_total = 0
                         for cash_move in cash_moves:
                             if cash_move.amount > 0:
                                 cash_in_count += 1
@@ -229,15 +227,20 @@ class ReportPoint_Of_SaleReport_Saledetails(models.AbstractModel):
                             if cash_move.move_id.journal_id.id == payment['journal_id']:
                                 cash_in_out_list.append({
                                     'name': cash_move.payment_ref if cash_move.payment_ref else name,
-                                    'amount': cash_move.amount
+                                    'amount': cash_move.amount,
+                                    'is_reconciled': cash_move.is_reconciled,
                                 })
+                                if not cash_move.is_reconciled:
+                                    cash_moves_total += cash_move.amount
+                        payment['final_count'] = payment['total'] + session.opening_balance + cash_moves_total
+                        payment['money_counted'] = cash_counted
+                        payment['money_difference'] = payment['money_counted'] - payment['final_count']
                         payment['cash_moves'] = cash_in_out_list
                         payment['count'] = True
             if not is_cash_method:
                 cash_name = _('Cash %(session_name)s', session_name=session.name)
                 previous_session = self.env['pos.session'].search([('id', '<', session.id), ('state', '=', 'closed'), ('config_id', '=', session.config_id.id)], limit=1)
                 final_count = previous_session.closing_balance
-                cash_difference = session.closing_balance - final_count
                 cash_moves = self.env['account.bank.statement.line'].search([('pos_session_id', '=', session.id)], order='date asc')
                 cash_in_out_list = []
 
@@ -247,15 +250,17 @@ class ReportPoint_Of_SaleReport_Saledetails(models.AbstractModel):
                         'amount': previous_session.closing_balance,
                     })
 
-                # If there is a cash difference, we remove the last cash move which is the cash difference
-                if session.currency_id.round(cash_difference) != 0:
-                    cash_moves = cash_moves[:-1]
-
+                cash_moves_total = 0
                 for cash_move in cash_moves:
                     cash_in_out_list.append({
                         'name': cash_move.payment_ref,
-                        'amount': cash_move.amount
+                        'amount': cash_move.amount,
+                        'is_reconciled': cash_move.is_reconciled,
                     })
+                    if not cash_move.is_reconciled:
+                        cash_moves_total += cash_move.amount
+                final_count += cash_moves_total
+                cash_difference = session.closing_balance - final_count
                 payments.insert(0, {
                     'name': cash_name,
                     'total': 0,
