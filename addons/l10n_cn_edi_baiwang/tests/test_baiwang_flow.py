@@ -182,3 +182,66 @@ class TestL10nCnBaiwangFlow(TestAccountMoveSendCommon):
 
     def test_10_red_form_status_cron_handles_empty_queue(self):
         self.env['l10n_cn_edi.document']._cron_check_red_form_status()
+
+    def test_11_red_form_pending_to_confirmed_lifecycle(self):
+        """Mock the B2B workflow where a red form goes to Pending, then is approved by the buyer."""
+        invoice = self._create_posted_invoice()
+        invoice.l10n_cn_baiwang_invoice_no = '24442000000071309399'
+        self._create_baiwang_proxy_user('lifecycle-test')
+
+        # 1. Create the Reversal (Credit Note)
+        wizard = self.env['account.move.reversal'].with_context(
+            active_ids=invoice.ids,
+            active_model='account.move',
+        ).create({
+            'journal_id': invoice.journal_id.id,
+            'reason': 'Customer rejected goods',
+            'l10n_cn_baiwang_red_form_type': '02',
+        })
+        wizard.reverse_moves()
+        credit_note = wizard.new_move_ids
+
+        # 2. Mock the Red Form Request to return '02' (Pending)
+        pending_response = {
+            'success': True,
+            'response': [{
+                'redConfirmUuid': 'mock-uuid-123',
+                'redConfirmNo': 'mock-no-456',
+                'confirmState': '02',  # 02 = Pending Buyer Approval
+            }],
+        }
+
+        with patch(
+            'odoo.addons.l10n_cn_edi_baiwang.models.account_edi_proxy_user.AccountEdiProxyClientUser._l10n_cn_baiwang_contact_proxy',
+            return_value={'success': True, 'response': pending_response},
+        ):
+            credit_note.action_request_baiwang_red_form()
+
+        # Assert UI state changed to pending
+        edi_doc = credit_note.l10n_cn_edi_document_ids[0]
+        self.assertEqual(edi_doc.state, 'red_form_pending')
+        self.assertEqual(credit_note.l10n_cn_baiwang_red_form_status, 'red_form_pending')
+
+        # 3. Mock the Cron Job polling Baiwang and discovering it is now '01' (Approved)
+        approved_response = {
+            'success': True,
+            'response': [{
+                'redConfirmUuid': 'mock-uuid-123',
+                'redConfirmNo': 'mock-no-456',
+                'confirmState': '01',  # 01 = Confirmed!
+                'redInvoiceNo': 'mock-red-fapiao-789',
+                'redInvoiceDate': '20260715123000',
+            }],
+        }
+
+        with patch(
+            'odoo.addons.l10n_cn_edi_baiwang.models.account_edi_proxy_user.AccountEdiProxyClientUser._l10n_cn_baiwang_contact_proxy',
+            return_value={'success': True, 'response': approved_response},
+        ):
+            self.env['l10n_cn_edi.document']._cron_check_red_form_status()
+
+        # Assert UI state fully resolved and Fapiao number populated
+        self.assertEqual(edi_doc.state, 'red_form_confirmed')
+        self.assertEqual(credit_note.l10n_cn_baiwang_red_form_status, 'red_form_confirmed')
+        self.assertEqual(credit_note.l10n_cn_baiwang_state, 'issued')
+        self.assertEqual(credit_note.l10n_cn_baiwang_invoice_no, 'mock-red-fapiao-789')
