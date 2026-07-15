@@ -366,6 +366,7 @@ class TestPeppolParticipant(TransactionCase):
             "name": "test_be",
             "country_id": self.env.ref("base.be").id,
         })
+        company_peppol.partner_id.routing_scheme = 'odemo'
         receivable = self.env["account.account"].create({
             "account_type": "income",
             "name": "test_receiv",

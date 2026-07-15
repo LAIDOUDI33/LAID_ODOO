@@ -168,6 +168,8 @@ class ResPartner(models.Model):
             if routing_identifier and not sep:
                 raise UserError(self.env._("Routing identifier should be in the format 'SCHEME:ENDPOINT'."))
             if scheme and endpoint:  # validated through '_clean_routing_endpoint'.
+                if scheme not in partner.available_routing_schemes:
+                    raise UserError(self.env._("Unsupported Routing Scheme. Please enter a valid EAS code."))
                 partner.write({'routing_scheme': scheme, 'routing_endpoint': endpoint})
             else:
                 partner.write({'routing_scheme': False, 'routing_endpoint': False})
@@ -221,7 +223,7 @@ class ResPartner(models.Model):
     def _get_all_identifiers(self, enrich=False):
         # EXTENDS 'account'
         all_identifiers = super()._get_all_identifiers(enrich)
-        metadata = self.routing_identifier and self._get_all_identifiers_metadata_by_scheme().get(self.routing_scheme)
+        metadata = self.routing_scheme and self.routing_endpoint and self._get_all_identifiers_metadata_by_scheme().get(self.routing_scheme)
         if enrich and metadata and metadata['key'] not in all_identifiers:
             all_identifiers[metadata['key']] = self.routing_endpoint
         return all_identifiers

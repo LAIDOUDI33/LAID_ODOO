@@ -11,8 +11,12 @@
                        placeholder="Routing ID"
                        widget="filterable_selection"
                        options="{'whitelist_fname': 'available_routing_schemes'}"
-                       class="o_field_routing_scheme_selection"/>
-                <field name="routing_endpoint" nolabel="1"/>
+                       class="o_field_routing_scheme_selection"
+                       groups="base.group_no_one"/>
+                <field name="routing_endpoint" nolabel="1" groups="base.group_no_one"/>
+                <field name="routing_identifier"
+                       string="Peppol Redirection"
+                       placeholder="0088:123456789..."/>
             </xpath>
         </field>
     </record>
