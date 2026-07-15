@@ -84,7 +84,7 @@ class ResUsers(models.Model):
         calendars_to_sync = self.calendar_ids.filtered(lambda c: c.need_sync or (not c.google_id and not c.is_primary))
         calendars_to_sync.with_user(self)._sync_calendars_odoo2google(calendar_service)
 
-    def _sync_google_calendar(self, calendar_service: GoogleCalendarService):
+    def _sync_google_events(self, calendar_service: GoogleCalendarService):
         self.ensure_one()
         need_refresh = False
         synced_recurrences = self.env['calendar.recurrence']
@@ -222,7 +222,7 @@ class ResUsers(models.Model):
         for user in users:
             _logger.info("Calendar Synchro - Starting synchronization for %s", user)
             try:
-                user.with_user(user).sudo()._sync_google_calendar(google)
+                user.with_user(user).sudo()._sync_google_events(google)
                 self.env.cr.commit()
             except Exception as e:
                 _logger.exception("[%s] Calendar Synchro - Exception : %s!", user, exception_to_unicode(e))

@@ -1129,7 +1129,7 @@ class TestSyncGoogle2Odoo(TestSyncGoogle):
         # This test is a bit special because it's testing 2 sync processes. The
         # bug it's protecting against is cross-contamination when event dicts
         # are mutated in different ways during the call to
-        # `_sync_google_calendar()`. If you want to do a new test, this one is
+        # `_sync_google_events()`. If you want to do a new test, this one is
         # probably not the best example.
         google_id = "oj44nep1ldf8a3ll02uip0c9aa"
         with self.mock_datetime_and_now("2024-06-07"):
@@ -1207,7 +1207,7 @@ class TestSyncGoogle2Odoo(TestSyncGoogle):
                     [{"method": "popup", "minutes": 30}],
                 ),
             ):
-                self.attendee_user.sudo()._sync_google_calendar(self.google_service)
+                self.attendee_user.sudo()._sync_google_events(self.google_service)
             events = self.env["calendar.event"].search(
                 [("google_id", "like", google_id)]
             )
@@ -1312,7 +1312,7 @@ class TestSyncGoogle2Odoo(TestSyncGoogle):
                     [{"method": "popup", "minutes": 30}],
                 ),
             ):
-                self.attendee_user.sudo()._sync_google_calendar(self.google_service)
+                self.attendee_user.sudo()._sync_google_events(self.google_service)
             events = self.env["calendar.event"].search(
                 [("google_id", "like", google_id)]
             )
@@ -1339,7 +1339,7 @@ class TestSyncGoogle2Odoo(TestSyncGoogle):
         with patch.object(GoogleCalendarService, 'get_events', return_value=(
             GoogleEvent(values), None, [{'method': 'popup', 'minutes': 30}],
         )):
-            self.organizer_user.sudo()._sync_google_calendar(self.google_service)
+            self.organizer_user.sudo()._sync_google_events(self.google_service)
         recurrences = self.env["calendar.recurrence"].search([('google_id', '=', birthday_google_id)])
         events = self.env["calendar.recurrence"].search([('google_id', '=', birthday_google_id)])
         self.assertFalse(recurrences, 'Birthday recurrent events should be ignored when syncing from google, as not supported.')
@@ -2455,7 +2455,7 @@ class TestSyncGoogle2Odoo(TestSyncGoogle):
         )
         expected_states = ["needsAction", "needsAction", "accepted", "needsAction"]
         with self.mock_datetime_and_now("2024-04-22"):
-            self.attendee_user.sudo()._sync_google_calendar(self.google_service)
+            self.attendee_user.sudo()._sync_google_events(self.google_service)
             attendees = self.env['calendar.attendee'].search([
                 ('partner_id', '=', self.attendee_user.partner_id.id)
             ]).sorted(key=lambda r: r.event_id.start)
@@ -2483,7 +2483,7 @@ class TestSyncGoogle2Odoo(TestSyncGoogle):
         )
         expected_states = ["needsAction", "needsAction", "accepted", "needsAction"]
         with self.mock_datetime_and_now("2024-04-22"):
-            self.organizer_user.sudo()._sync_google_calendar(self.google_service)
+            self.organizer_user.sudo()._sync_google_events(self.google_service)
             attendees = self.env['calendar.attendee'].search([
                 ('partner_id', '=', self.attendee_user.partner_id.id)
             ]).sorted(key=lambda r: r.event_id.start)
@@ -2511,7 +2511,7 @@ class TestSyncGoogle2Odoo(TestSyncGoogle):
         )
         expected_states = ["accepted", "accepted", "accepted", "accepted"]
         with self.mock_datetime_and_now("2024-04-22"):
-            self.attendee_user.sudo()._sync_google_calendar(self.google_service)
+            self.attendee_user.sudo()._sync_google_events(self.google_service)
             attendees = self.env['calendar.attendee'].search([
                 ('partner_id', '=', self.attendee_user.partner_id.id)
             ]).sorted(key=lambda r: r.event_id.start)
@@ -2539,7 +2539,7 @@ class TestSyncGoogle2Odoo(TestSyncGoogle):
         )
         expected_states = ["accepted", "accepted", "accepted", "accepted"]
         with self.mock_datetime_and_now("2024-04-22"):
-            self.organizer_user.sudo()._sync_google_calendar(self.google_service)
+            self.organizer_user.sudo()._sync_google_events(self.google_service)
             attendees = self.env['calendar.attendee'].search([
                 ('partner_id', '=', self.attendee_user.partner_id.id)
             ]).sorted(key=lambda r: r.event_id.start)
@@ -2573,7 +2573,7 @@ class TestSyncGoogle2Odoo(TestSyncGoogle):
         )
         expected_states = ["needsAction", "needsAction", "accepted", "accepted"]
         with self.mock_datetime_and_now("2024-04-22"):
-            self.attendee_user.sudo()._sync_google_calendar(self.google_service)
+            self.attendee_user.sudo()._sync_google_events(self.google_service)
             attendees = self.env['calendar.attendee'].search([
                 ('partner_id', '=', self.attendee_user.partner_id.id)
             ]).sorted(key=lambda r: r.event_id.start)
@@ -2607,7 +2607,7 @@ class TestSyncGoogle2Odoo(TestSyncGoogle):
         )
         expected_states = ["needsAction", "needsAction", "accepted", "accepted"]
         with self.mock_datetime_and_now("2024-04-22"):
-            self.organizer_user.sudo()._sync_google_calendar(self.google_service)
+            self.organizer_user.sudo()._sync_google_events(self.google_service)
             attendees = self.env['calendar.attendee'].search([
                 ('partner_id', '=', self.attendee_user.partner_id.id)
             ]).sorted(key=lambda r: r.event_id.start)

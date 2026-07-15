@@ -130,6 +130,6 @@ class TestSyncCalendarsGoogle2Odoo(TestSyncGoogle):
             raise Exception("Unexpected calendar")
 
         mock_sync_request.side_effect = mock_sync
-        self.organizer_user.with_user(self.organizer_user)._sync_google_calendar(self.google_service)
+        self.organizer_user.with_user(self.organizer_user)._sync_google_events(self.google_service)
         self.assertTrue(event.exists(), "Event should not be deleted because of the move")
         self.assertEqual(event.calendar_id, self.secondary_calendar)

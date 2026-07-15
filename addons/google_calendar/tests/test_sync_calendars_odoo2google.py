@@ -76,12 +76,12 @@ class TestSyncCalendarsGoogle2Odoo(TestSyncGoogle):
         event.calendar_id = self.secondary_calendar
 
         # With the synchronization paused, manually call the synchronization to simulate the page refresh.
-        self.organizer_user.sudo()._sync_google_calendar(self.google_service)
+        self.organizer_user.sudo()._sync_google_events(self.google_service)
         self.assertGoogleEventNotMoved()
 
         # Unpause and call the calendar synchronization. Ensure the event was moved on Google side.
         self.organizer_user.sudo().unpause_google_synchronization()
-        self.organizer_user.with_user(self.organizer_user).sudo()._sync_google_calendar(self.google_service)
+        self.organizer_user.with_user(self.organizer_user).sudo()._sync_google_events(self.google_service)
         self.assertGoogleEventMoved(google_id, "primary", self.secondary_calendar.google_id)
 
     @patch_api

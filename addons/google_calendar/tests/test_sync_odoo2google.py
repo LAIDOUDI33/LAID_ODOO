@@ -368,7 +368,7 @@ class TestSyncOdoo2Google(TestSyncOdoo2GoogleCommon):
     def test_stop_synchronization(self):
         self.env.user.stop_google_synchronization()
         self.assertTrue(self.env.user.google_synchronization_stopped, "The google synchronization flag should be switched on")
-        self.assertFalse(self.env.user._sync_google_calendar(self.google_service), "The google synchronization should be stopped")
+        self.assertFalse(self.env.user._sync_google_events(self.google_service), "The google synchronization should be stopped")
 
         # If synchronization stopped, creating a new event should not call _google_insert.
         self.env['calendar.event'].create({
@@ -831,7 +831,7 @@ class TestSyncOdoo2Google(TestSyncOdoo2GoogleCommon):
         }
 
         # With the synchronization paused, manually call the synchronization to simulate the page refresh.
-        self.organizer_user.sudo()._sync_google_calendar(self.google_service)
+        self.organizer_user.sudo()._sync_google_events(self.google_service)
         self.assertFalse(self.organizer_user.google_synchronization_stopped, "Synchronization should not be stopped, only paused.")
         self.assertEqual(self.organizer_user._get_google_sync_status(), "sync_paused", "Synchronization must be paused since it wasn't resumed yet.")
         self.assertTrue(record.need_sync, "Record must have its 'need_sync' variable as true for it to be synchronized when the synchronization is resumed.")
@@ -839,7 +839,7 @@ class TestSyncOdoo2Google(TestSyncOdoo2GoogleCommon):
 
         # Unpause the synchronization and call the calendar synchronization. Ensure the event was inserted in Google side.
         self.organizer_user.sudo().unpause_google_synchronization()
-        self.organizer_user.with_user(self.organizer_user).sudo()._sync_google_calendar(self.google_service)
+        self.organizer_user.with_user(self.organizer_user).sudo()._sync_google_events(self.google_service)
         self.assertGoogleEventInserted({
             'id': False,
             'start': {'dateTime': '2023-01-15T08:00:00+00:00', 'date': None},
@@ -929,12 +929,12 @@ class TestSyncOdoo2Google(TestSyncOdoo2GoogleCommon):
             }
 
             # Synchronize the attendee, and ensure that the event was not inserted after it.
-            self.attendee_user.with_user(self.attendee_user).sudo()._sync_google_calendar(self.google_service)
+            self.attendee_user.with_user(self.attendee_user).sudo()._sync_google_events(self.google_service)
             self.assertGoogleAPINotCalled()
 
             # Now, we synchronize the organizer and make sure the event got inserted by him.
             self.organizer_user.with_user(self.organizer_user).restart_google_synchronization()
-            self.organizer_user.with_user(self.organizer_user).sudo()._sync_google_calendar(self.google_service)
+            self.organizer_user.with_user(self.organizer_user).sudo()._sync_google_events(self.google_service)
             self.assertGoogleEventInserted({
                 'id': False,
                 'start': {'dateTime': '2023-01-15T08:00:00+00:00', 'date': None},

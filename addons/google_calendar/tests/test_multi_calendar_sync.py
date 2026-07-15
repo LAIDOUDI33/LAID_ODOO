@@ -57,7 +57,7 @@ class TestMultiCalendarSync(TestSyncGoogle):
             return {"events": GoogleEvent([]), "default_reminders": (), "full_sync": False}
 
         mock_sync_request.side_effect = _record
-        self.organizer_user.with_user(self.organizer_user)._sync_google_calendar(self.google_service)
+        self.organizer_user.with_user(self.organizer_user)._sync_google_events(self.google_service)
         self.assertIn(self.organizer_user.primary_calendar_id, requested)
         self.assertIn(self.secondary_calendar, requested)
 
