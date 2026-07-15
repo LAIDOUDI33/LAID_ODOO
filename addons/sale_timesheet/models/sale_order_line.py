@@ -180,7 +180,11 @@ class SaleOrderLine(models.Model):
         mapping = lines_by_timesheet.sudo()._get_delivered_quantity_by_analytic(domain)
 
         for line in lines_by_timesheet:
-            invoice_lines_to_calculate = line._get_invoice_lines().filtered(lambda inv: inv.move_id in refund_account_moves or inv.move_id.reversed_entry_id in refund_account_moves)
+            invoice_lines_to_calculate = line._get_invoice_lines().filtered(
+                lambda inv: (inv.move_id in refund_account_moves or inv.move_id.reversed_entry_id in refund_account_moves)
+                            and (not start_date or any(start_date <= date for date in inv.analytic_line_ids.mapped('date')))
+                            and (not end_date or any(end_date >= date for date in inv.analytic_line_ids.mapped('date')))
+            )
             qty_to_invoice = mapping.get(line.id, 0.0)
             if refund_account_moves:
                 invoiced_qty = 0.0
