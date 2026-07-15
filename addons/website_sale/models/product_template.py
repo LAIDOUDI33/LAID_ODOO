@@ -970,8 +970,7 @@ class ProductTemplate(models.Model):
             stock_notification_email = ""
             if not website.is_public_user():
                 has_stock_notification = product_sudo._has_stock_notification(
-                    self.env.user.partner_id,
-                    website,
+                    self.env.user.partner_id, website
                 )
             elif request:
                 has_stock_notification = product_sudo.id in request.session.get(
@@ -1467,23 +1466,22 @@ class ProductTemplate(models.Model):
             vals = self.product_variant_id._prepare_jsonld_vals()
         else:
             base_url = website.get_base_url()
-            # perf: temporal solution to avoid slowness when product have many variants and
-            # pricelist rules
-            limit = (
-                self
-                .env["ir.config_parameter"]
-                .sudo()
-                .get_int("website_sale.markup_data_limit_variants")
-                or None
+            variants = self.product_variant_ids
+            prices = request.pricelist._get_products_price(
+                variants, quantity=1, currency=website.currency_id
             )
-            variants = self.product_variant_ids[:limit] if limit else self.product_variant_ids
             vals = {
                 "@type": "ProductGroup",
                 "@id": f"{base_url}{self.website_url}/#productgroup",
                 "name": self.name,
                 "image": f"{base_url}{website.image_url(self, 'image_1920')}",
                 "url": f"{base_url}{self.website_url}",
-                "hasVariant": [variant._prepare_jsonld_vals() for variant in variants],
+                "hasVariant": [
+                    variant.with_context({
+                        "precomputed_price": prices.get(variant.id)
+                    })._prepare_jsonld_vals()
+                    for variant in variants
+                ],
             }
             if self.description_ecommerce:
                 vals["description"] = text_from_html(self.description_ecommerce)
