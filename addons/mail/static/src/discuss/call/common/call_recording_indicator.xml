@@ -8,7 +8,7 @@
                 <i t-else="" title="recording audio only" class="fa fa-microphone"/>
                 <i t-if="this.rtc.recordingState.transcription" title="transcription active" class="oi oi-subtitle"/>
             </div>
-            <button t-if="this.rootHover.isHover" class="btn btn-sm btn-danger" t-on-click="this.onClickStopRecording">Stop recording</button>
+            <button t-if="this.rootHover.isHover" class="btn btn-sm btn-danger cursor-pointer" t-on-click="this.onClickStopRecording">Stop recording</button>
         </div>
     </t>
 
