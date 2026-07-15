@@ -1727,10 +1727,7 @@ class TranslationModuleReader(TranslationReader):
         self._modules = modules or ['all']
         import odoo.addons  # noqa: PLC0415
         self._path_list = [(path, True) for path in odoo.addons.__path__]
-        self._installed_modules = [
-            m['name']
-            for m in self.env['ir.module.module'].search_read([('state', '=', 'installed')], fields=['name'])
-        ]
+        self._installed_modules = list(self.env['ir.module.module']._installed())
 
         self._export_translatable_records()
         self._export_translatable_resources()

@@ -377,7 +377,7 @@ class ResLang(models.CachedModel):
         # Automatically load translation
         if activated:
             active_lang = activated.mapped('code')
-            mods = self.env['ir.module.module'].search([('state', '=', 'installed')])
+            mods = self.env['ir.module.module'].browse(self.env['ir.module.module']._installed().values())
             mods._update_translations(active_lang)
         return res
 
