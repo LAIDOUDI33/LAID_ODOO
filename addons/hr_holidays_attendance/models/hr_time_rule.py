@@ -47,4 +47,4 @@ class HrTimeRule(models.Model):
                 ('date_to', '=', False),
             ], limit=1)
             if allocation:
-                allocation.number_of_days -= deduct
+                allocation.number_of_days = max(0, allocation.number_of_days - deduct)
