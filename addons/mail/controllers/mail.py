@@ -448,7 +448,7 @@ class MailController(http.Controller):
         }
         if font == 'oi' and icon.isdigit():
             # custom odoo icon
-            info['path'] = 'web/static/lib/odoo_ui_icons/fonts/odoo_ui_icons.woff'
+            info['path'] = 'web/static/lib/odoo_ui_icons/fonts/odoo_ui_icons.woff2'
             info['layout_engine'] = None
             info['features'] = None
             info['icon'] = chr(int(icon))
