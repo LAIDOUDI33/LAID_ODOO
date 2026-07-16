@@ -68,7 +68,8 @@ class HrTimeRule(models.Model):
         for employee, rule, excess_hours in excess_alloc:
             if not (rule.leave_compensation_rate > 0 and rule.allocation_type_id):
                 continue
-            alloc_days = excess_hours * rule.leave_compensation_rate / 100
+            hours_per_day = employee.resource_calendar_id.hours_per_day or 8.0
+            alloc_days = excess_hours * rule.leave_compensation_rate / hours_per_day
             if alloc_days <= 0:
                 continue
             allocation = self.env['hr.leave.allocation'].sudo().search([
@@ -91,7 +92,8 @@ class HrTimeRule(models.Model):
         for employee, rule, deficit_hours in deficit_alloc:
             if not (rule.leave_compensation_rate > 0 and rule.allocation_type_id):
                 continue
-            deduct_days = deficit_hours * rule.leave_compensation_rate / 100
+            hours_per_day = employee.resource_calendar_id.hours_per_day or 8.0
+            deduct_days = deficit_hours * rule.leave_compensation_rate / hours_per_day
             allocation = self.env['hr.leave.allocation'].sudo().search([
                 ('employee_id', '=', employee.id),
                 ('work_entry_type_id', '=', rule.allocation_type_id.id),
