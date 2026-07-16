@@ -747,6 +747,30 @@ class AccountAccount(models.Model):
             ('account_id', 'any', account_domain),
             ('date', '>=', fields.Date.add(fields.Date.today(), days=-365 * 2)),
         ]
+<<<<<<< 95de8f30571529409d6dcb53af508b9d79a9bf63
+||||||| fb0f8c2a4e958dd5234edbf9724c0ea451f0fe86
+        if move_type in self.env['account.move'].get_inbound_types(include_receipts=True):
+            domain.append(('account_id.internal_group', '=', 'income'))
+        elif move_type in self.env['account.move'].get_outbound_types(include_receipts=True):
+            domain.append(('account_id.internal_group', '=', 'expense'))
+
+        query = self.env['account.move.line']._where_calc(domain)
+        if not filter_never_user_accounts:
+            _kind, rhs_table, condition = query._joins['account_move_line__account_id']
+            query._joins['account_move_line__account_id'] = (SQL("RIGHT JOIN"), rhs_table, condition)
+
+=======
+        if move_type in self.env['account.move'].get_sale_types(include_receipts=True):
+            domain.append(('account_id.internal_group', '=', 'income'))
+        elif move_type in self.env['account.move'].get_purchase_types(include_receipts=True):
+            domain.append(('account_id.internal_group', '=', 'expense'))
+
+        query = self.env['account.move.line']._where_calc(domain)
+        if not filter_never_user_accounts:
+            _kind, rhs_table, condition = query._joins['account_move_line__account_id']
+            query._joins['account_move_line__account_id'] = (SQL("RIGHT JOIN"), rhs_table, condition)
+
+>>>>>>> ae971bf776eafdb9353d9d700dec09932b93c163
         company = self.env['res.company'].browse(company_id)
 
         query = self.env['account.move.line']._search(domain, bypass_access=True)
