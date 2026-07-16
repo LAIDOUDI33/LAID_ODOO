@@ -40,11 +40,10 @@ class PaymentStatus(http.Controller):
         :rtype: str
         """
         monitored_tx = self._get_monitored_transaction()
-        values = self._get_payment_status_values(monitored_tx)
-        template = self.get_payment_status_template_xmlid(monitored_tx)
-        return request.render(template, values)
+        values = self._prepare_payment_status_values(monitored_tx)
+        return request.render("payment.payment_status", values)
 
-    def _get_payment_status_values(self, tx):
+    def _prepare_payment_status_values(self, tx):
         """Return the QWeb rendering values for the payment status page.
 
         Meant to be overridden to add document-specific values to the page.
@@ -57,13 +56,8 @@ class PaymentStatus(http.Controller):
         if not tx:
             return {"payment_not_found": True}
         notification_access_token = payment_utils.generate_access_token(tx.id)
-        notification_channel = (
-            f"payment_transaction_channel:{tx.id},{notification_access_token}"
-        )
+        notification_channel = f"payment_transaction_channel:{tx.id},{notification_access_token}"
         return {"tx": tx, "notification_channel": notification_channel}
-
-    def get_payment_status_template_xmlid(self, tx):  # noqa: ARG002
-        return "payment.payment_status"
 
     @http.route("/payment/process", type="jsonrpc", auth="public")
     def payment_process(self):

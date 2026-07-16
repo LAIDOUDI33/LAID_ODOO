@@ -1,3 +1,4 @@
+from odoo import http
 from odoo.tools.image import image_data_uri
 
 from odoo.addons.payment.controllers.payment_status import PaymentStatus
@@ -5,13 +6,17 @@ from odoo.addons.payment.controllers.payment_status import PaymentStatus
 
 class PosPaymentStatus(PaymentStatus):
 
-    def get_payment_status_template_xmlid(self, tx):
-        if tx and tx.pos_order_id:
-            return 'pos_online_payment.pos_payment_status'
-        return super().get_payment_status_template_xmlid(tx)
+    @http.route()
+    def display_status(self, **_kwargs):
+        """Override the payment status page to add specific POS behavior."""
+        response = super().display_status(**_kwargs)
+        monitored_tx = self._get_monitored_transaction()
+        if monitored_tx and monitored_tx.pos_order_id:
+            response.template = "pos_online_payment.pos_payment_status"
+        return response
 
-    def _get_payment_status_values(self, tx):
-        values = super()._get_payment_status_values(tx)
+    def _prepare_payment_status_values(self, tx):
+        values = super()._prepare_payment_status_values(tx)
         if tx and tx.pos_order_id:
             order_sudo = tx.pos_order_id  # `tx` is already sudoed by the controller.
             config_sudo = order_sudo.config_id
