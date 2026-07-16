@@ -69,3 +69,27 @@ class TestWebsiteSaleStockDeliveryController(PaymentCommon, WebsiteSaleCommon):
             request.cart = sale_order
             with self.assertRaises(ValidationError):
                 WebsiteSaleController.shop_payment_validate()
+
+    def test_no_need_to_edit_the_pickup_location_address(self):
+        """Ensure checkout proceeds when the shipping address is a pickup location
+        with incomplete mandatory fields (e.g., empty ZIP code).
+        """
+        WebsiteSaleController = WebsiteSale()
+
+        partner_pickup = self.env["res.partner"].create({
+            **self.dummy_partner_address_values,
+            "name": "Pickup Point Address",
+            "parent_id": self.partner.id,
+            "zip": "",
+            "pickup_delivery_method_id": self.carrier.id,
+        })
+
+        sale_order = self.env["sale.order"].create({
+            "partner_id": self.partner.id,
+            "partner_shipping_id": partner_pickup.id,
+            "order_line": [Command.create({"product_id": self.product.id, "product_uom_qty": 1.0})],
+        })
+
+        with self.mock_request(sale_order_id=sale_order.id):
+            redirect = WebsiteSaleController._check_addresses(sale_order)
+            self.assertIsNone(redirect)
