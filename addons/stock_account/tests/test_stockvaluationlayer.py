@@ -1149,7 +1149,8 @@ class TestAngloSaxonAccounting(TestStockValuationCommon):
 
     def test_avco_and_credit_note(self):
         """
-        When reversing an invoice that contains some anglo-saxo AML, the new anglo-saxo AML should have the same value
+        When reversing an invoice that contains some anglo-saxo AML, the COGS is
+        re-evaluated at the current average cost (like any other COGS line).
         """
         # Required for `account_id` to be visible in the view
         self.env.user.group_ids += self.env.ref('account.group_account_readonly')
@@ -1174,8 +1175,9 @@ class TestAngloSaxonAccounting(TestStockValuationCommon):
 
         anglo_lines = reverse_invoice.line_ids.filtered(lambda l: l.display_type == 'cogs')
         self.assertEqual(len(anglo_lines), 2)
-        self.assertEqual(abs(anglo_lines[0].balance), 10)
-        self.assertEqual(abs(anglo_lines[1].balance), 10)
+        # Average cost after the second receipt is (2*10 + 2*20) / 4 = 15.
+        self.assertEqual(abs(anglo_lines[0].balance), 15)
+        self.assertEqual(abs(anglo_lines[1].balance), 15)
 
     def test_return_delivery_storno(self):
         """ When using STORNO accounting, reverse accounting moves should have negative values for credit/debit.
