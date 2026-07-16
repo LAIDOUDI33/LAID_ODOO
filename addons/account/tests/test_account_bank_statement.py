@@ -1263,7 +1263,7 @@ class TestAccountBankStatementLine(AccountTestInvoicingCommon):
             'line_ids': [Command.set((line3 + line4).ids)],
         })
         self.assertRecordValues(statement1 + statement3, [{
-            'is_complete': False,
+            'is_complete': True,  # Since no line the statement is complete
             'balance_start': 0,
             'balance_end': 0,
         }, {
