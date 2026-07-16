@@ -45,22 +45,32 @@ class AccountMoveLine(models.Model):
             groupby=['project_id'],
             aggregates=['id:recordset']
         ))
-        project_per_accounts = {
-            next(iter(project._get_analytic_distribution())): project
-            for project in projects
-        }
+        project_per_accounts = {}
+
+        for project in projects:
+            key = next(iter(project._get_analytic_distribution()))
+            project_per_accounts.setdefault(
+                key,
+                self.env['project.project'],
+            )
+            project_per_accounts[key] |= project
 
         for move_line in self:
+            projects = self.env['project.project']
             analytic_distribution = move_line.analytic_distribution
             if not analytic_distribution:
                 continue
 
             for accounts in analytic_distribution:
-                project = project_per_accounts.get(accounts)
-            if not project:
-                continue
+                current_projects = project_per_accounts.get(accounts)
+                if current_projects:
+                    projects |= current_projects
 
-            orders = orders_per_project.get(project)
+            orders = self.env['sale.order']
+            for project in projects:
+                order = orders_per_project.get(project)
+                if order:
+                    orders |= order
             if not orders:
                 continue
             orders = orders.sorted('create_date')
