@@ -42,6 +42,13 @@ import {
 import { isHtmlContentSupported } from "@html_editor/core/selection_plugin";
 import { isFakeLineBreak } from "@html_editor/utils/dom_state";
 
+// Note: in this conception, all edges are mutually exclusive.
+const INSERTION_EDGES = /** @type {const} */ ({
+    ONLY: "only",
+    FIRST: "first",
+    LAST: "last",
+});
+
 /**
  * Helper for { @see insert }. Take a selection point and return a node at its
  * deepest position, inserting the given marker if needed.
@@ -87,7 +94,7 @@ const enterSelectionPoint = ({ anchorNode: node, anchorOffset: offset }, marker)
  * @typedef {((insertedNodes: Node[]) => void)[]} inserted_content_processors
  *
  * @typedef {((parent: HTMLElement, blockToInsert: HTMLElement) => boolean | void)[]} is_parent_compatible_for_insertion_predicates
- * @typedef {((blockToInsert: HTMLElement, referenceBlock: HTMLElement) => boolean | void)[]} should_unwrap_edge_block_to_insert_predicates
+ * @typedef {((reference: Node, nodeToInsert: Node, edge: typeof INSERTION_EDGES[keyof typeof INSERTION_EDGES]) => boolean | void)[]} should_unwrap_edge_block_to_insert_predicates
  * @typedef {((element: HTMLElement) => boolean | void)[]} can_hold_selection_after_insertion_predicates
  *
  * @typedef {string[]} system_attributes
@@ -139,6 +146,53 @@ export class DomPlugin extends Plugin {
         /** Predicates */
         is_functional_empty_node_predicates: (node) => {
             if (isSelfClosingElement(node) || isEditorTab(node)) {
+                return true;
+            }
+        },
+        should_unwrap_edge_block_to_insert_predicates: (reference, node, edge) => {
+            // Inline edges have no wrapper to remove and empty blocks would
+            // disappear if unwrapped.
+            if (!isBlock(node) || isEmptyBlock(node)) {
+                return false;
+            }
+            const isOnly = edge === INSERTION_EDGES.ONLY;
+            // Inline content may arrive wrapped in a single base container. In
+            // that case the wrapper is not meaningful structure.
+            /** @see wrapInlinesInBlocks call in @see prepareClipboardData */
+            // eg, `p(a[]c) + p(b) = p(ab[]c) ≠ p(a)p(b)p(c)`
+            if (isOnly && this.dependencies.baseContainer.isCandidateForBaseContainer(node)) {
+                return true;
+            }
+            const refBlock = closestBlock(reference);
+            // eg, `p(a)[] + p(b) = p(a)p(b) ≠ p(ab)`
+            if (isEditionBoundary(refBlock, this.editable)) {
+                return false;
+            }
+            // Don't unwrap an unsplittable block.
+            if (this.dependencies.split.isUnsplittable(node)) {
+                return false;
+            }
+            // There is no surrounding content to absorb the edge block in an
+            // empty reference block, so unwrapping would only erase the pasted
+            // block boundary.
+            if (isEmptyBlock(refBlock)) {
+                return false;
+            }
+            // At start of block, the first inserted block has no left-side
+            // content to merge with.
+            // eg, `p([]c) + p(a)p(b) ≠ p(ac)p(b)`
+            if (edge === INSERTION_EDGES.FIRST && this.isAtBlockEdge(reference, "start")) {
+                return false;
+            }
+            // Same-tag blocks can merge at the cursor.
+            // eg, `p(a[]d) + p(b)div(c) = p(ab)div(c)p(d) ≠ p(a)p(b)div(c)p(d)`
+            if (node.nodeName === refBlock.nodeName) {
+                return true;
+            }
+            // An unsplittable DIV cannot be split around the inserted block.
+            // Unwrapping inserts the edge contents without creating a nested
+            // block boundary inside the atomic container.
+            if (refBlock.nodeName === "DIV" && this.dependencies.split.isUnsplittable(refBlock)) {
                 return true;
             }
         },
@@ -293,10 +347,10 @@ export class DomPlugin extends Plugin {
 
             let wasBlock = isBlock(node);
             let didUnwrap = false;
-            // Inline edges have no wrapper to remove.
-            if (wasBlock) {
-                const isEdge = isFirst || node === last;
-                if (isEdge && this.shouldUnwrapEdgeBlock([node, ...nodes], refLeaf, isOnly)) {
+            if (isOnly || isFirst || node === last) {
+                const pred = "should_unwrap_edge_block_to_insert_predicates";
+                const edge = INSERTION_EDGES[isOnly ? "ONLY" : isFirst ? "FIRST" : "LAST"];
+                if (this.checkPredicates(pred, refLeaf, node, edge) ?? false) {
                     this.processThrough("edge_block_to_unwrap_processors", node, isFirst);
                     nodes.unshift(...childNodes(node)); // unwrap
                     node = nodes.shift();
@@ -405,70 +459,6 @@ export class DomPlugin extends Plugin {
         }
 
         return insertedContent;
-    }
-
-    /**
-     * Return true if the first node in the given list of nodes to @see insert
-     * before the given reference should be unwrapped.
-     *
-     * @param {Node[]} nodesToInsert
-     * @param {Node} reference
-     * @param {boolean} isOnly true if there was only one node to insert
-     * @returns {boolean}
-     */
-    shouldUnwrapEdgeBlock(nodesToInsert, reference, isOnly) {
-        const node = nodesToInsert[0];
-        // Empty blocks would disappear if unwrapped.
-        if (isEmptyBlock(node)) {
-            return false;
-        }
-        /** Inline content may arrive wrapped in a single base container
-         * (@see wrapInlinesInBlocks call in { @see prepareClipboardData }). In
-         * that case the wrapper is not meaningful structure.
-         * eg, `p(a[]c) + p(b) = p(ab[]c) ≠ p(a)p(b)p(c)` */
-        if (isOnly && this.dependencies.baseContainer.isCandidateForBaseContainer(node)) {
-            return true;
-        }
-        const refBlock = closestBlock(reference);
-        // A root-anchored selection expresses insertion between top-level
-        // children. Using its normalized deep position would invent a reference
-        // block and incorrectly merge into that child.
-        // eg, `p(a)[] + p(b) = p(a)p(b) ≠ p(ab)`
-        if (isEditionBoundary(refBlock, this.editable)) {
-            return false;
-        }
-        // Don't unwrap an unsplittable block.
-        if (this.dependencies.split.isUnsplittable(node)) {
-            return false;
-        }
-        // There is no surrounding content to absorb the edge block in an empty
-        // reference block, so unwrapping would only erase the pasted block
-        // boundary.
-        if (isEmptyBlock(refBlock)) {
-            return false;
-        }
-        // At the start of a block, the first inserted block has no left-side
-        // content to merge with.
-        // eg, `p([]c) + p(a)p(b) ≠ p(ac)p(b)`
-        if (nodesToInsert.length > 1 && this.isAtBlockEdge(reference, "start")) {
-            return false;
-        }
-        // Same-tag blocks can merge at the cursor.
-        // eg, `p(a[]d) + p(b)div(c) = p(ab)div(c)p(d) ≠ p(a)p(b)div(c)p(d)`
-        if (node.nodeName === refBlock.nodeName) {
-            return true;
-        }
-        // An unsplittable DIV cannot be split around the inserted block.
-        // Unwrapping inserts the edge contents without creating a nested block
-        // boundary inside the atomic container.
-        if (refBlock.nodeName === "DIV" && this.dependencies.split.isUnsplittable(refBlock)) {
-            return true;
-        }
-        // Allow other plugins to determine if the block should be unwrapped.
-        return (
-            this.checkPredicates("should_unwrap_edge_block_to_insert_predicates", node, refBlock) ??
-            false
-        );
     }
 
     /**
