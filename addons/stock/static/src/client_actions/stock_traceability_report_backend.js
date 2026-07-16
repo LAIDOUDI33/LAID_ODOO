@@ -69,6 +69,7 @@ export class TraceabilityReport extends Component {
         this.state = proxy({
             lines: this.props.state?.lines || [],
         });
+        this.levels = new Map();
         this.hasUnfoldableLines = this.state.lines.some((line) => line.unfoldable);
         this.isExpanded = false;
 
@@ -103,6 +104,7 @@ export class TraceabilityReport extends Component {
             this.state.lines = mainLines.map(
                 (line) => { return processLine(line); }
             );
+            this.addLevels(this.state.lines);
             this.hasUnfoldableLines = this.state.lines.some((line) => line.unfoldable);
         }
     }
@@ -172,10 +174,12 @@ export class TraceabilityReport extends Component {
             ).map(
                 (line) => { return processLine(line, line.lines, false); }
             );
+            this.addLevels(this.state.lines);
             this.isExpanded = true;
         } else {
             unfoldLines(this.state.lines);
         }
+        this.addLevels(this.state.lines);
     }
 
     onClickFold() {
@@ -188,6 +192,36 @@ export class TraceabilityReport extends Component {
             }
         };
         foldLines(this.state.lines);
+        this.removeLevels(this.state.lines);
+    }
+
+    addLevels(lines) {
+        for (const line of lines) {
+            if (line.line_type === 'child' || line.level === 1) {
+                this.levels.set(line.id, line.level);
+                if (!line.isFolded && line.lines.length) {
+                    this.addLevels(line.lines);
+                }
+            }
+        }
+    }
+
+    removeLevels(lines) {
+        for (const line of lines) {
+            this.levels.delete(line.id);
+            if (line.lines.length) {
+                this.removeLevels(line.lines);
+            }
+        }
+    }
+
+    getLevel(line) {
+        const maxLevel = Math.max(...this.levels.values());
+        if (line.line_type === 'parent') {
+            return maxLevel + line.level;
+        } else {
+            return maxLevel - line.level;
+        }
     }
 
     async toggleLine(line, line_type=false) {
@@ -202,6 +236,7 @@ export class TraceabilityReport extends Component {
                 (line) => { return processLine(line); }
             );
         }
+        line.isFolded ? this.addLevels(line.lines) : this.removeLevels(line.lines);
         line.isFolded = !line.isFolded;
     }
 }
