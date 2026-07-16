@@ -8,9 +8,6 @@ export class CarouselProduct extends Interaction {
     dynamicContent = {
         _root: {
             "t-on-slide.bs.carousel.noUpdate": this.onSlideCarouselProduct,
-            "t-att-style": () => ({
-                "top": this.top,
-            }),
         },
         _window: {
             "t-on-resize.noUpdate": this.throttled(this.onSlideCarouselProduct),
@@ -26,25 +23,13 @@ export class CarouselProduct extends Interaction {
     };
 
     setup() {
-        this.top = undefined;
         this.indicatorJustify = "start";
     }
 
     start() {
-        this.updateCarouselPosition();
-        this.registerCleanup(this.services.website_menus.registerCallback(this.updateCarouselPosition.bind(this)));
         if (this.el.querySelector(".carousel-indicators")) {
             this.updateJustifyContent();
         }
-    }
-
-    updateCarouselPosition() {
-        let size = 5;
-        for (const el of document.querySelectorAll(".o_top_fixed_element")) {
-            const style = window.getComputedStyle(el);
-            size += el.getBoundingClientRect().height + parseFloat(style.marginTop) + parseFloat(style.marginBottom);
-        }
-        this.top = size;
     }
 
     /**
