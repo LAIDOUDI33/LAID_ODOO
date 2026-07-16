@@ -1,4 +1,3 @@
-import { escapeTextNodes } from "@html_builder/utils/escaping";
 import { Plugin } from "@html_editor/plugin";
 import { withSequence } from "@html_editor/utils/resource";
 import { markup } from "@odoo/owl";
@@ -12,7 +11,7 @@ import { BLOCKQUOTE_PARENT_HANDLERS } from "@html_builder/core/utils";
 
 export class SaveSnippetPlugin extends Plugin {
     static id = "saveSnippet";
-    static dependencies = ["disableSnippets"];
+    static dependencies = ["disableSnippets", "savePlugin"];
 
     /** @type {import("plugins").BuilderResources} */
     resources = {
@@ -66,12 +65,9 @@ export class SaveSnippetPlugin extends Plugin {
         const savedName = await this.config.saveSnippet(el, async (el) => {
             await Promise.all(this.trigger("on_will_save_handlers", el));
             try {
-                const cloneEl = el.cloneNode(true);
-                const cleanedEl = this.processThrough("clean_for_save_processors", cloneEl, {
+                return this.dependencies.savePlugin.prepareElementForSave(el, {
                     saveSnippet: true,
                 });
-                escapeTextNodes(cleanedEl);
-                return cleanedEl;
             } finally {
                 this.trigger("on_saved_handlers", el);
             }
