@@ -105,10 +105,13 @@ export class PopupVisibilityPlugin extends Plugin {
         }
     }
 
-    cleanForSave(rootEl) {
+    cleanForSave(rootEl, { saveSnippet } = {}) {
         // Hide the popups manually, as we cannot rely on the `onTargetHide`
         // flow since the cleaned popup is a clone and is not in the DOM.
         for (const modalEl of rootEl.querySelectorAll(".s_popup .modal.show")) {
+            if (saveSnippet && rootEl === modalEl.closest(".s_popup")) {
+                continue;
+            }
             modalEl.parentElement.dataset.invisible = "1";
             // Do not call .hide() directly, because it is queued whereas
             // .dispose() is not.
