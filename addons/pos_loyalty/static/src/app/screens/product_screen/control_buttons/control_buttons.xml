@@ -8,7 +8,7 @@
                 <t t-set="_orderTotal" t-value="this.pos.getOrder().priceIncl" />
                 <t t-set="_eWalletPrograms" t-value="this._getEWalletPrograms()" />
                 <t t-set="_eWalletRewards" t-value="this._getEWalletRewards(this.pos.getOrder())" />
-                
+
                 <t t-set="btnText">
                     <t t-if="_orderTotal lt 0 and _eWalletPrograms.length">eWallet Refund</t>
                     <t t-elif="_eWalletRewards.length">eWallet Pay</t>
@@ -18,6 +18,7 @@
                     icon="'credit_card'"
                     btnText="btnText"
                     btnClasses="'btn-secondary ' + ((_orderTotal lt 0 and _eWalletPrograms.length gte 1) or _eWalletRewards.length gte 1 ? ' highlight text-action': ' disabled')"
+                    disabled="this.pos.disableForSelfOrder"
                     onClick="this.onClickWallet"/>
             </t>
             <t t-if="this.pos.models['loyalty.program'].some((p) => ['coupons', 'promotion', 'gift_card', 'promo_code', 'next_order_coupons'].includes(p.program_type))" t-call="point_of_sale.controlButton"
@@ -31,7 +32,7 @@
                 iconClasses="'oi-filled'"
                 btnText.translate="Reward"
                 btnClasses="'btn-secondary ' + (this.nbrRewards() ? ' highlight' : 'disabled')"
-                disabled="!this.nbrRewards()"
+                disabled="!this.nbrRewards() || this.pos.disableForSelfOrder"
                 onClick="() => this.clickRewards()">
             </t>
         </xpath>
@@ -41,7 +42,7 @@
                  iconClasses="'oi-filled'"
                  btnText.translate="Reset Programs"
                  btnClasses="'btn-secondary '"
-                 disabled="!this.pos.getOrder().isProgramsResettable()"
+                 disabled="!this.pos.getOrder().isProgramsResettable() || this.pos.disableForSelfOrder"
                  onClick="() => this.pos.resetPrograms()">
             </t>
         </xpath>

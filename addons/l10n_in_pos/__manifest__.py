@@ -29,6 +29,9 @@
         'web.assets_tests': [
             'l10n_in_pos/static/tests/tours/**/*',
         ],
+        'web.assets_unit_tests': [
+            'l10n_in_pos/static/tests/unit/**/*',
+        ],
         'point_of_sale.customer_display_assets': [
             'l10n_in_pos/static/src/customer_display/**/*',
         ]

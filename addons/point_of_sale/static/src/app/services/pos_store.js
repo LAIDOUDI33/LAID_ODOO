@@ -133,6 +133,7 @@ export class PosStore extends WithLazyGetterTrap {
         this.numpadMode = "quantity";
         this.mobile_pane = "right";
         this.ticket_screen_mobile_pane = "left";
+        this._explicitCustomerDisplayQrData = null;
 
         this.loadingOrderState = false; // used to prevent orders fetched to be put in the update set during the reactive change
         this.screenState = {
@@ -1844,6 +1845,10 @@ export class PosStore extends WithLazyGetterTrap {
         return this.getOrder();
     }
 
+    get disableForSelfOrder() {
+        return Boolean(this.selectedOrder?.isSelfOrder);
+    }
+
     // change the current order
     setOrder(order) {
         if (this.getOrder()) {
@@ -2449,15 +2454,36 @@ export class PosStore extends WithLazyGetterTrap {
                 return false;
             }
         }
-        payment.updateCustomerDisplayQrCode(generateQRCodeDataUrl(qrCodeUrl));
+        this.updateCustomerDisplayQrData(generateQRCodeDataUrl(qrCodeUrl), { payment });
         payment.qr_code = generateQRCodeDataUrl(qrCodeUrl, { useThemeQr: true });
         return await ask(this.env.services.dialog, payment.getQrPopupProps(), {}, QRPopup).then(
             (result) => {
-                payment.updateCustomerDisplayQrCode(null);
+                this.updateCustomerDisplayQrData(null);
                 payment.qr_code = false;
                 return result;
             }
         );
+    }
+
+    updateCustomerDisplayQrData(
+        qrCode,
+        { title = _t("Scan the QR for payment"), payment, extra = {} } = {}
+    ) {
+        const paymentProps = payment ? payment.getQrPopupProps() : {};
+        this._explicitCustomerDisplayQrData = qrCode
+            ? { title, ...paymentProps, ...extra, qrCode }
+            : null;
+    }
+
+    get customerDisplayQrData() {
+        if (this._explicitCustomerDisplayQrData) {
+            return this._explicitCustomerDisplayQrData;
+        }
+        const selectedLine = this.getOrder()?.getSelectedPaymentline();
+        if (selectedLine?.qr_code && selectedLine.isProcessing()) {
+            return { title: _t("Scan the QR for payment"), ...selectedLine.getQrPopupProps() };
+        }
+        return null;
     }
 
     displayQrCode(paymentline) {

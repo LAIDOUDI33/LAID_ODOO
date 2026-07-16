@@ -1,6 +1,11 @@
 import { test, expect } from "@odoo/hoot";
 import { queryFirst, animationFrame } from "@odoo/hoot-dom";
-import { mountWithCleanup, patchWithCleanup } from "@web/../tests/web_test_helpers";
+import {
+    mountWithCleanup,
+    patchWithCleanup,
+    onRpc,
+    MockServer,
+} from "@web/../tests/web_test_helpers";
 import { CartPage } from "@pos_self_order/app/pages/cart_page/cart_page";
 import { setupSelfPosEnv, getFilledSelfOrder, addComboProduct } from "../utils";
 import { definePosSelfModels } from "../data/generate_model_definitions";
@@ -43,6 +48,34 @@ test("pay", async () => {
     expect(order.id).toBeOfType("number");
     expect(order.lines).toHaveLength(2);
     expect(order.lines[0].id).toBeOfType("number");
+
+    // canProceedToPay returning false should block confirmOrder from ever running.
+    patchWithCleanup(store, {
+        async canProceedToPay() {
+            return false;
+        },
+        async confirmOrder() {
+            expect.step("confirmOrder");
+        },
+    });
+    await comp.pay();
+    expect.verifySteps([]);
+    expect(store.rpcLoading).toBe(false);
+});
+
+test("pay sets the note after canProceedToPay's refresh, so it isn't wiped by it", async () => {
+    const store = await setupSelfPosEnv();
+    const order = await getFilledSelfOrder(store);
+    await store.sendDraftOrderToServer();
+    onRpc("/pos-self-order/get-user-data/", () =>
+        MockServer.env["pos.order"].read_pos_data([order.id], {}, store.config.id)
+    );
+    const comp = await mountWithCleanup(CartPage, {});
+    comp.state.orderNoteValue = "no onions please";
+
+    await comp.pay();
+
+    expect(order.general_customer_note).toBe("no onions please");
 });
 
 test("canChangeQuantity", async () => {
@@ -351,6 +384,26 @@ test("getLineDisplayQty", async () => {
 
     delete order.uiState.lineChanges[line.uuid];
     expect(comp.getLineDisplayQty(line)).toBe(line.qty);
+});
+
+test("getLineChangeQty", async () => {
+    const store = await setupSelfPosEnv();
+    const order = await getFilledSelfOrder(store);
+    const line = order.lines[0];
+    const comp = await mountWithCleanup(CartPage, {});
+
+    // No prior change recorded yet: returns the current qty as-is, not a delta.
+    expect(comp.getLineChangeQty(line)).toBe(line.qty);
+
+    // A synced baseline is recorded: returns the delta since that baseline.
+    order.uiState.lineChanges[line.uuid] = { qty: line.qty };
+    expect(comp.getLineChangeQty(line)).toBe(0);
+
+    line.qty += 2;
+    expect(comp.getLineChangeQty(line)).toBe(2);
+
+    delete order.uiState.lineChanges[line.uuid];
+    expect(comp.getLineChangeQty(line)).toBe(line.qty);
 });
 
 test("lines", async () => {

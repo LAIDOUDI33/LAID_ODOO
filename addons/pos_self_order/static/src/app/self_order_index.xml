@@ -32,6 +32,9 @@
             <t t-set-slot="confirmation" route="`/pos-self/${this.selfOrder.config.id}/confirmation/{string:orderAccessToken}/{string:screenMode}`" t-slot-scope="url">
                 <ConfirmationPage orderAccessToken="url.orderAccessToken" screenMode="url.screenMode" />
             </t>
+            <t t-set-slot="order" route="`/pos-self/${this.selfOrder.config.id}/order/{string:orderAccessToken}`" t-slot-scope="url">
+                <OrderPage orderAccessToken="url.orderAccessToken" />
+            </t>
             <t t-set-slot="location" route="`/pos-self/${this.selfOrder.config.id}/location`">
                 <EatingLocationPage />
             </t>

@@ -171,17 +171,10 @@ export class PaymentSafaricom extends PaymentInterface {
             return false;
         }
 
-        // Set QR payment data for customer display
-        line.qrPaymentData = {
-            name: this.payment_method_id.name,
-            amount: this.pos.env.utils.formatCurrency(line.amount),
-            qrCode: "data:image/png;base64," + qrCode,
-        };
-
-        // Update customer display to show the QR code
-        if (this.pos.customerDisplay) {
-            this.pos.customerDisplay.update();
-        }
+        // Show the QR code on the customer display
+        this.pos.updateCustomerDisplayQrData?.("data:image/png;base64," + qrCode, {
+            payment: line,
+        });
 
         try {
             const transaction = await makeAwaitable(
@@ -208,11 +201,8 @@ export class PaymentSafaricom extends PaymentInterface {
 
             return true;
         } finally {
-            // Clear QR payment data from customer display
-            line.qrPaymentData = null;
-            if (this.pos.customerDisplay) {
-                this.pos.customerDisplay.update();
-            }
+            // Clear the QR code from the customer display
+            this.pos.updateCustomerDisplayQrData?.(null);
         }
     }
 }

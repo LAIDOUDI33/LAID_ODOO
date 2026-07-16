@@ -1,4 +1,5 @@
 import { test, expect } from "@odoo/hoot";
+import { animationFrame } from "@odoo/hoot-dom";
 import { mountWithCleanup } from "@web/../tests/web_test_helpers";
 import { setupPosEnv } from "@point_of_sale/../tests/unit/utils";
 import { ControlButtons } from "@point_of_sale/app/screens/product_screen/control_buttons/control_buttons";
@@ -49,4 +50,17 @@ test("getPotentialRewards", async () => {
 
     expect(reward).toEqual(models["loyalty.reward"].get(1));
     expect(reward.program_id).toEqual(loyaltyProgram);
+});
+
+test("disables eWallet for self-orders", async () => {
+    const store = await setupPosEnv();
+    const order = store.addNewOrder();
+    await mountWithCleanup(ControlButtons, { props: { showRemainingButtons: true } });
+
+    expect("button:contains('eWallet')").not.toHaveAttribute("disabled");
+
+    order.source = "mobile";
+    await animationFrame();
+
+    expect("button:contains('eWallet')").toHaveAttribute("disabled");
 });

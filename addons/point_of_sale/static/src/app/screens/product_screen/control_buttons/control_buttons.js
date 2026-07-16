@@ -118,7 +118,10 @@ export class ControlButtons extends Component {
         });
 
         if (payload) {
-            this.pos.selectPricelist(payload);
+            await this.pos.selectPricelist(payload);
+            if (this.currentOrder.isSelfOrder) {
+                await this.pos.syncAllOrders({ orders: [this.currentOrder] });
+            }
         }
     }
 

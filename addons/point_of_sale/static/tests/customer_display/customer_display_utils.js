@@ -99,7 +99,7 @@ export const PAY_WITH_CARD = {
     paymentLines: [{ name: "CARD", amount: "2,972.75" }],
     change: 0,
     onlinePaymentData: {},
-    qrPaymentData: null,
+    qrData: null,
 };
 
 export const SEND_QR = {
@@ -125,7 +125,7 @@ export const SEND_QR = {
     paymentLines: [{ name: "CARD", amount: "2,972.75" }],
     change: 0,
     onlinePaymentData: {},
-    qrPaymentData: {
+    qrData: {
         amount: "$ 2,972.75",
         qrCode: QR_URL,
     },

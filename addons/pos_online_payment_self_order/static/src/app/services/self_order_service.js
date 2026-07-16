@@ -54,10 +54,9 @@ patch(SelfOrder.prototype, {
 
             if (this.config.self_ordering_pay_after === "each") {
                 exitRouteUrl += `/confirmation/${order.access_token}/order`;
-            }
-
-            if (this.currentTable) {
-                table = `&table_identifier=${this.currentTable.identifier}`;
+                if (this.currentTable) {
+                    table = `&table_identifier=${this.currentTable.identifier}`;
+                }
             }
 
             exitRouteUrl += `?access_token=${this.access_token}${table}`;

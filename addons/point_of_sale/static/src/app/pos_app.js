@@ -51,17 +51,24 @@ export class Chrome extends Component {
 
         this.adapter = new CustomerDisplayPosAdapter();
         this.dispatchDebounced = debounce(() => this.adapter.dispatch(this.pos));
+        this.lastCustomerDisplayOrderUuid = null;
 
         useEffect(() => {
             this.sendOrderToCustomerDisplay(this.pos, this.router.state);
         });
     }
 
-    sendOrderToCustomerDisplay({ selectedOrder }, routerState) {
+    sendOrderToCustomerDisplay(pos, routerState) {
+        const { selectedOrder } = pos;
+        if (selectedOrder?.uuid !== this.lastCustomerDisplayOrderUuid) {
+            this.lastCustomerDisplayOrderUuid = selectedOrder?.uuid ?? null;
+            pos.updateCustomerDisplayQrData(null);
+        }
+        const qrData = pos.customerDisplayQrData;
         if (routerState.current === "SaverScreen" || routerState.current === "LoginScreen") {
             this.adapter.displayScreenSaver();
         } else if (selectedOrder) {
-            this.adapter.formatOrderData(selectedOrder);
+            this.adapter.formatOrderData(selectedOrder, qrData);
         }
         this.adapter.setExtraData(this.getCustomerDisplayExtraData(...arguments));
         this.dispatchDebounced();

@@ -17,6 +17,19 @@ test("getOrderlineData", async () => {
     expect(adapter.data.lines[1].isSelected).toBe(true);
 });
 
+test("formatOrderData", async () => {
+    const store = await setupPosEnv();
+    const order = await getFilledOrder(store);
+    const adapter = new CustomerDisplayPosAdapter();
+    const qrData = { qrCode: "data:image/png,...", title: "Scan to join the order" };
+
+    adapter.formatOrderData(order, qrData);
+    expect(adapter.data.qrData).toBe(qrData);
+
+    adapter.formatOrderData(order);
+    expect(adapter.data.qrData).toBeEmpty();
+});
+
 test("order amounts summary", async () => {
     const store = await setupPosEnv();
     const order = await getFilledOrder(store);

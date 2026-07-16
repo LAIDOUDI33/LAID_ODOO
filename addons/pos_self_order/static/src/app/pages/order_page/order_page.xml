@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="pos_self_order.OrderPage">
+        <div class="d-flex flex-column vh-100 align-items-center justify-content-center text-center">
+            <i class="oi oi-spin oi-2x mb-3" data-icon="autorenew" role="img" aria-label="Loading"/>
+            <span>Joining your order...</span>
+        </div>
+    </t>
+</templates>

@@ -313,9 +313,8 @@ export class CartPage extends Component {
     }
 
     getLineChangeQty(line) {
-        const currentQty = line.qty;
         const lastChange = this.selfOrder.currentOrder.uiState.lineChanges[line.uuid];
-        return !lastChange ? currentQty : currentQty - lastChange.qty;
+        return !lastChange ? line.qty : line.getPendingQtyDelta();
     }
 
     async pay() {
@@ -332,6 +331,13 @@ export class CartPage extends Component {
             this.selfOrder.currentOrder.preset_id?.use_timing;
 
         if (this.selfOrder.rpcLoading || !this.selfOrder.verifyCart()) {
+            return;
+        }
+
+        this.selfOrder.rpcLoading = true;
+        const canProceed = await this.selfOrder.canProceedToPay();
+        this.selfOrder.rpcLoading = false;
+        if (!canProceed) {
             return;
         }
 

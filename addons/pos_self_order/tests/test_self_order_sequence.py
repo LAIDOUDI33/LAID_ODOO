@@ -35,6 +35,15 @@ class TestSelfOrderSequence(SelfOrderCommonTest):
 
         self.pos_config.open_ui()
         self.pos_config.current_session_id.set_opening_control(0, "")
-        self_route = self.pos_config._get_self_order_route()
+
+        order = self.env['pos.order'].create({
+            'session_id': self.pos_config.current_session_id.id,
+            'amount_total': 0.0,
+            'amount_tax': 0.0,
+            'amount_return': 0.0,
+            'amount_paid': 0.0,
+        })
+        order._ensure_access_token()
+        self_route = self.pos_config._get_self_order_route(order=order)
         self.start_tour(self_route, 'SelfOrderOrderNumberTour', login="pos_admin")
         self.start_tour("/pos/ui/%d" % self.pos_config.id, 'OrderNumberConflictTour', login="pos_admin")

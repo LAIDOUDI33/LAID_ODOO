@@ -171,6 +171,14 @@ class PosOrder(models.Model):
             **{field: payment_line.get(field) for field in safe_fields}
         }]]
 
+    @staticmethod
+    def _get_self_order_floating_name(pos_config, table, tracking_number, prefix=""):
+        if not table:
+            return f"Self-Order {tracking_number}"
+        if pos_config.self_ordering_pay_after == 'meal':
+            return f"T {table.table_number} - {prefix}{tracking_number}"
+        return f"Self-Order T {table.table_number}"
+
     @api.model
     def _check_pos_order(self, pos_config, order, device_type, table=None):
         company = pos_config.company_id
@@ -200,13 +208,15 @@ class PosOrder(models.Model):
             if device_type == 'kiosk':
                 floating_order_name = f"Table tracker {order['table_stand_number']}" if order.get('table_stand_number') else tracking_number
             elif not floating_order_name:
-                floating_order_name = f"Self-Order T {table.table_number}" if table else f"Self-Order {tracking_number}"
+                floating_order_name = self._get_self_order_floating_name(pos_config, table, tracking_number, prefix)
 
             tracking_number = f"{prefix}{tracking_number}"
         else:
             pos_reference = existing_order.pos_reference
             floating_order_name = existing_order.floating_order_name
             tracking_number = existing_order.tracking_number
+            if not floating_order_name:
+                floating_order_name = self._get_self_order_floating_name(pos_config, table, tracking_number)
 
         fiscal_position_id = preset_id.fiscal_position_id if preset_id else pos_config.default_fiscal_position_id
         pricelist_id = preset_id.pricelist_id if preset_id else pos_config.pricelist_id

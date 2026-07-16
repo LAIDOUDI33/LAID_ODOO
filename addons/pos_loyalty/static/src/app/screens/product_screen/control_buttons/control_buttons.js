@@ -105,6 +105,8 @@ patch(ControlButtons.prototype, {
                     const res = await this.pos.activateCode(code);
                     if (res !== true) {
                         this.notification.add(res, { type: "danger" });
+                    } else if (this.currentOrder.isSelfOrder) {
+                        await this.pos.syncAllOrders({ orders: [this.currentOrder] });
                     }
                 }
             },

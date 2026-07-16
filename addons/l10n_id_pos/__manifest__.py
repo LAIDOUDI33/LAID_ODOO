@@ -14,8 +14,11 @@
             'l10n_id_pos/static/src/**/*',
         ],
         'web.assets_tests': [
-            'l10n_id_pos/static/tests/**/*'
-        ]
+            'l10n_id_pos/static/tests/tours/**/*',
+        ],
+        'web.assets_unit_tests': [
+            'l10n_id_pos/static/tests/unit/**/*',
+        ],
     },
     'author': 'Odoo S.A.',
     'license': 'LGPL-3',
