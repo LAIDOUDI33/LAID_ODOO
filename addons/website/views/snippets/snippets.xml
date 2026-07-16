@@ -117,6 +117,9 @@
             <t t-snippet="website.s_launch_countdown" string="Launch Countdown" group="intro">
                 <keywords>coming soon, countdown, launch, waitlist, timer, days hours minutes seconds, social media, teaser, pre-launch, fullscreen, dark</keywords>
             </t>
+            <t t-snippet="website.s_intro_spotlight" string="Intro Spotlight" group="intro">
+                <keywords>spotlight, intro, hero, headline, header, grid, gallery, pictures, photos, media, showcase, feature, focus, center stage, reveal, collection, product, call to action, cta, button</keywords>
+            </t>
 
             <!-- Columns group -->
             <t t-snippet="website.s_three_columns" string="Columns" group="columns">

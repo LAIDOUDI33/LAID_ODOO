@@ -141,6 +141,7 @@
         'views/snippets/s_pricelist_boxed.xml',
         'views/snippets/s_adventure.xml',
         'views/snippets/s_image_title.xml',
+        'views/snippets/s_intro_spotlight.xml',
         'views/snippets/s_bento_grid_avatars.xml',
         'views/snippets/s_key_images.xml',
         'views/snippets/s_kickoff.xml',
