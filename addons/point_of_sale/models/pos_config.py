@@ -297,6 +297,7 @@ class PosConfig(models.Model):
         record['_has_cash_move_perm'] = self.env.user._has_cash_move_permission()
         record['_has_cash_delete_perm'] = self.env.user._has_cash_delete_permission()
         record['_pos_special_products_ids'] = self.env['pos.config']._get_special_products().ids
+        record["_unit_uom_id"] = self.env.ref('uom.product_uom_unit').id
 
         # Add custom fields for 'formula' taxes.
         # We can ignore data for _load_pos_data_domain since isn't needed in the domain computation of account.tax
