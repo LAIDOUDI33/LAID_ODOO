@@ -159,12 +159,9 @@ class CalendarEvent(models.Model):
         related_event = self.search([('google_id', '=', google_event.id)], limit=1)
         name = google_event.summary or related_event and related_event.name or _("(No title)")
         values = {
-            'calendar_id': calendar.id,
-            'last_google_calendar_sync_id': calendar.get_google_path(),
             'name': name,
             'description': google_event.description and tools.html_sanitize(google_event.description),
             'location': google_event.location,
-            'user_id': google_event.owner(self.env).id,
             'privacy': google_event.visibility or False,
             'attendee_ids': attendee_commands,
             'partner_ids': [],
@@ -174,6 +171,19 @@ class CalendarEvent(models.Model):
             'show_as': 'free' if google_event.is_available() else 'busy',
             'guests_readonly': not bool(google_event.guestsCanModify)
         }
+        if google_event.owner(self.env):
+            values['user_id'] = google_event.owner(self.env).id
+        elif not calendar.calendar_users.filtered(lambda u: u.is_primary) and calendar.owners:
+            # If the calendar is secondary, assign the event to the calendar owner.
+            values['user_id'] = calendar.owners[0].id
+        elif not related_event:
+            # If the event doesn't exist in Odoo yet, explicitly set the user to prevent default env.user assignment
+            # If it exists, do not override the user
+            values['user_id'] = False
+
+        if not calendar.is_primary or self.env.user.id == google_event.owner(self.env).id:
+            values['calendar_id'] = calendar.id
+            values['last_google_calendar_sync_id'] = calendar.get_google_path()
         # Remove 'videocall_location' when not sent by Google, otherwise the local videocall will be discarded.
         if not values.get('videocall_location'):
             values.pop('videocall_location', False)

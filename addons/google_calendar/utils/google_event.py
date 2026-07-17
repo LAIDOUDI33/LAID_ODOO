@@ -71,11 +71,11 @@ class GoogleEvent(GoogleApiResource):
         real_owner = real_owner_id and env['res.users'].browse(real_owner_id) or env['res.users']
         if real_owner_id and real_owner.exists():
             return real_owner
-        elif self.organizer and self.organizer.get('self'):
+        elif self.creator and self.creator.get('self'):
             return env.user
-        elif self.organizer and self.organizer.get('email'):
+        elif self.creator and self.creator.get('email'):
             # In Google: 1 email = 1 user; but in Odoo several users might have the same email :/
-            org_email = email_normalize(self.organizer.get('email'))
+            org_email = email_normalize(self.creator.get('email'))
             return env['res.users'].search([('email_normalized', '=', org_email)], limit=1)
         else:
             return env['res.users']
