@@ -1,4 +1,4 @@
-import { Component, proxy, props, t, useRef, useLayoutEffect, useEnv } from "@odoo/owl";
+import { Component, proxy, props, t, useRef, useEnv } from "@odoo/owl";
 import { _t } from "@web/core/l10n/translation";
 import { useService } from "@web/core/utils/hooks";
 import { Dropdown } from "@web/core/dropdown/dropdown";
@@ -411,20 +411,20 @@ export class EmbeddedActionsPanel extends Component {
 
         this.newActionNameRef = useRef("newActionNameRef");
         // Delay opening embedded actions dropdown to avoid flicker
-        useLayoutEffect(
-            (el, showEmbedded) => {
-                const timer = setTimeout(() => {
-                    if (
-                        showEmbedded &&
-                        this.props.state.embeddedInfos.visibleEmbeddedActions.length === 1
-                    ) {
-                        el?.querySelector(".btn[name='openEmbeddedActions']")?.click();
-                    }
-                }, 100);
-                return () => clearTimeout(timer);
-            },
-            () => [this.root.el, this.props.state.embeddedInfos.showEmbedded]
-        );
+        // useLayoutEffect(
+        //     (el, showEmbedded) => {
+        //         const timer = setTimeout(() => {
+        //             if (
+        //                 showEmbedded &&
+        //                 this.props.state.embeddedInfos.visibleEmbeddedActions.length === 1
+        //             ) {
+        //                 el?.querySelector(".btn[name='openEmbeddedActions']")?.click();
+        //             }
+        //         }, 100);
+        //         return () => clearTimeout(timer);
+        //     },
+        //     () => [this.root.el, this.props.state.embeddedInfos.showEmbedded]
+        // );
     }
 
     isEmbeddedActionVisible(action) {
