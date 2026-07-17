@@ -273,7 +273,7 @@ describe("Range collapsed", () => {
         test("should turn an empty paragraph of multiple table cells into a checklist", async () => {
             await testEditor({
                 contentBefore: unformat(`
-                    <table class="table table-bordered">
+                    <div class="o_table_wrapper"><table class="table table-bordered">
                         <tbody>
                             <tr>
                                 <td>[<br></td>
@@ -286,12 +286,12 @@ describe("Range collapsed", () => {
                                 <td><br>]</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
                 stepFunction: toggleCheckList,
                 contentAfterEdit: unformat(`
                     <p data-selection-placeholder=""><br></p>
-                    <table class="table table-bordered o_selected_table">
+                    <div class="o_table_wrapper"><table class="table table-bordered o_selected_table">
                         <tbody>
                             <tr>
                                 <td class="o_selected_td"><ul class="o_checklist"><li>[<br></li></ul></td>
@@ -304,11 +304,11 @@ describe("Range collapsed", () => {
                                 <td class="o_selected_td"><ul class="o_checklist"><li>]<br></li></ul></td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                     <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>
                 `),
                 contentAfter: unformat(`
-                    <table class="table table-bordered">
+                    <div class="o_table_wrapper"><table class="table table-bordered">
                         <tbody>
                             <tr>
                                 <td><ul class="o_checklist"><li>[<br></li></ul></td>
@@ -321,7 +321,7 @@ describe("Range collapsed", () => {
                                 <td><ul class="o_checklist"><li>]<br></li></ul></td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
             });
         });
@@ -577,7 +577,7 @@ describe("Range collapsed", () => {
         test("should turn an list of multiple table cells into a empty paragraph", async () => {
             await testEditor({
                 contentBefore: unformat(`
-                    <table class="table table-bordered">
+                    <div class="o_table_wrapper"><table class="table table-bordered">
                         <tbody>
                             <tr>
                                 <td>[<ul class="o_checklist"><li><br></li></ul></td>
@@ -590,12 +590,12 @@ describe("Range collapsed", () => {
                                 <td><ul class="o_checklist"><li><br></li></ul>]</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
                 stepFunction: toggleCheckList,
                 contentAfterEdit: unformat(`
                     <p data-selection-placeholder=""><br></p>
-                    <table class="table table-bordered o_selected_table">
+                    <div class="o_table_wrapper"><table class="table table-bordered o_selected_table">
                         <tbody>
                             <tr>
                                 <td class="o_selected_td">[<p><br></p></td>
@@ -608,11 +608,11 @@ describe("Range collapsed", () => {
                                 <td class="o_selected_td"><p><br></p>]</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                     <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>
                 `),
                 contentAfter: unformat(`
-                    <table class="table table-bordered">
+                    <div class="o_table_wrapper"><table class="table table-bordered">
                         <tbody>
                             <tr>
                                 <td>[<p><br></p></td>
@@ -625,7 +625,7 @@ describe("Range collapsed", () => {
                                 <td><p><br></p>]</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
             });
         });

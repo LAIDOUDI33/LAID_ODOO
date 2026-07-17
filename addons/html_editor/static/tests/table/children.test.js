@@ -85,7 +85,7 @@ describe("row", () => {
         test("should convert the first row to table header", async () => {
             await testEditor({
                 contentBefore: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr style="height: 20px;">
                                 <td style="width: 20px;">ab[]</td>
@@ -98,11 +98,11 @@ describe("row", () => {
                                 <td>ef</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
                 stepFunction: turnIntoHeader(),
                 contentAfter: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <colgroup>
                             <col style="width: 20px;">
                             <col style="width: 25px;">
@@ -120,7 +120,7 @@ describe("row", () => {
                                 <td>ef</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
             });
         });
@@ -128,7 +128,7 @@ describe("row", () => {
         test("should convert table header to normal row", async () => {
             await testEditor({
                 contentBefore: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr style="height: 20px;">
                                 <td style="width: 20px;">ab[]</td>
@@ -141,11 +141,11 @@ describe("row", () => {
                                 <td>ef</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
                 stepFunction: turnIntoRow(),
                 contentAfter: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <colgroup>
                             <col style="width: 20px;">
                             <col style="width: 25px;">
@@ -163,7 +163,7 @@ describe("row", () => {
                                 <td>ef</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
             });
         });
@@ -173,14 +173,15 @@ describe("row", () => {
         test("should add a row above the top row", async () => {
             await testEditor({
                 contentBefore:
+                    '<div class="o_table_wrapper">' +
                     '<table><tbody><tr style="height: 20px;">' +
                     '<td style="width: 20px;">ab</td>' +
                     '<td style="width: 25px;">cd</td>' +
                     '<td style="width: 30px;">ef[]</td>' +
-                    "</tr></tbody></table>",
+                    "</tr></tbody></table></div>",
                 stepFunction: addRow("before"),
                 contentAfter:
-                    "<table>" +
+                    '<div class="o_table_wrapper"><table>' +
                     "<colgroup>" +
                     '<col style="width: 20px;">' +
                     '<col style="width: 25px;">' +
@@ -195,13 +196,14 @@ describe("row", () => {
                     "<td>ab</td>" +
                     "<td>cd</td>" +
                     "<td>ef[]</td>" +
-                    "</tr></tbody></table>",
+                    "</tr></tbody></table></div>",
             });
         });
 
         test("should add a row above the middle row", async () => {
             await testEditor({
                 contentBefore:
+                    '<div class="o_table_wrapper">' +
                     '<table><tbody><tr style="height: 20px;">' +
                     '<td style="width: 20px;">ab</td>' +
                     '<td style="width: 25px;">cd</td>' +
@@ -211,10 +213,10 @@ describe("row", () => {
                     "<td>ab</td>" +
                     "<td>cd</td>" +
                     "<td>ef[]</td>" +
-                    "</tr></tbody></table>",
+                    "</tr></tbody></table></div>",
                 stepFunction: addRow("before"),
                 contentAfter:
-                    "<table>" +
+                    '<div class="o_table_wrapper"><table>' +
                     "<colgroup>" +
                     '<col style="width: 20px;">' +
                     '<col style="width: 25px;">' +
@@ -234,13 +236,14 @@ describe("row", () => {
                     "<td>ab</td>" +
                     "<td>cd</td>" +
                     "<td>ef[]</td>" +
-                    "</tr></tbody></table>",
+                    "</tr></tbody></table></div>",
             });
         });
 
         test("should add two rows above the top row and preserve widths", async () => {
             await testEditor({
                 contentBefore:
+                    '<div class="o_table_wrapper">' +
                     "<table><tbody>" +
                     '<tr style="height: 20px;">' +
                     '<td style="width: 20px;">ab</td>' +
@@ -252,10 +255,10 @@ describe("row", () => {
                     "<td>ij</td>" +
                     "<td>kl</td>" +
                     "</tr>" +
-                    "</tbody></table>",
+                    "</tbody></table></div>",
                 stepFunction: addRow("before", 2),
                 contentAfter:
-                    "<table>" +
+                    '<div class="o_table_wrapper"><table>' +
                     "<colgroup>" +
                     '<col style="width: 20px;">' +
                     '<col style="width: 25px;">' +
@@ -281,12 +284,13 @@ describe("row", () => {
                     "<td>ij</td>" +
                     "<td>kl</td>" +
                     "</tr>" +
-                    "</tbody></table>",
+                    "</tbody></table></div>",
             });
         });
         test("should add two rows below the bottom row", async () => {
             await testEditor({
                 contentBefore:
+                    '<div class="o_table_wrapper">' +
                     "<table><tbody>" +
                     '<tr style="height: 20px;">' +
                     '<td style="width: 20px;">ab</td>' +
@@ -298,10 +302,10 @@ describe("row", () => {
                     "<td>ij</td>" +
                     "<td>kl[]</td>" +
                     "</tr>" +
-                    "</tbody></table>",
+                    "</tbody></table></div>",
                 stepFunction: addRow("after", 2),
                 contentAfter:
-                    "<table>" +
+                    '<div class="o_table_wrapper"><table>' +
                     "<colgroup>" +
                     '<col style="width: 20px;">' +
                     '<col style="width: 25px;">' +
@@ -327,7 +331,7 @@ describe("row", () => {
                     "<td><p><br></p></td>" +
                     "<td><p><br></p></td>" +
                     "</tr>" +
-                    "</tbody></table>",
+                    "</tbody></table></div>",
             });
         });
     });
@@ -336,14 +340,15 @@ describe("row", () => {
         test("should add a row below the bottom row", async () => {
             await testEditor({
                 contentBefore:
+                    '<div class="o_table_wrapper">' +
                     '<table><tbody><tr style="height: 20px;">' +
                     '<td style="width: 20px;">ab</td>' +
                     '<td style="width: 25px;">cd</td>' +
                     '<td style="width: 30px;">ef[]</td>' +
-                    "</tr></tbody></table>",
+                    "</tr></tbody></table></div>",
                 stepFunction: addRow("after"),
                 contentAfter:
-                    "<table>" +
+                    '<div class="o_table_wrapper"><table>' +
                     "<colgroup>" +
                     '<col style="width: 20px;">' +
                     '<col style="width: 25px;">' +
@@ -358,13 +363,14 @@ describe("row", () => {
                     "<td><p><br></p></td>" +
                     "<td><p><br></p></td>" +
                     "<td><p><br></p></td>" +
-                    "</tr></tbody></table>",
+                    "</tr></tbody></table></div>",
             });
         });
 
         test("should add a row below the middle row", async () => {
             await testEditor({
                 contentBefore:
+                    '<div class="o_table_wrapper">' +
                     '<table><tbody><tr style="height: 20px;">' +
                     '<td style="width: 20px;">ab</td>' +
                     '<td style="width: 25px;">cd</td>' +
@@ -374,10 +380,10 @@ describe("row", () => {
                     "<td>ab</td>" +
                     "<td>cd</td>" +
                     "<td>ef</td>" +
-                    "</tr></tbody></table>",
+                    "</tr></tbody></table></div>",
                 stepFunction: addRow("after"),
                 contentAfter:
-                    "<table>" +
+                    '<div class="o_table_wrapper"><table>' +
                     "<colgroup>" +
                     '<col style="width: 20px;">' +
                     '<col style="width: 25px;">' +
@@ -397,7 +403,7 @@ describe("row", () => {
                     "<td>ab</td>" +
                     "<td>cd</td>" +
                     "<td>ef</td>" +
-                    "</tr></tbody></table>",
+                    "</tr></tbody></table></div>",
             });
         });
     });
@@ -406,7 +412,7 @@ describe("row", () => {
         test("should move header row down and convert it to normal row", async () => {
             await testEditor({
                 contentBefore: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr style="height: 20px;">
                                 <th class="o_table_header" style="width: 20px;">ab[]</th>
@@ -419,11 +425,11 @@ describe("row", () => {
                                 <td>kl</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
                 stepFunction: moveRow(1),
                 contentAfter: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <colgroup>
                             <col style="width: 20px;">
                             <col style="width: 25px;">
@@ -441,7 +447,7 @@ describe("row", () => {
                                 <td>ef</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
             });
         });
@@ -449,7 +455,7 @@ describe("row", () => {
         test("should move second row up and convert it to header row", async () => {
             await testEditor({
                 contentBefore: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr style="height: 20px;">
                                 <th class="o_table_header" style="width: 20px;">ab</th>
@@ -462,11 +468,11 @@ describe("row", () => {
                                 <td>kl[]</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
                 stepFunction: moveRow(0),
                 contentAfter: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <colgroup>
                             <col style="width: 20px;">
                             <col style="width: 25px;">
@@ -484,7 +490,7 @@ describe("row", () => {
                                 <td>ef</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
             });
         });
@@ -494,7 +500,7 @@ describe("row", () => {
         test("should remove a row based on selection", async () => {
             await testEditor({
                 contentBefore: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr>
                                 <td>[]ab</td> <td>cd</td>
@@ -503,24 +509,24 @@ describe("row", () => {
                                 <td>ef</td> <td>gh</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
                 stepFunction: removeRow(),
                 contentAfter: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr>
                                 <td>ef[]</td><td>gh</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
             });
         });
         test("should remove the row passed as argument", async () => {
             await testEditor({
                 contentBefore: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr>
                                 <td>[]ab</td> <td>cd</td>
@@ -529,7 +535,7 @@ describe("row", () => {
                                 <td>ef</td> <td>gh</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
                 stepFunction: (editor) => {
                     // Select the second row
@@ -537,37 +543,37 @@ describe("row", () => {
                     removeRow(row)(editor);
                 },
                 contentAfter: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr>
                                 <td>ab[]</td><td>cd</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
             });
         });
         test("should remove the table upon sole row removal", async () => {
             await testEditor({
                 contentBefore: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr>
                                 <td>[]ab</td> <td>cd</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
                 contentBeforeEdit: unformat(
                     `<p data-selection-placeholder=""><br></p>
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr>
                                 <td>[]ab</td> <td>cd</td>
                             </tr>
                         </tbody>
-                    </table>
-                    <p data-selection-placeholder=""><br></p>`
+                    </table></div>
+                    <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`
                 ),
                 stepFunction: removeRow(),
                 contentAfter: "<p>[]<br></p>",
@@ -576,7 +582,7 @@ describe("row", () => {
         test("should remove column intersecting rowspan without breaking table", async () => {
             await testEditor({
                 contentBefore: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr>
                                 <td>a</td><td rowspan="3"><p><br></p></td><td>c</td>
@@ -588,7 +594,7 @@ describe("row", () => {
                                 <td>f</td><td>g</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
                 stepFunction: (editor) => {
                     // Select the second row
@@ -596,7 +602,7 @@ describe("row", () => {
                     removeRow(row)(editor);
                 },
                 contentAfter: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr>
                                 <td>a</td><td rowspan="2"><p><br></p></td><td>c</td>
@@ -605,14 +611,14 @@ describe("row", () => {
                                 <td>f[]</td><td>g</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
             });
         });
         test("should remove column intersecting muliple rowspan without breaking table", async () => {
             await testEditor({
                 contentBefore: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr>
                                 <td>1</td>
@@ -634,7 +640,7 @@ describe("row", () => {
                                 <td>11</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
                 stepFunction: (editor) => {
                     // Select the second row
@@ -642,7 +648,7 @@ describe("row", () => {
                     removeRow(row)(editor);
                 },
                 contentAfter: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr>
                                 <td>1</td>
@@ -660,14 +666,14 @@ describe("row", () => {
                                 <td>11</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
             });
         });
         test("should remove the entire table when removing a row from a table where all cells have rowspan", async () => {
             await testEditor({
                 contentBefore: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr>
                                 <td rowspan="3">a</td><td rowspan="3">b</td><td rowspan="3">c</td>
@@ -675,7 +681,7 @@ describe("row", () => {
                             <tr></tr>
                             <tr></tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
                 stepFunction: (editor) => {
                     const row = editor.editable.querySelectorAll("tr")[0];
@@ -692,6 +698,7 @@ describe("column", () => {
         test("should add a column left of the leftmost column", async () => {
             await testEditor({
                 contentBefore:
+                    '<div class="o_table_wrapper">' +
                     '<table style="width: 150px;">' +
                     '<tbody><tr style="height: 20px;">' +
                     '<td style="width: 40px;">ab[]</td>' +
@@ -702,9 +709,10 @@ describe("column", () => {
                     "<td>ab</td>" +
                     "<td>cd</td>" +
                     "<td>ef</td>" +
-                    "</tr></tbody></table>",
+                    "</tr></tbody></table></div>",
                 stepFunction: addColumn("before"),
                 contentAfter:
+                    '<div class="o_table_wrapper">' +
                     '<table style="width: 150px;">' +
                     '<colgroup><col style="width: 32px;">' +
                     '<col style="width: 32px;"><col style="width: 40px;">' +
@@ -720,13 +728,14 @@ describe("column", () => {
                     "<td>ab</td>" +
                     "<td>cd</td>" +
                     "<td>ef</td>" +
-                    "</tr></tbody></table>",
+                    "</tr></tbody></table></div>",
             });
         });
 
         test("should add a `TH` column before", async () => {
             await testEditor({
                 contentBefore:
+                    '<div class="o_table_wrapper">' +
                     '<table style="width: 150px;"><tbody><tr style="height: 20px;">' +
                     '<th style="width: 40px;">ab[]</th>' +
                     '<th style="width: 50px;">cd</th>' +
@@ -736,9 +745,10 @@ describe("column", () => {
                     "<td>ab</td>" +
                     "<td>cd</td>" +
                     "<td>ef</td>" +
-                    "</tr></tbody></table>",
+                    "</tr></tbody></table></div>",
                 stepFunction: addColumn("before"),
                 contentAfter:
+                    '<div class="o_table_wrapper">' +
                     '<table style="width: 150px;">' +
                     '<colgroup><col style="width: 32px;"><col style="width: 32px;">' +
                     '<col style="width: 40px;"><col style="width: 45px;"></colgroup>' +
@@ -753,13 +763,14 @@ describe("column", () => {
                     "<td>ab</td>" +
                     "<td>cd</td>" +
                     "<td>ef</td>" +
-                    "</tr></tbody></table>",
+                    "</tr></tbody></table></div>",
             });
         });
 
         test("should add a column left of the middle column", async () => {
             await testEditor({
                 contentBefore:
+                    '<div class="o_table_wrapper">' +
                     '<table style="width: 200px;"><tbody><tr style="height: 20px;">' +
                     '<td style="width: 50px;">ab</td>' +
                     '<td style="width: 65px;">cd</td>' +
@@ -767,9 +778,10 @@ describe("column", () => {
                     "</tr>" +
                     '<tr style="height: 30px;"><td>ab</td><td>cd[]</td><td>ef</td></tr>' +
                     '<tr style="height: 40px;"><td>ab</td><td>cd</td><td>ef</td></tr>' +
-                    "</tbody></table>",
+                    "</tbody></table></div>",
                 stepFunction: addColumn("before"),
                 contentAfter:
+                    '<div class="o_table_wrapper">' +
                     '<table style="width: 200px;">' +
                     "<colgroup>" +
                     '<col style="width: 38px;">' +
@@ -781,13 +793,14 @@ describe("column", () => {
                     '<tr style="height: 20px;"><td>ab</td><td><p><br></p></td><td>cd</td><td>ef</td></tr>' +
                     '<tr style="height: 30px;"><td>ab</td><td><p><br></p></td><td>cd[]</td><td>ef</td></tr>' +
                     '<tr style="height: 40px;"><td>ab</td><td><p><br></p></td><td>cd</td><td>ef</td></tr>' +
-                    "</tbody></table>",
+                    "</tbody></table></div>",
             });
         });
 
         test("should add two columns before the leftmost column and preserve table width", async () => {
             await testEditor({
                 contentBefore:
+                    '<div class="o_table_wrapper">' +
                     '<table style="width: 150px;">' +
                     "<colgroup>" +
                     '<col style="width: 40px;">' +
@@ -805,9 +818,10 @@ describe("column", () => {
                     "<td>cd</td>" +
                     "<td>ef</td>" +
                     "</tr>" +
-                    "</tbody></table>",
+                    "</tbody></table></div>",
                 stepFunction: addColumn("before", 2),
                 contentAfter:
+                    '<div class="o_table_wrapper">' +
                     '<table style="width: 150px;">' +
                     "<colgroup>" +
                     '<col style="width: 27px;">' +
@@ -831,13 +845,14 @@ describe("column", () => {
                     "<td>cd</td>" +
                     "<td>ef</td>" +
                     "</tr>" +
-                    "</tbody></table>",
+                    "</tbody></table></div>",
             });
         });
 
         test("should add two columns after the rightmost column and preserve table width", async () => {
             await testEditor({
                 contentBefore:
+                    '<div class="o_table_wrapper">' +
                     '<table style="width: 150px;">' +
                     "<colgroup>" +
                     '<col style="width: 40px;">' +
@@ -855,9 +870,10 @@ describe("column", () => {
                     "<td>cd</td>" +
                     "<td>ef</td>" +
                     "</tr>" +
-                    "</tbody></table>",
+                    "</tbody></table></div>",
                 stepFunction: addColumn("after", 2),
                 contentAfter:
+                    '<div class="o_table_wrapper">' +
                     '<table style="width: 150px;">' +
                     "<colgroup>" +
                     '<col style="width: 23px;">' +
@@ -881,7 +897,7 @@ describe("column", () => {
                     "<td><p><br></p></td>" +
                     "<td><p><br></p></td>" +
                     "</tr>" +
-                    "</tbody></table>",
+                    "</tbody></table></div>",
             });
         });
     });
@@ -890,6 +906,7 @@ describe("column", () => {
         test("should add a column right of the rightmost column", async () => {
             await testEditor({
                 contentBefore:
+                    '<div class="o_table_wrapper">' +
                     '<table style="width: 150px;"><tbody><tr style="height: 20px;">' +
                     '<td style="width: 40px;">ab</td>' +
                     '<td style="width: 50px;">cd</td>' +
@@ -899,9 +916,10 @@ describe("column", () => {
                     "<td>ab</td>" +
                     "<td>cd</td>" +
                     "<td>ef</td>" +
-                    "</tr></tbody></table>",
+                    "</tr></tbody></table></div>",
                 stepFunction: addColumn("after"),
                 contentAfter:
+                    '<div class="o_table_wrapper">' +
                     '<table style="width: 150px;">' +
                     "<colgroup>" +
                     '<col style="width: 29px;">' +
@@ -915,13 +933,14 @@ describe("column", () => {
                     "<tbody>" +
                     '<tr style="height: 20px;"><td>ab</td><td>cd</td><td>ef[]</td><td><p><br></p></td></tr>' +
                     '<tr style="height: 30px;"><td>ab</td><td>cd</td><td>ef</td><td><p><br></p></td></tr>' +
-                    "</tbody></table>",
+                    "</tbody></table></div>",
             });
         });
 
         test("should add a `TH` column after", async () => {
             await testEditor({
                 contentBefore:
+                    '<div class="o_table_wrapper">' +
                     '<table style="width: 150px;"><tbody><tr style="height: 20px;">' +
                     '<th style="width: 40px;">ab</th>' +
                     '<th style="width: 50px;">cd[]</th>' +
@@ -931,9 +950,10 @@ describe("column", () => {
                     "<td>ab</td>" +
                     "<td>cd</td>" +
                     "<td>ef</td>" +
-                    "</tr></tbody></table>",
+                    "</tr></tbody></table></div>",
                 stepFunction: addColumn("after"),
                 contentAfter:
+                    '<div class="o_table_wrapper">' +
                     '<table style="width: 150px;">' +
                     "<colgroup>" +
                     '<col style="width: 30px;">' +
@@ -944,13 +964,14 @@ describe("column", () => {
                     "<tbody>" +
                     '<tr style="height: 20px;"><th>ab</th><th>cd[]</th><th><p><br></p></th><th>ef</th></tr>' +
                     '<tr style="height: 30px;"><td>ab</td><td>cd</td><td><p><br></p></td><td>ef</td></tr>' +
-                    "</tbody></table>",
+                    "</tbody></table></div>",
             });
         });
 
         test("should add a column right of the middle column", async () => {
             await testEditor({
                 contentBefore:
+                    '<div class="o_table_wrapper">' +
                     '<table style="width: 200px;"><tbody><tr style="height: 20px;">' +
                     '<td style="width: 50px;">ab</td>' +
                     '<td style="width: 65px;">cd</td>' +
@@ -965,9 +986,10 @@ describe("column", () => {
                     "<td>ab</td>" +
                     "<td>cd</td>" +
                     "<td>ef</td>" +
-                    "</tr></tbody></table>",
+                    "</tr></tbody></table></div>",
                 stepFunction: addColumn("after"),
                 contentAfter:
+                    '<div class="o_table_wrapper">' +
                     '<table style="width: 200px;">' +
                     "<colgroup>" +
                     '<col style="width: 38px;">' +
@@ -979,7 +1001,7 @@ describe("column", () => {
                     '<tr style="height: 20px;"><td>ab</td><td>cd</td><td><p><br></p></td><td>ef</td></tr>' +
                     '<tr style="height: 30px;"><td>ab</td><td>cd[]</td><td><p><br></p></td><td>ef</td></tr>' +
                     '<tr style="height: 40px;"><td>ab</td><td>cd</td><td><p><br></p></td><td>ef</td></tr>' +
-                    "</tbody></table>",
+                    "</tbody></table></div>",
             });
         });
     });
@@ -988,7 +1010,7 @@ describe("column", () => {
         test("should move second column left", async () => {
             await testEditor({
                 contentBefore: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr style="height: 20px;">
                                 <th class="o_table_header" style="width: 20px;">ab</th>
@@ -1001,11 +1023,11 @@ describe("column", () => {
                                 <td>kl</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
                 stepFunction: moveColumn(0),
                 contentAfter: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <colgroup>
                             <col style="width: 25px;">
                             <col style="width: 20px;">
@@ -1023,7 +1045,7 @@ describe("column", () => {
                                 <td>kl</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
             });
         });
@@ -1031,7 +1053,7 @@ describe("column", () => {
         test("should move second column right", async () => {
             await testEditor({
                 contentBefore: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr style="height: 20px;">
                                 <th class="o_table_header" style="width: 20px;">ab</th>
@@ -1044,11 +1066,11 @@ describe("column", () => {
                                 <td>kl</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
                 stepFunction: moveColumn(2),
                 contentAfter: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <colgroup>
                             <col style="width: 20px;">
                             <col style="width: 25px;">
@@ -1066,7 +1088,7 @@ describe("column", () => {
                                 <td>ij</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
             });
         });
@@ -1076,7 +1098,7 @@ describe("column", () => {
         test("should remove a column based on selection", async () => {
             await testEditor({
                 contentBefore: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr>
                                 <td>[]ab</td> <td>cd</td>
@@ -1085,11 +1107,11 @@ describe("column", () => {
                                 <td>ef</td> <td>gh</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
                 stepFunction: removeColumn(),
                 contentAfter: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr>
                                 <td>cd[]</td>
@@ -1098,7 +1120,7 @@ describe("column", () => {
                                 <td>gh</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
             });
         });
@@ -1106,7 +1128,7 @@ describe("column", () => {
         test("should remove a column from a table with a header", async () => {
             await testEditor({
                 contentBefore: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr>
                                 <th class="o_table_header">[]Header 1</th>
@@ -1117,11 +1139,11 @@ describe("column", () => {
                                 <td>Cell 2</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
                 stepFunction: removeColumn(),
                 contentAfter: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr>
                                 <th class="o_table_header">Header 2[]</th>
@@ -1130,7 +1152,7 @@ describe("column", () => {
                                 <td>Cell 2</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
             });
         });
@@ -1138,7 +1160,7 @@ describe("column", () => {
         test("should remove the column passed as argument", async () => {
             await testEditor({
                 contentBefore: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr>
                                 <td>[]ab</td> <td>cd</td>
@@ -1147,7 +1169,7 @@ describe("column", () => {
                                 <td>ef</td> <td>gh</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
                 stepFunction: (editor) => {
                     // Select the second cell
@@ -1155,7 +1177,7 @@ describe("column", () => {
                     removeColumn(cell)(editor);
                 },
                 contentAfter: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr>
                                 <td>ab[]</td>
@@ -1164,29 +1186,29 @@ describe("column", () => {
                                 <td>ef</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
             });
         });
         test("should remove the table upon sole column removal", async () => {
             await testEditor({
                 contentBefore: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr> <td>[]ab</td> </tr>
                             <tr> <td>cd</td> </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
                 contentBeforeEdit: unformat(
                     `<p data-selection-placeholder=""><br></p>
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr> <td>[]ab</td> </tr>
                             <tr> <td>cd</td> </tr>
                         </tbody>
-                    </table>
-                    <p data-selection-placeholder=""><br></p>`
+                    </table></div>
+                    <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`
                 ),
                 stepFunction: removeColumn(),
                 contentAfter: "<p>[]<br></p>",
@@ -1195,7 +1217,7 @@ describe("column", () => {
         test("should remove column intersecting colspan without breaking table", async () => {
             await testEditor({
                 contentBefore: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr>
                                 <td>a</td><td>b</td><td>c</td>
@@ -1207,7 +1229,7 @@ describe("column", () => {
                                 <td>e</td><td>f</td><td>g</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
                 stepFunction: (editor) => {
                     // Select the second cell
@@ -1215,7 +1237,7 @@ describe("column", () => {
                     removeColumn(cell)(editor);
                 },
                 contentAfter: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr>
                                 <td>a[]</td><td>c</td>
@@ -1227,14 +1249,14 @@ describe("column", () => {
                                 <td>e</td><td>g</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
             });
         });
         test("should remove the entire table when removing a column from a table where all rows have only colspan cells", async () => {
             await testEditor({
                 contentBefore: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr>
                                 <td colspan="3">a</td>
@@ -1246,7 +1268,7 @@ describe("column", () => {
                                 <td colspan="3">c</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
                 stepFunction: (editor) => {
                     const cell = editor.editable.querySelectorAll("td")[0];
@@ -1258,7 +1280,7 @@ describe("column", () => {
         test("should remove row intersecting colspan and rowspan without breaking table", async () => {
             await testEditor({
                 contentBefore: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr>
                                 <td>1</td>
@@ -1276,14 +1298,14 @@ describe("column", () => {
                                 <td>9</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
                 stepFunction: (editor) => {
                     const row = editor.editable.querySelectorAll("tr")[0];
                     removeRow(row)(editor);
                 },
                 contentAfter: unformat(`
-                    <table>
+                    <div class="o_table_wrapper"><table>
                         <tbody>
                             <tr>
                                 <td colspan="2">5[]</td>
@@ -1296,7 +1318,7 @@ describe("column", () => {
                                 <td>9</td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
             });
         });
@@ -1306,19 +1328,19 @@ describe("column", () => {
 describe("tab", () => {
     test("should add a new row on press tab at the end of a table", async () => {
         const contentBefore = unformat(`
-            <table><tbody>
+            <div class="o_table_wrapper"><table><tbody>
                 <tr style="height: 20px;">
                     <td style="width: 20px;">ab</td>
                     <td>cd</td>
                     <td>ef[]</td>
                 </tr>
-            </tbody></table>`);
+            </tbody></table></div>`);
         const { el, editor } = await setupEditor(contentBefore);
         await press("Tab");
 
         const expectedContent = unformat(
             `<p data-selection-placeholder=""><br></p>
-            <table>
+            <div class="o_table_wrapper"><table>
                 <colgroup><col style="width: 20px;"></colgroup>
                 <tbody>
                     <tr style="height: 20px;">
@@ -1332,8 +1354,8 @@ describe("tab", () => {
                         <td><p><br></p></td>
                     </tr>
                 </tbody>
-            </table>
-            <p data-selection-placeholder=""><br></p>`
+            </table></div>
+            <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`
         );
 
         expect(getContent(el)).toBe(expectedContent);
@@ -1343,7 +1365,7 @@ describe("tab", () => {
         expect(getContent(el)).toBe(
             unformat(`
                 <p data-selection-placeholder=""><br></p>
-                <table>
+                <div class="o_table_wrapper"><table>
                     <colgroup><col style="width: 20px;"></colgroup>
                     <tbody>
                         <tr style="height: 20px;">
@@ -1352,18 +1374,18 @@ describe("tab", () => {
                             <td>ef[]</td>
                         </tr>
                     </tbody>
-                </table>
-                <p data-selection-placeholder=""><br></p>`)
+                </table></div>
+                <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
         );
     });
 
     test("should not select whole text of the next cell", async () => {
         await testEditor({
             contentBefore:
-                '<table><tbody><tr style="height: 20px;"><td style="width: 20px;">ab</td><td>[cd]</td><td>ef</td></tr></tbody></table>',
+                '<div class="o_table_wrapper"><table><tbody><tr style="height: 20px;"><td style="width: 20px;">ab</td><td>[cd]</td><td>ef</td></tr></tbody></table></div>',
             stepFunction: () => press("Tab"),
             contentAfter:
-                '<table><colgroup><col style="width: 20px;"></colgroup><tbody><tr style="height: 20px;"><td>ab</td><td>cd</td><td>ef[]</td></tr></tbody></table>',
+                '<div class="o_table_wrapper"><table><colgroup><col style="width: 20px;"></colgroup><tbody><tr style="height: 20px;"><td>ab</td><td>cd</td><td>ef[]</td></tr></tbody></table></div>',
         });
     });
 });

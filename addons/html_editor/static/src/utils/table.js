@@ -38,6 +38,16 @@ export function getTableCells(table) {
 }
 
 /**
+ * Get the wrapper containing the given table.
+ *
+ * @param {HTMLTableElement} table
+ * @returns {HTMLDivElement}
+ */
+export function getTableWrapper(table) {
+    return table.parentElement;
+}
+
+/**
  * Analyzes the currently selected table cells and determines:
  *  - whether they can be merged,
  *  - whether they can be unmerged,
@@ -113,4 +123,20 @@ export function getSelectedCellsMergeInfo(editableDocument, tableGrid, targetCel
     }
 
     return { canMerge: false, canUnmerge: containsMergedCell, cells: selectedTds, spanType: "" };
+}
+
+export function wrapTableIntoScrollContainer(table) {
+    const isWrapperExists = table.parentElement?.classList.contains("o_table_wrapper");
+
+    if (!isWrapperExists) {
+        const wrapper = table.ownerDocument.createElement("div");
+        wrapper.classList.add("o_table_wrapper");
+
+        const parent = table.parentNode;
+        if (parent) {
+            parent.replaceChild(wrapper, table);
+        }
+        wrapper.appendChild(table);
+        return wrapper;
+    }
 }

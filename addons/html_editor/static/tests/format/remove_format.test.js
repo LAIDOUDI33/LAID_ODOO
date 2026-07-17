@@ -765,17 +765,17 @@ test("should remove backgroundColor from selected cells using removeFormat", asy
     const styleContent = `* {${defaultTextColor}}`;
     await testEditor({
         contentBefore: unformat(`
-            <table class="table table-bordered o_table"><tbody>
+            <div class="o_table_wrapper"><table class="table table-bordered o_table"><tbody>
                 <tr><td style="background-color: rgb(255, 0, 0); ${defaultTextColor}"><p>[ab</p></td></tr>
                 <tr><td style="background-color: rgb(255, 0, 0); ${defaultTextColor}"><p>cd]</p></td></tr>
-            </tbody></table>
+            </tbody></table></div>
         `),
         stepFunction: (editor) => execCommand(editor, "removeFormat"),
         contentAfter: unformat(`
-            <table class="table table-bordered o_table"><tbody>
+            <div class="o_table_wrapper"><table class="table table-bordered o_table"><tbody>
                 <tr><td><p>[ab</p></td></tr>
                 <tr><td><p>cd]</p></td></tr>
-            </tbody></table>
+            </tbody></table></div>
         `),
         styleContent,
     });
@@ -786,17 +786,17 @@ test("should remove backgroundColor from selected cells using removeFormat (2)",
     const styleContent = `* {${defaultTextColor}}`;
     await testEditor({
         contentBefore: unformat(`
-            <table class="table table-bordered o_table"><tbody>
+            <div class="o_table_wrapper"><table class="table table-bordered o_table"><tbody>
                 <tr><td style="background-color: rgb(255, 0, 0); ${defaultTextColor}"><p>[<br></p></td></tr>
                 <tr><td style="background-color: rgb(255, 0, 0); ${defaultTextColor}"><p>]<br></p></td></tr>
-            </tbody></table>
+            </tbody></table></div>
         `),
         stepFunction: (editor) => execCommand(editor, "removeFormat"),
         contentAfter: unformat(`
-            <table class="table table-bordered o_table"><tbody>
+            <div class="o_table_wrapper"><table class="table table-bordered o_table"><tbody>
                 <tr><td><p>[\u200b</p></td></tr>
                 <tr><td><p>]\u200b</p></td></tr>
-            </tbody></table>
+            </tbody></table></div>
         `),
         styleContent,
     });
@@ -840,18 +840,18 @@ test("should remove text color from empty element", async () => {
 test("should remove text color from empty element in a single selected cell", async () => {
     await testEditor({
         contentBefore: unformat(`
-            <table class="table table-bordered o_table o_selected_table"><tbody>
+            <div class="o_table_wrapper"><table class="table table-bordered o_table o_selected_table"><tbody>
                 <tr><td class="o_selected_td"><p><font data-oe-zws-empty-inline="" style="color: rgb(255, 0, 0);">[]\u200B</font></p></td></tr>
                 <tr><td><p><br></p></td></tr>
-            </tbody></table>
+            </tbody></table></div>
         `),
         stepFunction: (editor) => execCommand(editor, "removeFormat"),
         contentAfterEdit: unformat(`
             <p data-selection-placeholder=""><br></p>
-            <table class="table table-bordered o_table o_selected_table"><tbody>
+            <div class="o_table_wrapper"><table class="table table-bordered o_table o_selected_table"><tbody>
                 <tr><td class="o_selected_td"><p o-we-hint-text='Type "/" for commands' class="o-we-hint">\u200b[]</p></td></tr>
                 <tr><td><p><br></p></td></tr>
-            </tbody></table>
+            </tbody></table></div>
             <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>
         `),
     });
@@ -1013,28 +1013,28 @@ describe("Toolbar", () => {
 
     test("Should remove background color of text within a fully selected table", async () => {
         const { el } = await setupEditor(
-            `<table class="table table-bordered o_table o_selected_table"><tbody><tr><td class="o_selected_td"><p><font style="background-color: rgb(255, 0, 0);">[abc</font></p></td><td class="o_selected_td"><p><br></p></td></tr></tbody></table><p>]<br></p>`
+            `<div class="o_table_wrapper"><table class="table table-bordered o_table o_selected_table"><tbody><tr><td class="o_selected_td"><p><font style="background-color: rgb(255, 0, 0);">[abc</font></p></td><td class="o_selected_td"><p><br></p></td></tr></tbody></table></div><p>]<br></p>`
         );
         await removeFormatClick();
         expect(getContent(el)).toBe(
-            `<p data-selection-placeholder=""><br></p><table class="table table-bordered o_table o_selected_table"><tbody><tr><td class="o_selected_td"><p>[abc</p></td><td class="o_selected_td"><p>\u200b</p></td></tr></tbody></table><p>]\u200b</p>`
+            `<p data-selection-placeholder=""><br></p><div class="o_table_wrapper"><table class="table table-bordered o_table o_selected_table"><tbody><tr><td class="o_selected_td"><p>[abc</p></td><td class="o_selected_td"><p>\u200b</p></td></tr></tbody></table></div><p>]\u200b</p>`
         );
     });
 
     test("Should remove background color of a table cell", async () => {
         const { el } = await setupEditor(
-            `<table class="table table-bordered o_table o_selected_table"><tbody><tr><td style="background-color: rgb(255, 0, 0);" class="o_selected_td"><p>[<br></p></td><td style="background-color: rgb(255, 0, 0);" class="o_selected_td"><p>]<br></p></td></tr></tbody></table>`
+            `<div class="o_table_wrapper"><table class="table table-bordered o_table o_selected_table"><tbody><tr><td style="background-color: rgb(255, 0, 0);" class="o_selected_td"><p>[<br></p></td><td style="background-color: rgb(255, 0, 0);" class="o_selected_td"><p>]<br></p></td></tr></tbody></table></div>`
         );
         await removeFormatClick();
         expect(getContent(el)).toBe(
-            `<p data-selection-placeholder=""><br></p><table class="table table-bordered o_table o_selected_table"><tbody><tr><td style="" class="o_selected_td"><p>[\u200b</p></td><td style="" class="o_selected_td"><p>]\u200b</p></td></tr></tbody></table><p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`
+            `<p data-selection-placeholder=""><br></p><div class="o_table_wrapper"><table class="table table-bordered o_table o_selected_table"><tbody><tr><td style="" class="o_selected_td"><p>[\u200b</p></td><td style="" class="o_selected_td"><p>]\u200b</p></td></tr></tbody></table></div><p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`
         );
     });
 
     test("Should remove vertical-align style from table cells", async () => {
         const { el } = await setupEditor(
             unformat(`
-                <table class="table table-bordered o_table o_selected_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table o_selected_table">
                     <tbody>
                         <tr style="height: 100px;">
                             <td>1</td>
@@ -1045,14 +1045,14 @@ describe("Toolbar", () => {
                             <td class="o_selected_td" style="vertical-align: bottom;">4]</td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
             `)
         );
         await removeFormatClick();
         expect(getContent(el)).toBe(
             unformat(`
                 <p data-selection-placeholder=""><br></p>
-                <table class="table table-bordered o_table o_selected_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table o_selected_table">
                     <tbody>
                         <tr style="height: 100px;">
                             <td>1</td>
@@ -1063,7 +1063,7 @@ describe("Toolbar", () => {
                             <td style="" class="o_selected_td">4]</td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
                 <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>
             `)
         );

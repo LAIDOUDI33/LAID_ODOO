@@ -164,15 +164,16 @@ test("should not handle table selection in protected elements children (true)", 
     await testEditor({
         contentBefore: unformat(`
                 <div data-oe-protected="true">
-                    <p>a[bc</p><table><tbody><tr><td>a]b</td><td>cd</td><td>ef</td></tr></tbody></table>
+                    <p>a[bc</p><div class="o_table_wrapper"><table><tbody><tr><td>a]b</td><td>cd</td><td>ef</td></tr></tbody></table></div>
                 </div>
                 `),
         contentAfterEdit: unformat(
             `<p data-selection-placeholder=""><br></p>
             <div data-oe-protected="true" contenteditable="false">
-                    <p>a[bc</p><table><tbody><tr><td>a]b</td><td>cd</td><td>ef</td></tr></tbody></table>
-                </div>
-                <p data-selection-placeholder=""><br></p>`
+                <p>a[bc</p>
+                <div class="o_table_wrapper"><table><tbody><tr><td>a]b</td><td>cd</td><td>ef</td></tr></tbody></table></div>
+            </div>
+            <p data-selection-placeholder=""><br></p>`
         ),
     });
 });
@@ -182,7 +183,8 @@ test("should handle table selection in unprotected elements", async () => {
         contentBefore: unformat(`
                 <div data-oe-protected="true">
                     <div data-oe-protected="false">
-                        <p>a[bc</p><table><tbody><tr><td>a]b</td><td>cd</td><td>ef</td></tr></tbody></table>
+                        <p>a[bc</p>
+                        <div class="o_table_wrapper"><table><tbody><tr><td>a]b</td><td>cd</td><td>ef</td></tr></tbody></table></div>
                     </div>
                 </div>
                 `),
@@ -191,12 +193,12 @@ test("should handle table selection in unprotected elements", async () => {
                 <div data-oe-protected="true" contenteditable="false">
                     <div data-oe-protected="false" contenteditable="true">
                         <p>a[bc</p>
-                        <table class="o_selected_table"><tbody><tr>
+                        <div class="o_table_wrapper"><table class="o_selected_table"><tbody><tr>
                             <td class="o_selected_td">ab</td>
                             <td class="o_selected_td">cd</td>
                             <td class="o_selected_td">ef]</td>
-                        </tr></tbody></table>
-                        <p data-selection-placeholder=""><br></p>
+                        </tr></tbody></table></div>
+                        <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>
                     </div>
                 </div>
                 <p data-selection-placeholder=""><br></p>
@@ -206,12 +208,12 @@ test("should handle table selection in unprotected elements", async () => {
             <div data-oe-protected="true" contenteditable="false">
                     <div data-oe-protected="false" contenteditable="true">
                         <p>a[bc</p>
-                        <table class="o_selected_table"><tbody><tr>
+                        <div class="o_table_wrapper"><table class="o_selected_table"><tbody><tr>
                             <td class="o_selected_td">ab</td>
                             <td class="o_selected_td">cd</td>
                             <td class="o_selected_td">ef]</td>
-                        </tr></tbody></table>
-                        <p data-selection-placeholder=""><br></p>
+                        </tr></tbody></table></div>
+                        <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>
                     </div>
                 </div>
                 <p data-selection-placeholder=""><br></p>`
@@ -224,9 +226,9 @@ test("should not remove contenteditable attribute of a protected node", async ()
         contentBefore: unformat(`
                 <div data-oe-protected="true">
                     <p contenteditable="true">content</p>
-                    <table contenteditable="true">
+                    <div class="o_table_wrapper" contenteditable="true"><table>
                         <tbody><tr><td>ab</td></tr></tbody>
-                    </table>
+                    </table></div>
                     <div contenteditable="true">
                         <p>content</p>
                     </div>
@@ -236,9 +238,9 @@ test("should not remove contenteditable attribute of a protected node", async ()
             `<p data-selection-placeholder=""><br></p>
             <div data-oe-protected="true" contenteditable="false">
                     <p contenteditable="true">content</p>
-                    <table contenteditable="true">
+                    <div class="o_table_wrapper" contenteditable="true"><table>
                         <tbody><tr><td>ab</td></tr></tbody>
-                    </table>
+                    </table></div>
                     <div contenteditable="true">
                         <p>content</p>
                     </div>
@@ -254,23 +256,23 @@ test("should not select a protected table even if it is contenteditable='true'",
     await testEditor({
         contentBefore: unformat(`
                 <div data-oe-protected="true">
-                    <table contenteditable="true"><tbody><tr>
+                    <div class="o_table_wrapper" contenteditable="true"><table><tbody><tr>
                         <td>[ab</td>
-                    </tr></tbody></table>
-                    <table><tbody><tr>
+                    </tr></tbody></table></div>
+                    <div class="o_table_wrapper"><table><tbody><tr>
                         <td>cd]</td>
-                    </tr></tbody></table>
+                    </tr></tbody></table></div>
                 </div>
             `),
         contentAfterEdit: unformat(
             `<p data-selection-placeholder=""><br></p>
             <div data-oe-protected="true" contenteditable="false">
-                    <table contenteditable="true"><tbody><tr>
+                    <div class="o_table_wrapper" contenteditable="true"><table><tbody><tr>
                         <td>[ab</td>
-                    </tr></tbody></table>
-                    <table><tbody><tr>
+                    </tr></tbody></table></div>
+                    <div class="o_table_wrapper"><table><tbody><tr>
                         <td>cd]</td>
-                    </tr></tbody></table>
+                    </tr></tbody></table></div>
                 </div>
                 <p data-selection-placeholder=""><br></p>`
         ),

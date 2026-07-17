@@ -23,7 +23,13 @@ import { parseHTML } from "@html_editor/utils/html";
 import { DIRECTIONS, leftPos, rightPos, nodeSize } from "@html_editor/utils/position";
 import { withSequence } from "@html_editor/utils/resource";
 import { findInSelection } from "@html_editor/utils/selection";
-import { getColumnIndex, getRowIndex, getTableCells } from "@html_editor/utils/table";
+import {
+    getColumnIndex,
+    getRowIndex,
+    getTableCells,
+    getTableWrapper,
+    wrapTableIntoScrollContainer,
+} from "@html_editor/utils/table";
 import { isBrowserFirefox } from "@web/core/browser/feature_detection";
 import { getActiveHotkey } from "@web/core/hotkeys/hotkey_service";
 import { isHtmlContentSupported } from "@html_editor/core/selection_plugin";
@@ -40,8 +46,8 @@ function isUnremovableTableComponent(node, root) {
     if (!root) {
         return true;
     }
-    const closestTable = closestElement(node, "table");
-    return !root.contains(closestTable);
+    const closestTableWrapper = closestElement(node, ".o_table_wrapper");
+    return !root.contains(closestTableWrapper);
 }
 
 /**
@@ -176,20 +182,25 @@ export class TablePlugin extends Plugin {
             }
         },
         is_selection_blocker_predicates: (node) => {
-            if (node.nodeName === "TABLE") {
+            if (node.classList?.contains("o_table_wrapper")) {
                 return true;
             }
         },
         can_contain_selection_placeholder_predicates: (container) => {
-            if (container.nodeName === "TABLE") {
+            if (container.classList?.contains("o_table_wrapper")) {
                 return false;
             } else if (["TD", "TH"].includes(container.nodeName) && container.closest(".o_table")) {
                 return true;
             }
         },
+        is_no_inline_root_predicates: (node) => {
+            if (node.classList?.contains("o_table_wrapper")) {
+                return true;
+            }
+        },
 
         /** Selectors */
-        move_node_whitelist_selectors: "table",
+        move_node_whitelist_selectors: ".o_table_wrapper",
     };
 
     setup() {
@@ -217,6 +228,10 @@ export class TablePlugin extends Plugin {
             }
         });
         this.onMousemove = this.onMousemove.bind(this);
+
+        this.editable.querySelectorAll("table").forEach((table) => {
+            wrapTableIntoScrollContainer(table);
+        });
     }
 
     handlePasteTableIntoExistingTable(selection, clipboardRoot) {
@@ -396,13 +411,17 @@ export class TablePlugin extends Plugin {
         const tdsHtml = new Array(cols).fill(`<td>${baseContainerHtml}</td>`).join("");
         const trsHtml = new Array(rows).fill(`<tr>${tdsHtml}</tr>`).join("");
         const tableHtml = `<table class="table table-bordered o_table"><tbody>${trsHtml}</tbody></table>`;
-        return parseHTML(this.document, tableHtml);
+
+        // Wrap the table so horizontal scrolling can
+        // be applied independently from the editor.
+        const table = parseHTML(this.document, tableHtml).firstElementChild;
+        return wrapTableIntoScrollContainer(table);
     }
 
     _insertTable({ rows = 2, cols = 2 } = {}) {
-        const newTable = this.createTable({ rows, cols });
-        const [table] = this.dependencies.dom.insert(newTable);
-        return table;
+        const tableWrapper = this.createTable({ rows, cols });
+        const [insertedNode] = this.dependencies.dom.insert(tableWrapper);
+        return insertedNode.firstElementChild;
     }
     insertTable({ rows = 2, cols = 2 } = {}) {
         const table = this._insertTable({ rows, cols });
@@ -921,8 +940,9 @@ export class TablePlugin extends Plugin {
             return;
         }
         const baseContainer = this.dependencies.baseContainer.createBaseContainer();
-        table.before(baseContainer);
-        table.remove();
+        const wrapper = closestElement(table, ".o_table_wrapper");
+        wrapper.before(baseContainer);
+        wrapper.remove();
         this.dependencies.selection.setCursorStart(baseContainer);
     }
 
@@ -1082,11 +1102,11 @@ export class TablePlugin extends Plugin {
         // Expand range to fully include tables.
         const firstTable = fullySelectedTables[0];
         if (firstTable.contains(startContainer)) {
-            [startContainer, startOffset] = leftPos(firstTable);
+            [startContainer, startOffset] = leftPos(firstTable.closest(".o_table_wrapper"));
         }
         const lastTable = fullySelectedTables.at(-1);
         if (lastTable.contains(endContainer)) {
-            [endContainer, endOffset] = rightPos(lastTable);
+            [endContainer, endOffset] = rightPos(lastTable.closest(".o_table_wrapper"));
         }
         range = { startContainer, startOffset, endContainer, endOffset };
 
@@ -1247,9 +1267,9 @@ export class TablePlugin extends Plugin {
                     ["ArrowRight", "ArrowDown"].includes(ev.key) && direction === DIRECTIONS.LEFT;
                 let targetNode;
                 if (deselectingBackward) {
-                    targetNode = endTable.previousElementSibling;
+                    targetNode = getTableWrapper(endTable).previousElementSibling;
                 } else if (deselectingForward) {
-                    targetNode = endTable.nextElementSibling;
+                    targetNode = getTableWrapper(endTable).nextElementSibling;
                 }
                 if (targetNode) {
                     ev.preventDefault();
@@ -1650,8 +1670,8 @@ export class TablePlugin extends Plugin {
         const rowOffset = currentRowIndex + (isArrowUp ? -1 : currentCell.rowSpan);
         let targetNode = tableGrid[rowOffset]?.[currentColIndex];
         const siblingElement = isArrowUp
-            ? currentTable.previousElementSibling
-            : currentTable.nextElementSibling;
+            ? getTableWrapper(currentTable).previousElementSibling
+            : getTableWrapper(currentTable).nextElementSibling;
         if (!targetNode && siblingElement) {
             // If no target cell is available, navigate to sibling element
             targetNode = siblingElement;
@@ -1836,6 +1856,10 @@ export class TablePlugin extends Plugin {
                 this.dependencies.dom.setTagName(thead, "TBODY");
             }
         }
+        const tables = insertContainer.querySelectorAll("table");
+        for (const table of tables) {
+            wrapTableIntoScrollContainer(table);
+        }
         return insertContainer;
     }
 
@@ -1875,16 +1899,20 @@ export class TablePlugin extends Plugin {
             // just its rows.
             clonedContents = tableClone;
         }
-        const startTable = closestElement(selection.startContainer, "table");
-        if (clonedContents.firstChild.nodeName === "TABLE" && startTable) {
+
+        const isTableOrWrapper = (node) =>
+            node.nodeName === "TABLE" || node.classList?.contains("o_table_wrapper");
+
+        const startTableWrapper = closestElement(selection.startContainer, ".o_table_wrapper");
+        if (isTableOrWrapper(clonedContents.firstChild) && startTableWrapper) {
             // Make sure the full leading table is copied.
-            clonedContents.firstChild.after(startTable.cloneNode(true));
+            clonedContents.firstChild.after(startTableWrapper.cloneNode(true));
             clonedContents.firstChild.remove();
         }
-        const endTable = closestElement(selection.endContainer, "table");
-        if (clonedContents.lastChild.nodeName === "TABLE" && endTable) {
+        const endTableWrapper = closestElement(selection.endContainer, ".o_table_wrapper");
+        if (isTableOrWrapper(clonedContents.lastChild) && endTableWrapper) {
             // Make sure the full trailing table is copied.
-            clonedContents.lastChild.before(endTable.cloneNode(true));
+            clonedContents.lastChild.before(endTableWrapper.cloneNode(true));
             clonedContents.lastChild.remove();
         }
         this.deselectTable(clonedContents);

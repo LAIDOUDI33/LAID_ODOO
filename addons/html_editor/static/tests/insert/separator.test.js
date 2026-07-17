@@ -202,28 +202,31 @@ describe("insert separator", () => {
         test("should insert a separator inside a table that is wrapped in li", async () => {
             await testEditor({
                 contentBefore:
-                    "<ul><li>ab</li><li><br><table><tbody><tr><td><p>cd[]</p></td></tr></tbody></table></li></ul>",
+                    '<ul><li>ab</li><li><br><div class="o_table_wrapper"><table><tbody><tr><td><p>cd[]</p></td></tr></tbody></table></div></li></ul>',
                 stepFunction: insertSeparator,
                 contentAfter:
-                    "<ul><li>ab</li><li><br><table><tbody><tr><td><p>cd</p><hr><p>[]<br></p></td></tr></tbody></table></li></ul>",
+                    '<ul><li>ab</li><li><br><div class="o_table_wrapper"><table><tbody><tr><td><p>cd</p><hr><p>[]<br></p></td></tr></tbody></table></div></li></ul>',
             });
         });
     });
 
     test("should insert a separator before a empty p element inside a table cell", async () => {
         await testEditor({
-            contentBefore: "<table><tbody><tr><td><p>[]<br></p></td></tr></tbody></table>",
+            contentBefore:
+                '<div class="o_table_wrapper"><table><tbody><tr><td><p>[]<br></p></td></tr></tbody></table></div>',
             stepFunction: insertSeparator,
-            contentAfter: "<table><tbody><tr><td><hr><p>[]<br></p></td></tr></tbody></table>",
+            contentAfter:
+                '<div class="o_table_wrapper"><table><tbody><tr><td><hr><p>[]<br></p></td></tr></tbody></table></div>',
         });
     });
 
     test("should insert a separator after a p element containing text inside a table cell", async () => {
         await testEditor({
-            contentBefore: "<table><tbody><tr><td><p>content[]</p></td></tr></tbody></table>",
+            contentBefore:
+                '<div class="o_table_wrapper"><table><tbody><tr><td><p>content[]</p></td></tr></tbody></table></div>',
             stepFunction: insertSeparator,
             contentAfter:
-                "<table><tbody><tr><td><p>content</p><hr><p>[]<br></p></td></tr></tbody></table>",
+                '<div class="o_table_wrapper"><table><tbody><tr><td><p>content</p><hr><p>[]<br></p></td></tr></tbody></table></div>',
         });
     });
 

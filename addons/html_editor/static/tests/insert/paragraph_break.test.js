@@ -784,7 +784,7 @@ describe("Table", () => {
     test("should remove all contents of an anchor td and split paragraph", async () => {
         await testEditor({
             contentBefore: `
-                <table>
+                <div class="o_table_wrapper"><table>
                     <tbody>
                         <tr>
                             <td><p>[abc</p><p>def</p></td>
@@ -797,10 +797,10 @@ describe("Table", () => {
                             <td><p><br></p></td>
                         </tr>
                     </tbody>
-                </table>`,
+                </table></div>`,
             stepFunction: splitBlock,
             contentAfter: `
-                <table>
+                <div class="o_table_wrapper"><table>
                     <tbody>
                         <tr>
                             <td><p><br></p><p>[]<br></p></td>
@@ -813,14 +813,14 @@ describe("Table", () => {
                             <td><p><br></p></td>
                         </tr>
                     </tbody>
-                </table>`,
+                </table></div>`,
             testInBothDirections: false,
         });
     });
     test("should remove all contents of an anchor td and split paragraph (reversed selection)", async () => {
         await testEditor({
             contentBefore: `
-                <table>
+                <div class="o_table_wrapper"><table>
                     <tbody>
                         <tr>
                             <td><p>]abc</p><p>def</p></td>
@@ -833,10 +833,10 @@ describe("Table", () => {
                             <td><p><br></p></td>
                         </tr>
                     </tbody>
-                </table>`,
+                </table></div>`,
             stepFunction: splitBlock,
             contentAfter: `
-                <table>
+                <div class="o_table_wrapper"><table>
                     <tbody>
                         <tr>
                             <td><p>abc</p><p>def</p></td>
@@ -849,31 +849,31 @@ describe("Table", () => {
                             <td><p><br></p></td>
                         </tr>
                     </tbody>
-                </table>`,
+                </table></div>`,
             testInBothDirections: false,
         });
     });
     test("remove selected text and insert paragraph tag within a table cell and enter key is pressed", async () => {
         await testEditor({
             contentBefore: `
-                <table>
+                <div class="o_table_wrapper"><table>
                     <tbody>
                         <tr>
                             <td><p>[Test</p><p>Test</p><p>Test]</p></td>
                             <td><p><br></p></td>
                         </tr>
                     </tbody>
-                </table>`,
+                </table></div>`,
             stepFunction: splitBlock,
             contentAfter: `
-                <table>
+                <div class="o_table_wrapper"><table>
                     <tbody>
                         <tr>
                             <td><p><br></p><p>[]<br></p></td>
                             <td><p><br></p></td>
                         </tr>
                     </tbody>
-                </table>`,
+                </table></div>`,
         });
     });
 });

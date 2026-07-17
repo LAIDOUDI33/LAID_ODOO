@@ -33,7 +33,7 @@ test(`copy from HtmlViewer must support application/vnd.odoo.odoo-editor`, async
             config: {
                 value: markup(`
                     <p>before</p>
-                    <table class="table table-bordered o_table">
+                    <div class="o_table_wrapper"><table class="table table-bordered o_table">
                         <tbody>
                             <tr style="height: 49.1875px;">
                                 <td style="background-color: rgba(214, 239, 214, 0.6); color: rgb(55, 65, 81);">
@@ -41,7 +41,7 @@ test(`copy from HtmlViewer must support application/vnd.odoo.odoo-editor`, async
                                 </td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                     <p>after</p>
                 `),
             },
@@ -75,7 +75,7 @@ test(`copy from HtmlViewer should copy all the selection`, async () => {
         props: {
             config: {
                 value: markup(`
-                    <table class="table table-bordered o_table">
+                    <div class="o_table_wrapper"><table class="table table-bordered o_table">
                         <tbody>
                             <tr style="height: 49.1875px;">
                                 <td style="background-color: rgba(214, 239, 214, 0.6); color: rgb(55, 65, 81);">
@@ -83,7 +83,7 @@ test(`copy from HtmlViewer should copy all the selection`, async () => {
                                 </td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table></div>
                 `),
             },
         },

@@ -33,7 +33,7 @@ describe("insertTable", () => {
         expect(getContent(el)).toBe(
             unformat(`
                 <p data-selection-placeholder=""><br></p>
-                <table class="table table-bordered o_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table">
                     <tbody>
                         <tr>
                             <td>
@@ -41,7 +41,7 @@ describe("insertTable", () => {
                             </td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
                 <p>hello</p>
             `)
         );
@@ -53,7 +53,7 @@ describe("insertTable", () => {
         expect(getContent(el)).toBe(
             unformat(`
                 <p>he</p>
-                <table class="table table-bordered o_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table">
                     <tbody>
                         <tr>
                             <td>
@@ -61,7 +61,7 @@ describe("insertTable", () => {
                             </td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
                 <p>llo</p>
             `)
         );
@@ -73,7 +73,7 @@ describe("insertTable", () => {
         expect(getContent(el)).toBe(
             unformat(`
                 <p>hello</p>
-                <table class="table table-bordered o_table">
+                <div class="o_table_wrapper"><table class="table table-bordered o_table">
                     <tbody>
                         <tr>
                             <td>
@@ -81,7 +81,7 @@ describe("insertTable", () => {
                             </td>
                         </tr>
                     </tbody>
-                </table>
+                </table></div>
                 <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>
             `)
         );
@@ -90,7 +90,7 @@ describe("insertTable", () => {
 
 test("can color cells", async () => {
     await setupEditor(`
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr>
                     <td>[ab</td>
@@ -98,7 +98,7 @@ test("can color cells", async () => {
                     <td>ef</td>
                 </tr>
             </tbody>
-        </table>`);
+        </table></div>`);
 
     await expandToolbar();
     expect(".o_font_color_selector").toHaveCount(0);
@@ -123,7 +123,7 @@ test("can color cells", async () => {
 
 test("remove text from single selected cell", async () => {
     const { editor } = await setupEditor(`
-        <table class="table table-bordered o_table">
+        <div class="o_table_wrapper"><table class="table table-bordered o_table">
             <tbody>
                 <tr>
                     <td><p>[]abc</p></td>
@@ -131,7 +131,7 @@ test("remove text from single selected cell", async () => {
                     <td><p><br></p></td>
                 </tr>
             </tbody>
-        </table>`);
+        </table></div>`);
 
     const firstP = queryFirst("td p");
     const { left, top } = firstP.getBoundingClientRect();
@@ -157,7 +157,7 @@ test("remove text from single selected cell", async () => {
 describe("selected cell color in toolbar", () => {
     test("cell's selected color should be shown in toolbar (1)", async () => {
         await setupEditor(`
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr>
                     <td style="background-color: rgba(255, 0, 0, 0.6);"><div class="o-paragraph">[ab</div></td>
@@ -166,7 +166,7 @@ describe("selected cell color in toolbar", () => {
                     <td>ef</td>
                 </tr>
             </tbody>
-        </table>`);
+        </table></div>`);
 
         await expandToolbar();
         expect(".fa-paint-brush").toHaveCount(1);
@@ -176,7 +176,7 @@ describe("selected cell color in toolbar", () => {
     });
     test("cell's selected color should be shown in toolbar (2)", async () => {
         await setupEditor(`
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr>
                     <td style="background-color: rgba(255, 0, 0, 0.6);"><div class="o-paragraph">[ab</div></td>
@@ -184,7 +184,7 @@ describe("selected cell color in toolbar", () => {
                     <td>ef</td>
                 </tr>
             </tbody>
-        </table>`);
+        </table></div>`);
 
         await expandToolbar();
         await animationFrame();
@@ -195,7 +195,7 @@ describe("selected cell color in toolbar", () => {
     });
     test("cell's selected color should be shown in toolbar (3)", async () => {
         await setupEditor(`
-        <table>
+        <div class="o_table_wrapper"><table>
             <tbody>
                 <tr>
                     <td style="background-color: rgba(255, 0, 0, 0.6);"><div class="o-paragraph">[ab</div></td>
@@ -204,7 +204,7 @@ describe("selected cell color in toolbar", () => {
                     <td class="non_styled_2">c</td>
                 </tr>
             </tbody>
-        </table>`);
+        </table></div>`);
 
         await expandToolbar();
         expect(".fa-paint-brush").toHaveCount(1);
@@ -228,12 +228,12 @@ describe("selected cell color in toolbar", () => {
     });
     test("empty cell's selected color should be shown in toolbar on double click", async () => {
         const { el } = await setupEditor(`
-            <table class="table table-bordered o_table">
+            <div class="o_table_wrapper"><table class="table table-bordered o_table">
                 <tbody>
                     <tr><td style="background-color: rgba(255, 0, 0, 0.6);"><div class="o-paragraph">[]<br></div></td><td><br></td><td><br></td></tr>
                     <tr><td><br></td><td><br></td><td><br></td></tr>
                 </tbody>
-            </table>`);
+            </table></div>`);
 
         const BORDER_SENSITIVITY = 5;
         const firstTd = el.querySelector("td");
@@ -274,12 +274,12 @@ describe("selected cell color in toolbar", () => {
 
     test("non-empty cell's selected color should be shown in toolbar on triple click", async () => {
         const { el } = await setupEditor(`
-            <table class="table table-bordered o_table">
+            <div class="o_table_wrapper"><table class="table table-bordered o_table">
                 <tbody>
                     <tr><td style="background-color: rgba(255, 0, 0, 0.6);"><div class="o-paragraph">pp[]pp</div></td><td><br></td><td><br></td></tr>
                     <tr><td><br></td><td><br></td><td><br></td></tr>
                 </tbody>
-            </table>`);
+            </table></div>`);
 
         const BORDER_SENSITIVITY = 5;
         const firstTd = el.querySelector("td");

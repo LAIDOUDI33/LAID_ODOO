@@ -49,7 +49,7 @@ describe("visibility", () => {
 
     test("should not show power buttons in table", async () => {
         await setupEditor(
-            "<table><tbody><tr><td><p>[]<br></p></td><td><p><br></p></td></tr></tbody></table>"
+            '<div class="o_table_wrapper"><table><tbody><tr><td><p>[]<br></p></td><td><p><br></p></td></tr></tbody></table></div>'
         );
         expect(".o_we_power_buttons").not.toBeVisible();
     });

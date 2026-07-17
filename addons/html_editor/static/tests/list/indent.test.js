@@ -324,7 +324,7 @@ describe("Regular list", () => {
                     <li><br></li>
                     <li>
                         <br>[]
-                        <table>
+                        <div class="o_table_wrapper"><table>
                             <tbody>
                                 <tr>
                                     <td>ab</td>
@@ -332,7 +332,7 @@ describe("Regular list", () => {
                                     <td>ef</td>
                                 </tr>
                             </tbody>
-                        </table>
+                        </table></div>
                         <br>
                     </li>
                 </ul>`),
@@ -343,7 +343,7 @@ describe("Regular list", () => {
                         <ul>
                             <li>
                                 []<br>
-                                <table>
+                                <div class="o_table_wrapper"><table>
                                     <tbody>
                                         <tr>
                                             <td>ab</td>
@@ -351,7 +351,7 @@ describe("Regular list", () => {
                                             <td>ef</td>
                                         </tr>
                                     </tbody>
-                                </table>
+                                </table></div>
                                 <br>
                             </li>
                         </ul>
@@ -592,7 +592,7 @@ describe("with selection collapsed", () => {
     test("should indent unordered list inside a table cell", async () => {
         await testEditor({
             contentBefore: unformat(`
-                        <table>
+                        <div class="o_table_wrapper"><table>
                             <tbody>
                                 <tr>
                                     <td>
@@ -609,11 +609,11 @@ describe("with selection collapsed", () => {
                                     </td>
                                 </tr>
                             </tbody>
-                        </table>
+                        </table></div>
                     `),
             stepFunction: async (editor) => await keydownTab(editor),
             contentAfter: unformat(`
-                        <table>
+                        <div class="o_table_wrapper"><table>
                             <tbody>
                                 <tr>
                                     <td>
@@ -633,7 +633,7 @@ describe("with selection collapsed", () => {
                                     </td>
                                 </tr>
                             </tbody>
-                        </table>
+                        </table></div>
                     `),
         });
     });
@@ -641,7 +641,7 @@ describe("with selection collapsed", () => {
     test("should indent checklist inside a table cell", async () => {
         await testEditor({
             contentBefore: unformat(`
-                        <table>
+                        <div class="o_table_wrapper"><table>
                             <tbody>
                                 <tr>
                                     <td>
@@ -658,11 +658,11 @@ describe("with selection collapsed", () => {
                                     </td>
                                 </tr>
                             </tbody>
-                        </table>
+                        </table></div>
                     `),
             stepFunction: async (editor) => await keydownTab(editor),
             contentAfter: unformat(`
-                        <table>
+                        <div class="o_table_wrapper"><table>
                             <tbody>
                                 <tr>
                                     <td>
@@ -682,7 +682,7 @@ describe("with selection collapsed", () => {
                                     </td>
                                 </tr>
                             </tbody>
-                        </table>
+                        </table></div>
                     `),
         });
     });
@@ -1306,7 +1306,7 @@ describe("with selection", () => {
     test("should indent ordered list inside a table cell", async () => {
         await testEditor({
             contentBefore: unformat(`
-                        <table>
+                        <div class="o_table_wrapper"><table>
                             <tbody>
                                 <tr>
                                     <td>
@@ -1323,11 +1323,11 @@ describe("with selection", () => {
                                     </td>
                                 </tr>
                             </tbody>
-                        </table>
+                        </table></div>
                     `),
             stepFunction: async (editor) => await keydownTab(editor),
             contentAfter: unformat(`
-                        <table>
+                        <div class="o_table_wrapper"><table>
                             <tbody>
                                 <tr>
                                     <td>
@@ -1347,7 +1347,7 @@ describe("with selection", () => {
                                     </td>
                                 </tr>
                             </tbody>
-                        </table>
+                        </table></div>
                     `),
         });
     });
