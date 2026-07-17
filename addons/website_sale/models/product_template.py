@@ -131,7 +131,7 @@ class ProductTemplate(models.Model):
         string="Website Sequence",
         help="Determine the display order in the Website E-commerce",
         default=_default_website_sequence,
-        init_storage='_init_column_website_sequence',
+        init_storage="_init_column_website_sequence",
         copy=False,
         index=True,
     )
@@ -166,7 +166,7 @@ class ProductTemplate(models.Model):
     variants_default_code = fields.Char(
         compute="_compute_variants_default_code",
         store=True,
-        init_storage='_init_column_variants_default_code',
+        init_storage="_init_column_variants_default_code",
         index="trigram",
         help="Technical field to enhance performance when looking up default code of product"
         "variants (LIKE/ILIKE)",
@@ -1053,6 +1053,7 @@ class ProductTemplate(models.Model):
         product_taxes=None,
         taxes=None,
         fiscal_position=None,
+        include_extra_price=True,
     ):
         base_price = self.env["product.product"]._get_tax_included_unit_price_from_price(
             price, product_taxes, product_taxes_after_fp=taxes
@@ -1091,7 +1092,9 @@ class ProductTemplate(models.Model):
         for item in assumed_combo_items:
             if not item:
                 continue
-            prorated_base = combo_prices[item.combo_id] + item.extra_price
+            prorated_base = combo_prices[item.combo_id]
+            if include_extra_price:
+                prorated_base += item.extra_price
             item_taxes = item.product_id.sudo().taxes_id._filter_taxes_by_company()
             mapped_taxes = fiscal_position.map_tax(item_taxes)
             bases_by_tax[mapped_taxes] = bases_by_tax.get(mapped_taxes, 0.0) + prorated_base
@@ -1117,6 +1120,7 @@ class ProductTemplate(models.Model):
         tax_display=None,
         website=None,
         fiscal_position=None,
+        include_combo_extra_price=True,
     ):
         product = product or self.env["product.product"]
         if not tax_display:
@@ -1135,6 +1139,7 @@ class ProductTemplate(models.Model):
                 product_taxes=product_taxes,
                 taxes=taxes,
                 fiscal_position=fiscal_position,
+                include_extra_price=include_combo_extra_price,
             )
 
         if product_taxes is None:
@@ -1222,9 +1227,11 @@ class ProductTemplate(models.Model):
         _logger.debug(
             "Table '%s': setting default value of new column %s to unique values for each row",
             self._table,
-            'website_sequence',
+            "website_sequence",
         )
-        self.env.cr.execute(SQL("SELECT id FROM %s WHERE website_sequence IS NULL", SQL.identifier(self._table)))
+        self.env.cr.execute(
+            SQL("SELECT id FROM %s WHERE website_sequence IS NULL", SQL.identifier(self._table))
+        )
         prod_tmpl_ids = self.env.cr.dictfetchall()
         max_seq = self._default_website_sequence()
         query = f"""
@@ -1526,7 +1533,9 @@ class ProductTemplate(models.Model):
         )
 
         if website := self.env.website:
-            price = product_or_template._apply_taxes_to_price(price, currency, website=website)
+            price = product_or_template._apply_taxes_to_price(
+                price, currency, website=website, include_combo_extra_price=False
+            )
 
         return price, pricelist_rule_id
 
