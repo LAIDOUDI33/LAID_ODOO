@@ -135,3 +135,10 @@ class MrpProduction(models.Model):
         res = super()._post_inventory(cancel_backorder=cancel_backorder)
         self.filtered(lambda mo: mo.state == 'done')._post_labour()
         return res
+
+    def _reverse_posted_jentries(self, done_moves):
+        # stock journal entries are reversed automatically when reverse moves are done.
+        labour_jentries = self.workorder_ids.time_ids.account_move_line_id.move_id
+        if labour_jentries:
+            labour_jentries._reverse_moves(
+                default_values_list=[{'ref': _('Reversal of: %s', m.ref or m.name)} for m in labour_jentries], cancel=True)

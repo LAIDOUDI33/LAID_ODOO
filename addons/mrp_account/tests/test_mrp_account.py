@@ -285,6 +285,41 @@ class TestMrpAccountWorkorder(TestBomPriceOperationCommon):
             0.06,
         ])
 
+    def test_reset_to_draft_reverses_journal_entries(self):
+        """Resetting a validated MO to draft must reverse posted journal entries
+        """
+        self.glass.qty_available = 1
+        mo = self._create_mo(self.bom_1, 1)
+        workorder = mo.workorder_ids
+        workorder.duration = 30.2
+        workorder.time_ids.write({'duration': 30.2})
+        mo.move_raw_ids.picked = True
+        mo.button_mark_done()
+        self.assertEqual(mo.state, 'done')
+
+        # stock journal entries
+        done_moves = (mo.move_raw_ids | mo.move_finished_ids).filtered(lambda m: m.state == 'done')
+        stock_jes = done_moves.account_move_id
+        self.assertTrue(stock_jes, "producing must post stock journal entries")
+        self.assertTrue(all(je.state == 'posted' for je in stock_jes))
+
+        # production journal entries
+        production_je = mo.workorder_ids.time_ids.account_move_line_id.move_id
+        self.assertTrue(production_je, "producing must post a labour journal entry")
+        self.assertEqual(production_je.state, 'posted')
+
+        mo.action_reset_to_draft()
+        self.assertEqual(mo.state, 'draft')
+
+        # reversed stock journal entries
+        reverse_moves = self.env['stock.move'].search([('origin_returned_move_id', 'in', done_moves.ids)])
+        self.assertTrue(reverse_moves.account_move_id, "reverse moves should post reversal-like journal entries")
+        self.assertTrue(all(je.state == 'posted' for je in reverse_moves.account_move_id))
+
+        # reversed production journal entries
+        self.assertTrue(production_je.reversal_move_ids, "production journal entry should be reversed")
+        self.assertTrue(all(m.state == 'posted' for m in production_je.reversal_move_ids))
+
     def test_02_compute_byproduct_price(self):
         """Test BoM cost when byproducts with cost share"""
 
