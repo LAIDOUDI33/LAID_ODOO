@@ -733,7 +733,7 @@ class CustomerPortal(Controller):
             # commercial partner values, and would be reset if modified on the commercial partner.
             can_edit_commercial_fields = (
                 not current_partner
-                or (partner_sudo == current_partner and current_partner._can_edit_commercial_fields())
+                or (partner_sudo == current_partner and current_partner._is_individual_contact())
             )
             if not can_edit_commercial_fields:
                 commercial_fields = partner_sudo._commercial_fields()
