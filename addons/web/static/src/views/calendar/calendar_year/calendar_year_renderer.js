@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef } from "@web/owl2/utils";
+import { useRef } from "@web/owl2/utils";
 import { getLocalYearAndWeek } from "@web/core/l10n/dates";
 import { localization } from "@web/core/l10n/localization";
 import { convertRecordToEvent, getColor } from "@web/views/calendar/utils";
@@ -40,9 +40,9 @@ export class CalendarYearRenderer extends Component {
         this.rootRef = useRef("root");
         this.uiService = useService("ui");
 
-        useLayoutEffect(() => {
-            this.updateSize();
-        });
+        // useLayoutEffect(() => {
+        //     this.updateSize();
+        // });
     }
 
     get disabledOptions() {
