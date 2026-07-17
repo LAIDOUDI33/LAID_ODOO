@@ -18,18 +18,6 @@ class WebsiteSaleComboConfiguratorController(SaleComboConfiguratorController, We
     def website_sale_combo_configurator_get_data(self, *args, **kwargs):
         self._populate_currency_and_pricelist(kwargs)
         request.update_context(display_default_code=False)  # Hide internal product reference
-
-        product_tmpl_id = kwargs.get("product_tmpl_id")
-        quantity = kwargs.get("quantity")
-        date = kwargs.get("date")
-        pricelist = kwargs.get("pricelist")
-
-        if pricelist and product_tmpl_id:
-            product_tmpl = self.env["product.template"].browse(product_tmpl_id)
-            rule_id = pricelist._get_product_price_rule(product_tmpl, quantity, date=date)[1]
-            if rule_id:
-                kwargs["combo_rule_id"] = rule_id
-
         return super().sale_combo_configurator_get_data(*args, **kwargs)
 
     @route(
@@ -61,9 +49,9 @@ class WebsiteSaleComboConfiguratorController(SaleComboConfiguratorController, We
         if not data["extra_price"]:
             return data
 
-        combo_rule_id = kwargs.get("combo_rule_id")
-        if pricelist and combo_rule_id:
-            rule = self.env["product.pricelist.item"].sudo().browse(combo_rule_id)
+        pricelist_rule_id = kwargs.get("pricelist_rule_id")
+        if pricelist and pricelist_rule_id:
+            rule = self.env["product.pricelist.item"].sudo().browse(pricelist_rule_id)
             discount_percentage = 0.0
             if rule.compute_price == "percentage":
                 discount_percentage = rule.percent_price

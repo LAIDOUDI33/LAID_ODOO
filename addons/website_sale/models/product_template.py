@@ -888,6 +888,7 @@ class ProductTemplate(models.Model):
                     product_taxes=product_taxes,
                     taxes=taxes,
                     website=website,
+                    fiscal_position=fiscal_position,
                 )
         is_zero_price = currency.is_zero(combination_info["price"])
         prevent_sale = website._prevent_product_sale(product_or_template, is_zero_price)
@@ -1022,8 +1023,36 @@ class ProductTemplate(models.Model):
 
         return attr_images
 
+    def _get_combo_item_tax_included_price(self, combo_item, currency, fiscal_position):
+        """Return a combo item's tax-included price, used to compare items.
+
+        :param product.combo.item combo_item: The combo item to price.
+        :param res.currency currency: The currency to use to compute the price.
+        :param account.fiscal.position fiscal_position: The fiscal position to map the taxes with.
+        :rtype: float
+        :return: The combo item's tax-included price.
+        """
+        price = combo_item.lst_price + combo_item.extra_price
+        item_taxes = combo_item.product_id.sudo().taxes_id._filter_taxes_by_company()
+        if not item_taxes:
+            return price
+        mapped_taxes = fiscal_position.map_tax(item_taxes)
+        base = combo_item.product_id._get_tax_included_unit_price_from_price(
+            price, item_taxes, product_taxes_after_fp=mapped_taxes
+        )
+        return mapped_taxes.compute_all(base, currency, 1, partner=self.env.user.partner_id)[
+            "total_included"
+        ]
+
     def _apply_taxes_of_cheapest_combo_choices(
-        self, price, currency, *, product_or_template=None, product_taxes=None, taxes=None
+        self,
+        price,
+        currency,
+        *,
+        product_or_template=None,
+        product_taxes=None,
+        taxes=None,
+        fiscal_position=None,
     ):
         base_price = self.env["product.product"]._get_tax_included_unit_price_from_price(
             price, product_taxes, product_taxes_after_fp=taxes
@@ -1047,7 +1076,12 @@ class ProductTemplate(models.Model):
         # Heuristic: Pick the cheapest combo item of each choice
         assumed_combo_items = combos.mapped(
             lambda c: (
-                min(c.combo_item_ids, key=lambda item: item.lst_price + item.extra_price)
+                min(
+                    c.combo_item_ids,
+                    key=lambda item: self._get_combo_item_tax_included_price(
+                        item, currency, fiscal_position
+                    ),
+                )
                 if c.combo_item_ids
                 else self.env["product.combo.item"]
             )
@@ -1059,12 +1093,7 @@ class ProductTemplate(models.Model):
                 continue
             prorated_base = combo_prices[item.combo_id] + item.extra_price
             item_taxes = item.product_id.sudo().taxes_id._filter_taxes_by_company()
-            mapped_taxes = (
-                self
-                .env["account.fiscal.position"]
-                ._get_fiscal_position(self.env.user.partner_id)
-                .map_tax(item_taxes)
-            )
+            mapped_taxes = fiscal_position.map_tax(item_taxes)
             bases_by_tax[mapped_taxes] = bases_by_tax.get(mapped_taxes, 0.0) + prorated_base
 
         approx_price = 0.0
@@ -1087,11 +1116,16 @@ class ProductTemplate(models.Model):
         taxes=None,
         tax_display=None,
         website=None,
+        fiscal_position=None,
     ):
         product = product or self.env["product.product"]
         if not tax_display:
             show_tax = (website or self.env.website).show_line_subtotals_tax_selection
             tax_display = "total_excluded" if show_tax == "tax_excluded" else "total_included"
+        if not fiscal_position:
+            fiscal_position = self.env["account.fiscal.position"]._get_fiscal_position(
+                self.env.user.partner_id
+            )
 
         if self.type == "combo" and tax_display == "total_included":
             return self._apply_taxes_of_cheapest_combo_choices(
@@ -1100,6 +1134,7 @@ class ProductTemplate(models.Model):
                 product_or_template=product or self,
                 product_taxes=product_taxes,
                 taxes=taxes,
+                fiscal_position=fiscal_position,
             )
 
         if product_taxes is None:
@@ -1110,7 +1145,7 @@ class ProductTemplate(models.Model):
             return price
 
         if taxes is None:
-            taxes = request.fiscal_position.map_tax(product_taxes)
+            taxes = fiscal_position.map_tax(product_taxes)
 
         price = product._get_tax_included_unit_price_from_price(
             price, product_taxes, product_taxes_after_fp=taxes

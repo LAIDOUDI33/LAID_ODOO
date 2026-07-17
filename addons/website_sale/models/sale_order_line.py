@@ -72,7 +72,7 @@ class SaleOrderLine(models.Model):
                 for tax_ids, base in bases_by_tax.items():
                     if tax_ids:
                         total_tax_included_price += tax_ids.compute_all(
-                            base, self.currency_id, 1, product=None, partner=self.order_partner_id
+                            base, self.currency_id, partner=self.order_partner_id
                         )["total_included"]
                     else:
                         total_tax_included_price += base
@@ -136,7 +136,7 @@ class SaleOrderLine(models.Model):
             for tax_ids, base in bases_by_tax.items():
                 if tax_ids:
                     total_tax_included_price += tax_ids.compute_all(
-                        base, self.currency_id, 1, product=None, partner=self.order_partner_id
+                        base, self.currency_id, partner=self.order_partner_id
                     )["total_included"]
                 else:
                     total_tax_included_price += base
