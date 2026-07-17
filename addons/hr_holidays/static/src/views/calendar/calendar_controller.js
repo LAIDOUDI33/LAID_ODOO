@@ -1,12 +1,14 @@
 import { userHasEmployeeInCurrentCompany } from "@hr_holidays/utils";
 import { AlertDialog, ConfirmationDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
 import { _t } from "@web/core/l10n/translation";
+import { Dropdown } from "@web/core/dropdown/dropdown";
+import { DropdownItem } from "@web/core/dropdown/dropdown_item";
+import { useService } from "@web/core/utils/hooks";
 import { CalendarController } from "@web/views/calendar/calendar_controller";
 
 import { serializeDate } from "@web/core/l10n/dates";
 
 import { onWillStart, plugin, providePlugins } from "@odoo/owl";
-import { TimeOffNewDropdown } from "../../components/time_off_new_dropdown/time_off_new_dropdown";
 import { useLeaveCancelWizard, useNewAllocationRequest } from "../hooks";
 import { TimeOffPlugin } from "../time_off_plugin";
 import { TimeOffFormViewDialog } from "../view_dialog/form_view_dialog";
@@ -18,12 +20,15 @@ export class TimeOffCalendarController extends CalendarController {
         ...CalendarController.components,
         CalendarSidePanel: TimeOffCalendarSidePanel,
         MobileFilterPanel: TimeOffCalendarMobileFilterPanel,
-        NewButton: TimeOffNewDropdown,
+        Dropdown,
+        DropdownItem,
     };
     static template = "hr_holidays.CalendarController";
 
     setup() {
         super.setup();
+
+        this.actionService = useService("action");
 
         providePlugins([TimeOffPlugin]);
 
@@ -47,6 +52,14 @@ export class TimeOffCalendarController extends CalendarController {
 
     get employeeId() {
         return this.model.employeeId;
+    }
+
+    get buttonTemplate() {
+        return "hr_holidays.CalendarController.Buttons";
+    }
+
+    async onNewGroupTimeOff() {
+        await this.actionService.doAction("hr_holidays.action_hr_leave_generate_multi_wizard");
     }
 
     newTimeOffRequest() {
@@ -180,5 +193,11 @@ export class TimeOffCalendarController extends CalendarController {
 export class TimeOffReportCalendarController extends TimeOffCalendarController {
     async editRecord(record, context = {}) {
         return this._editRecord(record, context, { canExpand: false });
+    }
+}
+
+export class TimeOffManagementCalendarController extends TimeOffCalendarController {
+    get buttonTemplate() {
+        return "hr_holidays.CalendarController.ManagementButtons";
     }
 }

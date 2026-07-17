@@ -1,6 +1,6 @@
 import { calendarView } from "@web/views/calendar/calendar_view";
 
-import { TimeOffCalendarController, TimeOffReportCalendarController } from "./calendar_controller";
+import { TimeOffCalendarController, TimeOffManagementCalendarController, TimeOffReportCalendarController } from "./calendar_controller";
 import { TimeOffCalendarModel } from "./calendar_model";
 import { TimeOffCalendarRenderer, TimeOffDashboardCalendarRenderer } from "./calendar_renderer";
 import { TimeOffReportCalendarSearchModel } from "./time_off_search_model";
@@ -19,10 +19,6 @@ class TimeOffCalendarControllerHrLeave extends TimeOffCalendarController {
                 "hr_holidays.group_hr_holidays_responsible"
             );
         });
-    }
-
-    async onNewGroupTimeOff() {
-        await this.actionService.doAction("hr_holidays.action_hr_leave_generate_multi_wizard");
     }
 }
 
@@ -44,4 +40,9 @@ registry.category("views").add("time_off_report_calendar", {
     ...TimeOffCalendarHrLeaveView,
     Controller: TimeOffReportCalendarController,
     SearchModel: TimeOffReportCalendarSearchModel,
+});
+
+registry.category("views").add("time_off_management_calendar", {
+    ...TimeOffCalendarHrLeaveView,
+    Controller: TimeOffManagementCalendarController,
 });

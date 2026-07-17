@@ -6,20 +6,38 @@
             <t t-if="this.props.archInfo.canCreate" t-set-slot="control-panel-buttons">
                 <span class="o_timeoff_buttons btn-group">
                     <div class="btn-group">
-                        <NewButton
-                            onNewTimeOffRequest="() => this.newTimeOffRequest()"
-                            onNewAllocationRequest="() => this.newAllocationRequest()"
-                        />
+                        <t t-call="{{ this.buttonTemplate }}"/>
                     </div>
                 </span>
             </t>
         </xpath>
     </t>
 
-    <t t-name="hr_holidays.CalendarView.Buttons">
-        <button t-if="this.canCreateGroupTimeOff" class="btn btn-secondary" t-on-click="this.onNewGroupTimeOff">
-            New Group Time Off
-        </button>
+    <t t-name="hr_holidays.CalendarController.Buttons">
+        <Dropdown>
+            <button class="btn btn-primary o-dropdown-caret d-inline-flex align-items-center">
+                New
+            </button>
+            <t t-set-slot="content">
+                <DropdownItem tag="'button'" class="'btn btn-link'" onSelected="() => this.newTimeOffRequest()">
+                    New Time Off
+                </DropdownItem>
+                <DropdownItem tag="'button'" class="'btn btn-link'" onSelected="() => this.newAllocationRequest()">
+                    New Allocation Request
+                </DropdownItem>
+            </t>
+        </Dropdown>
+    </t>
+
+    <t t-name="hr_holidays.CalendarController.ManagementButtons">
+        <div class="d-flex gap-1">
+            <button class="btn btn-primary d-inline-flex align-items-center" t-on-click="() => this.newTimeOffRequest()">
+                New
+            </button>
+            <button class="btn btn-secondary" t-on-click="this.onNewGroupTimeOff">
+                New Group Time Off
+            </button>
+        </div>
     </t>
 
 </templates>
