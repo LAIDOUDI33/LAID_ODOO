@@ -7,6 +7,7 @@ import {
     DEFAULT_THEME_COLOR_VARS,
 } from "@html_editor/components/color_picker/color_picker";
 import { getCSSVariableValue, getHtmlStyle } from "@html_editor/utils/formatting";
+import { hasTouch } from "@web/core/browser/feature_detection";
 import { useChildRef } from "@web/core/utils/hooks";
 import { useDropdownAutoVisibility } from "@html_editor/toolbar_dropdown_hook";
 
@@ -29,6 +30,7 @@ export class ColorSelector extends Component {
         colorPrefix: t.string(),
         enabledTabs: t.array().optional(["solid", "gradient", "custom"]),
         cssVarColorPrefix: t.string().optional(""),
+        onOpen: t.function().optional(),
         onClose: t.function(),
         useDefaultThemeColors: t.boolean().optional(true),
     });
@@ -79,8 +81,12 @@ export class ColorSelector extends Component {
                 },
                 onOpen: () => {
                     this.colorSelectorState.isOpen = true;
+                    this.props.onOpen?.();
                 },
                 ref: colorPickerRef,
+                useBottomSheet: this.env.isSmall && hasTouch(),
+                withUnfocus: true,
+                fitOnResize: true,
             }
         );
         useDropdownAutoVisibility(this.env.overlayState, colorPickerRef);
