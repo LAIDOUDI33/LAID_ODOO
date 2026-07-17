@@ -11,7 +11,7 @@ class TestGenericLocalization(TestPointOfSaleHttpCommon):
     # (e.g. to invoice). Subclasses extend this with their mandatory l10n fields;
     # the test below materializes the actual view POS opens and asserts they are
     # present.
-    pos_partner_pos_form_fields = []
+    pos_partner_pos_form_fields = ['additional_identifiers']
 
     @classmethod
     def setUpClass(cls):
@@ -41,7 +41,7 @@ class TestGenericLocalization(TestPointOfSaleHttpCommon):
     def test_pos_partner_form_exposes_l10n_fields(self):
         """The POS "Edit/Create customer" view must render the localization's mandatory partner fields."""
         partner = self.env['res.partner']
-        view_id = partner._get_pos_partner_view_id()
+        view_id = self.env.ref('point_of_sale.view_partner_form_pos_ui').id
         form = Form(partner, view=view_id)
         for field_name in self.pos_partner_pos_form_fields:
             self.assertIn(

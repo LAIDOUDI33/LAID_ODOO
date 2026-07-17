@@ -132,11 +132,5 @@ class ResPartner(models.Model):
             'view_mode': 'form',
             'type': 'ir.actions.act_window',
             'res_model': 'res.partner',
-            'views': [(self._get_pos_partner_view_id(), 'form')],
+            'views': [(self.env.ref('point_of_sale.view_partner_form_pos_ui').id, 'form')],
         }
-
-    def _get_pos_partner_view_id(self):
-        # Simplified form by default; localizations needing the complete backend
-        # form (extra l10n/identification fields) override this to return
-        # typically base.view_partner_form.
-        return self.env.ref('point_of_sale.view_partner_form_pos_ui').id
