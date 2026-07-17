@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef } from "@web/owl2/utils";
+import { useRef } from "@web/owl2/utils";
 import { Chatter } from "@mail/chatter/web_portal_project/chatter";
 import { PortalChatterPlugin } from "@portal/chatter/portal/portal_chatter_plugin";
 import { maybePlugin } from "@mail/utils/common/misc";
@@ -27,14 +27,14 @@ patch(Chatter.prototype, {
                 );
             }
         });
-        useLayoutEffect(
-            () => {
-                if (this.topRef.el) {
-                    this.observer?.observe(this.topRef.el);
-                }
-            },
-            () => [this.topRef.el]
-        );
+        // useLayoutEffect(
+        //     () => {
+        //         if (this.topRef.el) {
+        //             this.observer?.observe(this.topRef.el);
+        //         }
+        //     },
+        //     () => [this.topRef.el]
+        // );
     },
 
     get extraMessageFetchRouteParams() {
