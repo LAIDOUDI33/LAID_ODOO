@@ -31,7 +31,12 @@ class SafaricomController(http.Controller):
         if tx_sudo.state != "draft":
             raise ValidationError(self.env._("The transaction has already been processed."))
 
-        tx_sudo._safaricom_send_stk_push(phone)
+        payload = tx_sudo._safaricom_prepare_payload(phone)
+        response_data = tx_sudo._send_api_request(
+            "POST", "/mpesa/stkpush/v1/processrequest", json=payload
+        )
+        tx_sudo._record(response_data)
+
         return {}
 
     @http.route(const.WEBHOOK_URL, type="http", auth="public", methods=["POST"], csrf=False)
@@ -53,7 +58,6 @@ class SafaricomController(http.Controller):
             tx_sudo = self.env["payment.transaction"].sudo()._search_by_reference("safaricom", data)
             if tx_sudo:
                 tx_sudo._record(data)
-                self.env["payment.transaction"]._run_processing()
 
             # Daraja API requires a successful HTTP response to acknowledge receipt
             return request.make_json_response({"ResultCode": "0", "ResultDesc": "Accepted"})

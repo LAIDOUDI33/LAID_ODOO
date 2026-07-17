@@ -23,4 +23,3 @@ class SafaricomPaymentStatus(PaymentStatus):
 
         if tx_sudo.state in ("draft", "pending"):
             tx_sudo._record({"canceled_by_customer": True})
-            self.env["payment.transaction"]._run_processing()

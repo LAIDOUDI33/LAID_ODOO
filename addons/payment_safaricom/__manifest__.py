@@ -4,7 +4,7 @@
     "name": "Payment Provider: Safaricom M-PESA",
     "category": "Accounting/Payment Providers",
     "sequence": 350,
-    "summary": "An online payment provider for Kenya.",
+    "summary": "A payment provider covering Kenya.",
     "description": " ",  # Non-empty string to avoid loading the README file.
     "depends": ["payment"],
     "data": [

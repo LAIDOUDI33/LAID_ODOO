@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo noupdate="1">
     <record id="payment.payment_provider_safaricom" model="payment.provider">
-        <field name="name">Safaricom M-PESA</field>
+        <field name="name">Safaricom</field>
         <field name="code">safaricom</field>
         <field name="inline_form_view_id" ref="inline_form"/>
         <field name="available_country_ids" eval="[Command.set([ref('base.ke')])]"/>

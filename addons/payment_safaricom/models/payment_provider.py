@@ -1,5 +1,4 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
-import base64
 from datetime import timedelta
 
 from odoo import api, fields, models
@@ -19,26 +18,30 @@ class PaymentProvider(models.Model):
         selection_add=[("safaricom", "Safaricom M-PESA")], ondelete={"safaricom": "set default"}
     )
     safaricom_consumer_key = fields.Char(
-        string="Consumer Key", required_if_provider="safaricom", groups="base.group_system"
+        string="Safaricom Consumer Key",
+        required_if_provider="safaricom",
+        groups="base.group_system",
     )
     safaricom_consumer_secret = fields.Char(
-        string="Consumer Secret", required_if_provider="safaricom", groups="base.group_system"
+        string="Safaricom Consumer Secret",
+        required_if_provider="safaricom",
+        groups="base.group_system",
     )
     safaricom_passkey = fields.Char(
-        string="Passkey", required_if_provider="safaricom", groups="base.group_system"
+        string="Safaricom Passkey", required_if_provider="safaricom", groups="base.group_system"
     )
     safaricom_shortcode = fields.Char(
-        string="Shortcode",
+        string="Safaricom Shortcode",
         help="The 5 to 6-digit M-PESA shortcode assigned to the business.",
         required_if_provider="safaricom",
     )
     safaricom_till_number = fields.Char(
-        string="Till Number",
+        string="Safaricom Till Number",
         help="The 6 or 7-digit till number. Required if the Transaction Type is set to BuyGoods.",
     )
     safaricom_transaction_type = fields.Selection(
         [("CustomerPayBillOnline", "PayBill"), ("CustomerBuyGoodsOnline", "BuyGoods (Till)")],
-        string="Transaction Type",
+        string="Safaricom Transaction Type",
         default="CustomerPayBillOnline",
         required_if_provider="safaricom",
     )
@@ -168,11 +171,3 @@ class PaymentProvider(models.Model):
                 is_refresh_token_request=is_refresh_token_request, **kwargs
             )
         return self.safaricom_consumer_key, self.safaricom_consumer_secret
-
-    def _safaricom_get_password(self, timestamp):
-        """Generate the password for M-Pesa API requests."""
-        passkey = self.safaricom_passkey
-        shortcode = self.safaricom_shortcode
-
-        password = f"{shortcode}{passkey}{timestamp}"
-        return base64.b64encode(password.encode("utf-8")).decode("utf-8")

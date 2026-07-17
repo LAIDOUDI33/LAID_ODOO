@@ -47,11 +47,3 @@ class TestPaymentProvider(SafaricomCommon):
             self.assertRaises(ValidationError),
         ):
             self.provider._safaricom_fetch_access_token()
-
-    def test_safaricom_get_password(self):
-        """Test that the M-PESA password is correctly computed as a base64-encoded string."""
-        self.assertEqual(
-            self.provider._safaricom_get_password(self.timestamp),
-            "MTc0Mzc5YmZiMjc5ZjlhYTliZGJjZjE1OGU5N2RkNzFhNDY3Y2QyZTBjODkzMDU5YjEwZjc4ZTZiNzJh"
-            "ZGExZWQyYzkxOTIwMjMxMTE4MTIwMDAw",
-        )

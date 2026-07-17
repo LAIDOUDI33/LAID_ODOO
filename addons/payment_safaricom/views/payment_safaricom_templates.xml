@@ -6,13 +6,15 @@
                 <label for="o_safaricom_phone_number" class="form-label fw-bold">
                     Phone Number
                 </label>
-                <input type="text"
-                       id="o_safaricom_phone_number"
-                       name="o_safaricom_phone_number"
-                       class="form-control"
-                       placeholder="e.g., 254712345678"
-                       t-att-value="env.user.partner_id.phone or ''"
-                       required="required"/>
+                <input
+                    type="text"
+                    id="o_safaricom_phone_number"
+                    name="o_safaricom_phone_number"
+                    class="form-control"
+                    placeholder="e.g., 254712345678"
+                    t-att-value="env.user.partner_id.phone or ''"
+                    required="required"
+                />
             </div>
         </div>
     </template>

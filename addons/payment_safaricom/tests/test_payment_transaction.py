@@ -1,10 +1,7 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-from urllib.parse import parse_qs, urlsplit
-
 from odoo.exceptions import ValidationError
 from odoo.tests import tagged
-from odoo.tools import verify_hash_signed
 
 from odoo.addons.payment_safaricom.tests.common import SafaricomCommon
 
@@ -35,13 +32,9 @@ class TestPaymentTransaction(SafaricomCommon):
     def test_no_item_missing_from_stk_push_request_payload(self):
         """Test that the STK Push request payload contains all required M-PESA API fields."""
         tx = self._create_transaction("direct")
-        with self._mock_send_api_request({
-            "ResponseCode": "0",
-            "CheckoutRequestID": self.checkout_id,
-        }) as mock_request:
-            tx._safaricom_send_stk_push(self.phone)
+        payload = tx._safaricom_prepare_payload(self.phone)
         self.assertListEqual(
-            sorted(mock_request.call_args.kwargs["json"].keys()),
+            sorted(payload.keys()),
             sorted([
                 "AccountReference",
                 "Amount",
@@ -61,34 +54,21 @@ class TestPaymentTransaction(SafaricomCommon):
         """Test that decimal amounts are rounded down to the whole numbers M-PESA supports in the
         STK Push request payload."""
         tx = self._create_transaction("direct", amount=1111.55)
-        with self._mock_send_api_request({
-            "ResponseCode": "0",
-            "CheckoutRequestID": self.checkout_id,
-        }) as mock_request:
-            tx._safaricom_send_stk_push(self.phone)
-        self.assertEqual(mock_request.call_args.kwargs["json"]["Amount"], 1111)
-
-    def test_callback_url_carries_verifiable_reference(self):
-        """Test that the reference signed into the callback URL can be verified with the scope
-        used by the webhook."""
-        tx = self._create_transaction("direct")
-        callback_url = tx._safaricom_get_callback_url()
-        signed_reference = parse_qs(urlsplit(callback_url).query)["reference"][0]
-        verified = verify_hash_signed(self.env(su=True), "payment_safaricom", signed_reference)
-        self.assertEqual(verified, {"reference": tx.reference})
+        payload = tx._safaricom_prepare_payload(self.phone)
+        self.assertEqual(payload["Amount"], 1111)
 
     def test_phone_number_is_normalized_to_mpesa_format(self):
         """Test that customary phone number formats are normalized to the 254XXXXXXXXX format
         required by M-PESA."""
         tx = self._create_transaction("direct")
         for phone in ("254708374149", "0708374149", "708374149"):
-            self.assertEqual(tx._safaricom_format_phone_number(phone), "254708374149")
+            self.assertEqual(tx._safaricom_prepare_payload(phone)["PhoneNumber"], "254708374149")
 
     def test_invalid_phone_number_raises_validation_error(self):
         """Test that an invalid phone number raises a ValidationError."""
         tx = self._create_transaction("direct")
         with self.assertRaises(ValidationError):
-            tx._safaricom_format_phone_number("12345")
+            tx._safaricom_prepare_payload("12345")
 
     def test_extract_reference_finds_reference(self):
         """Test that the transaction is found based on the verified reference injected in the

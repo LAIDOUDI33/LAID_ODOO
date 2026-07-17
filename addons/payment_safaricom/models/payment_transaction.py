@@ -1,4 +1,6 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
+import base64
+
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 from odoo.tools import float_round, hash_sign
@@ -31,10 +33,8 @@ class PaymentTransaction(models.Model):
         reference = super()._compute_reference(
             provider_code, prefix=prefix, separator=separator, **kwargs
         )
-        if provider_code != "safaricom":
-            return reference
-
-        if len(reference) <= 12:  # M-PESA AccountReference is limited to 12 chars
+        # M-PESA AccountReference is limited to 12 chars
+        if provider_code != "safaricom" or len(reference) <= 12:
             return reference
 
         return super()._compute_reference(
@@ -58,22 +58,24 @@ class PaymentTransaction(models.Model):
 
     # === LIFECYCLE METHODS - OUTBOUND REQUESTS === #
 
-    def _safaricom_send_stk_push(self, phone):
-        """Send an STK Push request prompting the customer to confirm the payment on their phone.
-
-        The initiation response is recorded for deferred processing; if the request fails, the
-        transaction is immediately set in error.
+    def _safaricom_prepare_payload(self, phone):
+        """Prepare the payload of an STK Push request prompting the customer to confirm the
+        payment on their phone.
 
         Note: `self.ensure_one()`
 
         :param str phone: The phone number to send the payment prompt to.
-        :return: None
+        :return: The STK Push request payload.
+        :rtype: dict
+        :raise ValidationError: If the phone number is invalid.
         """
         self.ensure_one()
 
-        # Validate the phone before any API work: a bad number must not error the transaction,
-        # or the draft-state guard would block the customer from retrying
-        phone = self._safaricom_format_phone_number(phone)
+        kenya = self.env.ref("base.ke")
+        phone = self._phone_format(number=phone, country=kenya, force_format="E164")
+        if not phone:
+            raise ValidationError(self.env._("Invalid phone number format."))
+        phone = phone.removeprefix("+")  # M-PESA expects E.164 without the plus sign
 
         provider = self.provider_id
         party_b = (
@@ -82,9 +84,13 @@ class PaymentTransaction(models.Model):
             else provider.safaricom_till_number
         )
         timestamp = fields.Datetime.now().strftime("%Y%m%d%H%M%S")
-        payload = {
+        passkey = provider.safaricom_passkey
+        shortcode = provider.safaricom_shortcode
+        password = f"{shortcode}{passkey}{timestamp}"
+
+        return {
             "BusinessShortCode": provider.safaricom_shortcode,
-            "Password": provider._safaricom_get_password(timestamp),
+            "Password": base64.b64encode(password.encode("utf-8")).decode("utf-8"),
             "Timestamp": timestamp,
             "TransactionType": provider.safaricom_transaction_type,
             # M-PESA only supports whole amounts
@@ -96,10 +102,6 @@ class PaymentTransaction(models.Model):
             "AccountReference": self.reference[:12],  # Max 12 chars - Shown in the USSD prompt
             "TransactionDesc": self.reference[:13],  # Max 13 chars - Optional description
         }
-        response_data = self._send_api_request(
-            "POST", "/mpesa/stkpush/v1/processrequest", json=payload
-        )
-        self._record(response_data)
 
     def _safaricom_get_callback_url(self):
         """Return the webhook URL carrying the signed reference that authenticates callbacks.
@@ -117,14 +119,6 @@ class PaymentTransaction(models.Model):
             expiration_hours=1,
         )
         return f"{urljoin(self.get_base_url(), const.WEBHOOK_URL)}?reference={signed_reference}"
-
-    def _safaricom_format_phone_number(self, phone):
-        """Format and validate phone numbers to the 254XXXXXXXXX format required by M-PESA."""
-        kenya = self.env.ref("base.ke")
-        phone = self._phone_format(number=phone, country=kenya, force_format="E164")
-        if not phone:
-            raise ValidationError(self.env._("Invalid phone number format."))
-        return phone.removeprefix("+")  # M-PESA expects E.164 without the plus sign
 
     # === LIFECYCLE METHODS - PAYLOAD RECEPTION === #
 
@@ -175,7 +169,7 @@ class PaymentTransaction(models.Model):
             return super()._extract_amount_data(payment_data)
 
         if "Body" not in payment_data:
-            return None  # No amount to validate for the STK Push initiation response
+            raise ValidationError(self.env._("Missing callback data for the amount validation."))
 
         stk_callback = payment_data["Body"]["stkCallback"]
         # CallbackMetadata is returned only for successful transactions, a successful transaction
