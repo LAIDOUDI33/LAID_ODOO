@@ -285,6 +285,7 @@ class Website(models.Model):
         domain=[("type", "=", "sale")],
         check_company=True,
     )
+    show_product_reference_price = fields.Boolean(string="Product Reference Price")
 
     # === COMPUTE METHODS ===#
 
