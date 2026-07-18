@@ -12,7 +12,7 @@ from dateutil.rrule import DAILY, rrule
 from odoo import _, api, exceptions, fields, models
 from odoo.exceptions import AccessError
 from odoo.http import request
-from odoo.tools import convert, float_is_zero, format_datetime, format_duration, format_time
+from odoo.tools import convert, format_datetime, format_duration, format_time
 from odoo.tools.date_utils import float_to_time, sum_intervals
 from odoo.tools.intervals import Intervals
 
@@ -554,50 +554,6 @@ class HrAttendance(models.Model):
                         body=_('This attendance was automatically checked out because the employee exceeded the allowed time for their scheduled work hours.')
                     )
 
-    def _cron_absence_detection(self):
-        """Create a 1-second technical attendance for each employee who did not check in yesterday.
-
-        This triggers the time rule pipeline so that undertime rules can generate
-        output attendances for the missed schedule hours.  The attendance type is set
-        to the company's default so condition filters on undertime rules match it.
-        Technical attendances that produce no time rule output are discarded afterwards.
-        """
-        yesterday = datetime.today().replace(hour=0, minute=0, second=0) - relativedelta(days=1)
-        companies = self.env['res.company'].search([('absence_management', '=', True)])
-        if not companies:
-            return
-
-        checked_in_employees = self.env['hr.attendance'].search([('date', '=', yesterday)]).employee_id
-
-        technical_attendances_vals = []
-        absent_employees = self.env['hr.employee'].search([
-            ('id', 'not in', checked_in_employees.ids),
-            ('company_id', 'in', companies.ids),
-            ('resource_calendar_id', '!=', False),
-            ('current_version_id.contract_date_start', '<=', fields.Date.today() - relativedelta(days=1))
-        ])
-
-        for emp in absent_employees:
-            local_day_start = yesterday.replace(tzinfo=ZoneInfo(emp._get_tz()))
-            check_in_utc = local_day_start.astimezone(UTC)
-            technical_attendances_vals.append({
-                'check_in': check_in_utc.strftime('%Y-%m-%d %H:%M:%S'),
-                'check_out': (check_in_utc + relativedelta(seconds=1)).strftime('%Y-%m-%d %H:%M:%S'),
-                'work_entry_type_id': emp.company_id.attendance_work_entry_type_id.id,
-                'in_mode': 'technical',
-                'out_mode': 'technical',
-                'employee_id': emp.id,
-                'state': 'validated',
-            })
-
-        technical_attendances = self.env['hr.attendance'].create(technical_attendances_vals)
-        to_unlink = technical_attendances.filtered(lambda a: not a.overtime_attendance_ids)
-        body = _('This attendance was automatically created to cover an unjustified absence on that day.')
-        for technical_attendance in technical_attendances - to_unlink:
-            technical_attendance.message_post(body=body)
-
-        to_unlink.unlink()
-
     def _cron_auto_check_out_specific_time(self):
         """
         Automatically check-out all employees still checked in
@@ -635,6 +591,7 @@ class HrAttendance(models.Model):
                 employee_checkout = next_cutoff.astimezone(utc_tz).replace(tzinfo=None)
                 employee_checkout = max(employee_checkout, att.check_in + relativedelta(seconds=1))
 
+                # att.with_context(skip_time_rules=True).write({
                 att.write({
                     'check_out': employee_checkout,
                     'out_mode': 'auto_check_out',
@@ -697,10 +654,46 @@ class HrAttendance(models.Model):
 
     @api.model
     def _cron_process_day_undertime_rules(self):
-        """Daily cron: process day-based time rules for yesterday's validated attendances."""
+        """Daily cron: process day-based undertime rules for yesterday.
+
+        For employees with absence management enabled who had no attendance at all,
+        a 1-second technical attendance is created so the time rule pipeline has a
+        source record to anchor deficit output against.  Technical attendances that
+        produce no output are cleaned up afterwards.
+        """
         yesterday = date.today() - timedelta(days=1)
         start = datetime.combine(yesterday, time.min)
         end = datetime.combine(yesterday, time.max)
+
+        companies = self.env['res.company'].search([('absence_management', '=', True)])
+        if companies:
+            checked_in_employees = self.sudo().search([
+                ('date', '=', yesterday),
+                ('is_time_rule_output', '=', False),
+            ]).employee_id
+            absent_employees = self.env['hr.employee'].search([
+                ('id', 'not in', checked_in_employees.ids),
+                ('company_id', 'in', companies.ids),
+                ('resource_calendar_id', '!=', False),
+                ('current_version_id.contract_date_start', '<=', yesterday),
+            ])
+            technical_vals = []
+            for emp in absent_employees:
+                local_day_start = datetime.combine(yesterday, time.min, tzinfo=ZoneInfo(emp._get_tz()))
+                check_in_utc = local_day_start.astimezone(UTC)
+                technical_vals.append({
+                    'employee_id': emp.id,
+                    'work_entry_type_id': emp.company_id.attendance_work_entry_type_id.id,
+                    'check_in': check_in_utc.strftime('%Y-%m-%d %H:%M:%S'),
+                    'check_out': (check_in_utc + relativedelta(seconds=1)).strftime('%Y-%m-%d %H:%M:%S'),
+                    'in_mode': 'technical',
+                    'out_mode': 'technical',
+                    'state': 'validated',
+                })
+            technical_attendances = self.env['hr.attendance'].with_context(skip_time_rules=True).create(technical_vals)
+        else:
+            technical_attendances = self.env['hr.attendance']
+
         sources = self.sudo().with_context(active_test=False).search([
             ('check_out', '<=', end),
             ('check_out', '>=', start),
@@ -708,10 +701,16 @@ class HrAttendance(models.Model):
             ('is_time_rule_output', '=', False),
             ('source_attendance_id', '=', False),
         ])
-        if not sources:
-            return
-        affected = [(a.employee_id, a.check_in, a.check_out) for a in sources]
-        self._process_time_rules_for(affected, rule_period='day', rule_operator='less_than')
+        if sources:
+            affected = [(a.employee_id, a.check_in, a.check_out) for a in sources]
+            self._process_time_rules_for(affected, rule_period='day', rule_operator='less_than')
+
+        if technical_attendances:
+            to_unlink = technical_attendances.filtered(lambda a: not a.overtime_attendance_ids)
+            body = _('This attendance was automatically created to cover an unjustified absence on that day.')
+            for att in technical_attendances - to_unlink:
+                att.message_post(body=body)
+            to_unlink.unlink()
 
     @api.model
     def _cron_process_week_time_rules(self):

@@ -383,7 +383,7 @@ class HrTimeRule(models.Model):
                     # group schedule slots by WET id (None = untagged generic slots)
                     by_wet = defaultdict(list)
                     for s, e, att_rec in _naivify(att_batch.get(False, [])):
-                        wet = getattr(att_rec, 'work_entry_type_id', False)
+                        wet = att_rec.work_entry_type_id
                         by_wet[wet.id if wet else None].append((s, e, att_rec))
                     sched_cache[key] = (
                         {wid: Intervals(ivs) for wid, ivs in by_wet.items()},
@@ -804,6 +804,8 @@ class HrTimeRule(models.Model):
                     continue
 
                 raw_schedule = work_intervals['schedule'][employee]
+                if rule.calendar_source == 'employee' and not raw_schedule:
+                    continue
                 condition_wet_ids = rule.condition_work_entry_type_ids.ids
                 schedule_flat = raw_schedule[None]
                 for wid in condition_wet_ids:

@@ -152,7 +152,7 @@ class TestHrAttendance(TransactionCase):
     #     })
     #     breakpoint()
 
-    #     self.env['hr.attendance']._cron_absence_detection()
+    #     self.env['hr.attendance']._cron_process_day_undertime_rules()
 
     #     attendance = self.env['hr.attendance'].search([('employee_id', '=', employee.id)])
 
@@ -319,7 +319,7 @@ class TestAbsenceDetectionCron(TransactionCase):
     @freeze_time('2024-01-02 06:00:00')  # yesterday = 2024-01-01 (Monday)
     def test_absence_no_rule_discards_technical(self):
         """Absent employee with no undertime rule: technical attendance is created then discarded."""
-        self.env['hr.attendance']._cron_absence_detection()
+        self.env['hr.attendance']._cron_process_day_undertime_rules()
 
         atts = self.env['hr.attendance'].search([('employee_id', '=', self.absent_employee.id)])
         self.assertFalse(atts,
@@ -340,7 +340,7 @@ class TestAbsenceDetectionCron(TransactionCase):
             'condition_work_entry_type_ids': [(4, self.att_type.id)],
         })
 
-        self.env['hr.attendance']._cron_absence_detection()
+        self.env['hr.attendance']._cron_process_day_undertime_rules()
 
         tech_atts = self.env['hr.attendance'].search([
             ('employee_id', '=', self.absent_employee.id),
@@ -368,7 +368,7 @@ class TestAbsenceDetectionCron(TransactionCase):
         })
         before = self.env['hr.attendance'].search([('employee_id', '=', self.absent_employee.id)])
 
-        self.env['hr.attendance']._cron_absence_detection()
+        self.env['hr.attendance']._cron_process_day_undertime_rules()
 
         after = self.env['hr.attendance'].search([('employee_id', '=', self.absent_employee.id)])
         self.assertEqual(
