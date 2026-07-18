@@ -34,7 +34,7 @@
             <field name="country_id" eval="False"/>
             <field name="calendar_source">employee</field>
             <field name="quantity_period">day</field>
-            <field name="condition_work_entry_type_ids" eval="[(4, ref('hr_work_entry.attendance_work_entry_type'))]"/>
+            <field name="condition_work_entry_type_ids" eval="[(4, ref('hr_work_entry.generic_work_entry_type_attendance'))]"/>
             <field name="work_entry_type_id" ref="hr_work_entry.generic_work_entry_type_overtime"/>
         </record>
 
@@ -52,7 +52,7 @@
             <field name="working_hours_mode">day</field>
             <field name="expected_hours">9.0</field>
             <field name="amount_rate">2.0</field>
-            <field name="condition_work_entry_type_ids" eval="[(4, ref('hr_work_entry.attendance_work_entry_type'))]"/>
+            <field name="condition_work_entry_type_ids" eval="[(4, ref('hr_work_entry.id_work_entry_type_attendance'))]"/>
             <field name="work_entry_type_id" ref="hr_work_entry.l10n_id_work_entry_type_overtime_2"/>
         </record>
         <record id="hr_time_rule_l10n_id_first_hour" model="hr.time.rule">
@@ -63,7 +63,7 @@
             <field name="working_hours_mode">day</field>
             <field name="expected_hours">8.0</field>
             <field name="amount_rate">1.5</field>
-            <field name="condition_work_entry_type_ids" eval="[(4, ref('hr_work_entry.attendance_work_entry_type'))]"/>
+            <field name="condition_work_entry_type_ids" eval="[(4, ref('hr_work_entry.id_work_entry_type_attendance'))]"/>
             <field name="work_entry_type_id" ref="hr_work_entry.l10n_id_work_entry_type_overtime_1"/>
         </record>
 
@@ -86,7 +86,7 @@
             <field name="apply_saturday" eval="False"/>
             <field name="apply_sunday" eval="True"/>
             <field name="week_start">6</field>
-            <field name="condition_work_entry_type_ids" eval="[(4, ref('hr_work_entry.attendance_work_entry_type'))]"/>
+            <field name="condition_work_entry_type_ids" eval="[(4, ref('hr_work_entry.sa_work_entry_type_attendance'))]"/>
             <field name="work_entry_type_id" ref="hr_work_entry.l10n_sa_work_entry_type_overtime"/>
         </record>
 
@@ -111,7 +111,7 @@
             <field name="timing_stop">24</field>
             <field name="amount_rate">1.5</field>
             <field name="week_start">6</field>
-            <field name="condition_work_entry_type_ids" eval="[(4, ref('hr_work_entry.attendance_work_entry_type'))]"/>
+            <field name="condition_work_entry_type_ids" eval="[(4, ref('hr_work_entry.jo_work_entry_type_attendance'))]"/>
             <field name="work_entry_type_id" ref="hr_work_entry.l10n_jo_work_entry_type_public_holidays_overtime"/>
         </record>
         <record id="hr_time_rule_l10n_jo_rest_days" model="hr.time.rule">
@@ -131,7 +131,7 @@
             <field name="timing_stop">24</field>
             <field name="amount_rate">1.5</field>
             <field name="week_start">6</field>
-            <field name="condition_work_entry_type_ids" eval="[(4, ref('hr_work_entry.attendance_work_entry_type'))]"/>
+            <field name="condition_work_entry_type_ids" eval="[(4, ref('hr_work_entry.jo_work_entry_type_attendance'))]"/>
             <field name="work_entry_type_id" ref="hr_work_entry.l10n_jo_work_entry_type_rest_days_overtime"/>
         </record>
         <record id="hr_time_rule_l10n_jo_week_days" model="hr.time.rule">
@@ -150,7 +150,7 @@
             <field name="apply_sunday" eval="True"/>
             <field name="amount_rate">1.25</field>
             <field name="week_start">6</field>
-            <field name="condition_work_entry_type_ids" eval="[(4, ref('hr_work_entry.attendance_work_entry_type'))]"/>
+            <field name="condition_work_entry_type_ids" eval="[(4, ref('hr_work_entry.jo_work_entry_type_attendance'))]"/>
             <field name="work_entry_type_id" ref="hr_work_entry.l10n_jo_work_entry_type_week_days_overtime"/>
         </record>
 
@@ -175,7 +175,7 @@
             <field name="timing_stop">21</field>
             <field name="amount_rate">1.35</field>
             <field name="week_start">6</field>
-            <field name="condition_work_entry_type_ids" eval="[(4, ref('hr_work_entry.attendance_work_entry_type'))]"/>
+            <field name="condition_work_entry_type_ids" eval="[(4, ref('hr_work_entry.eg_work_entry_type_attendance'))]"/>
             <field name="work_entry_type_id" ref="hr_work_entry.l10n_eg_work_entry_type_overtime_work_days_daytime"/>
         </record>
         <record id="hr_time_rule_l10n_eg_work_days_nighttime_evening" model="hr.time.rule">
@@ -195,7 +195,7 @@
             <field name="timing_stop">24</field>
             <field name="amount_rate">1.7</field>
             <field name="week_start">6</field>
-            <field name="condition_work_entry_type_ids" eval="[(4, ref('hr_work_entry.attendance_work_entry_type'))]"/>
+            <field name="condition_work_entry_type_ids" eval="[(4, ref('hr_work_entry.eg_work_entry_type_attendance'))]"/>
             <field name="work_entry_type_id" ref="hr_work_entry.l10n_eg_work_entry_type_overtime_work_days_nighttime"/>
         </record>
         <record id="hr_time_rule_l10n_eg_work_days_nighttime_early" model="hr.time.rule">
@@ -215,7 +215,7 @@
             <field name="timing_stop">4</field>
             <field name="amount_rate">1.7</field>
             <field name="week_start">6</field>
-            <field name="condition_work_entry_type_ids" eval="[(4, ref('hr_work_entry.attendance_work_entry_type'))]"/>
+            <field name="condition_work_entry_type_ids" eval="[(4, ref('hr_work_entry.eg_work_entry_type_attendance'))]"/>
             <field name="work_entry_type_id" ref="hr_work_entry.l10n_eg_work_entry_type_overtime_work_days_nighttime"/>
         </record>
         <record id="hr_time_rule_l10n_eg_public_holidays" model="hr.time.rule">
@@ -235,7 +235,7 @@
             <field name="timing_stop">24</field>
             <field name="amount_rate">2</field>
             <field name="week_start">6</field>
-            <field name="condition_work_entry_type_ids" eval="[(4, ref('hr_work_entry.attendance_work_entry_type'))]"/>
+            <field name="condition_work_entry_type_ids" eval="[(4, ref('hr_work_entry.eg_work_entry_type_attendance'))]"/>
             <field name="work_entry_type_id" ref="hr_work_entry.l10n_eg_work_entry_type_overtime_public_holiday"/>
         </record>
         <record id="hr_time_rule_l10n_eg_rest_days" model="hr.time.rule">
@@ -255,7 +255,7 @@
             <field name="timing_stop">24</field>
             <field name="amount_rate">2</field>
             <field name="week_start">6</field>
-            <field name="condition_work_entry_type_ids" eval="[(4, ref('hr_work_entry.attendance_work_entry_type'))]"/>
+            <field name="condition_work_entry_type_ids" eval="[(4, ref('hr_work_entry.eg_work_entry_type_attendance'))]"/>
             <field name="work_entry_type_id" ref="hr_work_entry.l10n_eg_work_entry_type_overtime_rest_days"/>
         </record>
 
@@ -280,7 +280,7 @@
             <field name="timing_stop">9</field>
             <field name="amount_rate">1.5</field>
             <field name="week_start">6</field>
-            <field name="condition_work_entry_type_ids" eval="[(4, ref('hr_work_entry.attendance_work_entry_type'))]"/>
+            <field name="condition_work_entry_type_ids" eval="[(4, ref('hr_work_entry.iq_work_entry_type_attendance'))]"/>
             <field name="work_entry_type_id" ref="hr_work_entry.iq_work_entry_type_day_overtime"/>
         </record>
         <record id="hr_time_rule_l10n_iq_day_time_2" model="hr.time.rule">
@@ -300,7 +300,7 @@
             <field name="timing_stop">21</field>
             <field name="amount_rate">1.5</field>
             <field name="week_start">6</field>
-            <field name="condition_work_entry_type_ids" eval="[(4, ref('hr_work_entry.attendance_work_entry_type'))]"/>
+            <field name="condition_work_entry_type_ids" eval="[(4, ref('hr_work_entry.iq_work_entry_type_attendance'))]"/>
             <field name="work_entry_type_id" ref="hr_work_entry.iq_work_entry_type_day_overtime"/>
         </record>
         <record id="hr_time_rule_l10n_iq_night_time_1" model="hr.time.rule">
@@ -320,7 +320,7 @@
             <field name="timing_stop">24</field>
             <field name="amount_rate">2</field>
             <field name="week_start">6</field>
-            <field name="condition_work_entry_type_ids" eval="[(4, ref('hr_work_entry.attendance_work_entry_type'))]"/>
+            <field name="condition_work_entry_type_ids" eval="[(4, ref('hr_work_entry.iq_work_entry_type_attendance'))]"/>
             <field name="work_entry_type_id" ref="hr_work_entry.iq_work_entry_type_night_overtime"/>
         </record>
         <record id="hr_time_rule_l10n_iq_night_time_2" model="hr.time.rule">
@@ -340,7 +340,7 @@
             <field name="timing_stop">6</field>
             <field name="amount_rate">2</field>
             <field name="week_start">6</field>
-            <field name="condition_work_entry_type_ids" eval="[(4, ref('hr_work_entry.attendance_work_entry_type'))]"/>
+            <field name="condition_work_entry_type_ids" eval="[(4, ref('hr_work_entry.iq_work_entry_type_attendance'))]"/>
             <field name="work_entry_type_id" ref="hr_work_entry.iq_work_entry_type_night_overtime"/>
         </record>
 
@@ -364,7 +364,7 @@
             <field name="apply_sunday" eval="True"/>
             <field name="amount_rate">1.25</field>
             <field name="week_start">6</field>
-            <field name="condition_work_entry_type_ids" eval="[(4, ref('hr_work_entry.attendance_work_entry_type'))]"/>
+            <field name="condition_work_entry_type_ids" eval="[(4, ref('hr_work_entry.uae_work_entry_type_attendance'))]"/>
             <field name="work_entry_type_id" ref="hr_work_entry.uae_work_entry_type_overtime_work_days_daytime"/>
         </record>
         <record id="hr_time_rule_l10n_ae_night_time_1" model="hr.time.rule">
@@ -384,7 +384,7 @@
             <field name="timing_stop">24</field>
             <field name="amount_rate">1.5</field>
             <field name="week_start">6</field>
-            <field name="condition_work_entry_type_ids" eval="[(4, ref('hr_work_entry.attendance_work_entry_type'))]"/>
+            <field name="condition_work_entry_type_ids" eval="[(4, ref('hr_work_entry.uae_work_entry_type_attendance'))]"/>
             <field name="work_entry_type_id" ref="hr_work_entry.uae_work_entry_type_overtime_work_days_nighttime"/>
         </record>
         <record id="hr_time_rule_l10n_ae_night_time_2" model="hr.time.rule">
@@ -404,7 +404,7 @@
             <field name="timing_stop">4</field>
             <field name="amount_rate">1.5</field>
             <field name="week_start">6</field>
-            <field name="condition_work_entry_type_ids" eval="[(4, ref('hr_work_entry.attendance_work_entry_type'))]"/>
+            <field name="condition_work_entry_type_ids" eval="[(4, ref('hr_work_entry.uae_work_entry_type_attendance'))]"/>
             <field name="work_entry_type_id" ref="hr_work_entry.uae_work_entry_type_overtime_work_days_nighttime"/>
         </record>
         <record id="hr_time_rule_l10n_ae_off_days" model="hr.time.rule">
@@ -424,7 +424,7 @@
             <field name="timing_stop">24</field>
             <field name="amount_rate">1.5</field>
             <field name="week_start">6</field>
-            <field name="condition_work_entry_type_ids" eval="[(4, ref('hr_work_entry.attendance_work_entry_type'))]"/>
+            <field name="condition_work_entry_type_ids" eval="[(4, ref('hr_work_entry.uae_work_entry_type_attendance'))]"/>
             <field name="work_entry_type_id" ref="hr_work_entry.uae_work_entry_type_overtime_off_days"/>
         </record>
 
@@ -451,7 +451,7 @@
             <field name="timing_stop">21</field>
             <field name="amount_rate">1.25</field>
             <field name="week_start">6</field>
-            <field name="condition_work_entry_type_ids" eval="[(4, ref('hr_work_entry.attendance_work_entry_type'))]"/>
+            <field name="condition_work_entry_type_ids" eval="[(4, ref('hr_work_entry.om_work_entry_type_attendance'))]"/>
             <field name="work_entry_type_id" ref="hr_work_entry.l10n_om_work_entry_type_overtime_work_days_daytime"/>
         </record>
         <record id="hr_time_rule_l10n_om_normal_workdays_nighttime_late" model="hr.time.rule">
@@ -471,7 +471,7 @@
             <field name="timing_stop">24</field>
             <field name="amount_rate">1.5</field>
             <field name="week_start">6</field>
-            <field name="condition_work_entry_type_ids" eval="[(4, ref('hr_work_entry.attendance_work_entry_type'))]"/>
+            <field name="condition_work_entry_type_ids" eval="[(4, ref('hr_work_entry.om_work_entry_type_attendance'))]"/>
             <field name="work_entry_type_id" ref="hr_work_entry.l10n_om_work_entry_type_overtime_work_days_nighttime"/>
         </record>
         <record id="hr_time_rule_l10n_om_normal_workdays_nighttime_early" model="hr.time.rule">
@@ -491,7 +491,7 @@
             <field name="timing_stop">4</field>
             <field name="amount_rate">1.5</field>
             <field name="week_start">6</field>
-            <field name="condition_work_entry_type_ids" eval="[(4, ref('hr_work_entry.attendance_work_entry_type'))]"/>
+            <field name="condition_work_entry_type_ids" eval="[(4, ref('hr_work_entry.om_work_entry_type_attendance'))]"/>
             <field name="work_entry_type_id" ref="hr_work_entry.l10n_om_work_entry_type_overtime_work_days_nighttime"/>
         </record>
         <record id="hr_time_rule_l10n_om_normal_rest_days" model="hr.time.rule">
@@ -511,7 +511,7 @@
             <field name="timing_stop">24</field>
             <field name="amount_rate">2</field>
             <field name="week_start">6</field>
-            <field name="condition_work_entry_type_ids" eval="[(4, ref('hr_work_entry.attendance_work_entry_type'))]"/>
+            <field name="condition_work_entry_type_ids" eval="[(4, ref('hr_work_entry.om_work_entry_type_attendance'))]"/>
             <field name="work_entry_type_id" ref="hr_work_entry.l10n_om_work_entry_type_overtime_rest_days"/>
         </record>
 

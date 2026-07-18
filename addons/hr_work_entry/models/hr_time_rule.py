@@ -376,12 +376,16 @@ class HrTimeRule(models.Model):
                 if key not in sched_cache:
                     tz_empty = {tz: empty_resource}
                     att_batch = sched_cal._attendance_intervals_batch(p_dt_start, p_dt_end, resources_per_tz=tz_empty)
+                    absence_batch = sched_cal._attendance_intervals_batch(
+                        p_dt_start, p_dt_end, resources_per_tz=tz_empty,
+                        domain=[('work_entry_type_id.count_as', '=', 'absence')],
+                    )
                     ph_batch = sched_cal._leave_intervals_batch(
                         p_dt_start, p_dt_end, resources_per_tz=tz_empty,
                         domain=[('resource_id', '=', False)],
                     )
                     sched_cache[key] = (
-                        _naivify(att_batch.get(False, [])),
+                        _naivify(att_batch.get(False, [])) - _naivify(absence_batch.get(False, [])),
                         _naivify(ph_batch.get(False, [])),
                     )
                 att_intervals, ph_intervals = sched_cache[key]
