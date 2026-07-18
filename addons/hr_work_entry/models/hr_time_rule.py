@@ -347,7 +347,7 @@ class HrTimeRule(models.Model):
             start_dt.date(), end_dt.date(),
         )
         result = {
-            'schedule':       defaultdict(Intervals),
+            'schedule':       defaultdict(lambda: defaultdict(Intervals)),
             'leave':          defaultdict(Intervals),
             'public_leave':   defaultdict(Intervals),
             'fully_flexible': defaultdict(Intervals),
@@ -376,20 +376,22 @@ class HrTimeRule(models.Model):
                 if key not in sched_cache:
                     tz_empty = {tz: empty_resource}
                     att_batch = sched_cal._attendance_intervals_batch(p_dt_start, p_dt_end, resources_per_tz=tz_empty)
-                    absence_batch = sched_cal._attendance_intervals_batch(
-                        p_dt_start, p_dt_end, resources_per_tz=tz_empty,
-                        domain=[('work_entry_type_id.count_as', '=', 'absence')],
-                    )
                     ph_batch = sched_cal._leave_intervals_batch(
                         p_dt_start, p_dt_end, resources_per_tz=tz_empty,
                         domain=[('resource_id', '=', False)],
                     )
+                    # group schedule slots by WET id (None = untagged generic slots)
+                    by_wet = defaultdict(list)
+                    for s, e, att_rec in _naivify(att_batch.get(False, [])):
+                        wet = getattr(att_rec, 'work_entry_type_id', False)
+                        by_wet[wet.id if wet else None].append((s, e, att_rec))
                     sched_cache[key] = (
-                        _naivify(att_batch.get(False, [])) - _naivify(absence_batch.get(False, [])),
+                        {wid: Intervals(ivs) for wid, ivs in by_wet.items()},
                         _naivify(ph_batch.get(False, [])),
                     )
-                att_intervals, ph_intervals = sched_cache[key]
-                result['schedule'][emp] |= att_intervals & period
+                schedule_by_wet, ph_intervals = sched_cache[key]
+                for wid, ivs in schedule_by_wet.items():
+                    result['schedule'][emp][wid] |= ivs & period
                 result['public_leave'][emp] |= ph_intervals & period
 
                 leave_requests[leave_cal.id, p_dt_start, p_dt_end].append(
@@ -801,8 +803,13 @@ class HrTimeRule(models.Model):
                     ]
                     continue
 
+                raw_schedule = work_intervals['schedule'][employee]
+                condition_wet_ids = rule.condition_work_entry_type_ids.ids
+                schedule_flat = raw_schedule[None]
+                for wid in condition_wet_ids:
+                    schedule_flat = schedule_flat | raw_schedule[wid]
                 schedule = (
-                    work_intervals['schedule'][employee]
+                    schedule_flat
                     - work_intervals['leave'][employee]
                     - work_intervals['public_leave'][employee]
                 )
