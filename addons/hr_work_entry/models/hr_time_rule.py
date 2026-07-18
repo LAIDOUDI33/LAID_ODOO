@@ -347,7 +347,7 @@ class HrTimeRule(models.Model):
             start_dt.date(), end_dt.date(),
         )
         result = {
-            'schedule':       defaultdict(lambda: defaultdict(Intervals)),
+            'schedule':       {},
             'leave':          defaultdict(Intervals),
             'public_leave':   defaultdict(Intervals),
             'fully_flexible': defaultdict(Intervals),
@@ -359,6 +359,7 @@ class HrTimeRule(models.Model):
         for emp, periods in version_periods_by_employee.items():
             tz = ZoneInfo(emp.tz or 'UTC')
             rid = emp.resource_id.id
+            emp_schedule = result['schedule'].setdefault(emp, defaultdict(Intervals))
 
             for p_start, p_stop, version in periods:
                 p_dt_start = datetime.combine(p_start, time.min, tzinfo=UTC)
@@ -391,7 +392,7 @@ class HrTimeRule(models.Model):
                     )
                 schedule_by_wet, ph_intervals = sched_cache[key]
                 for wid, ivs in schedule_by_wet.items():
-                    result['schedule'][emp][wid] |= ivs & period
+                    emp_schedule[wid] |= ivs & period
                 result['public_leave'][emp] |= ph_intervals & period
 
                 leave_requests[leave_cal.id, p_dt_start, p_dt_end].append(
@@ -803,9 +804,9 @@ class HrTimeRule(models.Model):
                     ]
                     continue
 
-                raw_schedule = work_intervals['schedule'][employee]
-                if rule.calendar_source == 'employee' and not raw_schedule:
+                if rule.calendar_source == 'employee' and employee not in work_intervals['schedule']:
                     continue
+                raw_schedule = work_intervals['schedule'][employee]
                 condition_wet_ids = rule.condition_work_entry_type_ids.ids
                 schedule_flat = raw_schedule[None]
                 for wid in condition_wet_ids:

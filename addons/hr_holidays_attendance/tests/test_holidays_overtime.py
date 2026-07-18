@@ -42,6 +42,7 @@ class HrHolidaysOvertimeCommon(TransactionCase):
             'attendance_based': True,
             'date_version': '2020-01-01',
             'contract_date_start': '2020-01-01',
+            'resource_calendar_id': cls.env.company.resource_calendar_id.id,
             'wage': 3500,
         })
 
