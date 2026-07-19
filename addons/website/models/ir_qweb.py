@@ -48,7 +48,7 @@ class IrQweb(models.AbstractModel):
     # assume cache will be invalidated by third party on write to ir.ui.view
     def _get_template_cache_keys(self):
         """ Return the list of context keys to use for caching ``_compile``. """
-        return super()._get_template_cache_keys() + ['website_id', 'cookies_allowed']
+        return super()._get_template_cache_keys() + ['website_id', 'cookies_allowed', 'is_mobile']
 
     def _pre_processing_att(self, attrib):
         self._copy_translate_attributes(attrib)
@@ -77,8 +77,23 @@ class IrQweb(models.AbstractModel):
         atts = super()._post_processing_att(tagName, atts)
 
         website = self.env.website
-        if website and tagName == 'img' and 'loading' not in atts:
-            atts['loading'] = 'lazy'  # default is auto
+        mobile_lcp_marker = "data-lcp-mobile"
+        desktop_lcp_marker = "data-lcp-desktop"
+        current_lcp_marker = (
+            mobile_lcp_marker
+            if self.env.context.get("is_mobile")
+            else desktop_lcp_marker
+        )
+
+        if website and tagName == "img":
+            if atts.get(current_lcp_marker):
+                atts["loading"] = "eager"
+                atts["fetchpriority"] = "high"
+            else:
+                atts["loading"] = "lazy"
+
+        atts.pop(mobile_lcp_marker, None)
+        atts.pop(desktop_lcp_marker, None)
 
         if self.env.context.get('inherit_branding') or self.env.context.get('rendering_bundle') or \
            self.env.context.get('edit_translations') or self.env.context.get('debug') or (request and request.session.debug):
