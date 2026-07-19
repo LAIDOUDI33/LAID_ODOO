@@ -1,5 +1,6 @@
+import { ViewPlugin } from "@web/views/view_plugin";
 import { useSubEnv } from "@web/owl2/utils";
-import { Component, onWillStart, onWillUpdateProps, toRaw } from "@odoo/owl";
+import { Component, onWillStart, onWillUpdateProps, plugin, toRaw } from "@odoo/owl";
 import { CallbackRecorder, useSetupAction } from "@web/search/action_hook";
 import { SearchModel } from "@web/search/search_model";
 import { useBus, useService } from "@web/core/utils/hooks";
@@ -55,7 +56,7 @@ export class WithSearch extends Component {
             this.env,
             {
                 orm: useService("orm"),
-                view: useService("view"),
+                view: plugin(ViewPlugin),
                 field: useService("field"),
                 name: useService("name"),
                 dialog: useService("dialog"),
