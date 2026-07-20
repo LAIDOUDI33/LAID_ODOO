@@ -1,18 +1,24 @@
 import { useExternalListener } from "@web/owl2/utils";
-import { onMounted, onWillUnmount, proxy, signal, untrack, useEffect } from "@odoo/owl";
+import { onMounted, onPatched, onWillUnmount, proxy } from "@odoo/owl";
 import { useThrottleForAnimation } from "./timing";
 import { makeDraggableHook as nativeMakeDraggableHook } from "./draggable_hook_builder";
 
 function setup(effect, computeDependencies = () => []) {
-    const mounted = signal(false);
-    onMounted(() => mounted.set(true));
-    useEffect(() => {
-        if (!mounted()) {
-            return;
-        }
-        const dependencies = computeDependencies();
-        return untrack(() => effect(...dependencies));
+    let cleanup;
+    let dependencies;
+    onMounted(() => {
+        dependencies = computeDependencies();
+        cleanup = effect(...dependencies);
     });
+    onPatched(() => {
+        const newDependencies = computeDependencies();
+        if (newDependencies.some((dep, i) => dep !== dependencies[i])) {
+            dependencies = newDependencies;
+            cleanup?.();
+            cleanup = effect(...dependencies);
+        }
+    });
+    onWillUnmount(() => cleanup?.());
 }
 
 /**
