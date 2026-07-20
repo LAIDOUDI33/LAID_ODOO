@@ -445,7 +445,7 @@ class TestPeppolMessage(TestAccountMoveSendCommon, MailCommon):
     def test_available_peppol_sending_methods(self):
         company_us = self.setup_other_company()['company']  # not a valid Peppol country
         self.assertTrue('peppol' in self.valid_partner.with_company(self.env.company).available_peppol_sending_methods)
-        self.assertFalse('peppol' in self.valid_partner.with_company(company_us).available_peppol_sending_methods)
+        self.assertTrue('peppol' in self.valid_partner.with_company(company_us).available_peppol_sending_methods)
 
     def test_available_peppol_edi_formats(self):
         self.valid_partner.invoice_sending_method = 'peppol'
@@ -484,10 +484,25 @@ class TestPeppolMessage(TestAccountMoveSendCommon, MailCommon):
         moves.action_post()
         with mock_lookup_success('0208:0428759497'):
             wizard = self.create_send_and_print(moves, default=True)
-        self.assertEqual(wizard.summary_data, {
-            'email': {'count': 2, 'label': 'by Email'},
-            'peppol': {'count': 2, 'label': 'by Peppol'},
-        })
+        expected_result = {
+            "email": {
+                "count": 2,
+                "label": "by Email",
+                "moves": [
+                    {"id": move_1.id, "name": move_1.name, "partner_name": "Molly"},
+                    {"id": move_2.id, "name": move_2.name, "partner_name": "Molly"},
+                ],
+            },
+            "peppol": {
+                "count": 2,
+                "label": "by Peppol",
+                "moves": [
+                    {"id": move_1.id, "name": move_1.name, "partner_name": "Molly"},
+                    {"id": move_2.id, "name": move_2.name, "partner_name": "Molly"},
+                ],
+            },
+        }
+        self.assertEqual(wizard.summary_data, expected_result)
         wizard.action_send_and_print()
         with (
             mock_send_document(),
