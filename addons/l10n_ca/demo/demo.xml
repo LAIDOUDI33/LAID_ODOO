@@ -34,4 +34,32 @@
         <value model="res.company" eval="obj().env.ref('base.demo_company_ca')"/>
         <value name="install_demo" eval="True"/>
     </function>
+
+    <!-- Demo Bank Account for CA Company -->
+    <record id="demo_ca_company_bank" model="res.partner.bank">
+        <field name="partner_id" ref="base.partner_demo_company_ca"/>
+        <field name="company_id" ref="base.demo_company_ca"/>
+        <field name="account_number">123456789</field>
+        <field name="bank_name">TD Canada Trust</field>
+    </record>
+
+    <!-- Demo Canadian Customer Partner -->
+    <record id="partner_demo_ca_customer" model="res.partner">
+        <field name="name">Maple Leaf Retail Inc.</field>
+        <field name="company_id" ref="base.demo_company_ca"/>
+        <field name="country_id" ref="base.ca"/>
+        <field name="state_id" ref="base.state_ca_on"/>
+        <field name="city">Toronto</field>
+        <field name="street">100 Yonge Street</field>
+        <field name="zip">M5C 2W1</field>
+        <field name="phone">+1 416-111-1111</field>
+        <field name="email">maple-leaf@example.com</field>
+    </record>
+
+    <!-- Demo Bank Account for Canadian Customer -->
+    <record id="bank_account_ca_customer" model="res.partner.bank">
+        <field name="partner_id" ref="partner_demo_ca_customer"/>
+        <field name="account_number">987654321</field>
+        <field name="bank_name">Royal Bank of Canada</field>
+    </record>
 </odoo>
