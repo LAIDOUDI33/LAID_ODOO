@@ -1306,6 +1306,31 @@ registry.category("web_tour.tours").add("test_orderline_merge_with_higher_price_
         ].flat(),
 });
 
+registry.category("web_tour.tours").add("test_order_edit_logs", {
+    steps: () =>
+        [
+            Chrome.startPoS(),
+            Dialog.confirm("Open Register"),
+            ProductScreen.clickDisplayedProduct("Desk Organizer"),
+            ProductScreen.selectedOrderlineHas("Desk Organizer", "1.0", "5.10"),
+            ProductScreen.clickDisplayedProduct("Desk Organizer"),
+            ProductScreen.selectedOrderlineHas("Desk Organizer", "2.0", "10.2"),
+            ProductScreen.clickDisplayedProduct("Whiteboard Pen"),
+            ProductScreen.saveOrder(),
+            ProductScreen.selectFloatingOrder(0),
+            inLeftSide([
+                ...ProductScreen.selectedOrderlineHasDirect("Whiteboard Pen", "1", "3.20"),
+                Numpad.click("⌫"),
+                Numpad.click("⌫"),
+                ...ProductScreen.selectedOrderlineHasDirect("Desk Organizer", "2", "10.2"),
+                Numpad.click("1"),
+                ...ProductScreen.selectedOrderlineHasDirect("Desk Organizer", "1", "5.10"),
+            ]),
+            ProductScreen.saveOrder(),
+            Chrome.endTour(),
+        ].flat(),
+});
+
 registry.category("web_tour.tours").add("test_customer_search_prefilled_on_create", {
     steps: () =>
         [
