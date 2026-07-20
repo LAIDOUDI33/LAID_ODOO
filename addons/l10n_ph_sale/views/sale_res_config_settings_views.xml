@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_l10n_ph_sale" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.l10n.ph.sale</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="sale.res_config_settings_view_form_sale_inherit"/>
+        <field name="arch" type="xml">
+            <xpath expr="//setting[@id='discount_sale_order_lines']" position="inside">
+                <div class="row mt8" invisible="country_code != 'PH'">
+                    <label for="l10n_ph_enable_discount_privilege_sale" class="col-lg-5 o_light_label"/>
+                    <field name="l10n_ph_enable_discount_privilege_sale"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>
