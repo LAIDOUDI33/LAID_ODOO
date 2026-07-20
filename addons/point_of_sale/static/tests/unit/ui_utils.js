@@ -1,4 +1,4 @@
-import { animationFrame, tick, waitFor, queryAll } from "@odoo/hoot-dom";
+import { animationFrame, tick, waitFor, queryAll, advanceTime, queryOne } from "@odoo/hoot-dom";
 import { contains, getService, mountWithCleanup } from "@web/../tests/web_test_helpers";
 import { Chrome } from "@point_of_sale/app/pos_app";
 import { ProductScreen } from "@point_of_sale/app/screens/product_screen/product_screen";
@@ -307,4 +307,45 @@ export function getOrderTotal() {
 
 export function getOrderlineNames() {
     return queryAll(".orderline .product-name").map((el) => el.textContent.trim());
+}
+
+export async function selectUomOption(uomName) {
+    await contains(`.uom-selection-value:contains("${uomName}")`).click();
+}
+
+export async function longPress(target, fallbackSelector = "article.product") {
+    let el;
+    if (typeof target === "string") {
+        el = document.querySelector(target);
+        if (!el) {
+            const elements = document.querySelectorAll(fallbackSelector);
+            for (const p of elements) {
+                if (p.textContent.includes(target)) {
+                    el = p;
+                    break;
+                }
+            }
+        }
+    } else {
+        el = target;
+    }
+    el.dispatchEvent(
+        new PointerEvent("pointerdown", { bubbles: true, pointerType: "mouse", button: 0 })
+    );
+    await advanceTime(600);
+    el.dispatchEvent(
+        new PointerEvent("pointerup", { bubbles: true, pointerType: "mouse", button: 0 })
+    );
+    await animationFrame();
+}
+
+export async function longPressOrderline(productName) {
+    await ensurePane("left");
+    await longPress(productName, ".order-container .orderline");
+}
+
+export function getOrderlineElByPrice(productName, price) {
+    return queryOne(
+        `.orderline:has(.product-name:contains(${productName})):has(.price-per-unit:contains(${price}))`
+    );
 }

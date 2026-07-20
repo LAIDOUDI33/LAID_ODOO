@@ -45,7 +45,7 @@ class PosOrderLine(models.Model):
     order_id = fields.Many2one('pos.order', string='Order Ref', ondelete='cascade', required=True, index=True)
     tax_ids = fields.Many2many('account.tax', string='Taxes', readonly=True)
     tax_ids_after_fiscal_position = fields.Many2many('account.tax', compute='_get_tax_ids_after_fiscal_position', string='Taxes to Apply')
-    product_uom_id = fields.Many2one('uom.uom', string='Product Unit', related='product_id.uom_id')
+    product_uom_id = fields.Many2one('uom.uom', string='Product Unit')
     currency_id = fields.Many2one('res.currency', related='order_id.currency_id')
     full_product_name = fields.Char('Full Product Name')
     customer_note = fields.Char('Customer Note')
@@ -79,7 +79,7 @@ class PosOrderLine(models.Model):
             'product_id', 'discount', 'tax_ids', 'customer_note',
             'refunded_qty', 'price_extra', 'full_product_name', 'refunded_orderline_id',
             'combo_parent_id', 'combo_line_ids', 'combo_item_id', 'refund_orderline_ids',
-            'extra_tax_data', 'write_date', 'prep_line_ids',
+            'extra_tax_data', 'write_date', 'prep_line_ids', 'product_uom_id',
         ]
 
     @api.depends('refund_orderline_ids', 'refund_orderline_ids.order_id.state')
@@ -119,7 +119,11 @@ class PosOrderLine(models.Model):
             if not vals.get('name'):
                 # fallback on any pos.order sequence
                 vals['name'] = self.env['ir.sequence'].next_by_code('pos.order.line')
-        return super().create(vals_list)
+        lines = super().create(vals_list)
+        for line in lines:
+            if not line.product_uom_id and line.product_id.uom_id:
+                line.product_uom_id = line.product_id.uom_id
+        return lines
 
     def write(self, vals):
         if self.order_id.config_id.order_edit_tracking and vals.get('qty') is not None and vals.get('qty') < self.qty:
