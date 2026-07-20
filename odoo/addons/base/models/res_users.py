@@ -1017,7 +1017,7 @@ class ResUsers(models.Model):
         return {
             'type': 'ir.actions.act_window',
             'res_model': 'res.users.apikeys.description',
-            'name': 'New API Key',
+            'name': 'Create API Key',
             'target': 'new',
             'views': [(False, 'form')],
         }
@@ -1721,20 +1721,16 @@ class ResUsersApikeysDescription(models.TransientModel):
         # duration value is a string representing the number of days.
         durations = [
             ('1', '1 Day'),
-            ('7', '1 Week'),
             ('30', '1 Month'),
-            ('90', '3 Months'),
-            ('180', '6 Months'),
             ('365', '1 Year'),
         ]
-        persistent_duration = ('0', 'Persistent Key')  # Magic value to detect an infinite duration
-        custom_duration = ('-1', 'Custom Date')  # Will force the user to enter a date manually
+        persistent_duration = ('0', 'Never')  # Magic value to detect an infinite duration
         if self.env.is_system():
-            return durations + [persistent_duration, custom_duration]
+            return durations + [persistent_duration]
         max_duration = max(group.api_key_duration for group in self.env.user.all_group_ids) or 1.0
         return list(filter(
             lambda duration: int(duration[0]) <= max_duration, durations
-        )) + [custom_duration]
+        ))
 
     name = fields.Char("Description", required=True)
     scope = fields.Selection(
@@ -1750,7 +1746,7 @@ class ResUsersApikeysDescription(models.TransientModel):
     available_scopes_count = fields.Integer(compute='_compute_available_scopes_count')
     duration = fields.Selection(
         selection='_selection_duration', string='Duration', required=True,
-        default=lambda self: self._selection_duration()[0][0]
+        default=lambda self: self._selection_duration()[1][0]
     )
     expiration_date = fields.Datetime('Expiration Date', compute='_compute_expiration_date', store=True, readonly=False)
 
@@ -1796,16 +1792,33 @@ class ResUsersApikeysDescription(models.TransientModel):
 
         description = self.sudo()
         k = self.env['res.users.apikeys']._generate(description.scope, description.name, self.expiration_date)
+        scope = description.scope
+        base_url = self.get_base_url()
         description.unlink()
+
+        snippet_text = (
+            "import xmlrpc.client\n\n"
+            f'url = "{base_url}"\n'
+            f'db = "{self.env.cr.dbname}"\n'
+            f'username = "{self.env.user.login}"\n'
+            f'key = "{k}"\n\n'
+            "# Authenticate to get your User ID (uid)\n"
+            'common = xmlrpc.client.ServerProxy(f"{url}/xmlrpc/2/common")\n'
+            "uid = common.authenticate(db, username, key, {})"
+        )
 
         return {
             'type': 'ir.actions.act_window',
             'res_model': 'res.users.apikeys.show',
-            'name': _('API Key Ready'),
+            'name': self.env._('Save your API Key'),
             'views': [(False, 'form')],
             'target': 'new',
             'context': {
                 'default_key': k,
+                'default_scope': scope,
+                'default_base_url': base_url,
+                'default_db': self.env.cr.dbname,
+                'default_username': self.env.user.login,
             }
         }
 
@@ -1823,3 +1836,7 @@ class ResUsersApikeysShow(models.Model):
     # the field 'id' is necessary for the onchange that returns the value of 'key'
     id = fields.Id()
     key = fields.Char(readonly=True)
+    scope = fields.Char(readonly=True)
+    base_url = fields.Char(readonly=True)
+    db = fields.Char(readonly=True)
+    username = fields.Char(readonly=True)

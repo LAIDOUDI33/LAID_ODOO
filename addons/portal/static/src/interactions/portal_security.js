@@ -45,6 +45,27 @@ export class PortalSecurity extends Interaction {
             modalEl.classList.remove("d-block");
             window.Modal.getOrCreateInstance(modalEl).show();
         }
+
+        this._onCopyButtonClick = this._onCopyButtonClick.bind(this);
+        document.addEventListener("click", this._onCopyButtonClick);
+    }
+
+    destroy() {
+        document.removeEventListener("click", this._onCopyButtonClick);
+        super.destroy?.();
+    }
+
+    async _onCopyButtonClick(ev) {
+        const btn = ev.target.closest("[data-copy-target]");
+        if (!btn) {
+            return;
+        }
+        const targetEl = document.querySelector(btn.dataset.copyTarget);
+        if (!targetEl) {
+            return;
+        }
+        await navigator.clipboard.writeText(targetEl.textContent.trim());
+        this.services.notification.add(_t("Copied to clipboard"), { type: "success" });
     }
 
     async onNewApiKeyClick() {
@@ -61,8 +82,8 @@ export class PortalSecurity extends Interaction {
             )
         );
 
-        const { duration } = await this.services.field.loadFields("res.users.apikeys.description", {
-            fieldNames: ["duration"],
+        const { duration, scope } = await this.services.field.loadFields("res.users.apikeys.description", {
+            fieldNames: ["duration", "scope"],
         });
 
         this.services.dialog.add(InputConfirmationDialog, {
@@ -70,13 +91,17 @@ export class PortalSecurity extends Interaction {
             body: renderToMarkup("portal.keydescription", {
                 // Remove `'Custom Date'` selection for portal user
                 duration_selection: duration.selection.filter((option) => option[0] !== "-1"),
+                scope_selection: scope.selection,
+                default_duration: "30",
+                default_scope: "rpc",
             }),
-            confirmLabel: _t("Confirm"),
+            confirmLabel: _t("Create Key"),
             size: 'md',
             confirm: async ({ inputEl }) => {
                 const formData = Object.fromEntries(new FormData(inputEl.closest("form")));
                 const wizardId = await this.services.orm.create("res.users.apikeys.description", [{
                     name: formData['description'],
+                    scope: formData['scope'],
                     duration: formData['duration']
                 }]);
                 const res = await this.waitFor(
@@ -95,8 +120,14 @@ export class PortalSecurity extends Interaction {
                     ConfirmationDialog,
                     {
                         title: _t("API Key Ready"),
-                        body: renderToMarkup("portal.keyshow", { key: res.context.default_key }),
+                        body: renderToMarkup("portal.keyshow", {
+                            key: res.context.default_key,
+                            base_url: res.context.default_base_url,
+                            scope: res.context.default_scope,
+                            snippet_text: res.context.default_snippet_text,
+                        }),
                         confirmLabel: _t("Close"),
+                        size: 'md',
                     },
                     {
                         onClose: () => {
@@ -109,7 +140,7 @@ export class PortalSecurity extends Interaction {
     }
     async onRemoveApiKeyClick(ev) {
         await this.waitFor(
-            await handleCheckIdentity(
+            handleCheckIdentity(
                 this.waitFor(
                     this.services.orm.call("res.users.apikeys", "remove", [parseInt(ev.target.id)])
                 ),
