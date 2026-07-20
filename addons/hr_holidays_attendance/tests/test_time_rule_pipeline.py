@@ -925,6 +925,43 @@ class TestTimeRulePipeline(TransactionCase):
         self.assertAlmostEqual(allocation.number_of_days, 0.375, places=5,
                                msg="6h * 50% / 8h/day = 0.375 compensatory days")
 
+    def test_wet_less_rule_still_allocates_on_excess(self):
+        """
+        Rule has work_entry_type_id=False so no new attendance is created.
+        leave_compensation_rate=50% on 6h excess (8h calendar) -> 0.375 days allocated.
+        """
+        comp_type = self.env['hr.work.entry.type'].create({
+            'name': 'Compensatory Rest WET-less',
+            'code': 'COMPREST_WL',
+            'requires_allocation': True,
+            'time_off_selectable': True,
+            'leave_validation_type': 'no_validation',
+        })
+        self.time_rule.write({
+            'work_entry_type_id': False,
+            'leave_compensation_rate': 0.5,
+            'allocation_type_id': comp_type.id,
+        })
+        self.env['hr.attendance'].create({
+            'employee_id': self.cal_emp.id,
+            'check_in': datetime(2022, 12, 12, 6),
+            'check_out': datetime(2022, 12, 12, 20),  # 14h worked, 6h excess vs 8h schedule
+        })
+        output_atts = self.env['hr.attendance'].search([
+            ('employee_id', '=', self.cal_emp.id),
+            ('is_time_rule_output', '=', True),
+        ])
+        self.assertFalse(output_atts, "WET-less rule must not create output attendance")
+        allocation = self.env['hr.leave.allocation'].sudo().search([
+            ('employee_id', '=', self.cal_emp.id),
+            ('work_entry_type_id', '=', comp_type.id),
+        ])
+        self.assertEqual(len(allocation), 1, "Allocation should be auto-created despite no WET")
+        self.assertAlmostEqual(
+            allocation.number_of_days, 0.375, places=5,
+            msg="6h * 50% / 8h/day = 0.375 compensatory days",
+        )
+
     def test_employee_domain_filters_rule(self):
 
         self.time_rule.employee_domain = f"[('id', '=', {self.cal_emp.id})]"

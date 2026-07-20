@@ -556,7 +556,10 @@ class HrTimeRule(models.Model):
                 # group by period, pick the lowest-sequence rule per period
                 by_period = defaultdict(list)
                 for s, e, rule, pp in intervals:
-                    if not rule.work_entry_type_id or e <= s:
+                    if e <= s:
+                        continue
+                    if not rule.work_entry_type_id:
+                        deficit_alloc.append((employee, rule, (e - s).total_seconds() / 3600))
                         continue
                     if rule.quantity_period == 'week':
                         ws = int(rule.week_start or '0')
@@ -590,6 +593,9 @@ class HrTimeRule(models.Model):
             tz = ZoneInfo(employee._get_tz())
             for source, intervals in by_source.items():
                 all_source_ids.add(source.id)
+                for s, e, rule, _pp in intervals:
+                    if not rule.work_entry_type_id:
+                        excess_alloc.append((employee, rule, (e - s).total_seconds() / 3600))
                 output_intervals = self._resolve_output_intervals(intervals)
                 if not output_intervals:
                     continue
