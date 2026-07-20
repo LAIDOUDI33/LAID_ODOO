@@ -1,5 +1,5 @@
-import { onWillRender, useLayoutEffect } from "@web/owl2/utils";
-import { Component, onWillStart, props, proxy, signal, t } from "@odoo/owl";
+import { onWillRender } from "@web/owl2/utils";
+import { Component, onMounted, onPatched, onWillStart, props, proxy, signal, t, useEffect } from "@odoo/owl";
 import { _t } from "@web/core/l10n/translation";
 import { sortBy } from "@web/core/utils/arrays";
 import { KeepLast } from "@web/core/utils/concurrency";
@@ -150,7 +150,7 @@ export class ModelFieldSelectorPopover extends Component {
             }
         });
 
-        useLayoutEffect(() => {
+        const scrollActiveIntoView = () => {
             const focusedElement = this.rootRef()?.querySelector(
                 ".o_model_field_selector_popover_item.active"
             );
@@ -158,18 +158,18 @@ export class ModelFieldSelectorPopover extends Component {
                 // current page can be empty (e.g. after a search)
                 focusedElement.scrollIntoView({ block: "center" });
             }
+        };
+        onMounted(scrollActiveIntoView);
+        onPatched(scrollActiveIntoView);
+        useEffect(() => {
+            void this.state.page; // subscribe: re-focus when the page changes
+            if (this.props.showSearchInput) {
+                const searchInput = this.rootRef()?.querySelector(
+                    ".o_model_field_selector_popover_search .o_input"
+                );
+                searchInput.focus();
+            }
         });
-        useLayoutEffect(
-            () => {
-                if (this.props.showSearchInput) {
-                    const searchInput = this.rootRef()?.querySelector(
-                        ".o_model_field_selector_popover_search .o_input"
-                    );
-                    searchInput.focus();
-                }
-            },
-            () => [this.state.page]
-        );
     }
 
     get fieldNames() {
