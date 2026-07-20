@@ -24,6 +24,7 @@ import { resolveRefEl } from "@web/core/utils/ref_utils";
 import { useEmailHtmlConverter } from "@mail/convert_inline/hooks";
 import { fixInvalidHTML } from "@html_editor/utils/sanitize";
 import { useRecordObserver } from "@web/model/relational_model/utils";
+import { Operation } from "@html_builder/core/operation";
 
 export class MassMailingHtmlField extends HtmlField {
     static template = "mass_mailing.HtmlField";
@@ -279,6 +280,7 @@ export class MassMailingHtmlField extends HtmlField {
             record: this.props.record,
             mobileBreakpoint: "md",
             onEditorReady: () => this.commitChanges(),
+            measureReference: this.converter.measureReference,
         };
     }
 
@@ -294,6 +296,7 @@ export class MassMailingHtmlField extends HtmlField {
         return {
             ...config,
             onEditorReady: () => this.commitChanges(),
+            measureReference: this.converter.measureReference,
             Plugins: [
                 ...MAIN_EDITOR_PLUGINS,
                 ...DYNAMIC_FIELD_PLUGINS,
@@ -411,10 +414,36 @@ export class MassMailingHtmlField extends HtmlField {
      * Ensure that every SVG and WEBP images are converted to PNG, and create
      * an attachment for every b64 encoded image, to ensure every image src
      * is not a data url.
+     * Prevent the user from making additional changes during the operation.
      * @override
      */
-    savePendingImages(content) {
-        return this.editor.shared["imageEmailFormat"].sanitizeImages(content);
+    async savePendingImages(content) {
+        const operation = this.editor.shared.operation
+            ? this.editor.shared.operation
+            : new Operation(this.editor.document);
+        let result;
+        await operation.next(
+            async () => {
+                result = await this.editor.shared.emailImageFormat.sanitizeImages(content);
+                const lastChangeIdSnapshot = this.lastChangeId;
+                if (
+                    this.editor.shared.history.commit() &&
+                    this.lastChangeId === lastChangeIdSnapshot + 1
+                ) {
+                    // All pending image changes were done in both the content
+                    // clone and the editable, so if an editor commit was made
+                    // during this operation, it is reasonable to assume that
+                    // the changes it contains were also done in content, which
+                    // will be sent to the server. Therefore this commit
+                    // onChange should not have increased lastChangeId and the
+                    // snapshotted value is restored, allowing the field to
+                    // not be dirty after updateValue.
+                    this.lastChangeId = lastChangeIdSnapshot;
+                }
+            },
+            { canTimeout: false, shouldInterceptClick: true }
+        );
+        return result;
     }
 
     /**
