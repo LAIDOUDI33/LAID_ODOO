@@ -3,7 +3,7 @@ import * as Utils from "@pos_self_order/../tests/tours/utils/common";
 export function clickProduct(productName) {
     return {
         content: `Click on product '${productName}'`,
-        trigger: `.product_list .o_self_product_box span:contains('${productName}')`,
+        trigger: `.product_list .o_self_product_card span:contains('${productName}')`,
         run: "click",
     };
 }
@@ -152,15 +152,4 @@ export function isShown() {
         content: "Check whether the Product List page is displayed",
         trigger: ".o_self_product_list_page",
     };
-}
-
-export function optionalProductsIsThere() {
-    return {
-        content: "Check if optional product is there",
-        trigger: ".o_self_optional_product_page",
-    };
-}
-
-export function clickOptionalProduct(productName) {
-    return [optionalProductsIsThere(), clickProduct(productName)];
 }

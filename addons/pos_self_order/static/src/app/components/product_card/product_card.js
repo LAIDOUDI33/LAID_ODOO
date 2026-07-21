@@ -1,4 +1,4 @@
-import { Component, props, t } from "@odoo/owl";
+import { Component, t, useProps } from "@odoo/owl";
 import { ProductTemplate } from "@point_of_sale/app/models/product_template";
 import { ProductProduct } from "@point_of_sale/app/models/product_product";
 import { useSelfOrder } from "@pos_self_order/app/services/self_order_service";
@@ -10,7 +10,7 @@ import { ProductInfoPopup } from "../product_info_popup/product_info_popup";
 export class ProductCard extends Component {
     static template = "pos_self_order.ProductCard";
 
-    props = props({
+    props = useProps({
         product: t.or([t.instanceOf(ProductProduct), t.instanceOf(ProductTemplate)]),
         class: t.string().optional(),
         qty: t.number().optional(),

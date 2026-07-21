@@ -1,16 +1,14 @@
-import { resolveRefEl } from "@web/core/utils/ref_utils";
-
 export const formatProductName = (product) => {
     const attributes = product.product_template_attribute_value_ids?.map((v) => v.name).join(",");
     return attributes ? `${product.name} (${attributes})` : product.name;
 };
 
-export const shouldShowMissingDetails = (product, selectedValues, scrollContainerRef) => {
+export const shouldShowMissingDetails = (product, selectedValues) => {
     if (!product || !product.attribute_line_ids.length) {
         return false;
     }
 
-    const scrollContainerEl = resolveRefEl(scrollContainerRef);
+    const scrollContainerEl = document.getElementById("o-self-scroll-container");
     if (!scrollContainerEl) {
         return false;
     }
