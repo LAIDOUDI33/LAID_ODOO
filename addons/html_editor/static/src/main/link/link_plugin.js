@@ -152,6 +152,7 @@ async function fetchAttachmentMetaData(url, ormService) {
 /**
  * @typedef { Object } LinkShared
  * @property { LinkPlugin['createLink'] } createLink
+ * @property { LinkPlugin['getAutoLinkAttributes'] } getAutoLinkAttributes
  * @property { LinkPlugin['getPathAsUrlCommand'] } getPathAsUrlCommand
  * @property { LinkPlugin['insertLink'] } insertLink
  */
@@ -167,6 +168,7 @@ async function fetchAttachmentMetaData(url, ormService) {
  *      getProps: (props) => props;
  *  }[]} link_popovers
  * @typedef {((linkEl: HTMLAnchorElement) => void)[]} on_link_created_handlers
+ * @typedef {((url: string) => Object<string, string> | undefined)[]} auto_link_attribute_providers
  */
 
 export class LinkPlugin extends Plugin {
@@ -188,7 +190,7 @@ export class LinkPlugin extends Plugin {
         allowStripDomain: true,
     };
     // @phoenix @todo: do we want to have createLink and insertLink methods in link plugin?
-    static shared = ["createLink", "insertLink", "getPathAsUrlCommand"];
+    static shared = ["createLink", "getAutoLinkAttributes", "insertLink", "getPathAsUrlCommand"];
     /** @type {import("plugins").EditorResources} */
     resources = {
         user_commands: [
@@ -454,9 +456,48 @@ export class LinkPlugin extends Plugin {
         for (const [param, value] of Object.entries(this.config.defaultLinkAttributes || {})) {
             link.setAttribute(param, `${value}`);
         }
+        if (url !== undefined) {
+            this.applyAutoLinkAttributes(link, url);
+        }
         link.textContent = label;
         this.trigger("on_link_created_handlers", link);
         return link;
+    }
+
+    /**
+     * Collect the attributes that should be applied automatically to a link
+     * pointing to `url`, aggregated from every registered provider. Providers
+     * that don't recognize the url return `undefined` (ignored by the merge).
+     *
+     * @param {string} url
+     * @returns {Object<string, string>}
+     */
+    getAutoLinkAttributes(url) {
+        return Object.assign(
+            {},
+            ...this.getResource("auto_link_attribute_providers").map((provider) => provider(url))
+        );
+    }
+
+    /**
+     * Apply the auto link attributes for `url` onto `link`. `rel` is a
+     * space-separated token list, so contributed tokens (e.g. "nofollow") are
+     * merged with any already present (e.g. the "noreferrer noopener" set
+     * through `defaultLinkAttributes`) instead of clobbering them.
+     *
+     * @param {HTMLAnchorElement} link
+     * @param {string} url
+     */
+    applyAutoLinkAttributes(link, url) {
+        const attributes = this.getAutoLinkAttributes(url);
+        if (attributes.rel) {
+            const rel = new Set((link.getAttribute("rel") || "").split(/\s+/).filter(Boolean));
+            for (const token of attributes.rel.split(/\s+/).filter(Boolean)) {
+                rel.add(token);
+            }
+            attributes.rel = [...rel].join(" ");
+        }
+        this.applyAttributes(link, attributes);
     }
 
     /**
@@ -635,6 +676,14 @@ export class LinkPlugin extends Plugin {
             if (attachmentId) {
                 this.linkInDocument.dataset.attachmentId = attachmentId;
             }
+            // Re-apply the auto link attributes from the (possibly edited) href.
+            // The popover edits an existing link through `applyAttributes`, which
+            // bypasses `createLink`, so this is what wires them up for links
+            // created/edited manually via the popover.
+            const href = this.linkInDocument?.getAttribute("href");
+            if (href) {
+                this.applyAutoLinkAttributes(this.linkInDocument, href);
+            }
         };
 
         this.restoreSavePoint = this.dependencies.history.makeSavePoint();
@@ -676,6 +725,7 @@ export class LinkPlugin extends Plugin {
             getInternalMetaData: this.getInternalMetaData,
             getExternalMetaData: this.getExternalMetaData,
             getAttachmentMetadata: this.getAttachmentMetadata,
+            getAutoLinkAttributes: this.getAutoLinkAttributes.bind(this),
             recordInfo: this.config.getRecordInfo?.() || {},
             canEdit:
                 (!this.linkInDocument ||

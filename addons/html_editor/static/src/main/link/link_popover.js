@@ -32,6 +32,7 @@ export const linkPopoverProps = {
     getInternalMetaData: t.function(),
     getExternalMetaData: t.function(),
     getAttachmentMetadata: t.function(),
+    getAutoLinkAttributes: t.function().optional(),
     isImage: t.boolean(),
     showReplaceTitleBanner: t.boolean(),
     type: t.string(),
@@ -294,6 +295,7 @@ export class LinkPopover extends Component {
      * @private
      */
     async updateDocumentState() {
+        this.syncForcedAdvancedAttributes();
         const url = this.state.url;
         const urlObject = URL.parse(url, document.URL);
         if (
@@ -309,6 +311,32 @@ export class LinkPopover extends Component {
         } else {
             this.state.isDocument = false;
             this.state.directDownload = true;
+        }
+    }
+    /**
+     * Reflect, in the advanced options, the attributes that are automatically
+     * forced for the current URL (e.g. rel="nofollow" on internal Documents
+     * links). Without this, the link plugin adds the attribute to the DOM but
+     * the matching checkbox stays unticked until the popover is reopened.
+     * Only ticks checkboxes (never unticks), mirroring the plugin which adds —
+     * but does not strip — these attributes.
+     */
+    syncForcedAdvancedAttributes() {
+        const autoAttributes = this.props.getAutoLinkAttributes?.(this.state.url);
+        if (!autoAttributes) {
+            return;
+        }
+        for (const option of Object.values(this.state.advancedAttributeOptions)) {
+            const forcedValue = autoAttributes[option.attribute];
+            if (!forcedValue) {
+                continue;
+            }
+            const isForced = option.isMultiValueAttr
+                ? forcedValue.split(/\s+/).includes(option.value)
+                : forcedValue === option.value;
+            if (isForced) {
+                option.isChecked = true;
+            }
         }
     }
     correctLink(url) {
