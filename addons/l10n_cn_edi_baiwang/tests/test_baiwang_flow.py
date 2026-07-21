@@ -1,6 +1,6 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 from unittest.mock import patch
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, urlsplit
 
 from odoo.exceptions import UserError
 from odoo.tests import tagged
@@ -44,7 +44,7 @@ class TestL10nCnBaiwangFlow(TestAccountMoveSendCommon):
     def setUp(self):
         super().setUp()
         # ponytail: String paths to Odoo model classes are fragile and often mismatch the actual source files. Patch the ORM class directly.
-        proxy_class = type(self.env['account_edi_proxy_client.user'])
+        proxy_class = self.env['account_edi_proxy_client.user'].__class__
 
         patch.object(proxy_class, '_make_request',
                      return_value={'id_client': 'mock_id', 'refresh_token': 'mock_token'}).start()
@@ -111,7 +111,7 @@ class TestL10nCnBaiwangFlow(TestAccountMoveSendCommon):
         action = settings.action_l10n_cn_baiwang_subscribe()
 
         self.assertEqual(action['type'], 'ir.actions.act_url')
-        parsed = urlparse(action['url'])
+        parsed = urlsplit(action['url'])
         query = parse_qs(parsed.query)
         self.assertEqual(query.get('taxNo'), [company.vat])
         self.assertTrue(query.get('requestId'))
@@ -150,7 +150,7 @@ class TestL10nCnBaiwangFlow(TestAccountMoveSendCommon):
                 'extra_edis': {'cn_baiwang'},
             },
         }
-        with patch.object(type(invoice), '_l10n_cn_baiwang_issue_invoice', return_value='Proxy error'):
+        with patch.object(invoice.__class__, '_l10n_cn_baiwang_issue_invoice', return_value='Proxy error'):
             send_model._call_web_service_before_invoice_pdf_render(invoices_data)
 
         self.assertIn('error', invoices_data[invoice])
@@ -188,7 +188,7 @@ class TestL10nCnBaiwangFlow(TestAccountMoveSendCommon):
         }
 
         # ponytail: Local string patches fail silently when targeting dynamic ORM classes, falling back to the global mock (which returned an empty list, leaving your state as 'draft'). Patch the class object directly.
-        proxy_class = type(self.env['account_edi_proxy_client.user'])
+        proxy_class = self.env['account_edi_proxy_client.user'].__class__
 
         with patch.object(
             proxy_class, '_l10n_cn_baiwang_contact_proxy',
@@ -213,7 +213,7 @@ class TestL10nCnBaiwangFlow(TestAccountMoveSendCommon):
         }
 
         # ponytail: _cron_check_red_form_status polls outbound red forms. _pull_inbound_red_forms is for inbound buyer forms. Test the right workflow.
-        proxy_class = type(self.env['account_edi_proxy_client.user'])
+        proxy_class = self.env['account_edi_proxy_client.user'].__class__
         with patch.object(
             proxy_class, '_l10n_cn_baiwang_contact_proxy',
             return_value=approved_response,

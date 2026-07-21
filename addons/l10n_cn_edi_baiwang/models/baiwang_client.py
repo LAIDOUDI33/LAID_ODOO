@@ -41,10 +41,11 @@ class BaiwangClient:
     def _ensure_proxy_user(self):
         """Ensure proxy user is registered."""
         if not self.proxy_user:
-            raise UserError(
+            msg = self.company.env._(
                 "Baiwang proxy user is not registered for this company. "
                 "Please register it in Settings → Accounting → China Electronic Invoicing.",
             )
+            raise UserError(msg)
 
     # --- Public Business API Methods (via proxy) ---
 

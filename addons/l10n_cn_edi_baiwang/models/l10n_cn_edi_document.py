@@ -148,19 +148,21 @@ class L10nCnEdiDocument(models.Model):
                     blue_move = self.env['account.move'].search([
                         ('l10n_cn_baiwang_invoice_no', '=', form.get('originalInvoiceNo')),
                         ('company_id', '=', company.id),
-                        ('move_type', '=', 'in_invoice' if is_buyer else 'out_invoice'),
+                        ('move_type', '=', 'in_invoice'),
                     ], limit=1)
                     is_pending = confirm_state == '02'
+                    amt_total = float(form.get('invoiceTotalPrice', 0.0))
+                    amt_tax = float(form.get('invoiceTotalTax', 0.0))
                     self.create({
                         'move_id': blue_move.id,
-                        'state': odoo_state,
+                        'state': 'red_form_pending' if is_pending else 'red_form_confirmed',
                         'baiwang_uuid': uuid,
                         'baiwang_red_form_number': form.get('redConfirmNo'),
                         'baiwang_red_invoice_no': form.get('redInvoiceNo'),
-                        'baiwang_confirm_state': api_state,
-                        'baiwang_red_form_amount_total': float(form.get('invoiceTotalPrice', 0.0)),
-                        'baiwang_red_form_amount_tax': float(form.get('invoiceTotalTax', 0.0)),
-                        'baiwang_red_form_type': form.get('redInvoiceLabel'),  # <--- Map the JSON key here
+                        'baiwang_confirm_state': confirm_state,
+                        'baiwang_red_form_amount_total': amt_total,
+                        'baiwang_red_form_amount_tax': amt_tax,
+                        'baiwang_red_form_type': form.get('redInvoiceLabel'),
                     })
 
                     if blue_move:
@@ -183,5 +185,5 @@ class L10nCnEdiDocument(models.Model):
                         summary=summary,
                         user_id=blue_move.create_uid.id,
                     )
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 _logger.error("Baiwang EDI: Error pulling inbound red forms for company %s: %s", company.name, e)

@@ -51,13 +51,19 @@ class AccountMove(models.Model):
         required=True,
         help="Type of e-Fapiao to issue: '01' for special (专票) or '02' for general (普票).",
     )
-    l10n_cn_baiwang_invoice_no = fields.Char(string="Fapiao Number", copy=False)
+    l10n_cn_baiwang_invoice_no = fields.Char(string="Fapiao No.", copy=False)
     l10n_cn_baiwang_invoice_date = fields.Datetime(string="Fapiao Date", copy=False)
     l10n_cn_baiwang_serial_no = fields.Char(string="Serial No", copy=False, readonly=True, help="Unique request serial number for idempotency")
     l10n_cn_baiwang_qr_code = fields.Char(string="Invoice QR Code", copy=False, readonly=True)
 
     # Red form fields (for credit notes)
-    l10n_cn_baiwang_red_form_type = fields.Selection(selection=RED_FORM_TYPES, string="Red Form Reason")
+    l10n_cn_baiwang_red_form_type = fields.Selection(
+        selection=RED_FORM_TYPES,
+        string="Red Form Reason",
+        compute="_compute_l10n_cn_baiwang_latest_edi_data",
+        store=True,
+        readonly=False,
+    )
 
     # EDI document tracking
     l10n_cn_edi_document_ids = fields.One2many(
@@ -291,7 +297,6 @@ class AccountMove(models.Model):
             success_list = result.get('response', {}).get('success', [])
             if success_list:
                 invoice_resp = success_list[0]
-                raw_date = invoice_resp.get('invoiceDate')
                 self.write({
                     'l10n_cn_baiwang_state': 'issued',
                     'l10n_cn_baiwang_invoice_no': invoice_resp.get('invoiceNo'),
@@ -477,7 +482,7 @@ class AccountMove(models.Model):
         red_form_data = self._l10n_cn_baiwang_prepare_red_form_data(original_move, serial_no)
         try:
             result = client.add_red_confirmation(red_form_data)
-        except Exception as e:
+        except UserError as e:
             error_msg = str(e)
             edi_doc.write({'state': 'failed', 'error_message': error_msg})
             self.write({'l10n_cn_baiwang_state': 'failed'})
@@ -548,7 +553,7 @@ class AccountMove(models.Model):
         origin_invoice_type = '01' if orig_type in ('01', '004', '028') else '02'
 
         # ponytail: res.partner.mobile requires the 'sms' addon. Use getattr to survive environments where it is absent.
-        raw_phone = original_move.partner_id.phone or getattr(original_move.partner_id, 'mobile', '') or ''
+        raw_phone = original_move.partner_id.mobile or ''
         clean_phone = ''.join(c for c in raw_phone if c.isdigit())
         valid_phone = clean_phone if clean_phone and clean_phone[0] in ('0', '1') and 10 <= len(clean_phone) <= 12 else ''
 
