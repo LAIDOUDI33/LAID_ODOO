@@ -218,17 +218,19 @@ class WebsiteCrmPartnerAssign(WebsitePartnership, GoogleMap):
             ('grade_id.website_published', '=', True),
             ('grade_id.active', '=', True),
         ]
-        grades = env['res.partner'].sudo()._read_group(base_partner_domain, groupby=['grade_id'])
-        for [grade] in grades:
+        grades = env['res.partner'].sudo()._read_group(
+            base_partner_domain, groupby=['grade_id'], aggregates=['write_date:max'])
+        for grade, last_write in grades:
             loc = '/partners/grade/%s' % slug(grade)
             if not qs or qs.lower() in loc:
-                yield {'loc': loc}
+                yield {'loc': loc, 'lastmod': last_write.date()}
         country_partner_domain = base_partner_domain + [('country_id', '!=', False)]
-        countries = env['res.partner'].sudo()._read_group(country_partner_domain, groupby=['country_id'])
-        for [country] in countries:
+        countries = env['res.partner'].sudo()._read_group(
+            country_partner_domain, groupby=['country_id'], aggregates=['write_date:max'])
+        for country, last_write in countries:
             loc = '/partners/country/%s' % slug(country)
             if not qs or qs.lower() in loc:
-                yield {'loc': loc}
+                yield {'loc': loc, 'lastmod': last_write.date()}
 
     def _get_partners_detail_values(self, partner_id, **post):
         values = super()._get_partners_detail_values(partner_id, **post)

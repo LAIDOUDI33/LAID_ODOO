@@ -172,16 +172,18 @@ class WebsiteHrRecruitment(WebsiteForm):
 
     def sitemap_jobs_detail(env, rule, qs):
         slug = env['ir.http']._slug
-        for job in env['hr.job'].search([('is_published', '=', True)]):
+        jobs = env['hr.job'].search([('is_published', '=', True)])
+        jobs_lastmod = jobs._get_sitemap_lastmod_map()
+        for job in jobs:
             if not qs or qs.lower() in f'/jobs/{slug(job)}':
-                yield {'loc': f'/jobs/{slug(job)}'}
+                yield {'loc': f'/jobs/{slug(job)}', 'lastmod': jobs_lastmod[job.id].date()}
 
-    @http.route('''/jobs/detail/<model("hr.job"):job>''', type='http', auth="public", website=True, sitemap=sitemap_jobs_detail, sitemap_group="jobs")
+    @http.route('''/jobs/detail/<model("hr.job"):job>''', type='http', auth="public", website=True, sitemap=False)
     def jobs_detail(self, job, **kwargs):
         redirect_url = f"/jobs/{request.env['ir.http']._slug(job)}"
         return request.redirect(redirect_url, code=301)
 
-    @http.route('''/jobs/<model("hr.job"):job>''', type='http', auth="public", website=True, sitemap=True, sitemap_group="jobs")
+    @http.route('''/jobs/<model("hr.job"):job>''', type='http', auth="public", website=True, sitemap=sitemap_jobs_detail, sitemap_group="jobs")
     def job(self, job, **kwargs):
         return request.render("website_hr_recruitment.detail", {
             'structured_data': job._render_jsonld(is_detail_page=True),

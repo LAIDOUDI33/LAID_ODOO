@@ -188,10 +188,19 @@ class WebsiteBlog(http.Controller):
             if match('/blog'):
                 yield {'loc': '/blog'}
 
+        # A blog landing lists its posts, so fold the latest post change into
+        # the blog's own write_date (whichever is newer).
+        post_lastmod = blogs._get_sitemap_lastmod_map()
+        for b, last_write in env['blog.post']._read_group(
+            [('blog_id', 'in', blogs.ids), ('website_published', '=', True)],
+            groupby=['blog_id'], aggregates=['write_date:max'],
+        ):
+            post_lastmod[b.id] = max(post_lastmod.get(b.id, b.write_date), last_write)
+
         for blog in blogs:
             loc = f'/blog/{slug(blog)}'
             if match(loc):
-                yield {'loc': loc}
+                yield {'loc': loc, 'lastmod': post_lastmod[blog.id].date()}
 
     @http.route([
         '/blog',
@@ -263,6 +272,7 @@ class WebsiteBlog(http.Controller):
         BlogPost = env['blog.post']
         IrHttp = env['ir.http']
         posts = BlogPost.search([('website_published', '=', True)])
+        posts_lastmod = posts._get_sitemap_lastmod_map()
 
         for post in posts:
             # Canonical path: /blog/<blog>/<post>
@@ -273,7 +283,7 @@ class WebsiteBlog(http.Controller):
                 # blog posts should also have lastmod for seo purposes.
                 yield {
                     "loc": canonical_url,
-                    "lastmod": post._get_sitemap_lastmod().date(),
+                    "lastmod": posts_lastmod[post.id].date(),
                 }
 
     @http.route([

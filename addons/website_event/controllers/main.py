@@ -226,6 +226,7 @@ class WebsiteEventController(http.Controller):
     def sitemap_events(env, rule, qs):
         slug = env['ir.http']._slug
         events = env['event.event'].sudo().search([('website_published', '=', True)], order='id')
+        events_lastmod = events._get_sitemap_lastmod_map()
 
         def matches_qs(loc):
             return not qs or qs.lower() in loc.lower()
@@ -239,7 +240,7 @@ class WebsiteEventController(http.Controller):
             if not matches_qs(final_url):
                 continue
 
-            yield {'loc': final_url, 'lastmod': event._get_sitemap_lastmod().date()}
+            yield {'loc': final_url, 'lastmod': events_lastmod[event.id].date()}
 
     @http.route(['''/event/<model("event.event"):event>'''], type='http', auth="public", website=True, sitemap=sitemap_events, sitemap_group="events", readonly=True)
     def event(self, event, **post):

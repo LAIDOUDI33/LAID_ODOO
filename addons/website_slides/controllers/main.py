@@ -44,10 +44,12 @@ class WebsiteSlides(WebsiteProfile):
         Channel = env['slide.channel']
         dom = sitemap_qs2dom(qs=qs, route='/slides/', field=Channel._rec_name)
         dom &= env.website.website_domain()
-        for channel in Channel.search(dom):
+        channels = Channel.search(dom)
+        lastmod = channels._get_sitemap_lastmod_map()
+        for channel in channels:
             loc = '/slides/%s' % env['ir.http']._slug(channel)
             if not qs or qs.lower() in loc:
-                yield {'loc': loc, 'lastmod': channel._get_sitemap_lastmod().date()}
+                yield {'loc': loc, 'lastmod': lastmod[channel.id].date()}
 
     def _slide_render_context_base(self):
         return {
@@ -973,16 +975,18 @@ class WebsiteSlides(WebsiteProfile):
 
     def sitemap_slide_view(env, rule, qs):
         slides = env['slide.slide'].search([('website_published', '=', True), ('active', '=', True)])
+        slide_lastmod = slides._get_sitemap_lastmod_map()
+        channel_lastmod = slides.filtered('is_category').channel_id._get_sitemap_lastmod_map()
         for slide in slides:
             if slide.is_category:
-                record = slide.channel_id
-                loc = record.website_url
+                loc = slide.channel_id.website_url
+                lastmod = channel_lastmod[slide.channel_id.id]
             else:
-                record = slide
                 loc = slide.website_url
+                lastmod = slide_lastmod[slide.id]
 
             if not qs or qs.lower() in loc.lower():
-                yield {'loc': loc, 'lastmod': record._get_sitemap_lastmod().date()}
+                yield {'loc': loc, 'lastmod': lastmod.date()}
 
     @http.route('/slides/slide/<model("slide.slide"):slide>', type='http', auth="public",
                 website=True, sitemap=sitemap_slide_view, sitemap_group="courses", handle_params_access_error=handle_wslide_error)

@@ -326,13 +326,15 @@ class SlideChannel(models.Model):
             channel.slide_category_ids = channel.slide_ids.filtered(lambda slide: slide.is_category)
             channel.slide_content_ids = channel.slide_ids - channel.slide_category_ids
 
-    def _get_sitemap_lastmod(self):
+    def _get_sitemap_lastmod_map(self):
         # The channel page lists its member slides, so a slide edit (new lesson,
         # renamed content) must refresh the channel's recrawl signal too.
-        self.ensure_one()
-        dates = [super()._get_sitemap_lastmod()]
-        dates += self.slide_ids.mapped('write_date')
-        return max(d for d in dates if d)
+        res = super()._get_sitemap_lastmod_map()
+        for channel, last in self.env['slide.slide']._read_group(
+            [('channel_id', 'in', self.ids)], groupby=['channel_id'], aggregates=['write_date:max'],
+        ):
+            res[channel.id] = max(res.get(channel.id, last), last)
+        return res
 
     @api.depends('slide_ids.slide_category', 'slide_ids.is_published', 'slide_ids.completion_time',
                  'slide_ids.likes', 'slide_ids.dislikes', 'slide_ids.total_views', 'slide_ids.is_category', 'slide_ids.active')

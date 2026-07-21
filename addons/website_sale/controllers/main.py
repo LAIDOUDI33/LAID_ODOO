@@ -196,10 +196,12 @@ class WebsiteSale(payment_portal.PaymentPortal):
         Category = env["product.public.category"]
         dom = sitemap_qs2dom(qs, f"{SHOP_PATH}/category", Category._rec_name)
         dom &= env.website.website_domain()
-        for cat in Category.search(dom):
+        categories = Category.search(dom)
+        categories_lastmod = categories._get_sitemap_lastmod_map()
+        for cat in categories:
             loc = cat.website_url
             if not qs or qs.lower() in loc:
-                yield {"loc": loc, "lastmod": cat._get_sitemap_lastmod().date()}
+                yield {"loc": loc, "lastmod": categories_lastmod[cat.id].date()}
 
     def sitemap_products(env, _rule, qs):  # noqa: N805
         if env.website and env.website.ecommerce_access == "logged_in" and not qs:
@@ -210,10 +212,12 @@ class WebsiteSale(payment_portal.PaymentPortal):
         ProductTemplate = env["product.template"]
         dom = sitemap_qs2dom(qs, SHOP_PATH, ProductTemplate._rec_name)
         dom &= Domain(env.website.sale_product_domain())
-        for product in ProductTemplate.with_context(prefetch_fields=False).search(dom):
+        products = ProductTemplate.with_context(prefetch_fields=False).search(dom)
+        products_lastmod = products._get_sitemap_lastmod_map()
+        for product in products:
             loc = product.website_url
             if not qs or qs.lower() in loc:
-                yield {"loc": loc, "lastmod": product._get_sitemap_lastmod().date()}
+                yield {"loc": loc, "lastmod": products_lastmod[product.id].date()}
 
     def _get_search_options(
         self,

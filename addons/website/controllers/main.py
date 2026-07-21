@@ -411,7 +411,7 @@ class Website(Home):
                     chunk_no += 1
                     suffix = '%s-%d' % (group, chunk_no)
                     create_sitemap('%s-%s.xml' % (sitemap_base_url, suffix), content)
-                    # TODO: in master/saas-15, move current_website_id in template directly
+                    # TODO: Move current_website_id in template directly
                     index_ids.append('%d-%s-%s' % (self.env.website.id, hashed_url_root, suffix))
 
             if not index_ids:

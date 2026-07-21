@@ -184,13 +184,15 @@ class EventEvent(models.Model):
         for event in self:
             event.event_register_url = tools.urls.urljoin(event.get_base_url(), f"{event.website_url}/register")
 
-    def _get_sitemap_lastmod(self):
+    def _get_sitemap_lastmod_map(self):
         # The register page renders the event's tickets, so a ticket change
         # (price, availability, new type) must advance the recrawl signal.
-        self.ensure_one()
-        dates = [super()._get_sitemap_lastmod()]
-        dates += self.event_ticket_ids.mapped('write_date')
-        return max(d for d in dates if d)
+        res = super()._get_sitemap_lastmod_map()
+        for event, last in self.env['event.event.ticket']._read_group(
+            [('event_id', 'in', self.ids)], groupby=['event_id'], aggregates=['write_date:max'],
+        ):
+            res[event.id] = max(res.get(event.id, last), last)
+        return res
 
     @api.depends('event_type_id')
     def _compute_website_menu(self):

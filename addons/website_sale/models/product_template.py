@@ -265,14 +265,17 @@ class ProductTemplate(models.Model):
             if product.id:
                 product.website_url = "/shop/%s" % self.env["ir.http"]._slug(product)
 
-    def _get_sitemap_lastmod(self):
-        self.ensure_one()
-        dates = [super()._get_sitemap_lastmod()]
-        dates += self.product_variant_ids.mapped('write_date')
-        dates += self.product_template_image_ids.mapped('write_date')
-        dates += self.attribute_line_ids.mapped('write_date')
-        dates += self.attribute_line_ids.value_ids.mapped('write_date')
-        return max(d for d in dates if d)
+    def _get_sitemap_lastmod_map(self):
+        # The shop page renders variants, template images and attribute lines, so
+        # a change to any of them must advance the recrawl signal. One grouped
+        # query per relation keeps this constant regardless of catalog size.
+        res = super()._get_sitemap_lastmod_map()
+        for comodel in ('product.product', 'product.image', 'product.template.attribute.line'):
+            for template, last in self.env[comodel]._read_group(
+                [('product_tmpl_id', 'in', self.ids)], groupby=['product_tmpl_id'], aggregates=['write_date:max'],
+            ):
+                res[template.id] = max(res.get(template.id, last), last)
+        return res
 
     @api.depends("product_variant_ids.default_code")
     def _compute_variants_default_code(self):

@@ -300,10 +300,12 @@ class WebsiteForum(WebsiteProfile):
             & Domain('can_view', '=', True)
         )
         slug = env['ir.http']._slug
-        for forum_post in ForumPost.search(dom):
+        posts = ForumPost.search(dom)
+        posts_lastmod = posts._get_sitemap_lastmod_map()
+        for forum_post in posts:
             loc = f'/forum/{slug(forum_post.forum_id)}/{slug(forum_post)}'
             if not qs or qs.lower() in loc:
-                yield {'loc': loc, 'lastmod': forum_post._get_sitemap_lastmod().date()}
+                yield {'loc': loc, 'lastmod': posts_lastmod[forum_post.id].date()}
 
     def _prepare_question_template_vals(self, forum, post, question):
         values = self._prepare_user_values(forum=forum, searches=post)
