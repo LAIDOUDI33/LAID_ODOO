@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_l10n_ph_discount_privilege_wizard_form_sale" model="ir.ui.view">
+        <field name="name">l10n_ph.discount.privilege.wizard.form.sale</field>
+        <field name="model">l10n_ph.discount.privilege.wizard</field>
+        <field name="inherit_id" ref="l10n_ph.view_l10n_ph_discount_privilege_wizard_form"/>
+        <field name="arch" type="xml">
+            <list position="attributes">
+                <attribute name="string">Order/Invoice Lines</attribute>
+            </list>
+        </field>
+    </record>
+</odoo>

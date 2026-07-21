@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Sale-specific group: gated to users who opt in via the Sales settings
+         ("Discount Privileges" toggle, per internal user). Members get NO extra
+         grants (it does NOT imply the accounting privilege group, so members
+         cannot create/edit/delete privilege definitions). Access to privilege
+         definitions stays read-only via ir.access.csv, while the wizard is
+         usable (apply/remove only). Enabling the feature in Accounting does NOT
+         automatically add users to this group. -->
+    <record id="group_l10n_ph_discount_privilege_sale" model="res.groups">
+        <field name="name">Discount Privileges (Sale)</field>
+        <field name="comment">Can view and apply Philippine Discount Privileges on sale orders. Cannot create or edit privilege definitions.</field>
+    </record>
+</odoo>

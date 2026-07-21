@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_sale_order_form_l10n_ph_discount_privilege" model="ir.ui.view">
+        <field name="name">sale.order.form.l10n_ph.discount_privilege</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <!-- Add Discount Privilege buttons below the order lines -->
+            <xpath expr="//div[@name='so_button_below_order_lines']" position="inside">
+                <field name="l10n_ph_has_discount_privilege" invisible="1"/>
+                <button
+                    name="action_open_discount_privilege_wizard"
+                    string="Edit Discount Privileges"
+                    type="object"
+                    class="btn btn-secondary"
+                    groups="l10n_ph_sale.group_l10n_ph_discount_privilege_sale"
+                    invisible="not l10n_ph_has_discount_privilege or state not in ('draft','sent') or country_code != 'PH'"
+                />
+                <button
+                    name="action_open_discount_privilege_wizard"
+                    string="Discount Privileges"
+                    type="object"
+                    class="btn btn-secondary"
+                    groups="l10n_ph_sale.group_l10n_ph_discount_privilege_sale"
+                    invisible="l10n_ph_has_discount_privilege or state not in ('draft','sent') or country_code != 'PH'"
+                />
+            </xpath>
+
+            <!-- Add discount amount columns in the order line list -->
+            <xpath expr="//field[@name='order_line']/list/field[@name='discount']" position="after">
+                <field name="l10n_ph_regular_discount_amount" readonly="1" optional="hide"
+                       groups="l10n_ph_sale.group_l10n_ph_discount_privilege_sale"
+                       column_invisible="parent.country_code != 'PH'"/>
+                <field name="l10n_ph_special_discount_amount" readonly="1" optional="hide"
+                       groups="l10n_ph_sale.group_l10n_ph_discount_privilege_sale"
+                       column_invisible="parent.country_code != 'PH'"/>
+            </xpath>
+
+            <!-- Make discount readonly when a privilege is set -->
+            <xpath expr="//field[@name='order_line']/list/field[@name='discount']" position="attributes">
+                <attribute name="readonly">l10n_ph_discount_privilege_id</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>
