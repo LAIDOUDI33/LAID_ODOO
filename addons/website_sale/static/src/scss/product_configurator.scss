@@ -60,7 +60,9 @@
 
     height: calc(var(--o-wsale-css-attribute-image__height) - var(--o-wsale-css-attribute-image__outline-width));
     aspect-ratio: 1;
-    border: $border-width * 5 solid $body-bg;
+    padding: $border-width * 5;
+    background-color: var(--wsale-product-thumb-bg, #{$gray-100});
+    border-radius: MIN(var(--o-wsale-product-image-radius), var(--border-radius));
     outline: var(--o-wsale-css-attribute-image__outline-width) solid $border-color;
     transition: $input-transition;
 
@@ -88,7 +90,8 @@
 
 .css_attribute_thumbnail {
     box-sizing: content-box;
-    border: 1px solid $body-bg;
+    padding: 1px;
+    background-color: var(--wsale-product-thumb-bg, #{$gray-100});
     border-radius: MIN(var(--o-wsale-product-image-radius), var(--border-radius));
     outline: $border-width solid $border-color;
     aspect-ratio: var(--o-wsale-product-image-ratio);

@@ -25,7 +25,7 @@
                                         <img
                                             t-if="category.image_1920"
                                             t-att-src="image_data_uri(category.image_1920)"
-                                            class="me-3 rounded shadow"
+                                            class="me-3 shadow o_wsale_product_thumb"
                                             alt=""
                                         />
                                         <div class="flex-grow-1 align-content-center">

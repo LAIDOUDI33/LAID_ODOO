@@ -445,7 +445,7 @@
                                     t-attf-class="o_wsale_products_grid_table grid
                                         {{grid_md_allow_custom_cols and 'o_wsale_products_grid_table_md'}}
                                         {{website.shop_opt_products_design_classes}}"
-                                    t-attf-style="--o-wsale-ppr: {{ppr}}; --o-wsale-ppg: {{ppg}}; --o-wsale-products-grid-gap: {{gap}};"
+                                    t-attf-style="--o-wsale-ppr: {{ppr}}; --o-wsale-ppg: {{ppg}}; --o-wsale-products-grid-gap: {{gap}}; {{website.shop_opt_products_thumb_bg and ('--wsale-product-thumb-bg: ' + website.shop_opt_products_thumb_bg + ';') or ''}}"
                                     t-att-data-name="grid_block_name"
                                 >
                                     <t t-foreach="bins" t-as="tr_product">
@@ -1118,10 +1118,10 @@
                                     + (c.id == category.id and ' active' or '')"
                             >
                                 <div
-                                    t-if="c.image_128"
+                                    t-if="c.image_256"
                                     name="o_wsale_filmstrip_image"
                                     class="o_wsale_filmstrip_image oe_img_bg o_bg_img_center rounded"
-                                    t-attf-style="background-image:url('data:image/png;base64, #{c.image_128.to_base64()}')"
+                                    t-attf-style="background-image:url('data:image/png;base64, #{c.image_256.to_base64()}')"
                                     t-att-alt="c.name"
                                     role="img"
                                     aria-label="Category image"

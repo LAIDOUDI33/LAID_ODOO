@@ -29,7 +29,7 @@
                                         <img
                                             t-if="category.image_1920"
                                             t-att-src="image_data_uri(category.image_1920)"
-                                            class="oi rounded rounded-circle shadow me-3"
+                                            class="oi rounded-circle shadow me-3 o_wsale_product_thumb"
                                             alt=""
                                         />
                                         <div class="flex-grow-1">

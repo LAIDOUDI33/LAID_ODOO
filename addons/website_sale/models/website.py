@@ -113,6 +113,10 @@ class Website(models.Model):
 
     shop_gap = fields.Char(string="Grid-gap on the shop", default="16px", required=False)
 
+    shop_opt_products_thumb_bg = fields.Char(
+        string="Product thumbnail background color on the shop", required=False
+    )
+
     shop_opt_products_design_classes = fields.Char(
         string="Shop Design Class",
         default=(
@@ -1175,6 +1179,18 @@ class Website(models.Model):
                 return image_height
         return "64px"
 
+    def _get_product_thumb_roundness_class(self):
+        """Return the shop's configured product-image roundness class."""
+        design_classes = (self.shop_opt_products_design_classes or "").split()
+        return next(
+            (
+                class_name
+                for class_name in design_classes
+                if class_name.startswith("o_wsale_products_opt_rounded_")
+            ),
+            "",
+        )
+
     def _get_basic_feed_product_domain(self):
         return Domain.AND([
             Domain("is_published", "=", True),
@@ -1208,8 +1224,11 @@ class Website(models.Model):
 
     @api.model
     def _get_settings_to_copy_onto_new_default_website(self):
-        """ Provides a list of settings that should always be set on the default
+        """Return a list of settings that should always be set on the default
         website. When the default website changes, a check is performed. If some
         of these settings are not already set on the new default website, they
         are copied from the previous default website."""
-        return super()._get_settings_to_copy_onto_new_default_website() + ['salesperson_id', 'salesteam_id']
+        return super()._get_settings_to_copy_onto_new_default_website() + [
+            "salesperson_id",
+            "salesteam_id",
+        ]

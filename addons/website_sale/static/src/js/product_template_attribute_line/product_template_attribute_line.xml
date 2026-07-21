@@ -18,4 +18,10 @@
             <attribute name="class" add="form-select" separator=" "/>
         </select>
     </t>
+
+    <t t-inherit="sale.ptav_image" t-inherit-mode="extension">
+        <xpath expr="//label[hasclass('o_sale_product_configurator_ptav_image')]" position="attributes">
+            <attribute name="class" remove="rounded-3" separator=" "/>
+        </xpath>
+    </t>
 </templates>

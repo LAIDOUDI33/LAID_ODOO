@@ -9,6 +9,9 @@
         <div name="sol_table" position="attributes">
             <attribute name="class" remove="table-responsive" separator=" "/>
         </div>
+        <xpath expr="//img[hasclass('o_sale_portal_product_image')]" position="attributes">
+            <attribute name="class" remove="rounded" add="o_wsale_product_thumb" separator=" "/>
+        </xpath>
         <span name="span_product_name" position="replace">
             <a
                 t-if="line.product_id.website_published and sale_order.website_id"

@@ -69,18 +69,18 @@
                         -->
                         <t t-call="website_sale.cart_line_product_link">
                             <img
-                                t-if="not line._is_sellable() and line.product_id.image_128"
-                                t-att-src="image_data_uri(line.product_id.image_128)"
-                                class="img border rounded"
+                                t-if="not line._is_sellable() and line.product_id.image_256"
+                                t-att-src="image_data_uri(line.product_id.image_256)"
+                                class="img o_wsale_product_thumb"
                                 t-att-alt="line.name_short"
                             />
                             <div
                                 t-else=""
-                                t-field="line.product_id.image_128"
+                                t-field="line.product_id.image_256"
                                 t-options="{
                                     'widget': 'image',
                                     'qweb_img_responsive': False,
-                                    'class': 'border rounded',
+                                    'class': 'o_wsale_product_thumb',
                                 }"
                             />
                         </t>
@@ -399,11 +399,11 @@
                         >
                             <div class="o_cart_product_image">
                                 <div
-                                    t-field="order_line.product_id.image_128"
+                                    t-field="order_line.product_id.image_256"
                                     t-options="{
                                         'widget': 'image',
                                         'qweb_img_responsive': False,
-                                        'class': 'border rounded',
+                                        'class': 'o_wsale_product_thumb',
                                     }"
                                 />
                             </div>
@@ -485,7 +485,7 @@
             >
                 <div class="o_cart_product_image">
                     <a t-att-href="product.website_url">
-                        <div t-field="product.image_128" t-options="{'widget': 'image', 'qweb_img_responsive': False, 'class': 'border rounded'}"/>
+                        <div t-field="product.image_256" t-options="{'widget': 'image', 'qweb_img_responsive': False, 'class': 'o_wsale_product_thumb'}"/>
                     </a>
                 </div>
                 <div class="flex-grow-1">
