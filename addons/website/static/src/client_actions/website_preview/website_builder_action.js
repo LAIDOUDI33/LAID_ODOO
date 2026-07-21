@@ -760,7 +760,7 @@ export class WebsiteBuilderClientAction extends Component {
         }
         ev.preventDefault();
         const path = this.websiteService.contentWindow.location;
-        const debugMode = this.env.debug ? `&debug=${this.env.debug}` : "";
+        const debugMode = odoo.debug ? `&debug=${odoo.debug}` : "";
         redirect(
             `/odoo/action-website.website_preview?path=${encodeURIComponent(path)}${debugMode}`
         );

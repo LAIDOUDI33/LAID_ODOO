@@ -10,7 +10,7 @@ export const menuService = {
         let menusData;
         const menuDB = new IndexedDB("webclient_menu", session.registry_hash);
         const table = "menu";
-        const key = JSON.stringify({ debug: !!env.debug });
+        const key = JSON.stringify({ debug: !!odoo.debug });
         const loadMenusUrl = `/web/webclient/load_menus`;
 
         const fetchMenus = async (reload) => {

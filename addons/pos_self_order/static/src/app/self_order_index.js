@@ -50,7 +50,7 @@ export class selfOrderIndex extends Component {
 
         insertKioskStyle(this.selfOrder.config.self_ordering_primary_color);
 
-        if (this.env.debug) {
+        if (odoo.debug) {
             initDebugFormatters();
         }
     }

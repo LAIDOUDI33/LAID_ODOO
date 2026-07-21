@@ -83,7 +83,7 @@ export class TreeEditor extends Component {
     }
 
     get isDebugMode() {
-        return this.props.isDebugMode !== undefined ? this.props.isDebugMode : !!this.env.debug;
+        return this.props.isDebugMode !== undefined ? this.props.isDebugMode : !!odoo.debug;
     }
 
     notifyChanges() {

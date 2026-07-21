@@ -91,7 +91,7 @@ export class ProfileDialog extends Component {
                 allowImage: isInternalUser,
                 classList: ["form-control", websiteDescriptionClass],
                 content: this.user.website_description,
-                debug: !!this.env.debug,
+                debug: !!odoo.debug,
                 direction: localization.direction || "ltr",
                 placeholder: _t("Write a few words about yourself..."),
             };

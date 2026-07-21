@@ -46,7 +46,7 @@ export class FieldSelectorField extends Component {
             resModel: this.resModel,
             readonly: this.props.readonly,
             update: this.update.bind(this),
-            isDebugMode: !!this.env.debug,
+            isDebugMode: !!odoo.debug,
             filter: this.filter.bind(this),
             followRelation: this.props.followRelation,
         };

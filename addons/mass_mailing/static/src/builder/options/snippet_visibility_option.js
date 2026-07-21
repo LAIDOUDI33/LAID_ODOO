@@ -42,7 +42,7 @@ export class SnippetVisibilityOption extends BaseOptionComponent {
      */
     async parseTree(domain) {
         const resModel = this.getModel();
-        const tree = await this.treeProcessor.treeFromDomain(resModel, domain, !this.env.debug);
+        const tree = await this.treeProcessor.treeFromDomain(resModel, domain, !odoo.debug);
         // Extract subtrees connected by an `&`, Odoo Standard for domain facets
         const trees = !tree.negate && tree.value === "&" ? tree.children : [tree];
         this.state.facets = await Promise.all(
@@ -59,7 +59,7 @@ export class SnippetVisibilityOption extends BaseOptionComponent {
             {
                 resModel: this.getModel(),
                 domain: this.state.domain.toString(),
-                isDebugMode: !!this.env.debug,
+                isDebugMode: !!odoo.debug,
                 onConfirm: (domain) => {
                     const newDomain = new Domain(domain);
                     this.state.domain = newDomain;

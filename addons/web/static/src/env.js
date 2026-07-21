@@ -8,9 +8,7 @@ import { session } from "@web/session";
 /**
  * @typedef {{
  *  bus: EventBus;
- *  debug: string;
  *  services: import("services").ServiceFactories;
- *  readonly isSmall: boolean;
  * }} OdooEnv
  */
 
@@ -24,7 +22,6 @@ export function makeEnv() {
     return {
         bus,
         services: {},
-        debug: odoo.debug,
     };
 }
 
@@ -68,6 +65,9 @@ export const globalValues = {
             value(ev, isMiddleClick);
         }
     },
+    get debug() {
+        return odoo.debug;
+    },
 };
 
 /**
@@ -85,7 +85,7 @@ export async function mountComponent(component, target, appConfig = {}) {
     const env = makeEnv();
     const app = new App({
         customDirectives,
-        dev: env.debug || session.test_mode,
+        dev: odoo.debug || session.test_mode,
         env,
         getTemplate,
         globalValues,

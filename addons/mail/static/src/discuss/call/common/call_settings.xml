@@ -18,7 +18,7 @@
                     <TabHeader id="'video'" title.translate="Video">
                         <div class="py-1 px-2"><i class="fa fa-video-camera me-2"/>Video</div>
                     </TabHeader>
-                    <TabHeader t-if="this.env.debug" id="'technical'" title.translate="Technical">
+                    <TabHeader t-if="__globals__.debug" id="'technical'" title.translate="Technical">
                         <div class="py-1 px-2"><i class="fa fa-cogs me-2"/>Technical</div>
                     </TabHeader>
                 </t>

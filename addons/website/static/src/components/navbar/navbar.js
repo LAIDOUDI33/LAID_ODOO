@@ -19,7 +19,7 @@ patch(NavBar.prototype, {
         // are not related).
         useBus(websiteSystrayRegistry, "EDIT-WEBSITE", () => render(this, true));
 
-        if (this.env.debug && !websiteSystrayRegistry.contains("web.debug_mode_menu")) {
+        if (odoo.debug && !websiteSystrayRegistry.contains("web.debug_mode_menu")) {
             websiteSystrayRegistry.add(
                 "web.debug_mode_menu",
                 registry.category("systray").get("web.debug_mode_menu"),

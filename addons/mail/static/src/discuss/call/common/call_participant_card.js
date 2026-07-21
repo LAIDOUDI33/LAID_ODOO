@@ -77,7 +77,7 @@ export class CallParticipantCard extends Component {
         return (
             this.isOfActiveCall &&
             (this.rtcSession.notEq(this.rtc.selfSession) ||
-                (this.env.debug && this.rtc.connectionType === CONNECTION_TYPES.SERVER))
+                (odoo.debug && this.rtc.connectionType === CONNECTION_TYPES.SERVER))
         );
     }
 

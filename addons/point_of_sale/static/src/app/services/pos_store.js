@@ -169,7 +169,7 @@ export class PosStore extends WithLazyGetterTrap {
         this.syncAllOrdersDebounced = debounce(this.syncAllOrders, 100);
         this._searchTriggered = false;
 
-        if (this.env.debug) {
+        if (odoo.debug) {
             registry.category("main_components").add("DebugWidget", {
                 Component: DebugWidget,
             });

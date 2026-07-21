@@ -133,7 +133,7 @@ export const errorService = {
                 uncaughtError.event = ev;
                 if (error instanceof Error) {
                     error.errorEvent = ev;
-                    const annotated = env.debug && env.debug.includes("assets");
+                    const annotated = odoo.debug && odoo.debug.includes("assets");
                     await completeUncaughtError(uncaughtError, error, annotated);
                 }
             }
@@ -192,7 +192,7 @@ export const errorService = {
             uncaughtError.traceback = traceback;
             if (error instanceof Error) {
                 error.errorEvent = ev;
-                const annotated = env.debug && env.debug.includes("assets");
+                const annotated = odoo.debug && odoo.debug.includes("assets");
                 await completeUncaughtError(uncaughtError, error, annotated);
             }
             uncaughtError.cause = error;

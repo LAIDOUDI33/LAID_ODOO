@@ -92,7 +92,7 @@ export class ExpressionEditor extends Component {
     }
 
     get isDebugMode() {
-        return !!this.env.debug;
+        return !!odoo.debug;
     }
 
     onExpressionChange(expression) {

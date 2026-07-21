@@ -368,7 +368,7 @@ export class ListRenderer extends Component {
     }
 
     get hasOptionalOpenFormViewColumn() {
-        return this.props.editable && this.env.debug && !this.props.hasOpenFormViewButton;
+        return this.props.editable && odoo.debug && !this.props.hasOpenFormViewButton;
     }
 
     get hasActionsColumn() {

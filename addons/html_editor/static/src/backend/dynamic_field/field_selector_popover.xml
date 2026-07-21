@@ -7,7 +7,7 @@
 
         <i class="btn btn-link position-absolute top-0 end-0 fa fa-times text-dark" data-tooltip="Close" role="img" aria-label="Close" title="Close" t-on-click="() => this.props.close()"/>
 
-        <div class="px-2" t-if="!!this.env.debug">
+        <div class="px-2" t-if="!!__globals__.debug">
             <span class="fw-bolder d-block">Model</span>
             <span t-out="this.state.modelName" /> (<span t-out="this.resModel" />)
         </div>
@@ -18,7 +18,7 @@
                 readonly="false"
                 filter.bind="this.props.filter"
                 followRelation="this.props.followRelation"
-                isDebugMode="!!this.env.debug"
+                isDebugMode="!!__globals__.debug"
                 path="this.state.path"
                 resModel="this.resModel"
                 readProperty="true"
@@ -27,7 +27,7 @@
                 showDebugInput="false"
             />
         </div>
-        <div t-if="this.env.debug and this.state.path" class="d-flex flex-column px-2 text-break">
+        <div t-if="__globals__.debug and this.state.path" class="d-flex flex-column px-2 text-break">
             <span class="d-block fw-bolder">Technical name</span>
             <code t-out="this.state.path" />
         </div>

@@ -224,8 +224,8 @@ export class NavBar extends Component {
 
     getMenuItemHref(payload) {
         const url = `/odoo/${payload.actionPath || "action-" + payload.actionID}`;
-        if (this.env.debug) {
-            return `${url}?debug=${this.env.debug}`;
+        if (odoo.debug) {
+            return `${url}?debug=${odoo.debug}`;
         }
         return url;
     }

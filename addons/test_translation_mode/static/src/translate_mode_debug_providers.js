@@ -12,7 +12,7 @@ if (commandProviderRegistry.contains("debug")) {
         {
             provide: (env, options) => {
                 const result = provide(env, options);
-                const existingDebugKeys = new Set(env.debug?.split(",").filter(Boolean) || []);
+                const existingDebugKeys = new Set(odoo.debug?.split(",").filter(Boolean) || []);
                 if (existingDebugKeys.has("translate")) {
                     result.unshift({
                         action() {

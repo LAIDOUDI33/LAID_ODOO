@@ -75,7 +75,7 @@ export class TranslateDialog extends Component {
         const google_translate = new GoogleTranslator("translate_google", "Google Translate");
         this.translators = [google_translate];
 
-        if (this.env.debug) {
+        if (odoo.debug) {
             const chatgpt_translate = new ChatGPTTranslator("translate_gpt", "ChatGPT");
             this.translators.push(chatgpt_translate);
         }
@@ -155,7 +155,7 @@ export class TranslateDialog extends Component {
             isError: translateResult.isError,
         });
         // only select the new translation if there was no error and under non-debug mode
-        if (!translateResult.isError && !this.env.debug) {
+        if (!translateResult.isError && !odoo.debug) {
             this.state.selectedMessageId = messageId;
         }
     }

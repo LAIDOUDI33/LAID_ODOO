@@ -34,7 +34,7 @@ export class Chrome extends Component {
 
         window.posmodel = this.pos;
         useOwnDebugContext();
-        if (this.env.debug) {
+        if (odoo.debug) {
             initDebugFormatters();
         }
 
