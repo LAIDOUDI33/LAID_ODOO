@@ -271,10 +271,10 @@ class ProductTemplate(models.Model):
         # query per relation keeps this constant regardless of catalog size.
         res = super()._get_sitemap_lastmod_map()
         for comodel in ('product.product', 'product.image', 'product.template.attribute.line'):
-            for template, last in self.env[comodel]._read_group(
+            for template, lastmod in self.env[comodel]._read_group(
                 [('product_tmpl_id', 'in', self.ids)], groupby=['product_tmpl_id'], aggregates=['write_date:max'],
             ):
-                res[template.id] = max(res.get(template.id, last), last)
+                res[template.id] = max(res[template.id], lastmod)
         return res
 
     @api.depends("product_variant_ids.default_code")

@@ -184,7 +184,21 @@ class WebsiteProfile(http.Controller):
         })
         return values
 
-    @http.route('/profile/ranks_badges', type='http', auth="public", website=True, sitemap=True, readonly=True, list_as_website_content=_lt("Ranks and Badges"))
+    def sitemap_ranks_badges(env, rule, qs):
+        if qs and qs.lower() not in '/profile/ranks_badges':
+            return
+        # The page lists every rank and published badge, so date it from those.
+        [(ranks_lastmod,)] = env['gamification.karma.rank'].sudo()._read_group(
+            [], aggregates=['write_date:max'])
+        [(badges_lastmod,)] = env['gamification.badge'].sudo()._read_group(
+            [('website_published', '=', True)], aggregates=['write_date:max'])
+        dates = [d for d in (ranks_lastmod, badges_lastmod) if d]
+        page = {'loc': '/profile/ranks_badges'}
+        if dates:
+            page['lastmod'] = max(dates).date()
+        yield page
+
+    @http.route('/profile/ranks_badges', type='http', auth="public", website=True, sitemap=sitemap_ranks_badges, sitemap_group="pages", readonly=True, list_as_website_content=_lt("Ranks and Badges"))
     def view_ranks_badges(self, **kwargs):
         values = {
             **self._prepare_ranks_badges_values(**kwargs),
@@ -208,8 +222,21 @@ class WebsiteProfile(http.Controller):
             })
         return user_values
 
+    def sitemap_all_users(env, rule, qs):
+        if qs and qs.lower() not in '/profile/users':
+            return
+        # Only the first page is listed; the paged variants are the same content.
+        # The ranking changes whenever a listed user's karma does, so date it from them.
+        [(users_lastmod,)] = env['res.users'].sudo()._read_group(
+            [('karma', '>', 1), ('website_published', '=', True)],
+            aggregates=['write_date:max'])
+        page = {'loc': '/profile/users'}
+        if users_lastmod:
+            page['lastmod'] = users_lastmod.date()
+        yield page
+
     @http.route(['/profile/users',
-                 '/profile/users/page/<int:page>'], type='http', auth="public", website=True, sitemap=True, readonly=True, list_as_website_content=_lt("User Profiles"))
+                 '/profile/users/page/<int:page>'], type='http', auth="public", website=True, sitemap=sitemap_all_users, sitemap_group="pages", readonly=True, list_as_website_content=_lt("User Profiles"))
     def view_all_users_page(self, page=1, **kwargs):
         User = request.env['res.users']
         dom = [('karma', '>', 1), ('website_published', '=', True)]

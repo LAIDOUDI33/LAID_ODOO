@@ -33,20 +33,37 @@ class WebsiteCustomer(GoogleMap):
         return domain
 
     def sitemap_industry(env, rule, qs):
-        if not qs or qs.lower() in '/customers':
-            yield {'loc': '/customers'}
+        base_partner_domain = [('website_published', '=', True), ('assigned_partner_id', '!=', False)]
+        sudoed_res_partner = env['res.partner'].sudo()
 
-        dom = [('website_published', '=', True), ('assigned_partner_id', '!=', False), ('industry_id', '!=', False)]
-        dom += sitemap_qs2dom(qs, '/customers/industry')
-        industries = env['res.partner'].sudo()._read_group(dom, groupby=['industry_id'], aggregates=['write_date:max'])
-        for industry, last_write in industries:
+        if not qs or qs.lower() in '/customers':
+            # The customers landing lists these partners, so date it from the
+            # most recently changed one.
+            [(customers_lastmod,)] = sudoed_res_partner._read_group(
+                base_partner_domain, aggregates=['write_date:max'])
+            page = {'loc': '/customers'}
+            if customers_lastmod:
+                page['lastmod'] = customers_lastmod.date()
+            yield page
+
+        Industry = env['res.partner.industry']
+        industry_lastmods = {
+            ind.id: last_write
+            for ind, last_write in sudoed_res_partner._read_group(
+                base_partner_domain + [('industry_id', '!=', False)],
+                groupby=['industry_id'], aggregates=['write_date:max'])
+        }
+
+        dom = sitemap_qs2dom(qs, '/customers/industry', Industry._rec_name)
+        for industry in Industry.search(dom):
             loc = '/customers/industry/%s' % env['ir.http']._slug(industry)
             if not qs or qs.lower() in loc:
+                last_write = industry_lastmods.get(industry.id) or industry.write_date
                 yield {'loc': loc, 'lastmod': last_write.date()}
 
-        dom = [('website_published', '=', True), ('assigned_partner_id', '!=', False), ('country_id', '!=', False)]
-        dom += sitemap_qs2dom(qs, '/customers/country')
-        countries = env['res.partner'].sudo()._read_group(dom, groupby=['country_id'], aggregates=['write_date:max'])
+        dom = base_partner_domain + [('country_id', '!=', False)]
+        dom += sitemap_qs2dom(qs, '/customers/country', 'country_id.name')  # Match query string against country name
+        countries = sudoed_res_partner._read_group(dom, groupby=['country_id'], aggregates=['write_date:max'])
         for country, last_write in countries:
             loc = '/customers/country/%s' % env['ir.http']._slug(country)
             if not qs or qs.lower() in loc:

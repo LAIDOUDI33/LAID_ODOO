@@ -60,7 +60,22 @@ class PortalMailGroup(http.Controller):
     # MAIN PAGE
     # ------------------------------------------------------------
 
-    @http.route('/groups', type='http', auth='public', sitemap=True, sitemap_group="groups", website=True, list_as_website_content=_lt("Groups"))
+    def sitemap_groups(env, rule, qs):
+        groups = env['mail.group'].search([('access_mode', '=', 'public')])
+
+        if not qs or qs.lower() in '/groups':
+            page = {'loc': '/groups'}
+            if groups:
+                page['lastmod'] = max(groups.mapped('write_date')).date()
+            yield page
+
+        for group in groups:
+            loc = f'/groups/{env["ir.http"]._slug(group)}'
+            if not qs or qs.lower() in loc.lower():
+                yield {'loc': loc, 'lastmod': group.write_date.date()}
+
+    @http.route('/groups', type='http', auth='public',
+                sitemap=sitemap_groups, sitemap_group='groups', website=True, list_as_website_content=_lt("Groups"))
     def groups_index(self, email='', **kw):
         """View of the group lists. Allow the users to subscribe and unsubscribe."""
         if kw.get('group_id') and kw.get('token'):
@@ -104,7 +119,7 @@ class PortalMailGroup(http.Controller):
     @http.route([
         '/groups/<model("mail.group"):group>',
         '/groups/<model("mail.group"):group>/page/<int:page>',
-    ], type='http', auth='public', sitemap=True, sitemap_group="groups", website=True)
+    ], type='http', auth='public', sitemap=sitemap_groups, sitemap_group='groups', website=True)
     def group_view_messages(self, group, page=1, mode='thread', date_begin=None, date_end=None, **post):
         GroupMessage = request.env['mail.group.message']
 

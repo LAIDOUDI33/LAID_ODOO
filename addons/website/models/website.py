@@ -1655,9 +1655,9 @@ class Website(models.CachedModel):
               to skip it, or a callable ``(env, rule, query_string)`` yielding
               ``{'loc': url, ...}`` mappings.
             * ``sitemap_group``: name of the ``/sitemap.xml`` section the URLs
-              belong to, e.g. ``sitemap_group="products"`` (lowercase and
-              dashes only). Defaults to the route's module name; core website
-              content is grouped as ``pages``.
+              belong to, e.g. ``sitemap_group="products"`` (lowercase letters,
+              digits and dashes only). Defaults to the route's module name;
+              core website content is grouped as ``pages``.
 
             :param str query_string: a (user-provided) string, fetches pages
                                      matching the string
@@ -1721,39 +1721,39 @@ class Website(models.CachedModel):
                 return f.__func__
             return f
 
-        # Sitemap group derived from the route's module, dropping the 'website-'
-        # prefix ('website_blog' -> 'blog'). Uses the sitemap function's module,
-        # not the handler's: a child module can override the handler with a bare
-        # @route() (changing its module) while keeping the same sitemap function,
-        # so the handler name is unstable. Falls back to the handler for
-        # auto-enumerated routes (no sitemap function).
+        # Group name is the module of the sitemap function, minus its `website_`
+        # prefix. Not the handler's module: a child module can override the
+        # handler with a bare @route() while keeping the same sitemap function.
         def _route_module(rule):
             sitemap_func = rule.endpoint.routing.get('sitemap')
             if callable(sitemap_func):
                 func = _unwrap_callable(sitemap_func)
             else:
                 func = rule.endpoint.func
-            parts = func.__module__.split('.')
-            if len(parts) > 2 and parts[1] == 'addons':
-                module = parts[2].replace('_', '-')
-                if module.startswith('website-'):
-                    return module[len('website-'):]
+            match func.__module__.split('.'):
+                # example: 'odoo.addons.website_sale.controllers.main' -> 'sale'
+                case ['odoo', 'addons', module, *_] if module.startswith('website_'):
+                    return module.removeprefix('website_').replace('_', '-')
+            # example: 'odoo.addons.website.controllers.main' -> 'pages'
             return 'pages'
 
-        # Modules with a record route (a model in the path, e.g. /shop/<product>)
-        # render one page per record, so they earn their own sitemap group.
-        # Static-only modules (e.g. account's /terms) are skipped.
-        record_route_modules = set()
-        for rule in router.iter_rules():
-            sitemap_func = rule.endpoint.routing.get('sitemap')
-            if sitemap_func is not False and rule._converters and (callable(sitemap_func) or self.rule_is_enumerable(rule)):
-                record_route_modules.add(_route_module(rule))
+        # Single sweep of the routing map: grouping needs every rule known before
+        # the first loc is yielded, and `enumerable` is needed again below.
+        sitemap_rules = [
+            (rule, sitemap_func, callable(sitemap_func) or self.rule_is_enumerable(rule), _route_module(rule))
+            for rule in router.iter_rules()
+            if (sitemap_func := rule.endpoint.routing.get('sitemap')) is not False
+        ]
 
-        for rule in router.iter_rules():
-            sitemap_func = rule.endpoint.routing.get('sitemap')
-            if sitemap_func is False:
-                continue
+        # A module earns its own group once one of its routes takes a record in
+        # its path (e.g. /shop/<product>); static-only ones stay in `pages`.
+        record_route_modules = {
+            module
+            for rule, __, enumerable, module in sitemap_rules
+            if enumerable and rule._converters
+        }
 
+        for rule, sitemap_func, enumerable, module in sitemap_rules:
             if sitemap_func is True:
                 source = inspect.getsource(rule.endpoint.func)
                 if ('return request.redirect' in source or 'return redirect(' in source):
@@ -1767,34 +1767,35 @@ class Website(models.CachedModel):
                     )
 
             # Group for this route: an explicit @route(sitemap_group=...) wins;
-            # else a record route (or a route in a module that has one) uses the
-            # module name; lone static pages (e.g. /terms, /) go to 'pages'.
-            group = rule.endpoint.routing.get('sitemap_group')
-            if group:
-                # The name becomes part of the sub-sitemap filename and URL.
-                if not re.fullmatch(r'[a-z-]+', group):
-                    logger.warning(
-                        "Invalid sitemap_group %r on %s: use lowercase letters and dashes only.",
-                        group, ', '.join(rule.endpoint.routing['routes']),
+            # else a route whose module has a record route uses the module name;
+            # lone static pages (e.g. /terms, /) go to 'pages'.
+            if sitemap_group := rule.endpoint.routing.get('sitemap_group'):
+                # The name becomes part of the sub-sitemap filename and URL, and
+                # must accept anything `_route_module` can derive from a module.
+                if not re.fullmatch(r'[a-z0-9-]+', sitemap_group):
+                    raise ValueError(
+                        "Invalid sitemap_group %r on %s: use lowercase letters, digits and dashes only."
+                        % (sitemap_group, ', '.join(rule.endpoint.routing['routes'])),
                     )
-                    group = re.sub(r'[^a-z]+', '-', group.lower()).strip('-') or 'pages'
             else:
-                module = _route_module(rule)
-                group = module if (rule._converters or module in record_route_modules) else 'pages'
+                sitemap_group = module if module in record_route_modules else 'pages'
             if callable(sitemap_func):
+                # Routes sharing a sitemap function are yielded once, under the
+                # group of whichever route the router listed first: give them
+                # all the same @route(sitemap_group=...).
                 func_key = _unwrap_callable(sitemap_func)
                 if func_key in sitemap_endpoint_done:
                     continue
                 sitemap_endpoint_done.add(func_key)
                 for loc in sitemap_func(self.with_context(lang=self.default_lang_id.code).env, rule, query_string):
-                    loc_norm = {'group': group, **loc, 'loc': _norm(loc['loc'])}
+                    loc_norm = {'group': sitemap_group, **loc, 'loc': _norm(loc['loc'])}
                     url = loc_norm['loc']
                     if url not in url_set:
                         yield loc_norm
                         url_set.add(url)
                 continue
 
-            if not self.rule_is_enumerable(rule):
+            if not enumerable:
                 continue
 
             # Warn only if the 'sitemap' key is absent from routing (legacy behavior)
@@ -1836,12 +1837,10 @@ class Website(models.CachedModel):
                 url = _norm(url)
                 pattern = query_string and '*%s*' % "*".join(query_string.split('/'))
                 if not query_string or fnmatch.fnmatch(url.lower(), pattern):
-                    page = {'loc': url, 'group': group}
                     if url in url_set:
                         continue
                     url_set.add(url)
-
-                    yield page
+                    yield {'loc': url, 'group': sitemap_group}
 
     def get_website_page_ids(self):
         """

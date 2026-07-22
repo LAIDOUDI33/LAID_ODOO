@@ -11,7 +11,6 @@ import zipfile
 from hashlib import md5, sha256
 from collections import defaultdict
 from io import BytesIO
-from itertools import islice
 from textwrap import shorten
 from xml.etree import ElementTree as ET
 
@@ -153,20 +152,24 @@ class Website(Home):
         def match(loc):
             return not qs or qs.lower() in loc.lower()
 
+        def page_lastmod(page):
+            last_dates = [d for d in (page.write_date, page.view_write_date) if d]
+            return max(last_dates).date() if last_dates else None
+
         website_page = env['website.page'].sudo().search([
             ('url', '=', '/'),
             ('is_published', '=', True),
         ], limit=1)
         if website_page and match('/'):
-            yield {'loc': '/'}
+            yield {'loc': '/', 'lastmod': page_lastmod(website_page)}
             return
 
         top_menu = env.website.menu_id
         reachable_menus = top_menu.child_id.filtered(env.website.is_reachable)
         if reachable_menus:
-            loc = reachable_menus[0].url
-            if match(loc):
-                yield {'loc': loc}
+            menu = reachable_menus[0]
+            if match(menu.url):
+                yield {'loc': menu.url, 'lastmod': page_lastmod(menu.page_id)}
 
     @http.route('/', auth="public", website=True, sitemap=sitemap_index)
     def index(self, **kw):
@@ -389,41 +392,39 @@ class Website(Home):
             sitemaps.unlink()
 
             locs = self.env.website.with_user(self.env.website.user_id)._enumerate_pages(ignore_custom_homepage=True)
-            # _enumerate_pages tags each URL with a 'group' (its sitemap section,
-            # e.g. 'products', 'blog', or 'pages'). Build one sub-sitemap per group.
-            groups = defaultdict(list)
+            grouped_locs = defaultdict(list)
             for loc in locs:
-                groups[loc.get('group') or 'pages'].append(loc)
+                grouped_locs[loc.get('group') or 'pages'].append(loc)
 
-            index_ids = []
-            for group in groups:
-                glocs = iter(groups[group])
-                chunk_no = 0
-                while True:
-                    values = {
-                        'locs': islice(glocs, 0, LOC_PER_SITEMAP),
+            index_entries = []
+            for group, group_locs in grouped_locs.items():
+                # A group over the limit is split across `<group>-1`, `<group>-2`
+                for chunk_no, start in enumerate(range(0, len(group_locs), LOC_PER_SITEMAP), start=1):
+                    chunk_locs = group_locs[start:start + LOC_PER_SITEMAP]
+                    urls = self.env.website._render_template('website.sitemap_locs', {
+                        'locs': chunk_locs,
                         'url_root': url_root[:-1],
-                    }
-                    urls = self.env.website._render_template('website.sitemap_locs', values)
-                    if not urls.strip():
-                        break
+                    })
                     content = self.env.website._render_template('website.sitemap_xml', {'content': urls})
-                    chunk_no += 1
-                    suffix = '%s-%d' % (group, chunk_no)
-                    create_sitemap('%s-%s.xml' % (sitemap_base_url, suffix), content)
+                    suffix = f'{group}-{chunk_no}'
+                    create_sitemap(f'{sitemap_base_url}-{suffix}.xml', content)
+                    dates = [loc.get('lastmod') for loc in chunk_locs]
                     # TODO: Move current_website_id in template directly
-                    index_ids.append('%d-%s-%s' % (self.env.website.id, hashed_url_root, suffix))
+                    index_entries.append({
+                        'id': f'{self.env.website.id}-{hashed_url_root}-{suffix}',
+                        'lastmod': max(dates) if all(dates) else None,
+                    })
 
-            if not index_ids:
+            if not index_entries:
                 return request.not_found()
 
             content = self.env.website._render_template('website.sitemap_index_xml', {
-                'pages': index_ids,
+                'sitemaps': index_entries,
                 # URLs inside the sitemap index have to be on the same
                 # domain as the sitemap index itself
                 'url_root': url_root,
             })
-            create_sitemap('%s.xml' % sitemap_base_url, content)
+            create_sitemap(f'{sitemap_base_url}.xml', content)
 
         return request.make_response(content, [('Content-Type', mimetype)])
 

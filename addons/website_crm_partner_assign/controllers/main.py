@@ -208,24 +208,32 @@ class WebsiteCrmPartnerAssign(WebsitePartnership, GoogleMap):
         return domain
 
     def sitemap_partners(env, rule, qs):
-        if not qs or qs.lower() in '/partners':
-            yield {'loc': '/partners'}
-
         slug = env['ir.http']._slug
+        sudoed_res_partner = env['res.partner'].sudo()
         base_partner_domain = [
             ('grade_id', '!=', False),
             ('website_published', '=', True),
             ('grade_id.website_published', '=', True),
             ('grade_id.active', '=', True),
         ]
-        grades = env['res.partner'].sudo()._read_group(
+        if not qs or qs.lower() in '/partners':
+            # The partners landing lists assigned partners, so date it from the
+            # most recently changed one.
+            [(partners_lastmod,)] = sudoed_res_partner._read_group(
+                base_partner_domain, aggregates=['write_date:max'])
+            page = {'loc': '/partners'}
+            if partners_lastmod:
+                page['lastmod'] = partners_lastmod.date()
+            yield page
+
+        grades = sudoed_res_partner._read_group(
             base_partner_domain, groupby=['grade_id'], aggregates=['write_date:max'])
         for grade, last_write in grades:
             loc = '/partners/grade/%s' % slug(grade)
             if not qs or qs.lower() in loc:
                 yield {'loc': loc, 'lastmod': last_write.date()}
         country_partner_domain = base_partner_domain + [('country_id', '!=', False)]
-        countries = env['res.partner'].sudo()._read_group(
+        countries = sudoed_res_partner._read_group(
             country_partner_domain, groupby=['country_id'], aggregates=['write_date:max'])
         for country, last_write in countries:
             loc = '/partners/country/%s' % slug(country)

@@ -203,6 +203,32 @@ class TestWebsiteSitemap(TransactionCase):
         self.assertIn('/', locs_without_homepage_urls)
         self.assertNotIn(homepage_url, locs_without_homepage_urls)
 
+    def test_sitemap_group_invalid_name(self):
+        # sitemap_group becomes part of a public sub-sitemap URL, so a invalid
+        # name must raise.
+        website = self.env['website'].search([], limit=1)
+
+        def fake_sitemap_callable(env, rule, qs):
+            yield {'loc': '/badly-grouped'}
+
+        class FakeEndpoint:
+            routing = {'sitemap': fake_sitemap_callable, 'sitemap_group': 'My Section!',
+                       'routes': ['/badly-grouped']}
+            func = fake_sitemap_callable
+
+        class FakeRule:
+            endpoint = FakeEndpoint()
+            _converters = {}
+
+        class FakeRouter:
+            def iter_rules(self):
+                return [FakeRule()]
+
+        with patch('odoo.addons.website.models.ir_http.IrHttp.routing_map',
+                   autospec=True, return_value=FakeRouter()):
+            with self.assertRaises(ValueError):
+                list(website.with_user(website.user_id)._enumerate_pages())
+
 
 @tagged('-at_install', 'post_install')
 class TestSitemapIndex(HttpCase):

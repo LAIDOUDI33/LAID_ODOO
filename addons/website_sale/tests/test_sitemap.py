@@ -38,8 +38,6 @@ class TestSitemap(HttpCase):
         prodA.product_tmpl_id.active = False
 
     def test_01_shop_route_sitemap(self):
-        # /sitemap.xml is an index; search the union of all sub-sitemaps so the
-        # test does not depend on the shop section's name (module override renames it)
         sitemap = all_sitemap_urls(self)
         level2_url = "/shop/category/level-0-%s/level-1-%s/level-2-%s" % (
             self.cats[0].id,

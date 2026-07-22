@@ -21,7 +21,12 @@ class WebsiteEventController(http.Controller):
 
     def sitemap_event(env, rule, qs):
         if not qs or qs.lower() in '/events':
-            yield {'loc': '/events'}
+            events = env['event.event'].search(env.website.website_domain() & Domain('is_published', '=', True))
+            events_lastmod = events._get_sitemap_lastmod_map()
+            page = {'loc': '/events'}
+            if events_lastmod:
+                page['lastmod'] = max(events_lastmod.values()).date()
+            yield page
 
     # ------------------------------------------------------------
     # EVENT LIST
@@ -225,7 +230,10 @@ class WebsiteEventController(http.Controller):
 
     def sitemap_events(env, rule, qs):
         slug = env['ir.http']._slug
-        events = env['event.event'].sudo().search([('website_published', '=', True)], order='id')
+        # Only fetch what the loop reads: a bare search prefetches every column, `description` HTML included.
+        events = env['event.event'].sudo().with_context(prefetch_fields=False).search_fetch(
+            env.website.website_domain() & Domain('website_published', '=', True),
+            ['name', 'seo_name', 'menu_id', 'write_date'], order='id')
         events_lastmod = events._get_sitemap_lastmod_map()
 
         def matches_qs(loc):

@@ -16,8 +16,24 @@ class WebsiteHrRecruitment(WebsiteForm):
     _jobs_per_page = 12
 
     def sitemap_jobs(env, rule, qs):
+        # One search feeds every /jobs* URL: the listing, each job detail page and
+        # each apply page. Shared as the sitemap function of all three routes, so
+        # _enumerate_pages runs it once (it deduplicates by function identity).
+        slug = env['ir.http']._slug
+        jobs = env['hr.job'].search(env.website.website_domain() & Domain('is_published', '=', True))
+        jobs_lastmod = jobs._get_sitemap_lastmod_map()
+
         if not qs or qs.lower() in '/jobs':
-            yield {'loc': '/jobs'}
+            page = {'loc': '/jobs'}
+            if jobs_lastmod:
+                page['lastmod'] = max(jobs_lastmod.values()).date()
+            yield page
+
+        for job in jobs:
+            lastmod = jobs_lastmod[job.id].date()
+            for loc in (f'/jobs/{slug(job)}', f'/jobs/apply/{slug(job)}'):
+                if not qs or qs.lower() in loc:
+                    yield {'loc': loc, 'lastmod': lastmod}
 
     @http.route([
         '/jobs',
@@ -170,20 +186,12 @@ class WebsiteHrRecruitment(WebsiteForm):
         })
         return f"/jobs/{request.env['ir.http']._slug(job)}"
 
-    def sitemap_jobs_detail(env, rule, qs):
-        slug = env['ir.http']._slug
-        jobs = env['hr.job'].search([('is_published', '=', True)])
-        jobs_lastmod = jobs._get_sitemap_lastmod_map()
-        for job in jobs:
-            if not qs or qs.lower() in f'/jobs/{slug(job)}':
-                yield {'loc': f'/jobs/{slug(job)}', 'lastmod': jobs_lastmod[job.id].date()}
-
     @http.route('''/jobs/detail/<model("hr.job"):job>''', type='http', auth="public", website=True, sitemap=False)
     def jobs_detail(self, job, **kwargs):
         redirect_url = f"/jobs/{request.env['ir.http']._slug(job)}"
         return request.redirect(redirect_url, code=301)
 
-    @http.route('''/jobs/<model("hr.job"):job>''', type='http', auth="public", website=True, sitemap=sitemap_jobs_detail, sitemap_group="jobs")
+    @http.route('''/jobs/<model("hr.job"):job>''', type='http', auth="public", website=True, sitemap=sitemap_jobs, sitemap_group="jobs")
     def job(self, job, **kwargs):
         return request.render("website_hr_recruitment.detail", {
             'structured_data': job._render_jsonld(is_detail_page=True),
@@ -191,7 +199,7 @@ class WebsiteHrRecruitment(WebsiteForm):
             'main_object': job,
         })
 
-    @http.route('''/jobs/apply/<model("hr.job"):job>''', type='http', auth="public", website=True, sitemap=True, sitemap_group="jobs")
+    @http.route('''/jobs/apply/<model("hr.job"):job>''', type='http', auth="public", website=True, sitemap=sitemap_jobs, sitemap_group="jobs")
     def jobs_apply(self, job, **kwargs):
         error = {}
         default = {}
