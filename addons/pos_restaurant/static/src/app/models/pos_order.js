@@ -12,11 +12,6 @@ patch(PosOrder.prototype, {
     initState() {
         super.initState();
         this.uiState.selected_course_uuid = undefined;
-        // Tracks which lines (by uuid) were moved onto this order during a
-        // merge/transfer so they can be restored to their original table on
-        // unmerge (see _mergeOrders / restoreOrdersToOriginalTable).
-        // TODO-manv: this is too big just to been used in bboxv2
-        this.uiState.unmerge = {};
     },
     getCustomerCount() {
         return this.customer_count;
