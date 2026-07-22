@@ -2,3 +2,4 @@
 
 from . import test_sandwich_leave
 from . import test_optional_holiday
+from . import test_exceptional_day
