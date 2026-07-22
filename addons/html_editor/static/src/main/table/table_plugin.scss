@@ -1,0 +1,14 @@
+.oi-cell-merge {
+  &::before {
+    display: block;
+    background: url("/html_editor/static/src/img/cell_merge.svg");
+    background-size: contain;
+    width: var(--oi-cell-merge-size, 17px);
+    height: var(--oi-cell-merge-size, 17px);
+    aspect-ratio: 1;
+    content: "";
+  }
+  &.oi-fw {
+    display: flex;
+  }
+}
