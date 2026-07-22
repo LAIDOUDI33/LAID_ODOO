@@ -60,7 +60,7 @@ class L10nCnEdiDocument(models.Model):
             for doc in docs:
                 try:
                     with self.env.cr.savepoint():
-                        # ponytail: BaiwangClient unwraps the payload. It is a list, and it raises UserError on failure.
+                        # BaiwangClient returns unwrapped response rows; failures raise UserError.
                         resp_list = client.query_red_form_detail(doc.baiwang_uuid)
                         if isinstance(resp_list, list) and resp_list:
                             resp_data = resp_list[0]
@@ -134,7 +134,7 @@ class L10nCnEdiDocument(models.Model):
                     'invoiceStartDate': start_date.strftime('%Y-%m-%d'),
                     'invoiceEndDate': end_date.strftime('%Y-%m-%d'),
                 })
-                # ponytail: client.query_red_form_list strips the outer dict. res IS the list[cite: 5].
+                # query_red_form_list already returns the inner list payload.
                 form_list = res if isinstance(res, list) else []
                 for form in form_list:
                     uuid = form.get('redConfirmUuid')

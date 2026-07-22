@@ -224,7 +224,6 @@ class AccountMove(models.Model):
         )
         for move in self:
             move.l10n_cn_baiwang_date_consistency_warning = False
-            # ponytail: Only show warning on Credit Notes that are still in Draft but have already received a Fapiao Number
             if (
                 move.move_type == 'out_refund'
                 and move.state == 'draft'
@@ -518,7 +517,7 @@ class AccountMove(models.Model):
                     if raw_date and len(raw_date) >= 14:
                         vals['l10n_cn_baiwang_invoice_date'] = f"{raw_date[:4]}-{raw_date[4:6]}-{raw_date[6:8]} {raw_date[8:10]}:{raw_date[10:12]}:{raw_date[12:14]}"
                     else:
-                        # ponytail: If Baiwang doesn't explicitly return a date, default to the time we submitted it
+                        # If Baiwang omits redInvoiceDate, fall back to current time.
                         vals['l10n_cn_baiwang_invoice_date'] = fields.Datetime.now()
 
                     self.write(vals)
@@ -559,7 +558,7 @@ class AccountMove(models.Model):
         orig_type = original_move.l10n_cn_baiwang_invoice_type_code or '02'
         origin_invoice_type = '01' if orig_type in ('01', '004', '028') else '02'
 
-        # ponytail: res.partner.mobile requires the 'sms' addon. Use getattr to survive environments where it is absent.
+        # Use getattr for mobile to handle environments where sms fields are unavailable.
         raw_phone = original_move.partner_id.mobile or ''
         clean_phone = ''.join(c for c in raw_phone if c.isdigit())
         valid_phone = clean_phone if clean_phone and clean_phone[0] in ('0', '1') and 10 <= len(clean_phone) <= 12 else ''
@@ -660,7 +659,7 @@ class AccountMove(models.Model):
         if not latest_doc:
             return
 
-        # ponytail: bypass API call for local testing
+        # Skip remote approval for mock UUIDs used in local tests.
         if not latest_doc.baiwang_uuid.startswith('mock-'):
             client = BaiwangClient(self.company_id)
             try:
@@ -678,7 +677,7 @@ class AccountMove(models.Model):
         if not latest_doc:
             return
 
-        # ponytail: bypass API call for local testing
+        # Skip remote rejection for mock UUIDs used in local tests.
         if not latest_doc.baiwang_uuid.startswith('mock-'):
             client = BaiwangClient(self.company_id)
             try:
