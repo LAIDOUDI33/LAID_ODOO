@@ -30,16 +30,7 @@ export class MegaMenuOptionPlugin extends Plugin {
                 return false;
             }
         },
-        on_element_dropped_handlers: this.reopenMegaMenu.bind(this),
-        on_snippet_dropped_handlers: this.reopenMegaMenu.bind(this),
     };
-
-    reopenMegaMenu() {
-        const megaMenuToggleEl = this.editable.querySelector(".o_mega_menu_toggle")
-        if (megaMenuToggleEl && !megaMenuToggleEl.classList.contains("show")) {
-            window.Dropdown.getOrCreateInstance(megaMenuToggleEl).show();
-        }
-    }
 
     async saveMegaMenuClasses() {
         const proms = [];
