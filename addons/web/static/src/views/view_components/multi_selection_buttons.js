@@ -1,5 +1,5 @@
-import { onWillRender, useLayoutEffect } from "@web/owl2/utils";
-import { Component, proxy, signal, toRaw } from "@odoo/owl";
+import { useLayoutEffect } from "@web/owl2/utils";
+import { asyncComputed, Component, signal, toRaw } from "@odoo/owl";
 import { browser } from "@web/core/browser/browser";
 import { ConfirmationDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
 import { useHotkey } from "@web/core/hotkeys/hotkey_hook";
@@ -42,14 +42,15 @@ export class MultiSelectionButtons extends Component {
     setup() {
         this.viewService = useService("view");
         this.dialogService = useService("dialog");
-        this.state = proxy({ isReady: false });
-        onWillRender(() => {
-            if (this.props.reactive.visible && !this.state.isReady) {
-                this.loadMultiCreateView().then(() => {
-                    this.state.isReady = true;
-                });
-            }
-        });
+        this.multiCreateViewData = asyncComputed(
+            async () => {
+                if (!this.props.reactive.visible) {
+                    return null;
+                }
+                return this.loadMultiCreateView();
+            },
+            { initial: null }
+        );
 
         this.multiCreateValues = this.props.reactive.multiCreateValues;
         this.callbackRecorder = new CallbackRecorder();
@@ -115,14 +116,19 @@ export class MultiSelectionButtons extends Component {
         this.multiCreateArchInfo = parser.parse(parseXML(arch), relatedModels, resModel);
         const { activeFields } = extractFieldsFromArchInfo(this.multiCreateArchInfo, fields);
         this.multiCreateRecordProps = { resModel, fields, activeFields, context };
+        return {
+            multiCreateArchInfo: this.multiCreateArchInfo,
+            multiCreateRecordProps: this.multiCreateRecordProps,
+        };
     }
 
     getMultiCreatePopoverProps() {
+        const multiCreateViewData = this.multiCreateViewData();
         return {
             timeRange: this.props.reactive.showMultiCreateTimeRange ? this.getTimeRange() : null,
-            multiCreateArchInfo: { ...this.multiCreateArchInfo },
+            multiCreateArchInfo: { ...multiCreateViewData.multiCreateArchInfo },
             multiCreateRecordProps: {
-                ...this.multiCreateRecordProps,
+                ...multiCreateViewData.multiCreateRecordProps,
                 values: this.multiCreateValues,
             },
             onAdd: (multiCreateData) => {
