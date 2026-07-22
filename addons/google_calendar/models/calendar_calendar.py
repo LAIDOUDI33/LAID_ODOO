@@ -18,7 +18,27 @@ class CalendarCalendar(models.Model):
     _inherit = ['calendar.calendar', 'google.sync']
 
     google_sync_token = fields.Char('Sync Token')
+    google_sync_enabled = fields.Boolean(compute='_compute_google_sync_enabled', inverse='_inverse_google_sync_enabled')
     linked_email = fields.Char('Linked Email', readonly=True)
+    is_hidden = fields.Boolean(default=False, compute='_compute_is_hidden', store=True)
+
+    @api.depends('google_sync_enabled')
+    def _compute_is_hidden(self):
+        # Calendars imported via Google sync are hidden by default
+        # and should only be shown after the user chooses to sync them.
+        for record in self:
+            if record.google_sync_enabled:
+                record.is_hidden = False
+
+    @api.depends_context('uid')
+    @api.depends('calendar_user_id')
+    def _compute_google_sync_enabled(self):
+        for calendar in self:
+            calendar.google_sync_enabled = calendar.calendar_user_id.google_sync_enabled
+
+    def _inverse_google_sync_enabled(self):
+        for calendar in self:
+            calendar.calendar_user_id.google_sync_enabled = calendar.google_sync_enabled
 
     @staticmethod
     def _get_google_synced_fields_map():
@@ -54,7 +74,7 @@ class CalendarCalendar(models.Model):
         if self.env.user._get_google_sync_status() == "sync_active":
             google_service = GoogleCalendarService(self.env['google.service'])
             for record in self:
-                if record.need_sync and record.google_id and record.active:
+                if record.need_sync and record.google_id and record.active and record.google_sync_enabled:
                     record._google_calendar_patch(google_service)
 
         return result
@@ -65,7 +85,7 @@ class CalendarCalendar(models.Model):
         google_service = GoogleCalendarService(self.env['google.service'])
         if self.env.user._get_google_sync_status() == "sync_active":
             for record in records:
-                if record.need_sync and self.env.user in record.owner_ids and record.active:
+                if record.need_sync and self.env.user in record.owner_ids and record.active and record.google_sync_enabled:
                     record._google_calendar_insert(google_service)
         return records
 
@@ -128,14 +148,16 @@ class CalendarCalendar(models.Model):
             command = Command.create({
                 'user_id': self.env.user.id,
                 'access_role': google_record.accessRole or 'freeBusyReader',
-                'is_filter_active': True,
-                'is_filter_checked': True,
+                'google_sync_enabled': False,  # Do not sync calendars by default, the user has to enable it manually
+                'is_filter_active': False,
+                'is_filter_checked': False,
                 'label': google_record.summaryOverride or google_record.summary,
             })
 
         return {
             'calendar_user_ids': [command],
             'google_id': google_record.id,
+            'is_hidden': True,  # Hide the calendar until the user chooses to sync it
         }
 
     @after_commit

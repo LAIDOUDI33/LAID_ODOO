@@ -41,7 +41,7 @@ class GoogleEventSync(models.AbstractModel):
         result = super().write(vals)
         if self.env.user._get_google_sync_status() != "sync_paused":
             for record in self:
-                if record.need_sync and record.google_id and record._should_be_synced():
+                if record.google_id and record._should_be_synced():
                     if 'calendar_id' in vals and record.last_google_calendar_sync_id:
                         record.with_user(record._get_event_user())._google_move(
                             google_service,
@@ -93,7 +93,7 @@ class GoogleEventSync(models.AbstractModel):
                 sync_active = record._get_event_owner()._get_google_sync_status() == "sync_active"
             else:
                 sync_active = self.env.user._get_google_sync_status() == "sync_active"
-            if record.need_sync and record.active and sync_active:
+            if record.active and sync_active and record._should_be_synced():
                 record.with_user(record._get_event_owner())._google_insert(
                     google_service,
                     record._get_google_calendar_path(),

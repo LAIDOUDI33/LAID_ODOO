@@ -10,4 +10,33 @@
             </field>
         </field>
     </record>
+
+    <record id="calendar_calendar_view_form_dialog_inherit_google" model="ir.ui.view">
+        <field name="name">calendar.calendar.view.form.dialog.inherit.google</field>
+        <field name="model">calendar.calendar</field>
+        <field name="inherit_id" ref="calendar.calendar_calendar_view_form_dialog"/>
+        <field name="arch" type="xml">
+            <field name="shared_with_users" position="before">
+                <field name="google_sync_enabled"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_calendar_calendar_list_inherit_google" model="ir.ui.view">
+        <field name="name">calendar.calendar.list.inherit.google</field>
+        <field name="model">calendar.calendar</field>
+        <field name="inherit_id" ref="calendar.view_calendar_calendar_list"/>
+        <field name="arch" type="xml">
+            <list position="attributes">
+                <attribute name="decoration-muted">is_hidden</attribute>
+            </list>
+            <field name="calendar_default_privacy" position="attributes">
+                <attribute name="invisible">is_hidden</attribute>
+            </field>
+            <field name="calendar_default_privacy" position="after">
+                <field name="google_sync_enabled" string="Sync" widget="boolean_toggle" readonly="False"/>
+            </field>
+        </field>
+    </record>
+
 </odoo>

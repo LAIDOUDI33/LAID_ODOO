@@ -5,6 +5,7 @@ from . import google_sync
 from . import google_event_sync
 from . import calendar_event
 from . import calendar_calendar
+from . import calendar_calendar_user
 from . import calendar_recurrence_rule
 from . import res_users
 from . import res_users_settings

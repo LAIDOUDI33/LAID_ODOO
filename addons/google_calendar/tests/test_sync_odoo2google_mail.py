@@ -33,7 +33,10 @@ class TestSyncOdoo2GoogleMail(TestTokenAccess, TestSyncGoogle, MailCommon):
         partner = self.env['res.partner'].create({'name': 'Jean-Luc', 'email': 'jean-luc@opoo.com'})
         for create_user, organizer, responsible, expect_mail, is_public in [
             (user_root, organizer1, organizer1, False, True), (user_root, None, user_root, True, True),
-                (organizer1, None, organizer1, False, False), (organizer1, organizer2, organizer1, False, True)]:
+            (organizer1, organizer2, organizer1, False, True)]:
+            # use case (organizer1, None, organizer1, False, False) was removed with the introduction of multi-calendar
+            # If a user creates an event which they don't attend and which has no user_id, they cannot edit it after creation,
+            # and should not be able to sync it
             with self.subTest(create_uid=create_user.name if create_user else None, user_id=organizer.name if organizer else None):
                 with self.mock_mail_gateway(), self.mock_google_sync(user_id=responsible):
                     self.env['calendar.event'].with_user(create_user).create({

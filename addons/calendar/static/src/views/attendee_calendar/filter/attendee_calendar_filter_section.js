@@ -19,7 +19,7 @@ export class AttendeeCalendarCalendarFilterSection extends CalendarFilterSection
     */
     async loadSource(request) {
         const activeIds = this.section.filters.map((f) => f.value);
-        const domain = [["id", "not in", activeIds], ["user_has_read_access", "=", true]];
+        const domain = [["id", "not in", activeIds], ["user_has_read_access", "=", true], ['is_hidden', '=', false]];
         const records = await this.orm.call('calendar.calendar', "name_search", [], {
             name: request,
             operator: "ilike",

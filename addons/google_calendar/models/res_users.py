@@ -23,6 +23,11 @@ class ResUsers(models.Model):
     google_calendar_sync_token = fields.Char(related='res_users_settings_id.google_calendar_sync_token', groups="base.group_system")
     google_synchronization_stopped = fields.Boolean(related='res_users_settings_id.google_synchronization_stopped', readonly=False, groups="base.group_system")
 
+    def _compute_writeable_calendar_ids(self):
+        super()._compute_writeable_calendar_ids()
+        for user in self:
+            user.writable_calendar_ids = user.writable_calendar_ids.filtered(lambda c: not c.is_hidden)
+
     def _get_google_calendar_token(self):
         self.ensure_one()
         if self.res_users_settings_id.sudo().google_calendar_rtoken and not self.res_users_settings_id._is_google_calendar_valid():
@@ -80,8 +85,7 @@ class ResUsers(models.Model):
 
         # Odoo -> Google
         # Local calendars, which have not yet been synchronized with Google or need to be updated
-        # You need to have owner access to be able to edit calendar properties on google.
-        calendars_to_sync = self.calendar_ids.filtered(lambda c: c.need_sync or (not c.google_id and not c.is_primary))
+        calendars_to_sync = self.calendar_ids.filtered(lambda c: c.google_sync_enabled and (c.need_sync or (not c.google_id and not c.is_primary)))
         calendars_to_sync.with_user(self)._sync_calendars_odoo2google(calendar_service)
 
     def _sync_google_events(self, calendar_service: GoogleCalendarService):
@@ -95,6 +99,9 @@ class ResUsers(models.Model):
         # Google -> Odoo
         # Fetch events for all calendars, before processing them.
         for calendar in self.env.user.calendar_ids:
+            if not calendar.google_sync_enabled:
+                continue
+
             results = self._sync_request(calendar_service, calendar=calendar)
             if not results:
                 continue
@@ -157,7 +164,7 @@ class ResUsers(models.Model):
 
         # Odoo -> Google
         for calendar in self.env.user.calendar_ids:
-            if not calendar.user_has_write_access:
+            if not calendar.user_has_write_access or not calendar.google_sync_enabled:
                 continue
             full_sync = events_per_calendar.get(calendar.id, {}).get('full_sync', False)
             send_updates = not full_sync

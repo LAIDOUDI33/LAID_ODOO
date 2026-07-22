@@ -259,7 +259,11 @@ class CalendarRecurrence(models.Model):
 
     def _should_be_synced(self):
         self.ensure_one()
+        if self.calendar_id and not self.calendar_id.google_sync_enabled:
+            return False
+
         event = self._get_first_event()
-        if event:
-            return event._should_be_synced()
-        return False
+        if not event:
+            return False
+
+        return self.need_sync and event.user_can_edit

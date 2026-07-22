@@ -8,7 +8,13 @@
             <field name="arch" type="xml">
                 <xpath expr="//group[@name='calendar_preferences']" position="inside">
                     <field name="calendar_ids" options='{"no_open": True, "no_create": True}'
-                           invisible="share" nolabel="1" colspan="2"/>
+                           invisible="share" nolabel="1" colspan="2">
+                        <list>
+                            <control>
+                                <delete invisible="1"/>
+                            </control>
+                        </list>
+                    </field>
                 </xpath>
             </field>
         </record>
@@ -20,7 +26,13 @@
             <field name="arch" type="xml">
                 <xpath expr="//group[@name='calendar_preferences']" position="inside">
                     <field name="calendar_ids" options='{"no_open": True, "no_create": True}'
-                           invisible="share" nolabel="1" colspan="2"/>
+                           invisible="share" nolabel="1" colspan="2">
+                        <list>
+                            <control>
+                                <delete invisible="1"/>
+                            </control>
+                        </list>
+                    </field>
                 </xpath>
             </field>
         </record>
