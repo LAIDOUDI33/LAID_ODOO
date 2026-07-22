@@ -101,6 +101,7 @@
 
     <record id="product.product_product_2" model="product.product">
         <field name="standard_price">45.5</field>
+        <field name="supplier_taxes_id" search="[('type_tax_use', '=', 'purchase'), ('tax_group_id', '=', ref('account.%s_tax_group_iva_21' % ref('base.company_ri'))), ('company_id', '=', ref('base.company_ri'))]"/>
     </record>
 
     <!-- VAT 10,5% -->

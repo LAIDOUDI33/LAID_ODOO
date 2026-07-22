@@ -1,26 +1,11 @@
-# Part of Odoo. See LICENSE file for full copyright and licensing details.
 from odoo import api, fields, models
+from odoo.exceptions import ValidationError
 
 
 class AccountTax(models.Model):
     _inherit = 'account.tax'
 
-    l10n_ar_type_tax_use = fields.Selection(
-        selection=[
-            ('sale', 'Sales'),
-            ('purchase', 'Purchases'),
-            ('none', 'Other'),
-            ('supplier', 'Vendor Payment Withholding'),
-            ('customer', 'Customer Payment Withholding')
-        ],
-        compute='_compute_l10n_ar_type_tax_use', inverse='_inverse_l10n_ar_type_tax_use',
-        string="Argentina Tax Type"
-    )
-    l10n_ar_withholding_payment_type = fields.Selection(
-        selection=[('supplier', 'Vendor Payment'), ('customer', 'Customer Payment')],
-        string="Argentina Withholding Payment Type",
-        help="Withholding tax for supplier or customer payments.")
-    l10n_ar_tax_type = fields.Selection(
+    l10n_ar_withholding_tax_type = fields.Selection(
         string='WTH Tax',
         selection=[
             ('earnings', 'Earnings'),
@@ -29,11 +14,6 @@ class AccountTax(models.Model):
             ('iibb_total', 'IIBB Total Amount'),
         ]
     )
-    l10n_ar_withholding_sequence_id = fields.Many2one(
-        'ir.sequence',
-        string='WTH Sequence',
-        copy=False, check_company=True,
-        help='If no sequence provided then it will be required for you to enter withholding number when registering one.')
     l10n_ar_code = fields.Char('ARCA Code')
     l10n_ar_non_taxable_amount = fields.Float(
         string='Non Taxable Amount',
@@ -50,34 +30,11 @@ class AccountTax(models.Model):
         string="Scale", help="Earnings table scale if tax type is 'Earnings Scale'."
     )
 
-    @api.depends('type_tax_use', 'l10n_ar_withholding_payment_type')
-    def _compute_l10n_ar_type_tax_use(self):
+    @api.constrains('is_withholding_tax', 'l10n_ar_withholding_tax_type')
+    def _check_l10n_ar_withholding_tax_type_alignment(self):
         for tax in self:
-            if tax.country_code == 'AR':
-                if tax.type_tax_use in ('sale', 'purchase'):
-                    tax.l10n_ar_type_tax_use = tax.type_tax_use
-                elif tax.l10n_ar_withholding_payment_type in ('supplier', 'customer'):
-                    tax.l10n_ar_type_tax_use = tax.l10n_ar_withholding_payment_type
-                else:
-                    tax.l10n_ar_type_tax_use = 'none'
-            else:
-                tax.l10n_ar_type_tax_use = 'none'
-
-    @api.onchange('l10n_ar_type_tax_use')
-    def _inverse_l10n_ar_type_tax_use(self):
-        for tax in self.filtered(lambda t: t.country_code == 'AR'):
-            if tax.l10n_ar_type_tax_use in ('sale', 'purchase'):
-                tax.type_tax_use = tax.l10n_ar_type_tax_use
-                tax.l10n_ar_tax_type = False
-                tax.l10n_ar_state_id = False
-                tax.l10n_ar_withholding_payment_type = False
-            else:
-                if tax.l10n_ar_type_tax_use in ('supplier', 'customer'):
-                    tax.l10n_ar_withholding_payment_type = tax.l10n_ar_type_tax_use
-                else:
-                    tax.l10n_ar_withholding_payment_type = False
-                    tax.l10n_ar_tax_type = False
-                tax.type_tax_use = 'none'
+            if tax.company_id.country_code == 'AR' and tax.l10n_ar_withholding_tax_type and not tax.is_withholding_tax:
+                raise ValidationError(self.env._("A tax cannot have an Argentine withholding tax type if it is not a withholding tax."))
 
     def _prepare_base_line_tax_repartition_grouping_key(self, base_line, base_line_grouping_key, tax_data, tax_rep_data):
         """ Override to keep withholding lines with a 0% tax.
@@ -87,6 +44,12 @@ class AccountTax(models.Model):
         res = super()._prepare_base_line_tax_repartition_grouping_key(base_line, base_line_grouping_key, tax_data, tax_rep_data)
         record = base_line['record']
         if isinstance(record, models.Model) and record._name == "account.move.line":
-            if any(tax.country_code == 'AR' and tax.l10n_ar_withholding_payment_type for tax in record.tax_ids):
+            if any(tax.country_code == 'AR' and tax.is_withholding_tax for tax in record.tax_ids):
                 res["__keep_zero_line"] = True
         return res
+
+    @api.model
+    def _add_tax_details_in_base_line(self, base_line, company, rounding_method=None):
+        if self.env.context.get('calculate_withholding_taxes'):
+            base_line['calculate_withholding_taxes'] = True
+        super()._add_tax_details_in_base_line(base_line, company, rounding_method=rounding_method)
