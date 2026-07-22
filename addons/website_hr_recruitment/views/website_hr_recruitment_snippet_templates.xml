@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="dynamic_filter_template_hr_job_card" name="List Layout" data-extra-classes="g-3"
+        data-column-classes="col-12 col-sm-6 col-lg-4 col-xxl-3">
+        <div t-foreach="records" t-as="data" class="w-100 h-100">
+            <t t-set="record" t-value="data['_record']"/>
+            <a t-att-href="data['call_to_action_url']" t-att-title="'View ' + record.name" class="text-decoration-none text-reset card h-100">
+                <div class="card-body">
+                    <span class="o_line_clamp o_line_clamp_1 card-title h5" t-field="record.name"/>
+                    <div t-if="record.no_of_recruitment >= 1">
+                        <span t-field="record.no_of_recruitment"/>
+                        <t t-out="'open position' if record.no_of_recruitment == 1 else 'open positions'"/>
+                    </div>
+                    <div class="o_line_clamp o_line_clamp_3 small text-muted mt-2" t-field="record.description"/>
+                    <div class="o_job_infos d-flex flex-column small text-muted mt-auto pt-2">
+                        <div class="d-flex align-items-center gap-1">
+                            <i class="oi oi-fw" data-icon="location_on" role="img" aria-label="Address" title="Address"/>
+                            <span t-field="record.address_id" class="o_line_clamp o_line_clamp_1" t-options='{"widget": "contact", "fields": ["city"], "no_marker": "true", "null_text": "Remote"}'/>
+                        </div>
+                        <div t-if="record.department_id" class="d-flex align-items-center gap-1">
+                            <i class="oi oi-fw" data-icon="account_tree" title="Department" role="img" aria-label="Department"/>
+                            <span t-field="record.department_id" class="o_line_clamp o_line_clamp_1" t-options='{"fields": ["name"]}'/>
+                        </div>
+                        <div t-if="record.employee_type_id" class="d-flex align-items-center gap-1">
+                            <i class="oi oi-fw" data-icon="luggage" title="Employment type" role="img" aria-label="Employment type"/>
+                            <span t-field="record.employee_type_id" class="o_line_clamp o_line_clamp_1"/>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </template>
+</odoo>
