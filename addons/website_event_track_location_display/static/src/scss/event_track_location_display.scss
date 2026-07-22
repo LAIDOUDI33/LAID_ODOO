@@ -1,0 +1,66 @@
+.o_wevent_location_display {
+    .o_wevent_location_display_logo,
+    .o_wevent_location_display_logo img {
+        display: block;
+        width: auto;
+        max-width: 24vw;
+        max-height: 4rem;
+        object-fit: contain;
+    }
+
+    .o_wevent_location_display_live_details {
+        grid-template-columns: minmax(15rem, 38%) minmax(0, 1fr);
+    }
+
+    .o_wevent_location_display_speaker {
+        width: 100%;
+        max-width: 30rem;
+    }
+
+    .o_wevent_location_display_speaker_image,
+    .o_wevent_location_display_speaker_image img {
+        width: 4rem;
+        height: 4rem;
+        object-fit: cover;
+    }
+
+    .o_wevent_location_display_description {
+        display: -webkit-box;
+        max-width: 72ch;
+        max-height: 4.5em;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 3;
+
+        > :last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    .o_wevent_location_display_upcoming {
+        max-width: 70rem;
+    }
+
+    .o_wevent_location_display_break {
+        min-height: 12rem;
+    }
+
+    .o_wevent_location_display_empty {
+        min-height: calc(100vh - 13rem);
+    }
+
+    .o_wevent_location_display_live + .o_wevent_location_display_empty {
+        min-height: 14rem;
+    }
+}
+
+@media (max-aspect-ratio: 1/1) {
+    .o_wevent_location_display {
+        .o_wevent_location_display_live_details {
+            grid-template-columns: 1fr;
+        }
+
+        .o_wevent_location_display_upcoming {
+            max-width: none;
+        }
+    }
+}
