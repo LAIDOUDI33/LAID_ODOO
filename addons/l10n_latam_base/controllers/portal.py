@@ -15,7 +15,6 @@ class L10nLatamBasePortalAccount(PortalAccount):
             default_identification_type = (
                 rendering_values["current_partner"].l10n_latam_identification_type_id
                 or self._l10n_get_default_identification_type_id()
-                or LatamIdentificationType
             )
             rendering_values.update({
                 "identification_type": default_identification_type,
