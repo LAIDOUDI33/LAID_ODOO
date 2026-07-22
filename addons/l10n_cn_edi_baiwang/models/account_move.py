@@ -63,6 +63,7 @@ class AccountMove(models.Model):
         compute="_compute_l10n_cn_baiwang_latest_edi_data",
         store=True,
         readonly=False,
+        compute_sudo=True,
     )
 
     # EDI document tracking
@@ -94,10 +95,12 @@ class AccountMove(models.Model):
     l10n_cn_baiwang_red_form_uuid = fields.Char(
         string="Red Form UUID",
         compute='_compute_l10n_cn_baiwang_latest_edi_data',
+        compute_sudo=True,
     )
     l10n_cn_baiwang_red_form_number = fields.Char(
         string="Red Form Number",
         compute='_compute_l10n_cn_baiwang_latest_edi_data',
+        compute_sudo=True,
     )
     l10n_cn_baiwang_red_form_status = fields.Selection(
         selection=[
@@ -108,14 +111,17 @@ class AccountMove(models.Model):
         ],
         string="Red Form Status",
         compute='_compute_l10n_cn_baiwang_latest_edi_data',
+        compute_sudo=True,
     )
     l10n_cn_baiwang_red_form_amount_total = fields.Float(
         string="Inbound Credit Price",
         compute='_compute_l10n_cn_baiwang_latest_edi_data',
+        compute_sudo=True,
     )
     l10n_cn_baiwang_red_form_amount_tax = fields.Float(
         string="Inbound Credit Tax",
         compute='_compute_l10n_cn_baiwang_latest_edi_data',
+        compute_sudo=True,
     )
 
     @api.depends('l10n_cn_baiwang_red_form_required', 'l10n_cn_baiwang_red_form_status')
@@ -293,14 +299,15 @@ class AccountMove(models.Model):
             return error_msg
 
         if result.get('success'):
-            # Parse successful response
             success_list = result.get('response', {}).get('success', [])
             if success_list:
                 invoice_resp = success_list[0]
+                raw_date = invoice_resp.get('invoiceDate')
+                invoice_date = (datetime.strptime(raw_date, '%Y%m%d%H%M%S') - timedelta(hours=8)) if raw_date else False
                 self.write({
                     'l10n_cn_baiwang_state': 'issued',
                     'l10n_cn_baiwang_invoice_no': invoice_resp.get('invoiceNo'),
-                    'l10n_cn_baiwang_invoice_date': (datetime.strptime(raw, '%Y%m%d%H%M%S') - timedelta(hours=8)) if (raw := invoice_resp.get('invoiceDate')) else False,
+                    'l10n_cn_baiwang_invoice_date': invoice_date,
                     'l10n_cn_baiwang_qr_code': invoice_resp.get('invoiceQrCode'),
                 })
                 self.message_post(body=self.env._(
