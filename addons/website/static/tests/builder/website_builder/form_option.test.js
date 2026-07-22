@@ -1207,7 +1207,7 @@ test("label's markup is preserved when switching between field's type", async ()
     );
 
     await contains(":iframe .s_website_form_field:contains(Your Name)").click();
-    await contains("button[id='type_opt']").click();
+    await contains(".hb-row[data-label='Type'] .dropdown-toggle").click();
     await contains("[data-action-value='selection']").click();
 
     expect(":iframe .s_website_form_label_content:contains(Your Name)").toHaveInnerHTML(

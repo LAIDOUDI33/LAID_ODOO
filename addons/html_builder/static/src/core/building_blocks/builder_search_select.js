@@ -1,163 +1,28 @@
-import { Component, onWillDestroy, props, t } from "@odoo/owl";
+import { Component, onWillDestroy, proxy, signal, t, useProps } from "@odoo/owl";
 import {
-    getAllActionsAndOperations,
-    revertPreview,
+    querySelectorAll,
     useBuilderComponent,
-    useCanTimeout,
+    useClickableBuilderComponent,
     useDependencyDefinition,
-    useDomState,
-    useOperationWithReload,
-    useReloadAction,
-    useWithLoadingEffect,
     useActionInfo,
 } from "../utils";
 import { BuilderComponent } from "./builder_component";
 import { _t } from "@web/core/l10n/translation";
-import { useChildRef } from "@web/core/utils/hooks";
-import { SelectMenu } from "@web/core/select_menu/select_menu";
+import { useBus } from "@web/core/utils/hooks";
+import { SelectMenu, useSelectMenuHandler } from "@web/core/select_menu/select_menu";
 
-function selectItemHasPreview(item, getAllActions) {
-    const getAction = item.env.editor.shared.builderActions.getAction;
-    for (const action of getAllActions()) {
-        if (action.actionId && getAction(action.actionId)?.preview === false) {
-            return false;
-        }
-    }
-    return (
-        item.props.preview === true ||
-        (item.props.preview === undefined && item.env.weContext.preview !== false)
-    );
-}
-
-export function useClickableSelectItem(item) {
-    const { getAllActions, callOperation, isApplied } = getAllActionsAndOperations(item);
-    const getAction = item.env.editor.shared.builderActions.getAction;
-
-    const { reload } = useReloadAction(getAllActions);
-    const applyOperation = item.env.editor.shared.history.makePreviewableAsyncOperation(callApply);
-
-    const operationWithReload = useOperationWithReload(callApply, reload);
-
-    const withLoadingEffect = useWithLoadingEffect(getAllActions);
-    const canTimeout = useCanTimeout(getAllActions);
-
-    const operation = {
-        commit: () => {
-            if (reload) {
-                callOperation(operationWithReload, {
-                    operationParams: {
-                        withLoadingEffect: withLoadingEffect,
-                        canTimeout: canTimeout,
-                    },
-                });
-            } else {
-                callOperation(applyOperation.commit, {
-                    operationParams: {
-                        withLoadingEffect: withLoadingEffect,
-                        canTimeout: canTimeout,
-                    },
-                });
-            }
-        },
-        preview: () => {
-            if (selectItemHasPreview(item, getAllActions)) {
-                callOperation(applyOperation.preview, {
-                    preview: true,
-                    operationParams: {
-                        cancellable: true,
-                        cancelPrevious: () => applyOperation.revert(),
-                        canTimeout: canTimeout,
-                    },
-                });
-            }
-        },
-    };
-
-    function clean(nextApplySpecs, isPreviewing) {
-        const proms = [];
-        for (const { actionId, actionParam, actionValue } of getAllActions()) {
-            for (const editingElement of item.env.getEditingElements()) {
-                let nextAction;
-                proms.push(
-                    getAction(actionId).clean?.({
-                        isPreviewing,
-                        editingElement,
-                        params: actionParam,
-                        value: actionValue,
-                        dependencyManager: item.env.dependencyManager,
-                        selectableContext: item.env.selectableContext,
-                        get nextAction() {
-                            nextAction =
-                                nextAction ||
-                                nextApplySpecs.find((a) => a.actionId === actionId) ||
-                                {};
-                            return {
-                                params: nextAction.actionParam,
-                                value: nextAction.actionValue,
-                            };
-                        },
-                    })
-                );
-            }
-        }
-        return Promise.all(proms);
-    }
-
-    async function callApply(applySpecs, isPreviewing) {
-        const cleanOrApplyProms = [];
-        const isAlreadyApplied = isApplied();
-        for (const applySpec of applySpecs) {
-            const hasClean = !!applySpec.clean;
-            if (hasClean && isAlreadyApplied) {
-                cleanOrApplyProms.push(
-                    applySpec.action.clean({
-                        isPreviewing,
-                        editingElement: applySpec.editingElement,
-                        params: applySpec.actionParam,
-                        value: applySpec.actionValue,
-                        loadResult: applySpec.loadOnClean ? applySpec.loadResult : null,
-                        dependencyManager: item.env.dependencyManager,
-                        selectableContext: item.env.selectableContext,
-                    })
-                );
-            } else {
-                cleanOrApplyProms.push(
-                    applySpec.action.apply({
-                        isPreviewing,
-                        editingElement: applySpec.editingElement,
-                        params: applySpec.actionParam,
-                        value: applySpec.actionValue,
-                        loadResult: applySpec.loadResult,
-                        dependencyManager: item.env.dependencyManager,
-                        selectableContext: item.env.selectableContext,
-                    })
-                );
-            }
-        }
-        return await Promise.all(cleanOrApplyProms);
-    }
-
-    return {
-        clean,
-        isApplied,
-        priority:
-            getAllActions()
-                .map(
-                    (action) =>
-                        getAction(action.actionId).getPriority?.({
-                            params: action.actionParam,
-                            value: action.actionValue,
-                        }) || 0
-                )
-                .find(Boolean) || 0,
-        operation,
-        actions: getAllActions,
-    };
-}
+const CHOICES_SCHEMA = t
+    .array(
+        t.object({
+            value: t.any().optional(),
+            label: t.string(),
+        })
+    )
+    .optional([]);
 
 export class BuilderSearchSelect extends Component {
     static template = "html_builder.BuilderSearchSelect";
-    props = props({
+    props = useProps({
         // basicContainerBuilderComponentProps (converted inline)
         id: t.string().optional(),
         applyTo: t.string().optional(),
@@ -182,24 +47,12 @@ export class BuilderSearchSelect extends Component {
         dataAttributeAction: t.any().optional(),
         styleAction: t.any().optional(),
 
-        choices: t
-            .array(
-                t.object({
-                    value: t.any().optional(),
-                    label: t.string(),
-                })
-            )
-            .optional([]),
+        choices: CHOICES_SCHEMA,
         groups: t
             .array(
                 t.object({
                     label: t.string().optional(),
-                    choices: t.array(
-                        t.object({
-                            value: t.any().optional(),
-                            label: t.string(),
-                        })
-                    ),
+                    choices: CHOICES_SCHEMA,
                     section: t.string().optional(),
                 })
             )
@@ -209,46 +62,33 @@ export class BuilderSearchSelect extends Component {
     static components = { BuilderComponent, SelectMenu };
 
     setup() {
+        super.setup();
         useBuilderComponent();
+        this.menuRef = signal.ref();
+        const { removeListeners, onOpened, onClosed } = useSelectMenuHandler(this.menuRef, {
+            onNavigatedAway: this.onNavigatedAway.bind(this),
+            onNavigatedBack: this.onNavigatedBack.bind(this),
+        });
+        this.onOpened = onOpened.bind(this);
+        this.onClosed = onClosed.bind(this);
 
         this.index = 0;
-        this.choices = this.setChoicesDefaultValues(this.props.choices);
-        this.groups = this.props.groups.map((group) => ({
-            ...group,
-            choices: this.setChoicesDefaultValues(group.choices),
-        }));
-
-        this.menuRef = useChildRef();
-        this.getAction = this.env.editor.shared.builderActions.getAction;
+        this.state = proxy({});
         this.info = useActionInfo();
         this.info.action = this.info.actionId;
         delete this.info.actionId;
+
+        this.getAction = this.env.editor.shared.builderActions.getAction;
         // Choices are built so that each item can act as a builder component
         // and manage its own actions and operations.
-        // TODO: Improve this implementation. Currently, items inherit the
-        // select's env/props so they can use component-based hooks
-        // (e.g. `getAllActionsAndOperations`). A better approach would be to
-        // decouple these hooks from the current component context and have
-        // them accept an options object instead.
-        this.selectedChoices = [
-            ...this.choices,
-            ...this.groups.flatMap((g) => g.choices || []),
-        ].map((choice) => {
-            // Action props set on the select are applied to all items
-            // and override any corresponding action props defined on
-            // the items themselves.
-            choice.props = {
-                ...choice.props,
-                ...Object.fromEntries(Object.entries(this.info).filter(([, value]) => value)),
-            };
-            choice.env = this.env;
-            return {
-                ...choice,
-                ...useClickableSelectItem(choice),
-            };
-        });
+        this.defaultChoices = this.buildChoices(this.props.choices);
+        this.defaultGroups = this.props.groups.map((group) => ({
+            ...group,
+            choices: this.buildChoices(group.choices),
+        }));
 
-        this.currentlySelected = this.getSelectedValue();
+        this.updateChoices();
+        useBus(this.env.editorBus, "DOM_UPDATED", this.updateChoices);
 
         // Handle dependencies for select items.
         [...this.selectedChoices]
@@ -258,90 +98,110 @@ export class BuilderSearchSelect extends Component {
                     isActive: () => opt.value === this.currentlySelected,
                 });
             });
-
-        this.domState = useDomState((el) => ({
-            selected: this.currentlySelected || this.getSelectedValue(),
-        }));
-        onWillDestroy(() => this.removeListeners?.());
+        onWillDestroy(() => removeListeners?.());
     }
-    setChoicesDefaultValues(choices) {
-        return choices.map((choice) => ({
-            ...choice,
-            value: choice.value || `${this.index++}`,
+    buildChoices(choices) {
+        return choices.map((choice) => {
+            // Action props set on the select are applied to all items.
+            // This is done for compoenents using the shared `env.weContext`
+            // added by `useBuilderComponent()`.
+            choice.props = {
+                // Remark: The select items actions always take precedence
+                // over the parent one.
+                ...Object.fromEntries(Object.entries(this.info).filter(([, value]) => value)),
+                ...choice.props,
+            };
+            // Select items need to have an env to get the builder component
+            // behaviour (see: `useBuilderComponent()`) which is by default
+            // the one from the select.
+            choice.env = this.env;
+            choice.isSelectable = true;
+            choice.cleanSelectedItem = this.cleanSelectedItem.bind(this);
+            const clickableChoice = useClickableBuilderComponent(choice);
+            return {
+                ...choice,
+                value: choice.value || `${this.index++}`,
+                ...clickableChoice,
+            };
+        });
+    }
+    updateChoices() {
+        const updateEditingElements = (choices) =>
+            choices
+                .map((choice) => {
+                    // Update target elements to support `applyTo` for the
+                    // select component items.
+                    const oldEnv = this.env;
+                    const applyTo = choice.props.applyTo;
+                    if (!applyTo) {
+                        // No item-level `applyTo`: use the same target as
+                        // the select, even if it defines its own `applyTo`.
+                        choice.env = oldEnv;
+                        return choice;
+                    }
+                    const editingElements = applyTo
+                        ? querySelectorAll(oldEnv.getEditingElements(), applyTo)
+                        : oldEnv.getEditingElements();
+                    choice.env = {
+                        ...oldEnv,
+                        getEditingElements: () => editingElements,
+                        getEditingElement: () => editingElements[0],
+                    };
+                    return choice;
+                })
+                .filter((choice) => choice.env.getEditingElement());
+
+        this.state.choices = updateEditingElements(this.defaultChoices);
+        this.state.groups = this.defaultGroups.map((group) => ({
+            ...group,
+            choices: updateEditingElements(group.choices),
         }));
+        this.selectedChoices = [
+            ...this.state.choices,
+            ...this.state.groups.flatMap((g) => g.choices || []),
+        ];
+        this.currentlySelected = this.getSelectedValue();
+        this.state.selected = this.currentlySelected;
     }
     getSelection(value) {
         return this.selectedChoices.find((choice) => choice.value === value);
     }
     getSelectedValue() {
-        const { getAllActions } = getAllActionsAndOperations(this);
-
-        const getValue = (el) => {
-            const { actionId, actionParam } = getAllActions().find(
-                ({ actionId }) => this.getAction(actionId).getValue
-            );
-            const actionValue = this.getAction(actionId).getValue({
-                editingElement: el,
-                params: actionParam,
-            });
-            return this.selectedChoices.find((choice) =>
-                choice
-                    .actions()
-                    .map((action) => action.actionValue)
-                    .includes(actionValue)
-            )?.value;
-        };
-
-        return getAllActions().length
-            ? getValue(this.env.getEditingElement())
-            : this.selectedChoices
-                  .filter((choice) => choice.isApplied())
-                  .sort((a, b) => b.priority - a.priority)[0]?.value;
+        return this.selectedChoices
+            .filter((choice) => choice.isApplied())
+            .sort((a, b) => b.priority - a.priority)[0]?.value;
     }
-    select(newSelected) {
-        this.getSelection(this.currentlySelected)?.clean();
-        this.currentlySelected = newSelected;
+    async select(newSelected) {
+        this.newSelected = newSelected;
         this.getSelection(newSelected).operation.commit();
     }
     preview(newSelected) {
-        if (this.previewing !== newSelected) {
+        if (newSelected !== this.previewing) {
             this.previewing = newSelected;
-            this.getSelection(this.currentlySelected)?.clean();
             this.getSelection(newSelected).operation.preview();
         }
     }
-    revert() {
-        revertPreview(this.env.editor);
-        this.previewing = undefined;
-    }
-    onOpened() {
-        const menuEl = this.menuRef.el;
-        if (menuEl) {
-            this.removeListeners?.();
-            const onNavigatedAway = this.onNavigatedAway.bind(this);
-            const onNavigatedBack = this.onNavigatedBack.bind(this);
-            menuEl.addEventListener("pointerleave", onNavigatedAway);
-            menuEl.addEventListener("pointerenter", onNavigatedBack);
-            this.removeListeners = () => {
-                delete this.removeListeners;
-                menuEl.removeEventListener("pointerleave", onNavigatedAway);
-                menuEl.removeEventListener("pointerenter", onNavigatedBack);
-            };
+    cleanSelectedItem(...args) {
+        this.getSelection(this.currentlySelected)?.clean(...args);
+        if (this.newSelected) {
+            this.currentlySelected = this.newSelected;
+            this.newSelected = undefined;
         }
     }
-    onClosed() {
-        this.removeListeners?.();
-        this.onNavigatedAway();
+    revert() {
+        this.getSelection(this.previewing)?.operation.revert();
+        this.previewing = undefined;
     }
     onNavigated(choice) {
-        choice ? this.preview(choice.value) : this.revert();
+        if (this.previewing) {
+            this.revert();
+        }
+        this.preview(choice.value);
         this.lastPreviewed = undefined;
     }
     onNavigatedAway() {
-        if (this.previewing) {
-            this.lastPreviewed = this.previewing;
-            this.revert();
-        }
+        this.lastPreviewed = this.previewing;
+        this.revert();
     }
     onNavigatedBack() {
         if (this.lastPreviewed) {

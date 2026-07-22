@@ -94,7 +94,7 @@ export function useActionInfo({ stringify = true } = {}) {
     };
 }
 
-function querySelectorAll(targets, selector) {
+export function querySelectorAll(targets, selector) {
     const elements = new Set();
     for (const target of targets) {
         for (const el of target.querySelectorAll(selector)) {
@@ -104,8 +104,7 @@ function querySelectorAll(targets, selector) {
     return [...elements];
 }
 
-export function useBuilderComponent() {
-    const comp = useComponent();
+export function useBuilderComponent(comp = useComponent()) {
     const newEnv = {};
     const oldEnv = useEnv();
     let editingElements;
@@ -145,8 +144,16 @@ export function useBuilderComponent() {
             builder: localization.direction,
         };
     }
-
-    useSubEnv(newEnv);
+    // Some component items are plain props objects rather than Owl
+    // components (e.g. `BuilderSearchSelect`). Since `useSubEnv` only
+    // works with components, those objects cannot inherit the parent
+    // environment automatically. In that case, we update their `env`
+    // manually here.
+    if (!(comp instanceof globalThis.owl.Component)) {
+        comp.env = { ...newEnv, editor: comp.env.editor };
+    } else {
+        useSubEnv(newEnv);
+    }
 }
 export function useDependencyDefinition(id, item, { onReady } = {}) {
     const comp = useComponent();
@@ -559,8 +566,7 @@ export function useReloadAction(getAllActions) {
     return { reload };
 }
 
-export function useHasPreview(getAllActions) {
-    const comp = useComponent();
+export function useHasPreview(getAllActions, comp = useComponent()) {
     const getAction = comp.env.editor.shared.builderActions.getAction;
 
     let hasPreview = true;
@@ -621,9 +627,8 @@ export function revertPreview(editor) {
     return editor.shared.operation.next();
 }
 
-export function useClickableBuilderComponent() {
-    useBuilderComponent();
-    const comp = useComponent();
+export function useClickableBuilderComponent(comp = useComponent()) {
+    useBuilderComponent(comp);
     const { getAllActions, callOperation, isApplied } = getAllActionsAndOperations(comp);
     const getAction = comp.env.editor.shared.builderActions.getAction;
 
@@ -634,7 +639,7 @@ export function useClickableBuilderComponent() {
     const inheritedActionIds =
         comp.props.inheritedActions || comp.env.weContext.inheritedActions || [];
 
-    const hasPreview = useHasPreview(getAllActions);
+    const hasPreview = useHasPreview(getAllActions, comp);
     const operationWithReload = useOperationWithReload(callApply, reload);
 
     const withLoadingEffect = useWithLoadingEffect(getAllActions);
@@ -716,7 +721,9 @@ export function useClickableBuilderComponent() {
     }
 
     async function callApply(applySpecs, isPreviewing) {
-        await comp.env.selectableContext?.cleanSelectedItem(applySpecs, isPreviewing);
+        const cleanSelectedItem =
+            comp.env.selectableContext?.cleanSelectedItem || comp.cleanSelectedItem;
+        await cleanSelectedItem?.(applySpecs, isPreviewing);
         const cleans = inheritedActionIds
             .map((actionId) => comp.env.dependencyManager.get(actionId).cleanSelectedItem)
             .filter(Boolean);
@@ -1344,9 +1351,12 @@ function _shouldClean(comp, hasClean, isApplied) {
     if (!hasClean) {
         return false;
     }
-    const shouldToggle = !comp.env.selectableContext;
+    const shouldToggle = !_isSelectable(comp);
     const shouldClean = shouldToggle && isApplied;
     return comp.props.inverseAction ? !shouldClean : shouldClean;
+}
+function _isSelectable(comp) {
+    return comp.env.selectableContext || comp.isSelectable;
 }
 export function convertParamToObject(param) {
     if (param === undefined) {

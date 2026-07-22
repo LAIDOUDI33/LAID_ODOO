@@ -15,6 +15,34 @@ let selectMenuId = 0;
 
 export const DEBOUNCED_DELAY = 250;
 
+export function useSelectMenuHandler(
+    menuRef,
+    { onSelectMenuOpened, onSelectMenuClosed, onNavigatedAway, onNavigatedBack } = {}
+) {
+    let removeListeners = undefined;
+    return {
+        removeListeners,
+        onOpened: () => {
+            const menuEl = menuRef();
+            if (menuEl) {
+                removeListeners?.();
+                menuEl.addEventListener("pointerleave", onNavigatedAway);
+                menuEl.addEventListener("pointerenter", onNavigatedBack);
+                removeListeners = () => {
+                    removeListeners = undefined;
+                    menuEl.removeEventListener("pointerleave", onNavigatedAway);
+                    menuEl.removeEventListener("pointerenter", onNavigatedBack);
+                };
+            }
+            onSelectMenuOpened?.();
+        },
+        onClosed: () => {
+            removeListeners?.();
+            onSelectMenuClosed?.();
+        },
+    };
+}
+
 class SelectMenuTagsList extends Component {
     static template = "web.SelectMenuTagsList";
     static components = { BadgeTag };

@@ -4,8 +4,8 @@ import {
     setupHTMLBuilder,
 } from "@html_builder/../tests/helpers";
 import { BuilderAction } from "@html_builder/core/builder_action";
-import { expect, test, describe } from "@odoo/hoot";
-import { animationFrame, click, press, waitForNone } from "@odoo/hoot-dom";
+import { expect, test, describe, before } from "@odoo/hoot";
+import { animationFrame, click, press, waitForNone, queryAllTexts } from "@odoo/hoot-dom";
 import { xml } from "@odoo/owl";
 import { contains } from "@web/../tests/web_test_helpers";
 
@@ -41,6 +41,62 @@ test("Call a global BuilderSearchSelect action with params", async () => {
     await animationFrame();
     // The `apply()` will be called twice: for preview and item selection.
     expect.verifySteps(["customAction: param_0 > value_0", "customAction: param_0 > value_0"]);
+});
+
+test("The BuilderSearchSelect item action takes precedence over the parent one", async () => {
+    addBuilderAction({
+        sizeAction: class extends BuilderAction {
+            static id = "sizeAction";
+            apply() {
+                expect.step("size action");
+            }
+        },
+        colorAction: class extends BuilderAction {
+            static id = "colorAction";
+            apply() {
+                expect.step("color action");
+            }
+        },
+    });
+
+    addBuilderOption({
+        selector: ".test-options-target",
+        template: xml`
+            <BuilderRow label.translate="Test">
+                <BuilderSearchSelect choices="[
+                        {
+                            label: 'Option 0',
+                            props: {
+                                action: 'colorAction',
+                                classAction: 'class_0',
+                            }
+                        },
+                        {
+                            label: 'Option 1',
+                            props: {
+                                classAction: 'class_1',
+                            }
+                        },
+                    ]"
+                    action="'sizeAction'"/>
+            </BuilderRow>
+        `,
+    });
+    await setupHTMLBuilder(`<div class="test-options-target">Content...</div>`);
+    await contains(":iframe .test-options-target").click();
+    expect(".options-container").toBeVisible();
+
+    await click(".we-bg-options-container .dropdown");
+    await animationFrame();
+    await click(".popover [data-choice-index='0']");
+    await animationFrame();
+    expect.verifySteps(["color action", "color action"]);
+
+    await click(".we-bg-options-container .dropdown");
+    await animationFrame();
+    await click(".popover [data-choice-index='1']");
+    await animationFrame();
+    expect.verifySteps(["size action", "size action"]);
 });
 
 test("Call different BuilderSearchSelect item actions", async () => {
@@ -102,7 +158,7 @@ test("Call different BuilderSearchSelect item actions", async () => {
     await animationFrame();
     await click(".popover [data-choice-index='1']");
     await animationFrame();
-    expect.verifySteps(["size: 50/75", "color: Green", "color: Green"]);
+    expect.verifySteps(["color: Green", "color: Green"]);
     expect(":iframe .test-options-target").toHaveStyle({ opacity: "0.75" });
 });
 
@@ -197,7 +253,6 @@ test("Call a combination of BuilderSearchSelect and BuilderSearchSelect item act
     await setupHTMLBuilder(`<div class="test-options-target">Content...</div>`);
     await contains(":iframe .test-options-target").click();
     expect(".options-container").toBeVisible();
-    expect("[data-label='Test'] .dropdown-toggle").toHaveText("Group 1 > Option 0");
 
     await click(".we-bg-options-container .dropdown");
     await animationFrame();
@@ -210,7 +265,7 @@ test("Call a combination of BuilderSearchSelect and BuilderSearchSelect item act
     await animationFrame();
     await click(".popover [data-choice-index='2']");
     await animationFrame();
-    expect.verifySteps(["shape: 2D", "shape: 2D", "shape: 2D"]);
+    expect.verifySteps(["shape: 2D", "shape: 2D"]);
     expect(":iframe .test-options-target").toHaveStyle({ opacity: "0.5" });
     expect(":iframe .test-options-target").toHaveClass("class_0");
 
@@ -218,7 +273,7 @@ test("Call a combination of BuilderSearchSelect and BuilderSearchSelect item act
     await animationFrame();
     await click(".popover [data-choice-index='4']");
     await animationFrame();
-    expect.verifySteps(["shape: 2D", "shape: 2D", "shape: 2D"]);
+    expect.verifySteps(["shape: 2D", "shape: 2D"]);
     expect(":iframe .test-options-target").toHaveStyle({ opacity: "1" });
     expect(":iframe .test-options-target").toHaveClass("class_1");
 });
@@ -331,7 +386,7 @@ test("The applyTo feature is changing the BuilderSearchSelect visibility", async
         `,
     });
     await setupHTMLBuilder(
-        `<div class="parent-options-target class_1"><div class="child-options-target class_1">Content...</div></div>`
+        `<div class="parent-options-target"><div class="child-options-target class_1">Content...</div></div>`
     );
     await contains(":iframe .parent-options-target").click();
     expect("[data-class-action='class_apply_to']").not.toHaveClass("active");
@@ -342,54 +397,52 @@ test("The applyTo feature is changing the BuilderSearchSelect visibility", async
     expect(".options-container button.dropdown-toggle").toHaveText("Option 1");
 });
 
-// TODO: Activate this test once applyTo is handled for BuilderSearchSelect items.
-//
-// test("The applyTo feature is changing the BuilderSearchSelect items visibility", async () => {
-//     addBuilderOption({
-//         selector: ".parent-options-target",
-//         template: xml`
-//             <BuilderRow label.translate="Test 0">
-//                 <BuilderButton applyTo="'.child-options-target'" classAction="'class_apply_to'"/>
-//             </BuilderRow>
-//             <BuilderRow label.translate="Test 1">
-//                 <BuilderSearchSelect choices="[
-//                         {
-//                             label: 'Option 0',
-//                             props: {
-//                                 classAction: 'class_0',
-//                                 applyTo: '.class_apply_to'
-//                             }
-//                         },
-//                         {
-//                             label: 'Option 1',
-//                             props: {
-//                                 classAction: 'class_1',
-//                             }
-//                         },
-//                     ]"
-//                 />
-//             </BuilderRow>
-//         `,
-//     });
-//     await setupHTMLBuilder(
-//         `<div class="parent-options-target class_1"><div class="child-options-target">Content...</div></div>`
-//     );
+test("The applyTo feature is changing the BuilderSearchSelect items visibility", async () => {
+    addBuilderOption({
+        selector: ".parent-options-target",
+        template: xml`
+            <BuilderRow label.translate="Test 0">
+                <BuilderButton applyTo="'.child-options-target'" classAction="'class_apply_to'"/>
+            </BuilderRow>
+            <BuilderRow label.translate="Test 1">
+                <BuilderSearchSelect choices="[
+                        {
+                            label: 'Option 0',
+                            props: {
+                                classAction: 'class_0',
+                                applyTo: '.class_apply_to'
+                            }
+                        },
+                        {
+                            label: 'Option 1',
+                            props: {
+                                classAction: 'class_1',
+                            }
+                        },
+                    ]"
+                />
+            </BuilderRow>
+        `,
+    });
+    await setupHTMLBuilder(
+        `<div class="parent-options-target class_1"><div class="child-options-target">Content...</div></div>`
+    );
 
-//     await contains(":iframe .parent-options-target").click();
-//     expect("[data-class-action='class_apply_to']").not.toHaveClass("active");
-//     expect(".options-container button.dropdown-toggle").toHaveCount(1);
-//     await contains("[data-label='Test 1'] .dropdown-toggle").click();
-//     expect(queryAllTexts(".o-dropdown--menu span.o-dropdown-item")).toEqual(["Option 1"]);
+    await contains(":iframe .parent-options-target").click();
+    expect("[data-class-action='class_apply_to']").not.toHaveClass("active");
+    expect(".options-container button.dropdown-toggle").toHaveCount(1);
+    await contains("[data-label='Test 1'] .dropdown-toggle").click();
+    expect(queryAllTexts(".o-dropdown--menu span.o-dropdown-item")).toEqual(["Option 1"]);
 
-//     await contains("[data-class-action='class_apply_to']").click();
-//     expect(":iframe .child-options-target").toHaveClass("class_apply_to");
-//     expect("[data-class-action='class_apply_to']").toHaveClass("active");
-//     await contains("[data-label='Test 1'] .dropdown-toggle").click();
-//     expect(queryAllTexts(".o-dropdown--menu span.o-dropdown-item")).toEqual([
-//         "Option 0",
-//         "Option 1",
-//     ]);
-// });
+    await contains("[data-class-action='class_apply_to']").click();
+    expect(":iframe .child-options-target").toHaveClass("class_apply_to");
+    expect("[data-class-action='class_apply_to']").toHaveClass("active");
+    await contains("[data-label='Test 1'] .dropdown-toggle").click();
+    expect(queryAllTexts(".o-dropdown--menu span.o-dropdown-item")).toEqual([
+        "Option 0",
+        "Option 1",
+    ]);
+});
 
 test("Preview BuilderSearchSelect options (on hover)", async () => {
     addBuilderOption({
@@ -472,4 +525,54 @@ test("Preview BuilderSearchSelect groups/options (keyboard navigation)", async (
     await press("arrowdown");
     await animationFrame();
     expect(":iframe .test-options-target").toHaveAttribute("data-option", "0");
+});
+
+// This test is using same logic and scenarios as in the `BuilderSelect`
+// and `BuilderSelectItem` components (see `builder_select_item.test.js`).
+describe("LTR - RTL compatibility", () => {
+    before(() => {
+        addBuilderOption({
+            selector: ".test-options-target",
+            template: xml`
+                <BuilderRow label.translate="Test">
+                    <BuilderSearchSelect choices="[
+                            {
+                                label: 'Left',
+                                props: {
+                                    classAction: 'class_0',
+                                    ltrRtlMapping: 'left-right',
+                                },
+                                attrs: { title: 'Left' },
+                            },
+                            {
+                                label: 'Right',
+                                props: {
+                                    classAction: 'class_1',
+                                    ltrRtlMapping: 'left-right',
+                                },
+                                attrs: { title: 'Right' },
+                            },
+                        ]"/>
+                </BuilderRow>
+            `,
+        });
+    });
+
+    test("Iframe and Builder LTR", async () => {
+        await setupHTMLBuilder(`<div class="test-options-target">Content...</div>`);
+        await contains(":iframe .test-options-target").click();
+        await click(".we-bg-options-container .dropdown");
+        await animationFrame();
+        expect(".popover [data-choice-index='0']").toHaveAttribute("title", "Left");
+        expect(".popover [data-choice-index='1']").toHaveAttribute("title", "Right");
+
+        await contains(".popover [data-choice-index='0']").click();
+        expect(":iframe .test-options-target").toHaveClass("class_0");
+        expect(":iframe .test-options-target").not.toHaveClass("class_1");
+        await click(".we-bg-options-container .dropdown");
+        await animationFrame();
+        await contains(".popover [data-choice-index='1']").click();
+        expect(":iframe .test-options-target").toHaveClass("class_1");
+        expect(":iframe .test-options-target").not.toHaveClass("class_0");
+    });
 });

@@ -28,20 +28,20 @@ export class FormFieldOption extends BaseOptionComponent {
     setup() {
         super.setup();
         this.customFieldsData = [
-            { name: "Text", value: "char" },
-            { name: "Long Text", value: "text" },
-            { name: "Email", value: "email" },
-            { name: "Telephone", value: "tel" },
-            { name: "Url", value: "url" },
-            { name: "Number", value: "integer" },
-            { name: "Decimal Number", value: "float" },
-            { name: "Checkbox", value: "boolean", id: "custom_field_boolean_opt" },
-            { name: "Multiple Checkboxes", value: "one2many" },
-            { name: "Radio Buttons", value: "selection" },
-            { name: "Selection", value: "many2one" },
-            { name: "Date", value: "date" },
-            { name: "Date & Time", value: "datetime" },
-            { name: "File Upload", value: "binary" },
+            { name: _t("Text"), value: "char" },
+            { name: _t("Long Text"), value: "text" },
+            { name: _t("Email"), value: "email" },
+            { name: _t("Telephone"), value: "tel" },
+            { name: _t("Url"), value: "url" },
+            { name: _t("Number"), value: "integer" },
+            { name: _t("Decimal Number"), value: "float" },
+            { name: _t("Checkbox"), value: "boolean", id: "custom_field_boolean_opt" },
+            { name: _t("Multiple Checkboxes"), value: "one2many" },
+            { name: _t("Radio Buttons"), value: "selection" },
+            { name: _t("Selection"), value: "many2one" },
+            { name: _t("Date"), value: "date" },
+            { name: _t("Date & Time"), value: "datetime" },
+            { name: _t("File Upload"), value: "binary" },
         ];
         const { loadFieldOptionData } = this.dependencies.websiteFormOption;
         this.state = proxy({
