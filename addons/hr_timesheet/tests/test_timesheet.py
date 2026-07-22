@@ -2,6 +2,7 @@
 
 from freezegun import freeze_time
 from unittest.mock import patch
+from datetime import timedelta
 
 from odoo import fields
 from odoo.fields import Command
@@ -1066,3 +1067,44 @@ class TestTimesheet(TestCommonTimesheet):
             'user_id': self.user_manager.id,
         })
         self.assertEqual(timesheet.company_id, self.env.company)
+
+    def test_archive_employee_removes_future_timesheets(self):
+        """ Test that archiving an employee removes their future timesheets but keeps past and present ones. """
+        Timesheet = self.env['account.analytic.line']
+        today = fields.Date.context_today(self.env.user)
+        yesterday = today - timedelta(days=1)
+        tomorrow = today + timedelta(days=1)
+
+        past_timesheet = Timesheet.create({
+            'project_id': self.project_customer.id,
+            'task_id': self.task1.id,
+            'name': 'Past Timesheet',
+            'unit_amount': 2,
+            'employee_id': self.empl_employee.id,
+            'date': yesterday,
+        })
+
+        today_timesheet = Timesheet.create({
+            'project_id': self.project_customer.id,
+            'task_id': self.task1.id,
+            'name': 'Today Timesheet',
+            'unit_amount': 2,
+            'employee_id': self.empl_employee.id,
+            'date': today,
+        })
+
+        future_timesheet = Timesheet.create({
+            'project_id': self.project_customer.id,
+            'task_id': self.task1.id,
+            'name': 'Future Timesheet',
+            'unit_amount': 2,
+            'employee_id': self.empl_employee.id,
+            'date': tomorrow,
+        })
+
+        self.empl_employee.action_archive()
+
+        self.assertFalse(self.empl_employee.active, "The employee should be successfully archived.")
+        self.assertTrue(past_timesheet.exists(), "Past timesheets should not be deleted when an employee is archived.")
+        self.assertTrue(today_timesheet.exists(), "Timesheets for today should not be deleted when an employee is archived.")
+        self.assertFalse(future_timesheet.exists(), "Future timesheets must be deleted when an employee is archived.")
