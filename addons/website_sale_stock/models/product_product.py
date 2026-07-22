@@ -63,12 +63,25 @@ class ProductProduct(models.Model):
                 partner = self.env['res.partner'].browse(partner_id)
                 self_ctxt = self.with_context(lang=partner.lang).with_user(website.salesperson_id)
                 product_ctxt = product.with_context(lang=partner.lang)
+                product_taxes = product_ctxt.sudo().taxes_id._filter_taxes_by_company(
+                    self.env.company,
+                )
+                fiscal_position = self.env['account.fiscal.position']._get_fiscal_position(partner)
+                taxes = fiscal_position.map_tax(product_taxes)
+                product_price = product_ctxt.product_tmpl_id._apply_taxes_to_price(
+                    product_ctxt.list_price,
+                    product_ctxt.currency_id,
+                    product_taxes,
+                    taxes,
+                    product_ctxt,
+                    website=website,
+                )
                 body_html = self_ctxt.env['mail.render.mixin']._render_template(
                     'website_sale_stock.availability_email_body',
                     'res.partner',
                     partner.ids,
                     engine='qweb_view',
-                    add_context={'product': product_ctxt},
+                    add_context={'product': product_ctxt, 'product_price': product_price},
                     options={'post_process': True},
                 )[partner.id]
                 full_mail = product_ctxt.env['mail.render.mixin']._render_encapsulate(
