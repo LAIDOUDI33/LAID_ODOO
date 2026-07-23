@@ -1,6 +1,20 @@
 from odoo import models
 
 
+class ReportMrpLabelProductionZpl(models.AbstractModel):
+    _name = 'report.mrp.label_production_view'
+    _inherit = 'report.product.label.base'
+    _description = 'MRP Finished Product Label Report ZPL'
+
+    def _get_report_values(self, docids, data):
+        return {
+            'doc_ids': docids,
+            'doc_model': 'mrp.production',
+            'docs': self.env['mrp.production'].browse(docids),
+            'prepare_zpl_barcode_graphic': self._prepare_zpl_barcode_graphic,
+        }
+
+
 class ReportMrpLabelProductionPdf(models.AbstractModel):
     _name = 'report.mrp.label_production_view_pdf'
     _inherit = 'report.product.label.base'

@@ -5,19 +5,99 @@ from odoo import models
 
 class ReportStockLabel_Lot_Template_View(models.AbstractModel):
     _name = 'report.stock.label_lot_template_view'
+    _inherit = 'report.product.label.base'
     _description = 'Lot Label Report'
 
     def _get_report_values(self, docids, data):
         lots = self.env['stock.lot'].browse(docids)
         lot_list = []
         for lot in lots:
+            product = lot.product_id.with_context(display_default_code=False)
             lot_list.append({
-                'display_name_markup': markupsafe.Markup(lot.product_id.display_name),
+                'default_code_markup': markupsafe.Markup(product.default_code) if product.default_code else '',
+                'display_name_markup': markupsafe.Markup(product.display_name),
                 'name': markupsafe.Markup(lot.name),
-                'lot_record': lot
+                'barcode_graphic': self._prepare_zpl_barcode_graphic(lot.name, 378, 74),
+                'lot_record': lot,
             })
         return {
             'docs': lot_list,
+        }
+
+
+class ReportStockLabelLocationTemplateView(models.AbstractModel):
+    _name = 'report.stock.label_location_template_view'
+    _inherit = 'report.product.label.base'
+    _description = 'Location Label Report'
+
+    def _get_report_values(self, docids, data):
+        locations = self.env['stock.location'].browse(docids)
+        location_list = []
+        for location in locations:
+            barcode = location.barcode or location.name
+            location_list.append({
+                'barcode': markupsafe.Markup(barcode),
+                'barcode_graphic': self._prepare_zpl_barcode_graphic(barcode, 366, 110),
+                'label_title': markupsafe.Markup(location.display_name),
+                'show_barcode_value': bool(location.barcode),
+            })
+        return {
+            'docs': location_list,
+        }
+
+
+class ReportStockLabelPickingTypeView(models.AbstractModel):
+    _name = 'report.stock.label_picking_type_view'
+    _inherit = 'report.product.label.base'
+    _description = 'Operation Type Label Report'
+
+    def _get_report_values(self, docids, data):
+        operations = self.env['stock.picking.type'].browse(docids)
+        return {
+            'docs': [{
+                'barcode': markupsafe.Markup(operation.barcode) if operation.barcode else '',
+                'barcode_graphic': (
+                    self._prepare_zpl_barcode_graphic(operation.barcode, 366, 110)
+                    if operation.barcode
+                    else False
+                ),
+                'label_title': markupsafe.Markup(operation.name),
+                'show_barcode_value': bool(operation.barcode),
+            } for operation in operations],
+        }
+
+
+class ReportStockLabelPackageTemplateView(models.AbstractModel):
+    _name = 'report.stock.label_package_template_view'
+    _inherit = 'report.product.label.base'
+    _description = 'Package Label Report'
+
+    def _prepare_package_labels(self, packages):
+        return [{
+            'barcode_graphic': (
+                False
+                if package.valid_sscc
+                else self._prepare_zpl_barcode_graphic(package.name, 447, 80)
+            ),
+            'record': package,
+        } for package in packages]
+
+    def _get_report_values(self, docids, data):
+        packages = self.env['stock.package'].browse(docids)
+        return {
+            'docs': self._prepare_package_labels(packages),
+        }
+
+
+class ReportStockLabelPackageHistoryTemplateView(models.AbstractModel):
+    _name = 'report.stock.label_package_history_template_view'
+    _inherit = 'report.stock.label_package_template_view'
+    _description = 'Package History Label Report'
+
+    def _get_report_values(self, docids, data):
+        package_histories = self.env['stock.package.history'].browse(docids)
+        return {
+            'docs': self._prepare_package_labels(package_histories.package_id),
         }
 
 

@@ -6,13 +6,13 @@
         </template>
 
         <template id="report_simple_label4x12_standard" inherit_id="product.report_simple_label4x12" primary="True">
-            <xpath expr="//div[hasclass('o_label_centered_content')]/div[hasclass('o_label_table')][1]/div[hasclass('o_label_meta_block')]" position="replace">
+            <xpath expr="//div[hasclass('o_label_centered_content')]/div[hasclass('o_label_table')][1]/t[@t-call='product.report_label_price_block']" position="replace">
                 <t t-call="stock.report_lot_label_meta_block"/>
             </xpath>
         </template>
 
         <template id="report_simple_label4x12_gs1" inherit_id="product.report_simple_label4x12_gs1" primary="True">
-            <xpath expr="//div[hasclass('o_label_info_bottom')]/div[hasclass('o_label_meta_block')]" position="replace">
+            <xpath expr="//div[hasclass('o_label_info_bottom')]/t[@t-call='product.report_label_price_block']" position="replace">
                 <t t-call="stock.report_lot_label_meta_block"/>
             </xpath>
         </template>

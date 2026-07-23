@@ -5,7 +5,15 @@
 <template id="report_producttemplatelabel2x7">
     <t t-call="web.basic_layout">
         <div class="page">
-            <t t-call="product.report_productlabel" columns="2" rows="7"/>
+            <t t-call="product.report_productlabel" columns="2" rows="7" barcode_format="'barcode'"/>
+        </div>
+    </t>
+</template>
+
+<template id="report_producttemplatelabel2x7_qr">
+    <t t-call="web.basic_layout">
+        <div class="page">
+            <t t-call="product.report_productlabel" columns="2" rows="7" barcode_format="'qr'"/>
         </div>
     </t>
 </template>
@@ -13,7 +21,15 @@
 <template id="report_producttemplatelabel4x7">
     <t t-call="web.basic_layout">
         <div class="page">
-            <t t-call="product.report_productlabel" columns="4" rows="7"/>
+            <t t-call="product.report_productlabel" columns="4" rows="7" barcode_format="'barcode'"/>
+        </div>
+    </t>
+</template>
+
+<template id="report_producttemplatelabel4x7_qr">
+    <t t-call="web.basic_layout">
+        <div class="page">
+            <t t-call="product.report_productlabel" columns="4" rows="7" barcode_format="'qr'"/>
         </div>
     </t>
 </template>
@@ -21,7 +37,15 @@
 <template id="report_producttemplatelabel4x12">
     <t t-call="web.basic_layout">
         <div class="page">
-            <t t-call="product.report_productlabel" columns="4" rows="12"/>
+            <t t-call="product.report_productlabel" columns="4" rows="12" barcode_format="'barcode'"/>
+        </div>
+    </t>
+</template>
+
+<template id="report_producttemplatelabel4x12_qr">
+    <t t-call="web.basic_layout">
+        <div class="page">
+            <t t-call="product.report_productlabel" columns="4" rows="12" barcode_format="'qr'"/>
         </div>
     </t>
 </template>
@@ -29,7 +53,15 @@
 <template id="report_producttemplatelabel_dymo">
     <t t-call="web.basic_layout">
         <div class="page">
-            <t t-call="product.report_productlabel_dymo"/>
+            <t t-call="product.report_productlabel_dymo" barcode_format="'barcode'"/>
+        </div>
+    </t>
+</template>
+
+<template id="report_producttemplatelabel_dymo_qr">
+    <t t-call="web.basic_layout">
+        <div class="page">
+            <t t-call="product.report_productlabel_dymo" barcode_format="'qr'"/>
         </div>
     </t>
 </template>

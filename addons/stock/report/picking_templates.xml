@@ -1,48 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
     <data>
-        <template id="label_transfer_template_view_zpl">
-            <t t-set="uom_unit" t-value="env.ref('uom.product_uom_unit')"/>
-            <t t-foreach="docs" t-as="picking">
-
-                <t t-set="picking_quantity" t-value="any(picking.move_ids.move_line_ids.mapped('quantity'))"/>
-                <t t-foreach="picking.move_ids" t-as="move">
-                    <t t-foreach="move.move_line_ids" t-as="move_line">
-                        <t t-if="move_line.product_id.uom_id._has_common_reference(uom_unit)">
-                            <t t-if="picking_quantity">
-                                <t t-set="qty" t-value="int(move_line.quantity)"/>
-                            </t>
-                            <t t-else="">
-                                <t t-set="qty" t-value="int(move_line.reserved_uom_qty)"/>
-                            </t>
-                        </t>
-                        <t t-else="">
-                            <t t-set="qty" t-value="1"/>
-                        </t>
-                        <t t-foreach="range(qty)" t-as="item">
-                            <t t-translation="off">
-^XA
-^FO100,50
-^A0N,44,33^FD<t t-out="move_line.product_id.display_name"/>^FS
-^FO100,100
-<t t-if="move_line.product_id.tracking in ['lot', 'serial'] and (move_line.lot_id or move_line.lot_name)">
-^A0N,44,33^FDLN/SN: <t t-out="move_line.lot_id.name or move_line.lot_name"/>^FS
-^FO100,150^BY3
-^BCN,100,Y,N,N
-^FD<t t-out="move_line.lot_id.name or move_line.lot_name"/>^FS
-</t>
-<t t-if="(move_line.product_id.tracking not in ['lot', 'serial']) and move_line.product_id.barcode">
-^BCN,100,Y,N,N
-^FD<t t-out="move_line.product_id.barcode"/>^FS
-</t>
-^XZ
-                            </t>
-                        </t>
-                    </t>
-                </t>
-            </t>
-        </template>
-
         <template id="label_transfer_template_view_pdf">
             <t t-call="web.basic_layout">
                 <div class="page">
@@ -108,19 +66,34 @@
             </t>
         </template>
 
+        <template id="zpl_barcode_label_4x7">
+            <t t-translation="off">
+^XA^CI28
+^PW376
+^LL297
+^FO5,60^A0N,30,24^FB366,1,0,C^FD<t t-out="label_title"/>^FS
+                <t t-if="barcode">
+                    <t t-if="barcode_graphic">
+^FO5,100^GFA,<t t-out="barcode_graphic['total_bytes']"/>,<t t-out="barcode_graphic['total_bytes']"/>,<t t-out="barcode_graphic['bytes_per_row']"/>,<t t-out="barcode_graphic['data']"/>^FS
+                    </t>
+                    <t t-else="">
+^FO5,100^BY3^BCN,110,N,N,N^FD<t t-out="barcode"/>^FS
+                    </t>
+                    <t t-if="show_barcode_value">
+^FO5,215^A0N,22,17^FB366,1,0,C^FD<t t-out="barcode"/>^FS
+                    </t>
+                </t>
+^XZ
+            </t>
+        </template>
+
         <template id="label_picking_type_view">
             <t t-foreach="docs" t-as="operation">
-                <t t-translation="off">
-^XA
-^FO100,50
-^A0N,44,33^FD<t t-out="operation.name"/>^FS
-<t t-if="operation.barcode">
-^FO100,100
-^BCN,100,Y,N,N
-^FD<t t-out="operation.barcode"/>^FS
-</t>
-^XZ
-                </t>
+                <t t-set="barcode" t-value="operation['barcode']"/>
+                <t t-set="barcode_graphic" t-value="operation['barcode_graphic']"/>
+                <t t-set="label_title" t-value="operation['label_title']"/>
+                <t t-set="show_barcode_value" t-value="operation['show_barcode_value']"/>
+                <t t-call="stock.zpl_barcode_label_4x7"/>
             </t>
         </template>
     </data>

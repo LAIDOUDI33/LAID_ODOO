@@ -20,9 +20,54 @@
             </div>
         </template>
 
-        <template id="report_simple_label2x7">
-            <t t-set="barcode_size" t-value="'width:100%;height:29mm'"/>
+        <template id="report_label_barcode">
+            <t t-set="symbology" t-value="'auto' if symbology is None else symbology"/>
+            <div t-if="label['barcode']"
+                 class="o_label_barcode"
+                 t-out="label['barcode']"
+                 t-options="{
+                     'widget': 'barcode',
+                     'quiet': 0,
+                     'symbology': symbology,
+                     'img_style': barcode_size
+                 }"/>
+            <div t-else="" class="o_label_barcode" t-att-style="barcode_size">&amp;nbsp;</div>
+        </template>
 
+        <template id="report_label_product_block">
+            <t t-set="show_packaging" t-value="bool(label.get('packaging_name')) if show_packaging is None else show_packaging"/>
+            <div class="o_label_product_block">
+                <div class="o_product_code" t-out="label['product_code']"/>
+                <div t-if="show_packaging"
+                     class="o_product_code o_product_packaging"
+                     t-out="label['packaging_name']"/>
+            </div>
+        </template>
+
+        <template id="report_label_price_block">
+            <t t-set="show_price" t-value="label['price_included'] if show_price is None else show_price"/>
+            <t t-set="show_packaging" t-value="bool(label.get('packaging_name')) if show_packaging is None else show_packaging"/>
+            <div class="o_label_meta_block">
+                <t t-if="show_price">
+                    <strong class="o_label_price"
+                            t-out="label['price']"
+                            t-options="{
+                                'widget': 'monetary',
+                                'display_currency': label['currency_id']
+                            }"/>
+                    <div t-if="label['base_unit_price']" class="o_label_meta_line">
+                        <t t-out="label['base_unit_price']"
+                           t-options="{'widget': 'monetary', 'display_currency': label['currency_id']}"/>
+                        /<t t-out="label['base_unit_name']"/>
+                    </div>
+                </t>
+                <div t-elif="show_packaging"
+                     class="o_label_meta_line o_packaging_meta_line"
+                     t-out="label['packaging_name']"/>
+            </div>
+        </template>
+
+        <template id="report_simple_label2x7">
             <td t-att-style="label['invisible'] and 'visibility:hidden;'">
                 <div class="o_label_full o_label_2x7">
                     <t t-if="not label.get('invisible')">
@@ -34,14 +79,7 @@
 
                                 <div class="o_label_barcode_side">
                                     <div class="o_label_barcode_block" t-if="label['barcode']">
-                                        <div class="o_label_barcode"
-                                            t-out="label['barcode']"
-                                            t-options="{
-                                                'widget': 'barcode',
-                                                'quiet': 0,
-                                                'symbology': 'auto',
-                                                'img_style': barcode_size
-                                            }"/>
+                                        <t t-call="product.report_label_barcode" barcode_size="'width:100%;height:29mm'"/>
                                         <div class="o_label_identifier_text" t-out="label['identifier_text']"/>
                                     </div>
                                 </div>
@@ -49,26 +87,54 @@
                                 <div class="o_label_info_side">
                                     <div class="o_label_title" t-out="label['title']"/>
 
-                                    <div class="o_product_code" t-out="label['product_code']"/>
+                                    <t t-call="product.report_label_product_block"/>
 
-                                    <div class="o_label_extra_content">
+                                    <div t-att-class="'o_label_extra_content%s' % (' o_label_extra_content_single_line' if label.get('packaging_name') else '')">
                                         <t t-if="label['extra_html']" t-out="label['extra_html']"/>
                                         <t t-else="">&amp;nbsp;</t>
                                     </div>
 
-                                    <div t-if="label['price_included']" class="o_label_meta_block">
-                                        <strong class="o_label_price"
-                                                t-out="label['price']"
-                                                t-options="{
-                                                    'widget': 'monetary',
-                                                    'display_currency': label['currency_id']
-                                                }"/>
-                                        <div t-if="label['base_unit_price']" class="o_label_meta_line">
-                                            <t t-out="label['base_unit_price']"
-                                               t-options="{'widget': 'monetary', 'display_currency': label['currency_id']}"/>
-                                            /<t t-out="label['base_unit_name']"/>
-                                        </div>
+                                    <t t-call="product.report_label_price_block" show_packaging="False"/>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                    </t>
+                </div>
+            </td>
+        </template>
+
+        <template id="report_simple_label2x7_qr">
+            <td t-att-style="label['invisible'] and 'visibility:hidden;'">
+                <div class="o_label_full o_label_2x7 o_label_2x7_qr">
+                    <t t-if="not label.get('invisible')">
+                    <t t-call="product.report_label_contour_marks"/>
+                    <div class="o_label_centering_table">
+                        <div class="o_label_centered_content">
+
+                            <div class="o_label_table">
+
+                                <div class="o_label_barcode_side">
+                                    <div class="o_label_barcode_block" t-if="label['barcode']">
+                                        <t t-call="product.report_label_barcode"
+                                           barcode_size="'width:29mm;height:29mm'"
+                                           symbology="'ECC200DataMatrix'"/>
+                                        <div class="o_label_identifier_text" t-out="label['identifier_text']"/>
                                     </div>
+                                </div>
+
+                                <div class="o_label_info_side">
+                                    <div class="o_label_title" t-out="label['title']"/>
+
+                                    <t t-call="product.report_label_product_block"/>
+
+                                    <div t-att-class="'o_label_extra_content%s' % (' o_label_extra_content_single_line' if label.get('packaging_name') else '')">
+                                        <t t-if="label['extra_html']" t-out="label['extra_html']"/>
+                                        <t t-else="">&amp;nbsp;</t>
+                                    </div>
+
+                                    <t t-call="product.report_label_price_block" show_packaging="False"/>
                                 </div>
 
                             </div>
@@ -80,8 +146,6 @@
         </template>
 
         <template id="report_simple_label4x7">
-            <t t-set="barcode_size" t-value="'width:100%;height:8mm'"/>
-
             <td t-att-style="label['invisible'] and 'visibility:hidden;'">
                 <div class="o_label_full o_label_4x7">
                     <t t-if="not label.get('invisible')">
@@ -93,16 +157,7 @@
 
                             <div class="o_label_content">
                                 <div class="o_label_barcode_block">
-                                    <div t-if="label['barcode']"
-                                        class="o_label_barcode"
-                                        t-out="label['barcode']"
-                                        t-options="{
-                                            'widget': 'barcode',
-                                            'quiet': 0,
-                                            'symbology': 'auto',
-                                            'img_style': barcode_size
-                                        }"/>
-                                    <div t-else="" class="o_label_barcode" t-att-style="barcode_size">&amp;nbsp;</div>
+                                    <t t-call="product.report_label_barcode" barcode_size="'width:100%;height:8mm'"/>
                                     <div class="o_label_identifier_text">
                                         <t t-if="label['barcode']" t-out="label['identifier_text']"/>
                                         <t t-else="">&amp;nbsp;</t>
@@ -110,19 +165,43 @@
                                 </div>
 
                                 <div class="o_label_table">
-                                    <div class="o_product_code" t-out="label['product_code']"/>
+                                    <t t-call="product.report_label_product_block"
+                                       show_packaging="label['price_included']"/>
 
-                                    <div t-if="label['price_included']" class="o_label_meta_block">
-                                        <strong class="o_label_price"
-                                                t-out="label['price']"
-                                                t-options="{
-                                                    'widget': 'monetary',
-                                                    'display_currency': label['currency_id']
-                                                }"/>
-                                        <div t-if="label['base_unit_price']" class="o_label_meta_line">
-                                            <t t-out="label['base_unit_price']"
-                                               t-options="{'widget': 'monetary', 'display_currency': label['currency_id']}"/>
-                                            /<t t-out="label['base_unit_name']"/>
+                                    <t t-call="product.report_label_price_block"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    </t>
+                </div>
+            </td>
+        </template>
+
+        <template id="report_simple_label4x7_qr">
+            <td t-att-style="label['invisible'] and 'visibility:hidden;'">
+                <div class="o_label_full o_label_4x7 o_label_4x7_qr">
+                    <t t-if="not label.get('invisible')">
+                    <t t-call="product.report_label_contour_marks"/>
+                    <div class="o_label_centering_table">
+                        <div class="o_label_centered_content">
+                            <div class="o_label_title_row">
+                                <div class="o_label_title" t-out="label['title']"/>
+                            </div>
+                            <div class="o_label_qr_body">
+                                <div class="o_label_table">
+                                    <div class="o_label_barcode_side">
+                                        <div class="o_label_barcode_block" t-if="label['barcode']">
+                                            <t t-call="product.report_label_barcode"
+                                               barcode_size="'width:20mm;height:20mm'"
+                                               symbology="'ECC200DataMatrix'"/>
+                                            <div class="o_label_identifier_text" t-out="label['identifier_text']"/>
+                                        </div>
+                                    </div>
+                                    <div class="o_label_info_side">
+                                        <div class="o_label_info_frame">
+                                            <t t-call="product.report_label_product_block"/>
+                                            <t t-call="product.report_label_price_block" show_packaging="False"/>
                                         </div>
                                     </div>
                                 </div>
@@ -135,8 +214,6 @@
         </template>
 
         <template id="report_simple_label4x12">
-            <t t-set="barcode_size" t-value="'width:100%;height:6mm'"/>
-
             <td t-att-style="label['invisible'] and 'visibility:hidden;'">
                 <div t-attf-class="o_label_full o_label_4x12 #{label.get('label_class', '')}">
                     <t t-if="not label.get('invisible')">
@@ -144,35 +221,19 @@
                     <div class="o_label_centering_table">
                         <div class="o_label_centered_content">
                             <div class="o_label_table o_label_header">
-                                <div class="o_label_title" t-out="label['title']"/>
-
-                                <div t-if="label['price_included']" class="o_label_meta_block">
-                                    <strong class="o_label_price"
-                                            t-out="label['price']"
-                                            t-options="{
-                                                'widget': 'monetary',
-                                                'display_currency': label['currency_id']
-                                            }"/>
-                                    <div t-if="label['base_unit_price']" class="o_label_meta_line">
-                                        <t t-out="label['base_unit_price']"
-                                           t-options="{'widget': 'monetary', 'display_currency': label['currency_id']}"/>
-                                        /<t t-out="label['base_unit_name']"/>
-                                    </div>
+                                <div class="o_label_title_block">
+                                    <div class="o_label_title" t-out="label['title']"/>
+                                    <div t-if="label.get('packaging_name')"
+                                         class="o_product_code o_product_packaging"
+                                         t-out="label['packaging_name']"/>
                                 </div>
+
+                                <t t-call="product.report_label_price_block" show_packaging="False"/>
                             </div>
 
                             <div class="o_label_content">
                                 <div class="o_label_barcode_block">
-                                    <div t-if="label['barcode']"
-                                        class="o_label_barcode"
-                                        t-out="label['barcode']"
-                                        t-options="{
-                                            'widget': 'barcode',
-                                            'quiet': 0,
-                                            'symbology': 'auto',
-                                            'img_style': barcode_size
-                                        }"/>
-                                    <div t-else="" class="o_label_barcode" t-att-style="barcode_size">&amp;nbsp;</div>
+                                    <t t-call="product.report_label_barcode" barcode_size="'width:100%;height:6mm'"/>
                                 </div>
 
                                 <div class="o_label_table o_label_footer">
@@ -181,7 +242,40 @@
                                         <t t-else="">&amp;nbsp;</t>
                                     </div>
 
-                                    <div class="o_product_code" t-out="label['product_code']"/>
+                                    <t t-call="product.report_label_product_block" show_packaging="False"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    </t>
+                </div>
+            </td>
+        </template>
+
+        <template id="report_simple_label4x12_qr">
+            <td t-att-style="label['invisible'] and 'visibility:hidden;'">
+                <div t-attf-class="o_label_full o_label_4x12 o_label_4x12_qr #{label.get('label_class', '')}">
+                    <t t-if="not label.get('invisible')">
+                    <t t-call="product.report_label_contour_marks"/>
+                    <div class="o_label_centering_table">
+                        <div class="o_label_centered_content">
+                            <div class="o_label_table">
+                                <div class="o_label_barcode_side">
+                                    <div class="o_label_barcode_block" t-if="label['barcode']">
+                                        <t t-call="product.report_label_barcode"
+                                           barcode_size="'width:13mm;height:13mm'"
+                                           symbology="'ECC200DataMatrix'"/>
+                                        <div class="o_label_identifier_text" t-out="label['identifier_text']"/>
+                                    </div>
+                                </div>
+                                <div class="o_label_info_side">
+                                    <div class="o_label_info_frame">
+                                        <div class="o_label_info_top">
+                                            <div class="o_label_title" t-out="label['title']"/>
+                                            <t t-call="product.report_label_product_block"/>
+                                        </div>
+                                        <t t-call="product.report_label_price_block" show_packaging="False"/>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -192,8 +286,6 @@
         </template>
 
         <template id="report_simple_label4x12_gs1">
-            <t t-set="barcode_size" t-value="'width:100%;height:16mm'"/>
-
             <td t-att-style="label['invisible'] and 'visibility:hidden;'">
                 <div class="o_label_full o_label_4x12_gs1">
                     <t t-if="not label.get('invisible')">
@@ -203,16 +295,9 @@
                             <div class="o_label_table">
                                 <div class="o_label_barcode_side">
                                     <div class="o_label_barcode_block">
-                                        <div t-if="label['barcode']"
-                                            class="o_label_barcode"
-                                            t-out="label['barcode']"
-                                            t-options="{
-                                                'widget': 'barcode',
-                                                'quiet': 0,
-                                                'symbology': 'ECC200DataMatrix',
-                                                'img_style': barcode_size
-                                            }"/>
-                                        <div t-else="" class="o_label_barcode" t-att-style="barcode_size">&amp;nbsp;</div>
+                                        <t t-call="product.report_label_barcode"
+                                           barcode_size="'width:100%;height:16mm'"
+                                           symbology="'ECC200DataMatrix'"/>
                                     </div>
                                 </div>
 
@@ -220,25 +305,14 @@
                                     <div class="o_label_info_frame">
                                         <div class="o_label_info_top">
                                             <div class="o_label_title" t-out="label['title']"/>
-                                            <div class="o_product_code" t-out="label['product_code']"/>
+                                            <t t-call="product.report_label_product_block"
+                                               show_packaging="label['price_included']"/>
                                         </div>
 
                                         <div class="o_label_info_bottom">
                                             <div class="o_label_identifier_text" t-out="label['identifier_text']"/>
 
-                                            <div t-if="label['price_included']" class="o_label_meta_block">
-                                                <strong class="o_label_price"
-                                                        t-out="label['price']"
-                                                        t-options="{
-                                                            'widget': 'monetary',
-                                                            'display_currency': label['currency_id']
-                                                        }"/>
-                                                <div t-if="label['base_unit_price']" class="o_label_meta_line">
-                                                    <t t-out="label['base_unit_price']"
-                                                       t-options="{'widget': 'monetary', 'display_currency': label['currency_id']}"/>
-                                                    /<t t-out="label['base_unit_name']"/>
-                                                </div>
-                                            </div>
+                                            <t t-call="product.report_label_price_block"/>
                                         </div>
                                     </div>
                                 </div>
@@ -251,7 +325,6 @@
         </template>
 
         <template id="report_simple_label_dymo">
-            <t t-set="barcode_size" t-value="'width:100%;height:9mm'"/>
             <t t-set="padding_page" t-value="'padding: 2mm'"/>
 
             <div t-attf-class="o_label_sheet o_label_dymo #{label.get('label_class', '')}" t-att-style="padding_page">
@@ -262,16 +335,7 @@
 
                             <div class="o_label_content">
                                 <div class="o_label_barcode_block">
-                                    <div t-if="label['barcode']"
-                                        class="o_label_barcode"
-                                        t-out="label['barcode']"
-                                        t-options="{
-                                            'widget': 'barcode',
-                                            'quiet': 0,
-                                            'symbology': 'auto',
-                                            'img_style': barcode_size
-                                        }"/>
-                                    <div t-else="" class="o_label_barcode" t-att-style="barcode_size">&amp;nbsp;</div>
+                                    <t t-call="product.report_label_barcode" barcode_size="'width:100%;height:9mm'"/>
                                     <div class="o_label_identifier_text">
                                         <t t-if="label['barcode']" t-out="label['identifier_text']"/>
                                         <t t-else="">&amp;nbsp;</t>
@@ -281,20 +345,41 @@
                                 <div t-if="label['price_included'] and not label['base_unit_price']" class="o_label_no_unit_price_spacer">&amp;nbsp;</div>
 
                                 <div class="o_label_table">
-                                    <div class="o_product_code" t-out="label['product_code']"/>
+                                    <t t-call="product.report_label_product_block"
+                                       show_packaging="label['price_included']"/>
 
-                                    <div t-if="label['price_included']" class="o_label_meta_block">
-                                        <strong class="o_label_price"
-                                                t-out="label['price']"
-                                                t-options="{
-                                                    'widget': 'monetary',
-                                                    'display_currency': label['currency_id']
-                                                }"/>
-                                        <div t-if="label['base_unit_price']" class="o_label_meta_line">
-                                            <t t-out="label['base_unit_price']"
-                                               t-options="{'widget': 'monetary', 'display_currency': label['currency_id']}"/>
-                                            /<t t-out="label['base_unit_name']"/>
+                                    <t t-call="product.report_label_price_block"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template id="report_simple_label_dymo_qr">
+            <t t-set="padding_page" t-value="'padding: 2mm'"/>
+
+            <div t-attf-class="o_label_sheet o_label_dymo o_label_dymo_qr #{label.get('label_class', '')}" t-att-style="padding_page">
+                <div class="o_label_full">
+                    <div class="o_label_centering_table">
+                        <div class="o_label_centered_content">
+                            <div class="o_label_table">
+                                <div class="o_label_barcode_side">
+                                    <div class="o_label_barcode_block" t-if="label['barcode']">
+                                        <t t-call="product.report_label_barcode"
+                                           barcode_size="'width:20mm;height:20mm'"
+                                           symbology="'ECC200DataMatrix'"/>
+                                        <div class="o_label_identifier_text" t-out="label['identifier_text']"/>
+                                    </div>
+                                </div>
+                                <div class="o_label_info_side">
+                                    <div class="o_label_info_frame">
+                                        <div class="o_label_info_top">
+                                            <div class="o_label_title" t-out="label['title']"/>
+                                            <t t-call="product.report_label_product_block"/>
                                         </div>
+                                        <t t-call="product.report_label_price_block" show_packaging="False"/>
                                     </div>
                                 </div>
                             </div>
@@ -309,15 +394,15 @@
                 <t t-if="columns and rows">
                     <t t-if="columns == 2 and rows == 7">
                         <t t-set="padding_page" t-value="'padding: 14mm 3mm'"/>
-                        <t t-set="report_to_call" t-value="'2x7'"/>
+                        <t t-set="report_to_call" t-value="'2x7_qr' if barcode_format == 'qr' else '2x7'"/>
                     </t>
                     <t t-if="columns == 4 and rows == 7">
                         <t t-set="padding_page" t-value="'padding: 14mm 3mm'"/>
-                        <t t-set="report_to_call" t-value="'4x7'"/>
+                        <t t-set="report_to_call" t-value="'4x7_qr' if barcode_format == 'qr' else '4x7'"/>
                     </t>
                     <t t-if="columns == 4 and rows == 12">
                         <t t-set="padding_page" t-value="'padding: 20mm 8mm'"/>
-                        <t t-set="report_to_call" t-value="'4x12'"/>
+                        <t t-set="report_to_call" t-value="'4x12_qr' if barcode_format == 'qr' else '4x12'"/>
                     </t>
                     <t t-foreach="label_pages" t-as="page_rows">
                         <div class="o_label_sheet" t-att-style="padding_page">
@@ -329,11 +414,20 @@
                                             <t t-if="report_to_call == '2x7'">
                                                 <t t-call="product.report_simple_label2x7"/>
                                             </t>
+                                            <t t-elif="report_to_call == '2x7_qr'">
+                                                <t t-call="product.report_simple_label2x7_qr"/>
+                                            </t>
                                             <t t-elif="report_to_call == '4x7'">
                                                 <t t-call="product.report_simple_label4x7"/>
                                             </t>
+                                            <t t-elif="report_to_call == '4x7_qr'">
+                                                <t t-call="product.report_simple_label4x7_qr"/>
+                                            </t>
                                             <t t-elif="report_to_call == '4x12'">
                                                 <t t-call="product.report_simple_label4x12"/>
+                                            </t>
+                                            <t t-elif="report_to_call == '4x12_qr'">
+                                                <t t-call="product.report_simple_label4x12_qr"/>
                                             </t>
                                         </t>
                                     </tr>
@@ -348,68 +442,244 @@
         <template id="report_productlabel_dymo">
             <t t-call="web.html_container">
                 <t t-foreach="dymo_labels" t-as="label">
-                    <t t-call="product.report_simple_label_dymo"/>
+                    <t t-if="barcode_format == 'qr'">
+                        <t t-call="product.report_simple_label_dymo_qr"/>
+                    </t>
+                    <t t-else="">
+                        <t t-call="product.report_simple_label_dymo"/>
+                    </t>
                 </t>
+            </t>
+        </template>
+
+        <template id="zpl_label_4x12">
+            <t t-translation="off">
+^XA^CI28
+^PW406
+^LL203
+^FO14,23^A0N,23^FB235,1,0,L^FD<t t-out="label_title"/>^FS
+                <t t-out="0"/>
+                <t t-if="barcode">
+                    <t t-if="barcode_graphic">
+^FO14,67^GFA,<t t-out="barcode_graphic['total_bytes']"/>,<t t-out="barcode_graphic['total_bytes']"/>,<t t-out="barcode_graphic['bytes_per_row']"/>,<t t-out="barcode_graphic['data']"/>^FS
+                    </t>
+                    <t t-else="">
+^FO14,67^BY4^BCN,74,N^FD<t t-out="barcode"/>^FS
+                    </t>
+^FO14,159^A0N,21,16^FB170,1,0,L^FD<t t-out="barcode"/>^FS
+                </t>
+                <t t-else="">
+^FO14,90^A0N,22^FB378,1,0,C^FDNo barcode available^FS
+                </t>
+                <t t-if="label_code">
+^FO222,159^A0N,21,16^FB170,1,0,R^FD<t t-out="label_code"/>^FS
+                </t>
+^XZ
             </t>
         </template>
 
         <template id="normal_zpl_label">
-            <t t-if="product._name == 'product.product'">
-^FT35,40^A0N,25^FD<t t-out="f'[{product.default_code}] {product.name}' if product.default_code else product.name"/>^FS
-^FT35,65^A0N,20^FD<t t-out="product.product_template_attribute_value_ids._get_combination_name()"/>^FS
-            </t>
-            <t t-else="">
-^FT35,40^A0N,25^FD<t t-out="product_info['display_name_markup']"/>^FS
-            </t>
+^PW457
+^LL254
+^FO0,25^A0N,30^FB457,1,0,C^FD<t t-out="label_title[:37]"/>^FS
             <t t-if="barcode">
-^FO35,77^BY2 ^BCN,100,Y,N,N ^FD<t t-out="barcode"/>^FS
+                <t t-if="barcode_graphic">
+^FO5,66^GFA,<t t-out="barcode_graphic['total_bytes']"/>,<t t-out="barcode_graphic['total_bytes']"/>,<t t-out="barcode_graphic['bytes_per_row']"/>,<t t-out="barcode_graphic['data']"/>^FS
+^FO5,149^A0N,20^FB447,1,0,C^FD<t t-out="barcode"/>^FS
+                </t>
+                <t t-else="">
+^FO5,66^BY2^BCN,80,Y,N,N^FD<t t-out="barcode"/>^FS
+                </t>
+            </t>
+            <t t-if="label_code">
+^FO5,200^A0N,18,15^TBN,195,19^FD<t t-out="label_code.replace(' ', '\u00a0')"/>^FS
+            </t>
+            <t t-if="price_included and label_packaging">
+^FO5,220^A0N,18,15^TBN,195,19^FD<t t-out="label_packaging"/>^FS
             </t>
             <t t-if="price_included">
+^FO452,180,1^A0N,38^TBN,165,40^FH^FD<t t-out="currency_id.format(price)"/>^FS
                 <t t-if="base_unit_price">
-^FO150,210 ^A0N,25^FH ^FD(<t t-out="currency_id.format(base_unit_price)"/>/<t t-out="product.base_unit_name"/>)^FS
+^FO452,220,1^A0N,18^TBN,165,19^FH^FD<t t-out="currency_id.format(base_unit_price)"/>/<t t-out="product.base_unit_name"/>^FS
                 </t>
-^FO300,200 ^A0N,40^FH ^FD<t t-out="currency_id.format(price)"/>^FS
+            </t>
+            <t t-elif="label_packaging">
+^FO452,200,1^A0N,18^TBN,165,19^FD<t t-out="label_packaging"/>^FS
+            </t>
+        </template>
+
+        <template id="normal_zpl_label_qr">
+^PW457
+^LL254
+            <t t-if="barcode">
+^FO6,35^BXN,8,200,20,20^FD<t t-out="barcode"/>^FS
+^FO6,200^A0N,20^FB160,1,0,C^FD<t t-out="barcode[:16]"/>^FS
+            </t>
+^FO174,35^A0N,27^TBN,277,28^FD<t t-out="label_title.replace(' ', '\u00a0')"/>^FS
+            <t t-if="label_code">
+^FO174,66,0^A0N,18,15^TBN,277,19^FD<t t-out="label_code.replace(' ', '\u00a0')"/>^FS
+            </t>
+            <t t-if="label_packaging">
+^FO174,91,0^A0N,18,15^TBN,277,19^FD<t t-out="label_packaging.replace(' ', '\u00a0')"/>^FS
+            </t>
+            <t t-if="price_included">
+^FO451,160,1^A0N,38^TBN,165,40^FH^FD<t t-out="currency_id.format(price)"/>^FS
+                <t t-if="base_unit_price">
+^FO451,200,1^A0N,18^TBN,165,19^FH^FD<t t-out="currency_id.format(base_unit_price)"/>/<t t-out="product.base_unit_name"/>^FS
+                </t>
             </t>
         </template>
 
         <template id="alternative_zpl_label">
-            <t t-if="product._name == 'product.product'">
-^FT35,30^A0N,20^FD<t t-out="f'[{product.default_code}] {product.name}' if product.default_code else product.name"/>^FS
-^FT35,48^A0N,15^FD<t t-out="product.product_template_attribute_value_ids._get_combination_name()"/>^FS
-            </t>
-            <t t-else="">
-^FT35,30^A0N,20^FD<t t-out="product_info['display_name_markup']"/>^FS
-            </t>
+^PW406
+^LL203
+^FO5,11^A0N,27^FB396,1,0,C^FD<t t-out="label_title[:35]"/>^FS
             <t t-if="barcode">
-^FO35,55^BY2 ^BCN,100,Y,N,N ^FD<t t-out="barcode"/>^FS
+                <t t-if="barcode_graphic">
+^FO5,53^GFA,<t t-out="barcode_graphic['total_bytes']"/>,<t t-out="barcode_graphic['total_bytes']"/>,<t t-out="barcode_graphic['bytes_per_row']"/>,<t t-out="barcode_graphic['data']"/>^FS
+^FO5,120^A0N,16^FB396,1,0,C^FD<t t-out="barcode"/>^FS
+                </t>
+                <t t-else="">
+^FO5,53^BY2^BCN,64,Y,N,N^FD<t t-out="barcode"/>^FS
+                </t>
+            </t>
+            <t t-if="label_code">
+^FO5,158^A0N,16,13^TBN,172,17^FD<t t-out="label_code.replace(' ', '\u00a0')"/>^FS
+            </t>
+            <t t-if="price_included and label_packaging">
+^FO5,175^A0N,16,13^TBN,172,17^FD<t t-out="label_packaging.replace(' ', '\u00a0')"/>^FS
             </t>
             <t t-if="price_included">
+^FO401,145,1^A0N,30^TBN,187,31^FH^FD<t t-out="currency_id.format(price)"/>^FS
                 <t t-if="base_unit_price">
-^FO160,185 ^A0N,18^FH ^FD(<t t-out="currency_id.format(base_unit_price)"/>/<t t-out="product.base_unit_name"/>)^FS
+^FO401,175,1^A0N,16^TBN,187,17^FH^FD<t t-out="currency_id.format(base_unit_price)"/>/<t t-out="product.base_unit_name"/>^FS
                 </t>
-^FO290,165 ^A0N,30^FH ^FD<t t-out="currency_id.format(price)"/>^FS
+            </t>
+            <t t-elif="label_packaging">
+^FO401,158,1^A0N,16^TBN,187,17^FD<t t-out="label_packaging.replace(' ', '\u00a0')"/>^FS
+            </t>
+        </template>
+
+        <template id="alternative_zpl_label_qr">
+^PW406
+^LL203
+            <t t-if="barcode">
+^FO5,21^BXN,7,200,20,20^FD<t t-out="barcode"/>^FS
+^FO5,165^A0N,16^FB140,1,0,C^FD<t t-out="barcode[:18]"/>^FS
+            </t>
+^FO155,21^A0N,22^TBN,246,23^FD<t t-out="label_title.replace(' ', '\u00a0')"/>^FS
+            <t t-if="label_code">
+^FO155,44,0^A0N,16,13^TBN,246,17^FD<t t-out="label_code.replace(' ', '\u00a0')"/>^FS
+            </t>
+            <t t-if="label_packaging">
+^FO155,64,0^A0N,16,13^TBN,246,17^FD<t t-out="label_packaging.replace(' ', '\u00a0')"/>^FS
+            </t>
+            <t t-if="price_included">
+^FO401,135,1^A0N,30^TBN,187,31^FH^FD<t t-out="currency_id.format(price)"/>^FS
+                <t t-if="base_unit_price">
+^FO401,165,1^A0N,16^TBN,187,17^FH^FD<t t-out="currency_id.format(base_unit_price)"/>/<t t-out="product.base_unit_name"/>^FS
+                </t>
             </t>
         </template>
 
         <template id="small_zpl_label">
-            <t t-value="f'[{product.default_code}] {product.name}' if product.default_code else product.name"
-               t-set="label_title"/>
-^FT35,30^A0N,15^FD<t t-out="(label_title[:27] + '...') if len(label_title) > 30 else label_title"/>^FS
+^PW254
+^LL203
+^FO5,17^A0N,25^FB244,1,0,C^FD<t t-out="label_title[:24]"/>^FS
             <t t-if="barcode">
-^FO35,50^BY1 ^BCN,80,Y,N,N ^FD<t t-out="barcode"/>^FS
+                <t t-if="barcode_graphic">
+^FO5,50^GFA,<t t-out="barcode_graphic['total_bytes']"/>,<t t-out="barcode_graphic['total_bytes']"/>,<t t-out="barcode_graphic['bytes_per_row']"/>,<t t-out="barcode_graphic['data']"/>^FS
+^FO5,123^A0N,14^FB244,1,0,C^FD<t t-out="barcode"/>^FS
+                </t>
+                <t t-else="">
+^FO5,50^BY1^BCN,70,Y,N,N^FD<t t-out="barcode"/>^FS
+                </t>
+            </t>
+            <t t-if="label_code">
+^FO5,155^A0N,14,12^TBN,102,15^FD<t t-out="label_code.replace(' ', '\u00a0')"/>^FS
+            </t>
+            <t t-if="price_included and label_packaging">
+^FO5,170^A0N,14,12^TBN,102,15^FD<t t-out="label_packaging.replace(' ', '\u00a0')"/>^FS
             </t>
             <t t-if="price_included">
-^FO150,165 ^A0N,25^FH ^FD<t t-out="currency_id.format(price)"/>^FS
+^FO249,145,1^A0N,25^TBN,108,26^FH^FD<t t-out="currency_id.format(price)"/>^FS
+                <t t-if="base_unit_price">
+^FO249,170,1^A0N,14^TBN,108,15^FH^FD<t t-out="currency_id.format(base_unit_price)"/>/<t t-out="product.base_unit_name"/>^FS
+                </t>
+            </t>
+            <t t-elif="label_packaging">
+^FO249,155,1^A0N,14^TBN,108,15^FD<t t-out="label_packaging.replace(' ', '\u00a0')"/>^FS
+            </t>
+        </template>
+
+        <template id="small_zpl_label_qr">
+^PW254
+^LL203
+^FO6,15^A0N,25,16^FB242,1,0,C^FD<t t-out="label_title[:37]"/>^FS
+            <t t-if="barcode">
+^FO6,46^BXN,6,200,20,20^FD<t t-out="barcode"/>^FS
+^FO6,173^A0N,14^FB120,1,0,C^FD<t t-out="barcode[:17]"/>^FS
+            </t>
+            <t t-if="label_code">
+^FO132,50,0^A0N,16,13^TBN,116,17^FD<t t-out="label_code.replace(' ', '\u00a0')"/>^FS
+            </t>
+            <t t-if="label_packaging">
+^FO132,72,0^A0N,16,13^TBN,116,17^FD<t t-out="label_packaging.replace(' ', '\u00a0')"/>^FS
+            </t>
+            <t t-if="price_included">
+^FO248,145,1^A0N,25^TBN,108,26^FH^FD<t t-out="currency_id.format(price)"/>^FS
+                <t t-if="base_unit_price">
+^FO248,173,1^A0N,14^TBN,108,15^FH^FD<t t-out="currency_id.format(base_unit_price)"/>/<t t-out="product.base_unit_name"/>^FS
+                </t>
             </t>
         </template>
 
         <template id="jewelry_zpl_label">
-^FT210,30^A0N,25^FD<t t-out="product.name"/>^FS
+^PW447
+^LL102
             <t t-if="barcode">
-^FO35,5^BY1 ^BCN,80,Y,N,N ^FD<t t-out="barcode"/>^FS
+                <t t-if="barcode_graphic">
+^FO18,8^GFA,<t t-out="barcode_graphic['total_bytes']"/>,<t t-out="barcode_graphic['total_bytes']"/>,<t t-out="barcode_graphic['bytes_per_row']"/>,<t t-out="barcode_graphic['data']"/>^FS
+^FO18,86,0^A0N,12^FB175,1,0,C^FD<t t-out="barcode"/>^FS
+                </t>
+                <t t-else="">
+^FO18,8^BY1^BCN,76,Y,N,N^FD<t t-out="barcode"/>^FS
+                </t>
+            </t>
+^FO198,8,0^A0N,20^TBN,244,21^FD<t t-out="label_title.replace(' ', '\u00a0')"/>^FS
+            <t t-if="label_code">
+^FO198,29,0^A0N,15,13^TBN,244,16^FD<t t-out="label_code.replace(' ', '\u00a0')"/>^FS
+            </t>
+            <t t-if="label_packaging">
+^FO198,44,0^A0N,15,13^TBN,244,16^FD<t t-out="label_packaging.replace(' ', '\u00a0')"/>^FS
             </t>
             <t t-if="price_included">
-^FO290,50 ^A0N,30^FH ^FD<t t-out="currency_id.format(price)"/>^FS
+^FO442,60,1^A0N,24^TBN,201,25^FH^FD<t t-out="currency_id.format(price)"/>^FS
+                <t t-if="base_unit_price">
+^FO442,84,1^A0N,12^TBN,201,13^FH^FD<t t-out="currency_id.format(base_unit_price)"/>/<t t-out="product.base_unit_name"/>^FS
+                </t>
+            </t>
+        </template>
+
+        <template id="jewelry_zpl_label_qr">
+^PW447
+^LL102
+            <t t-if="barcode">
+^FO18,4^BXN,4,200,20,20^FD<t t-out="barcode"/>^FS
+^FO13,86^A0N,12^FB94,1,0,C^FD<t t-out="barcode[:14]"/>^FS
+            </t>
+^FO108,4^A0N,20^TBN,322,21^FD<t t-out="label_title.replace(' ', '\u00a0')"/>^FS
+            <t t-if="label_code">
+^FO108,29,0^A0N,15,13^TBN,320,16^FD<t t-out="label_code.replace(' ', '\u00a0')"/>^FS
+            </t>
+            <t t-if="label_packaging">
+^FO108,49,0^A0N,15,13^TBN,320,16^FD<t t-out="label_packaging.replace(' ', '\u00a0')"/>^FS
+            </t>
+            <t t-if="price_included">
+^FO435,64,1^A0N,24^TBN,201,25^FH^FD<t t-out="currency_id.format(price)"/>^FS
+                <t t-if="base_unit_price">
+^FO435,86,1^A0N,12^TBN,201,13^FH^FD<t t-out="currency_id.format(base_unit_price)"/>/<t t-out="product.base_unit_name"/>^FS
+                </t>
             </t>
         </template>
 
@@ -417,18 +687,27 @@
             <t t-foreach="quantity.items()" t-as="barcode_and_qty_by_product">
                 <t t-set="product" t-value="barcode_and_qty_by_product[0]"/>
                 <t t-set="currency_id" t-value="pricelist.currency_id or product.currency_id"/>
-                <t t-set="price" t-value="pricelist._get_product_price(product, 1, currency=currency_id)"/>
-                <t t-set="base_unit_price" t-value="product._get_base_unit_price(price) if product.base_unit_count and product.base_unit_name else 0"/>
                 <t t-foreach="barcode_and_qty_by_product[1]" t-as="product_info">
                     <t t-set="barcode" t-value="product_info['barcode']"/>
-                    <t t-foreach="range(product_info['quantity'])" t-as="qty">
+                    <t t-set="barcode_graphic" t-value="product_info['barcode_graphic']"/>
+                    <t t-set="label_packaging_uom" t-value="product_info.get('packaging') or packaging"/>
+                    <t t-set="price" t-value="pricelist._get_product_price(product, 1, currency=currency_id, uom=label_packaging_uom)"/>
+                    <t t-set="base_unit_price" t-value="product._get_base_unit_price(price) if show_base_unit_price and product.base_unit_count and product.base_unit_name else 0"/>
+                    <t t-set="label_title" t-value="product_info['display_name_markup']"/>
+                    <t t-set="label_code" t-value="product_info['default_code_markup']"/>
+                    <t t-set="label_packaging" t-value="label_packaging_uom.display_name if label_packaging_uom else ''"/>
+                    <t t-foreach="range(product_info['quantity'])" t-as="_">
                         <t t-translation="off">
 ^XA^CI28
 
-                            <t t-if="'normal' in zpl_template" t-call="product.normal_zpl_label"/>
-                            <t t-elif="'small' in zpl_template" t-call="product.small_zpl_label"/>
-                            <t t-elif="'alternative' in zpl_template" t-call="product.alternative_zpl_label"/>
-                            <t t-elif="'jewelry' in zpl_template" t-call="product.jewelry_zpl_label"/>
+                            <t t-if="zpl_template == 'normal' and barcode_format == 'qr'" t-call="product.normal_zpl_label_qr"/>
+                            <t t-elif="zpl_template == 'normal'" t-call="product.normal_zpl_label"/>
+                            <t t-elif="zpl_template == 'alternative' and barcode_format == 'qr'" t-call="product.alternative_zpl_label_qr"/>
+                            <t t-elif="zpl_template == 'alternative'" t-call="product.alternative_zpl_label"/>
+                            <t t-elif="zpl_template == 'small' and barcode_format == 'qr'" t-call="product.small_zpl_label_qr"/>
+                            <t t-elif="zpl_template == 'small'" t-call="product.small_zpl_label"/>
+                            <t t-elif="zpl_template == 'jewelry' and barcode_format == 'qr'" t-call="product.jewelry_zpl_label_qr"/>
+                            <t t-elif="zpl_template == 'jewelry'" t-call="product.jewelry_zpl_label"/>
 ^XZ
                         </t>
                     </t>

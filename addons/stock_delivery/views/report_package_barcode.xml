@@ -11,12 +11,12 @@
                     <t t-set="barcode" t-value="barcode + str(len(str(package.weight_uom_rounding).split('.')[1]))"/>
                     <t t-set="barcode" t-value="barcode + '0' * (6 - len(str(weight_str))) + weight_str"/>
                 </t>
-^FO310,200
+^FO174,156
                 <t t-if="package.shipping_weight">
-^A0N,44,33^FDShipping Weight: <t t-out="package.shipping_weight"/> <t t-out="package.weight_uom_name"/>^FS
+^A0N,18,15^TBN,277,19^FDShipping Weight: <t t-out="package.shipping_weight"/> <t t-out="package.weight_uom_name"/>^FS
                 </t>
                 <t t-else="">
-^A0N,44,33^FDWeight: <t t-out="package.weight"/> <t t-out="package.weight_uom_name"/>^FS
+^A0N,18,15^TBN,277,19^FDWeight: <t t-out="package.weight"/> <t t-out="package.weight_uom_name"/>^FS
                 </t>
             </t>
         </xpath>
