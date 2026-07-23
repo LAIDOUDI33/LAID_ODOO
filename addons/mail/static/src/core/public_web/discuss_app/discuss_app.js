@@ -1,3 +1,4 @@
+import { EffectPlugin } from "@web/core/effects/effect_plugin";
 import { useMessageScrolling, useOnChange } from "@mail/utils/common/hooks";
 import { useSubEnv } from "@web/owl2/utils";
 
@@ -9,6 +10,7 @@ import {
     signal,
     t,
     useListener,
+    usePlugin,
     useProps,
 } from "@odoo/owl";
 import { getActiveHotkey } from "@web/core/hotkeys/hotkey_service";
@@ -38,7 +40,7 @@ export class Discuss extends Component {
         this.menuState = computed(() => this.store.discuss.sidebarState);
         this.messageHighlight = useMessageScrolling({ thread: () => this.thread });
         this.orm = useService("orm");
-        this.effect = useService("effect");
+        this.effect = usePlugin(EffectPlugin);
         this.ui = useService("ui");
         useSubEnv({
             inDiscussApp: true,
