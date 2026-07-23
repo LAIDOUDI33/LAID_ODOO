@@ -1330,21 +1330,22 @@ class SaleOrder(models.Model):
             elif line.selected_combo_items:
                 selected_combo_items = json.loads(line.selected_combo_items)
                 if selected_combo_items:
-                    for combo in line.product_template_id.sudo().combo_ids:
+                    for combo in line.product_template_id.sudo().sellable_combo_ids:
                         combo_item_ids = combo.combo_item_ids.ids
                         selected_qty = sum(
                             item["selected_combo_item_qty"]
                             for item in selected_combo_items
                             if item["combo_item_id"] in combo_item_ids
                         )
-                        if selected_qty != combo.qty_free:
+                        if selected_qty != combo.included_qty:
                             raise ValidationError(
                                 self.env._(
-                                    "The number of selected items for combo '%(combo)s' (%(selected_qty)s) "
-                                    "must match the included quantity (%(included_qty)s).",
+                                    "The number of selected items for combo '%(combo)s' "
+                                    "(%(selected_qty)s) must match the included quantity "
+                                    "(%(included_qty)s).",
                                     combo=combo.name,
                                     selected_qty=selected_qty,
-                                    included_qty=combo.qty_free,
+                                    included_qty=combo.included_qty,
                                 )
                             )
 
@@ -1395,7 +1396,7 @@ class SaleOrder(models.Model):
                 # Only update the combo item lines if the line's combo choices haven't changed.
                 and combo_item_lines.combo_item_id.combo_id == line.product_template_id.combo_ids
             ):
-                for combo_item_line in combo_item_lines:
+                for combo_item_line in combo_item_lines.sudo():
                     combo_item_line.update({
                         "product_uom_qty": line.product_uom_qty
                         * combo_item_line.selected_combo_item_qty,
@@ -1797,10 +1798,10 @@ class SaleOrder(models.Model):
 
         txs_to_be_linked = self.sudo().transaction_ids.filtered(
             lambda tx: (
-                tx.state in ('pending', 'authorized')
+                tx.state in ("pending", "authorized")
                 or (
-                    tx.state == 'done'
-                    and tx.payment_id.move_id.state == 'posted'
+                    tx.state == "done"
+                    and tx.payment_id.move_id.state == "posted"
                     and not tx.payment_id.is_reconciled
                 )
             )

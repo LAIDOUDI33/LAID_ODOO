@@ -9,7 +9,7 @@ registry.category("web_tour.tours").add("test_self_combo_extra_price_selection_a
         Utils.clickBtn("Order Now"),
 
         // ============================================
-        // Test 1: Combo with qty_free = 0
+        // Test 1: Combo with included_qty = 0
         // Expected: All items show "+ €X" price badge
         // ============================================
         ProductPage.clickProduct("Office Combo"),

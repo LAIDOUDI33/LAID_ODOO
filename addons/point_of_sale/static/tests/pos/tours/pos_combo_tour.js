@@ -229,7 +229,7 @@ registry.category("web_tour.tours").add("ProductComboMaxFreeQtyTour", {
             combo.checkProductQty("Combo Product 6", "2"),
             // Confirmation should be enabled as we have selected the "min" qty for each combo
             Utils.negateStep(combo.isConfirmationButtonDisabled()),
-            // As for chairs combo : 'qty_max' > 'qty_free', we can still select the product, but we'll pay them as extra (combo 'base_price')
+            // As for chairs combo : 'qty_max' > 'included_qty', we can still select the product, but we'll pay them as extra (combo 'base_price')
             combo.checkTotal("44.00"),
             combo.select("Combo Product 7"),
             combo.clickQtyBtnAdd("Combo Product 7"),
