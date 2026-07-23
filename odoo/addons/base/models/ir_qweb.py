@@ -1343,10 +1343,9 @@ class IrQweb(models.AbstractModel):
             if 'webp' in mimetype:
                 # Use converted image so that is recognized by wkhtmltopdf.
                 Attachment = self.env['ir.attachment']
-                checksum = Attachment._compute_checksum(raw)
                 origins = Attachment.sudo().search([
                     ['id', '!=', False],  # No implicit condition on res_field.
-                    ['checksum', '=', checksum],
+                    ['checksum', '=', raw.checksum()],
                 ])
                 if origins:
                     converted_domain = [

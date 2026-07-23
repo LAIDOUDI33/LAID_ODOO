@@ -13,12 +13,14 @@ export class ContactImageField extends ImageField {
     }
 
     getUrl(imageFieldName) {
+        const data = this.props.record.data[imageFieldName];
         if (
             this.props.previewImage &&
             (!this.props.record.data[this.props.name] || !this.state.isValid) &&
-            this.props.record.data[imageFieldName]
+            data
         ) {
-            if (isBinarySize(this.props.record.data[imageFieldName])) {
+            const content = data.content;
+            if (!content) {
                 this.lastURL = imageUrl(
                     this.props.record.resModel,
                     this.props.record.resId,
@@ -26,9 +28,8 @@ export class ContactImageField extends ImageField {
                     { unique: this.rawCacheKey }
                 );
             } else {
-                const magic =
-                    fileTypeMagicWordMap[this.props.record.data[imageFieldName][0]] || "png";
-                this.lastURL = `data:image/${magic};base64,${this.props.record.data[imageFieldName]}`;
+                const magic = fileTypeMagicWordMap[content[0]] || "png";
+                this.lastURL = `data:image/${magic};base64,${content}`;
             }
             return this.lastURL;
         }

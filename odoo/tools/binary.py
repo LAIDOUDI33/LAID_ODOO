@@ -1,4 +1,5 @@
 import base64
+import hashlib
 import io
 from collections.abc import Buffer
 
@@ -20,6 +21,11 @@ class BinaryValue(Buffer):
     def content(self) -> bytes:
         """The ``bytes``."""
         raise NotImplementedError
+
+    @property
+    def filename(self) -> str:
+        """Optional name that the file should have."""
+        return ''
 
     @property
     def mimetype(self) -> str:
@@ -59,18 +65,27 @@ class BinaryValue(Buffer):
         """Decode the raw contents to a string."""
         return self.content.decode(encoding, errors)
 
+    def checksum(self) -> str:
+        """SHA-1 of the value."""
+        return hashlib.sha1(self).hexdigest()
+
 
 class BinaryBytes(BinaryValue):
     """Static binary value."""
-    __slots__ = ('__data',)
+    __slots__ = ('__data', '__filename')
 
-    def __init__(self, data: Buffer):
+    def __init__(self, data: Buffer, filename: str = ''):
         # force bytes
         self.__data = bytes(data)
+        self.__filename = str(filename or '')
 
     @property
     def content(self):
         return self.__data
+
+    @property
+    def filename(self):
+        return self.__filename
 
     def __bool__(self):
         return bool(self.__data)
@@ -79,7 +94,7 @@ class BinaryBytes(BinaryValue):
         data = self.__data
         if len(data) > 30:
             data = data[:27] + b'...'
-        return f"Binary({data!r})"
+        return f"Binary({data!r}, filename={self.__filename!r})"
 
 
 EMPTY_BINARY = BinaryBytes(b'')
