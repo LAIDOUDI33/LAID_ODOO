@@ -80,7 +80,7 @@ patch(PaymentForm.prototype, {
                 'access_token': processingValues.access_token,
                 'phone': document.querySelector('#o_safaricom_phone_number').value,
             }));
-            window.location = '/payment/status';
+            window.location = '/payment/safaricom/pay';
         } catch (error) {
             const errorMessage = error instanceof RPCError ? error.data.message : error.message;
             this._displayErrorDialog(_t('Payment failed'), errorMessage);

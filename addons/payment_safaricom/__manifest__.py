@@ -18,7 +18,7 @@
     "assets": {
         "web.assets_frontend": [
             "payment_safaricom/static/src/interactions/payment_form.js",
-            "payment_safaricom/static/src/interactions/payment_status.js",
+            "payment_safaricom/static/src/interactions/payment_page.js",
         ]
     },
     "author": "Odoo S.A.",

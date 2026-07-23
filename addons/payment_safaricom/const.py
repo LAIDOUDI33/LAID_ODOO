@@ -3,6 +3,7 @@
 from odoo.addons.payment.const import SENSITIVE_KEYS as PAYMENT_SENSITIVE_KEYS
 
 PAYMENT_URL = "/payment/safaricom/payment"
+PAY_URL = "/payment/safaricom/pay"
 CANCEL_URL = "/payment/safaricom/cancel"
 WEBHOOK_URL = "/payment/safaricom/webhook"
 

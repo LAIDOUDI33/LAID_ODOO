@@ -84,18 +84,6 @@ class TestPaymentFlows(SafaricomCommon):
         response = self._make_json_request(url + "?reference=dummy", data=self.webhook_payment_data)
         self.assertEqual(response.status_code, 403)
 
-    def test_status_page_renders_safaricom_template(self):
-        """Test that the payment status page is rendered with the Safaricom template for
-        Safaricom transactions."""
-        tx = self._create_transaction("direct", state="pending")
-        with patch(
-            "odoo.addons.payment.controllers.payment_status.PaymentStatus"
-            "._get_monitored_transaction",
-            return_value=tx,
-        ):
-            response = self.url_open("/payment/status")
-        self.assertIn("o_safaricom_cancel", response.text)
-
     def test_cancel_records_cancellation_payload(self):
         """Test that the cancel endpoint records a cancellation payload for the monitored pending
         transaction."""

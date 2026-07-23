@@ -35,6 +35,8 @@ class SafaricomController(http.Controller):
         response_data = tx_sudo._send_api_request(
             "POST", "/mpesa/stkpush/v1/processrequest", json=payload
         )
+        if str(response_data.get("ResponseCode")) != "0":
+            raise ValidationError(self.env._("The STK Push request was not accepted."))
         tx_sudo._record(response_data)
 
         return {}
