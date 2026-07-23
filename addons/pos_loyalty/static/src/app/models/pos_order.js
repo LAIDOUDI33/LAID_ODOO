@@ -1207,18 +1207,7 @@ patch(PosOrder.prototype, {
         // These are considered payments and do not require to be either taxed or split by tax
         const discountProduct = reward.discount_line_product_id;
         if (["ewallet", "gift_card"].includes(reward.program_id.program_type)) {
-            const price = discountProduct.getTaxDetails({
-                overridedValues: {
-                    tax_ids: discountProduct.taxes_id,
-                    price_unit: -Math.min(maxDiscount, discountable),
-                    special_mode: "total_included",
-                },
-            });
-            const priceUnit =
-                price.total_excluded +
-                price.taxes_data
-                    .filter((taxData) => taxData.tax.price_include)
-                    .reduce((sum, taxData) => sum + taxData.tax_amount, 0);
+            const priceUnit = -Math.min(maxDiscount, discountable);
 
             return [
                 {
