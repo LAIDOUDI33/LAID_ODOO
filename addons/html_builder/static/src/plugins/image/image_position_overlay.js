@@ -48,9 +48,13 @@ export class ImagePositionOverlay extends Component {
         useExternalListener(editableDocument, "pointerdown", this.discard.bind(this));
         useListener(document, "pointerdown", this.discard.bind(this));
 
-        useListener(window, "resize", this._dimensionOverlay.bind(this));
-        useExternalListener(this.iframeEl.contentWindow, "resize", this._dimensionOverlay);
-        useExternalListener(this.iframeEl.contentWindow, "scroll", this._dimensionOverlay);
+        useListener(window, "resize", this._dimensionOverlay, { passive: true });
+        useExternalListener(this.iframeEl.contentWindow, "resize", this._dimensionOverlay, {
+            passive: true,
+        });
+        useExternalListener(this.iframeEl.contentWindow, "scroll", this._dimensionOverlay, {
+            passive: true,
+        });
 
         onWillStart(async () => {
             const position = this.props

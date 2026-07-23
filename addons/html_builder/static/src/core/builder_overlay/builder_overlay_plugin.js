@@ -40,7 +40,8 @@ export class BuilderOverlayPlugin extends Plugin {
         // wheel events happening on overlayContainer.
         this.overlayContainer.addEventListener(
             "wheel",
-            (ev) => (this.document.documentElement.scrollTop += ev.deltaY)
+            (ev) => (this.document.documentElement.scrollTop += ev.deltaY),
+            { passive: true }
         );
         /** @type {[BuilderOverlay]} */
         this.overlays = [];
@@ -83,7 +84,7 @@ export class BuilderOverlayPlugin extends Plugin {
                     this.refreshPositions();
                 }, 250);
             }),
-            { capture: true }
+            { capture: true, passive: true }
         );
 
         this.addDomListener(this.editable, "mouseleave", () => {
