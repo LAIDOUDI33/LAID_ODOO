@@ -20,11 +20,21 @@ export class ProductsListPageOptionPlugin extends Plugin {
 export class SetShopContainerAction extends PreviewableWebsiteConfigAction {
     static id = "setShopContainer";
 
-    async apply({ editingElement: productDetailMainEl, isPreviewing, params, value }) {
-        await super.apply({ editingElement: productDetailMainEl, isPreviewing, params, value });
+    async apply({
+        editingElement: productDetailMainEl,
+        isPreviewing,
+        params,
+        value,
+    }) {
+        await super.apply({
+            editingElement: productDetailMainEl,
+            isPreviewing,
+            params,
+            value,
+        });
 
         if (!isPreviewing) {
-            await rpc("/shop/config/website", { 'shop_page_container': value });
+            await rpc("/shop/config/website", { shop_page_container: value });
         }
     }
 }
@@ -78,7 +88,7 @@ export class SetSplitVariantsAction extends BuilderAction {
         this.reload = {};
     }
     isApplied({ editingElement }) {
-        return editingElement.dataset.splitVariants === "1";
+        return "splitVariants" in editingElement.dataset;
     }
     apply({ editingElement }) {
         const newValue = !this.isApplied({ editingElement });

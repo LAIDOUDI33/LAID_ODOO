@@ -48,18 +48,6 @@ class TableCompute:
                 self.table[posy + y].setdefault(x, None)
         return res
 
-    def process(self, products, ppg=20, ppr=4):
-        items = [
-            {
-                "product": p,
-                "x": p.website_size_x,
-                "y": p.website_size_y,
-                "ribbon": p.sudo().website_ribbon_id,
-            }
-            for p in products
-        ]
-        return self.process_items(items, ppg, ppr)
-
     def process_items(self, items, ppg=20, ppr=4):
         """Place item dicts on a grid and return formatted rows.
 
@@ -707,19 +695,15 @@ class WebsiteSale(payment_portal.PaymentPortal):
             products = page_variants.product_tmpl_id.with_prefetch()
             products.fetch()
             displayed_variants = page_variants
-            product_variants = {}  # split cards carry their own variant (td_product['variant'])
-            split_items = [
+            items = [
                 {
                     "product": variant.product_tmpl_id,
                     "variant": variant,
                     "x": variant.website_size_x,
                     "y": variant.website_size_y,
-                    "ribbon": variant.sudo().variant_ribbon_id
-                    or variant.product_tmpl_id.sudo().website_ribbon_id,
                 }
                 for variant in page_variants
             ]
-            bins = TableCompute().process_items(split_items, ppg, ppr)
         else:
             search_count = product_count
             pager = website.pager(
@@ -737,7 +721,17 @@ class WebsiteSale(payment_portal.PaymentPortal):
                         Product.sudo().browse(first_variant_id) if first_variant_id else Product
                     )
             displayed_variants = Product.union(product_variants.values())
-            bins = TableCompute().process(products, ppg, ppr)
+            items = [
+                {
+                    "product": product,
+                    "variant": product_variants[product],
+                    "x": product.website_size_x,
+                    "y": product.website_size_y,
+                }
+                for product in products
+            ]
+
+        bins = TableCompute().process_items(items, ppg, ppr)
 
         ProductAttribute = self.env["product.attribute"]
         ProductAttributeValue = self.env["product.attribute.value"]
@@ -763,8 +757,8 @@ class WebsiteSale(payment_portal.PaymentPortal):
         fiscal_position = request.fiscal_position.with_context(self.env.context)
         contextual_website = website.with_context(self.env.context)
 
-        variant_prices = displayed_variants._get_sales_prices(
-            pricelist, fiscal_position, contextual_website
+        variant_prices = self.env["product.template"]._get_sales_prices(
+            pricelist, fiscal_position, contextual_website, products=displayed_variants
         )
         products_prices = lazy(
             lambda: products._get_sales_prices(pricelist, fiscal_position, contextual_website)
@@ -785,11 +779,12 @@ class WebsiteSale(payment_portal.PaymentPortal):
             "attrib_set": attribute_value_ids,
             "pager": pager,
             "products": products,
-            "product_variants": product_variants,
             "search_product": search_product,
             "search_count": search_count,
             "bins": bins,
-            "get_variant_prices": lambda variant: variant_prices.get(variant.id, {}),
+            "get_variant_prices": lambda variant, product: (
+                variant_prices.get(variant.id) or products_prices[product.id]
+            ),
             "ppg": ppg,
             "ppr": ppr,
             "gap": gap,
@@ -798,7 +793,6 @@ class WebsiteSale(payment_portal.PaymentPortal):
             "attributes": attributes,
             "keep": keep,
             "search_categories_ids": search_categories.ids,
-            "get_product_prices": lambda product: products_prices[product.id],
             "float_round": float_round,
             "shop_path": SHOP_PATH,
             "product_query_params": product_query_params,
@@ -2069,15 +2063,15 @@ class WebsiteSale(payment_portal.PaymentPortal):
         else:
             raise NotFound
 
-        sequence = options.get("sequence")
-        if sequence == "top":
-            record.set_sequence_top()
-        elif sequence == "bottom":
-            record.set_sequence_bottom()
-        elif sequence == "up":
-            record.set_sequence_up()
-        elif sequence == "down":
-            record.set_sequence_down()
+        if sequence := options.get("sequence"):
+            if sequence == "top":
+                record.set_sequence_top()
+            elif sequence == "bottom":
+                record.set_sequence_bottom()
+            elif sequence == "up":
+                record.set_sequence_up()
+            elif sequence == "down":
+                record.set_sequence_down()
         if {"x", "y"} <= set(options):
             record.write({"website_size_x": options["x"], "website_size_y": options["y"]})
 

@@ -19,7 +19,7 @@ export class ProductsRibbonOptionPlugin extends Plugin {
         'getProductTemplateID',
         'addProductTemplatesRibbons',
         'addProductVariantsRibbons',
-        '_addRibbon',
+        'addRecordRibbon',
         'loadInfo',
         'getCount',
     ];
@@ -280,7 +280,7 @@ export class ProductsRibbonOptionPlugin extends Plugin {
             this.productVariantsRibbons.push({ variantId, ribbonId });
         }
     }
-    _addRibbon(editingElement, ribbonId) {
+    addRecordRibbon(editingElement, ribbonId) {
         const variantId = parseInt(editingElement.dataset.variantId);
         if (variantId) {
             this.addProductVariantsRibbons({ variantId, ribbonId });
@@ -330,7 +330,7 @@ export class SetRibbonAction extends BuilderAction {
         return match === value;
     }
     apply({ isPreviewing, editingElement, value }) {
-        this.ribbonOptions._addRibbon(editingElement, value);
+        this.ribbonOptions.addRecordRibbon(editingElement, value);
 
         const ribbon = this.ribbonOptions.getRibbonsObject()[value] || {
             id: '',
@@ -356,7 +356,7 @@ export class CreateRibbonAction extends BuilderAction {
     }
     apply({ editingElement }) {
         const ribbonId = Date.now();
-        this.ribbonOptions._addRibbon(editingElement, ribbonId);
+        this.ribbonOptions.addRecordRibbon(editingElement, ribbonId);
         const ribbon = proxy({
             serverId: null,
             id: ribbonId,

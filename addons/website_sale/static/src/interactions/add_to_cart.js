@@ -38,7 +38,7 @@ export class AddToCart extends Interaction {
         }, {
             isBuyNow: button.dataset.action === 'buy_now',
             isConfigured: button.parentElement.id === 'add_to_cart_wrap'
-                || (ptavIds.length > 0 && !!button.closest('[data-split-variants="1"]')),
+                || (ptavIds.length > 0 && !!button.closest('[data-split-variants]')),
             showQuantity: button.dataset.showQuantity === 'True',
         }));
 

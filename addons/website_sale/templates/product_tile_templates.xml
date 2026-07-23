@@ -171,7 +171,7 @@
     <div class="o_wsale_product_info_attributes_wrapper">
         <!-- Variations/Attributes -->
         <t
-            t-if="product_ptavs_data and not show_combination_name"
+            t-if="product_ptavs_data"
             t-call="website_sale.product_variant_preview"
         />
 
