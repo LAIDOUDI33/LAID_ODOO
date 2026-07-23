@@ -5,15 +5,16 @@
          <field name="model">product.product</field>
          <field name="inherit_id" ref="product.product_product_view_form_normalized"/>
          <field name="arch" type="xml">
-            <field name="list_price" position="after">
-                <label for="taxes_id"/>
-                <div name="tax_info" class="o_row">
+            <div name="list_price" position="after">
+                <label for="taxes_id" class="d-md-none"/>
+                <div name="tax_info" class="o_row" colspan="2">
+                    <label for="taxes_id" class="d-none d-md-block"/>
                     <field name="taxes_id" widget="many2many_tags"
                         context="{'search_default_sale': 1}"
                         create="False"/>
                     <field name="tax_string"/>
                 </div>
-            </field>
+            </div>
          </field>
      </record>
 
