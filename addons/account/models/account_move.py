@@ -3955,7 +3955,10 @@ class AccountMove(models.Model):
         for move in self:
             modified_accounting_fields = self._field_will_change_list(move, vals, unmodifiable_fields)
             if vals.get('state') == 'draft':
-                move._check_review_state_access(move.review_state)
+                if move.set_to_review_documents:
+                    move._check_review_state_access(move.review_state)
+                elif not is_user_able_to_review and move.create_uid != self.env.user:
+                    raise AccessError(_("You don't have the access rights to perform this action."))
             if (vals.get('state') == 'posted' and move.auto_post == 'no') or vals.get('auto_post', 'no') != 'no':
                 if is_user_able_to_review:
                     if move.review_state != 'no_review':
