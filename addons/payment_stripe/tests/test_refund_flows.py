@@ -17,16 +17,15 @@ class TestRefundFlows(StripeCommon, PaymentHttpCommon):
         """Test that the id of the refund object is set as the provider reference of the refund
         transaction."""
         source_tx = self._create_transaction("redirect", state="done")
-        with patch(
-            "odoo.addons.payment.models.payment_provider.PaymentProvider._send_api_request",
-            return_value=self.refund_object,
+        with (
+            self._mock_send_api_request(return_value=self.refund_object),
+            patch(
+                "odoo.addons.payment.models.payment_transaction.PaymentTransaction._record"
+            ) as record_mock,
         ):
             source_tx._refund()
-        self._run_processing()
-        refund_tx = self.env["payment.transaction"].search([
-            ("source_transaction_id", "=", source_tx.id)
-        ])
-        self.assertEqual(refund_tx.provider_reference, self.refund_object["id"])
+        payload = record_mock.call_args.args[0]
+        self.assertEqual(payload["refund"]["id"], self.refund_object["id"])
 
     @mute_logger(
         "odoo.addons.payment_stripe.controllers.main",
@@ -54,7 +53,6 @@ class TestRefundFlows(StripeCommon, PaymentHttpCommon):
         "odoo.addons.payment_stripe.models.payment_transaction",
     )
     def test_void_webhook_notification_does_not_trigger_processing(self):
-        self.provider.payment_method_ids.active = False  # TODO VCHU: remove in master
         self.provider.capture_manually = True
         tx = self._create_transaction("direct", state="authorized")
         url = self._build_url(StripeController._webhook_url)
