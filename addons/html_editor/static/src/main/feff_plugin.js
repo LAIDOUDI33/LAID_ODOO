@@ -6,6 +6,7 @@ import { closestElement, descendants, selectElements } from "@html_editor/utils/
 import { leftPos, rightPos } from "@html_editor/utils/position";
 import { callbacksForCursorUpdate } from "@html_editor/utils/selection";
 import { withSequence } from "../utils/resource";
+import { NATIVE_MUTATION_TYPES } from "@html_editor/core/dom_observer_plugin";
 
 /** @typedef {import("../core/selection_plugin").Cursors} Cursors */
 
@@ -49,6 +50,7 @@ export class FeffPlugin extends Plugin {
         },
         clipboard_content_processors: this.processContentForClipboard.bind(this),
         clipboard_text_processors: (text) => text.replace(/\ufeff/g, ""),
+        is_mutation_savable_predicates: this.isMutationSavable.bind(this),
     };
 
     cleanForSave(root, { preserveSelection = false } = {}) {
@@ -218,6 +220,42 @@ export class FeffPlugin extends Plugin {
             .filter((node) => node.textContent.includes("\ufeff"))
             .forEach((node) => (node.textContent = node.textContent.replace(/\ufeff/g, "")));
         return clonedContent;
+    }
+
+    /**
+     * Ignore FEFF-only mutations that are internal editor bookkeeping and should
+     * not create undo history entries.
+     *
+     * @param {import("@html_editor/core/dom_observer_plugin").NativeMutation} mutation
+     * @returns {boolean | undefined}
+     */
+    isMutationSavable(mutation) {
+
+        // Ignore characterData mutations where removing FEFFs does not change the
+        // visible text (e.g. "\uFEFFlink" -> "link"). FEFF-only placeholder nodes
+        // are excluded, as they are required for the editor's normal cleanup.
+        if (mutation.type === NATIVE_MUTATION_TYPES.CHARACTER_DATA) {
+            const oldTextWithoutFeff = (mutation.oldValue || "").replaceAll("\ufeff", "");
+            const newTextWithoutFeff = (mutation.target.textContent || "").replaceAll("\ufeff", "");
+            if (oldTextWithoutFeff.length > 0 && oldTextWithoutFeff === newTextWithoutFeff) {
+                return false;
+            }
+        // Ignore childList mutations that only replace FEFF text nodes. Pure FEFF
+        // insertions and removals are still processed because they are needed to
+        // keep the editor's DOM references and cursor state in sync.
+        } else if (
+            mutation.type === NATIVE_MUTATION_TYPES.CHILD_LIST &&
+            mutation.addedNodes.length > 0 &&
+            mutation.removedNodes.length > 0
+        ) {
+            const isFeffNode = (node) =>
+                node.nodeType === Node.TEXT_NODE && !node.textContent.replaceAll("\ufeff", "");
+            const addedAllFeff = [...mutation.addedNodes].every(isFeffNode);
+            const removedAllFeff = [...mutation.removedNodes].every(isFeffNode);
+            if (addedAllFeff && removedAllFeff) {
+                return false;
+            }
+        }
     }
 }
 
