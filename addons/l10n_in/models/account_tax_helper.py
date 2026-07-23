@@ -1,6 +1,25 @@
 from odoo import models
 from odoo.tools import SQL
 
+# Mapping field names to corresponding column names
+OPTIONAL_COLUMNS = {
+    "aml_id": "aml.id",
+    "aml_name": "aml.name",
+    "aml_sequence": "aml.sequence",
+    "move_ref": "move.ref",
+    "product_id": "aml.product_id",
+    "reversed_entry_id": "move.reversed_entry_id",
+    "debit_origin_id": "move.debit_origin_id",
+    "l10n_in_account_return_id": "move.l10n_in_account_return_id",
+    "l10n_in_gstr2b_reconciliation_status": "move.l10n_in_gstr2b_reconciliation_status",
+    "account_id": "aml.account_id",
+    "currency_amount": "aml.amount_currency",
+    "currency_id": "aml.currency_id",
+    "l10n_in_shipping_bill_number": "move.l10n_in_shipping_bill_number",
+    "l10n_in_shipping_bill_date": "move.l10n_in_shipping_bill_date",
+    "l10n_in_shipping_port_code_id": "move.l10n_in_shipping_port_code_id",
+}
+
 
 class AccountTaxHelper(models.AbstractModel):
     _name = "account.tax.helper"
@@ -9,61 +28,17 @@ class AccountTaxHelper(models.AbstractModel):
     def _get_tax_details(
         self,
         domain,
-        include_aml_id=False,
-        include_aml_name=False,
-        include_move_ref=False,
-        include_product_id=False,
-        include_reversed_entry_id=False,
-        include_debit_origin_id=False,
-        include_l10n_in_account_return_id=False,
-        include_l10n_in_gstr2b_reconciliation_status=False,
-        include_account_id=False,
+        fields_to_include=(),
         include_non_itc=False,
-        include_export_details=False,
-        include_foreign_currency_amount=False,
-        include_currency_id=False,
     ):
         domain_query = self.env["account.move.line"]._search(domain)
-
-        aml_id_query = (
-            SQL(", ANY_VALUE(aml.id) AS line_id") if include_aml_id else SQL("")
-        )
-        aml_name_query = (
-            SQL(", ANY_VALUE(aml.name) AS line_name") if include_aml_name else SQL("")
-        )
-        move_ref_query = (
-            SQL(", ANY_VALUE(move.ref) AS move_ref") if include_move_ref else SQL("")
-        )
-        product_id_query = (
-            SQL(", ANY_VALUE(aml.product_id) AS product_id")
-            if include_product_id
-            else SQL("")
-        )
-        reversed_entry_id_query = (
-            SQL(", ANY_VALUE(move.reversed_entry_id) AS reversed_entry_id")
-            if include_reversed_entry_id
-            else SQL("")
-        )
-        debit_origin_id_query = (
-            SQL(", ANY_VALUE(move.debit_origin_id) AS debit_origin_id")
-            if include_debit_origin_id
-            else SQL("")
-        )
-        l10n_in_account_return_id_query = (
-            SQL(", ANY_VALUE(move.l10n_in_account_return_id) AS account_return_id")
-            if include_l10n_in_account_return_id
-            else SQL("")
-        )
-        l10n_in_gstr2b_reconciliation_status_query = (
-            SQL(", ANY_VALUE(move.l10n_in_gstr2b_reconciliation_status) AS gstr2b_reconciliation_status")
-            if include_l10n_in_gstr2b_reconciliation_status
-            else SQL("")
-        )
-        account_id_query = (
-            SQL(", ANY_VALUE(aml.account_id) AS account_id")
-            if include_account_id
-            else SQL("")
-        )
+        fields_to_include = set(fields_to_include)
+        selected_columns = [
+            (field_name, OPTIONAL_COLUMNS[field_name])
+            for field_name in fields_to_include
+            if field_name in OPTIONAL_COLUMNS
+        ]
+        optional_columns_sql = self._build_optional_columns_sql(selected_columns)
         non_itc_query = (
             SQL(
                 '''
@@ -92,29 +67,6 @@ class AccountTaxHelper(models.AbstractModel):
             if include_non_itc
             else SQL("")
         )
-        export_details_query = (
-            SQL(
-                '''
-                , ANY_VALUE(move.l10n_in_shipping_bill_number) AS l10n_in_shipping_bill_number
-                , ANY_VALUE(move.l10n_in_shipping_bill_date) AS l10n_in_shipping_bill_date
-                , ANY_VALUE(move.l10n_in_shipping_port_code_id) AS l10n_in_shipping_port_code_id
-                '''
-            )
-        ) if include_export_details else SQL("")
-        foreign_currency_amount_query = (
-            SQL(
-                '''
-                , ANY_VALUE(aml.amount_currency) AS amount_currency
-                '''
-            )
-        ) if include_foreign_currency_amount else SQL("")
-        currency_id_query = (
-            SQL(
-                '''
-                , ANY_VALUE(aml.currency_id) AS currency_id
-                '''
-            )
-        ) if include_currency_id else SQL("")
 
         self.env.cr.execute(
             SQL(
@@ -160,18 +112,7 @@ class AccountTaxHelper(models.AbstractModel):
                    + COALESCE(MAX(CASE WHEN rel.account_account_tag_id = %(cgst_tag)s THEN tax.amount END), 0)
                    + COALESCE(MAX(CASE WHEN rel.account_account_tag_id = %(sgst_tag)s THEN tax.amount END), 0)
                    AS gst_tax_rate
-                   %(aml_id_query)s
-                   %(aml_name_query)s
-                   %(move_ref_query)s
-                   %(product_id_query)s
-                   %(reversed_entry_id_query)s
-                   %(debit_origin_id_query)s
-                   %(account_return_id_query)s
-                   %(l10n_in_gstr2b_reconciliation_status_query)s
-                   %(account_id_query)s
-                   %(export_details_query)s
-                   %(foreign_currency_amount_query)s
-                   %(currency_id_query)s
+                   %(optional_columns_sql)s
             FROM (
                 SELECT account_move_line.*
                 FROM %(aml_from_clause)s
@@ -208,19 +149,15 @@ class AccountTaxHelper(models.AbstractModel):
                 cgst_tag=self.env.ref("l10n_in.tax_tag_cgst").id,
                 sgst_tag=self.env.ref("l10n_in.tax_tag_sgst").id,
                 cess_tag=self.env.ref("l10n_in.tax_tag_cess").id,
-                aml_id_query=aml_id_query,
-                aml_name_query=aml_name_query,
-                move_ref_query=move_ref_query,
-                product_id_query=product_id_query,
-                reversed_entry_id_query=reversed_entry_id_query,
-                debit_origin_id_query=debit_origin_id_query,
-                account_id_query=account_id_query,
-                account_return_id_query=l10n_in_account_return_id_query,
-                l10n_in_gstr2b_reconciliation_status_query=l10n_in_gstr2b_reconciliation_status_query,
                 non_itc_query=non_itc_query,
                 non_itc_tag_query=non_itc_tag_query,
-                export_details_query=export_details_query,
-                foreign_currency_amount_query=foreign_currency_amount_query,
-                currency_id_query=currency_id_query,
+                optional_columns_sql=optional_columns_sql,
             )
         )
+
+    def _build_optional_columns_sql(self, columns):
+        fragments = [
+            SQL(", ANY_VALUE(%s) AS %s", SQL.identifier(column_name), SQL.identifier(field_name))
+            for field_name, column_name in columns
+        ]
+        return SQL("").join(fragments)
