@@ -5,8 +5,10 @@ import { resolveRefEl } from "@web/core/utils/ref_utils";
 import { browser } from "@web/core/browser/browser";
 import { evaluateExpr } from "@web/core/py_js/py";
 import { download } from "@web/core/network/download";
-import { rpc } from "@web/core/network/rpc";
+import { rpc, RPCError } from "@web/core/network/rpc";
+import { unique } from "@web/core/utils/arrays";
 import { ExportDataDialog } from "@web/views/view_dialogs/export_data_dialog";
+import { DeleteBlockedDialog } from "@web/views/view_dialogs/delete_blocked_dialog";
 import {
     deleteConfirmationMessage,
     ConfirmationDialog,
@@ -196,20 +198,118 @@ export function useExportRecords(env, context, getDefaultExportList) {
     };
 }
 
+/**
+ * The Python-side equivalent of this is `self._active_name`: whether a model
+ * can be archived instead of deleted, and whether the user is actually
+ * allowed to (the "active"/"x_active" field isn't readonly).
+ *
+ * @param {Object} fields
+ * @returns {boolean}
+ */
+export function computeArchiveEnabled(fields) {
+    if ("active" in fields) {
+        return !fields.active.readonly;
+    }
+    if ("x_active" in fields) {
+        return !fields.x_active.readonly;
+    }
+    return false;
+}
+
+function isUnlinkBlockedError(error) {
+    return error instanceof RPCError && Boolean(error.data?.context?.unlink_blocked);
+}
+
+/**
+ * Handles the error raised when a delete fails because the records are used
+ * elsewhere (see `BaseModel._raise_unlink_blocked_error` server-side). The
+ * server only supplies the facts (which model is blocking, whether it's
+ * archivable, which ids are blocked); the actual wording shown to the user
+ * is built here. If `error` isn't that specific error, it is simply
+ * re-thrown so that the generic error dialog takes over as usual.
+ *
+ * @param {Error} error
+ * @param {Object} params
+ * @param {Function} params.displayDialog function used to open the dialog
+ * @param {boolean} params.archiveEnabled whether the current user/view allows archiving
+ * @param {boolean} params.isMulti whether more than one record was targeted by the delete
+ * @param {Function} [params.archive] called when the user clicks "Archive"
+ * @param {Function} [params.viewBlockedRecords] called with the blocked ids when the
+ *  user clicks "View non-deletable records" (only relevant for bulk deletes)
+ */
+export function handleDeleteBlockedError(
+    error,
+    { displayDialog, archiveEnabled, isMulti, archive, viewBlockedRecords }
+) {
+    if (!isUnlinkBlockedError(error)) {
+        throw error;
+    }
+    const { archivable, blocked_ids: blockedIds, model_name: modelName } = error.data.context;
+    const message = isMulti
+        ? _t("Not possible to delete all the records because some are used in %(model_name)s", {
+              model_name: modelName,
+          })
+        : _t("Not possible to delete the record because it is used in %(model_name)s", {
+              model_name: modelName,
+          });
+    displayDialog(DeleteBlockedDialog, {
+        message,
+        onArchive: archiveEnabled && archivable ? archive : undefined,
+        blockedIds: viewBlockedRecords ? blockedIds : undefined,
+        viewBlockedRecords,
+    });
+}
+
 export function useDeleteRecords(model) {
-    function getDefaultDialogProps(records) {
+    function getDefaultDialogProps(records, archiveEnabled, onSuccess) {
         const isDynamicList = model.root instanceof DynamicList;
-        let body = deleteConfirmationMessage;
-        if (
+        const isMulti =
             records?.length > 1 ||
-            (isDynamicList && (model.root.isDomainSelected || model.root.selection.length > 1))
-        ) {
+            (isDynamicList && (model.root.isDomainSelected || model.root.selection.length > 1));
+        let body = deleteConfirmationMessage;
+        if (isMulti) {
             body = _t("Are you sure you want to delete these records?");
         }
-        let confirm = () => records.forEach((r) => r.delete());
-        if (isDynamicList) {
-            confirm = () => model.root.deleteRecords(records);
-        }
+        const getResIds = async () =>
+            records?.length ? unique(records.map((r) => r.resId)) : model.root.getResIds(true);
+        const deleteFn = isDynamicList
+            ? () => model.root.deleteRecords(records)
+            : () => Promise.all(records.map((r) => r.delete()));
+        const archive = async () => {
+            const resIds = await getResIds();
+            await model.orm.call(model.root.resModel, "action_archive", [resIds], {
+                context: model.root.context,
+            });
+            await model.load();
+        };
+        // Only bulk deletes (more than one record targeted) offer a way to
+        // pinpoint which of the selected records are actually blocking; a
+        // single-record delete has nothing else to show.
+        const viewBlockedRecords =
+            isDynamicList && isMulti
+                ? (blockedIds) =>
+                      model.env.searchModel.createNewFilters([
+                          {
+                              description: _t("Non-deletable records"),
+                              domain: [["id", "in", blockedIds]],
+                          },
+                      ])
+                : undefined;
+        const confirm = async () => {
+            try {
+                await deleteFn();
+            } catch (e) {
+                handleDeleteBlockedError(e, {
+                    displayDialog: (Comp, props) => model.dialog.add(Comp, props),
+                    archiveEnabled,
+                    isMulti,
+                    archive,
+                    viewBlockedRecords,
+                });
+                return;
+            }
+            await onSuccess?.();
+        };
         return {
             body,
             cancel: () => {},
@@ -220,8 +320,8 @@ export function useDeleteRecords(model) {
             title: _t("Bye-bye, record!"),
         };
     }
-    return (dialogProps, records) => {
-        const defaultProps = getDefaultDialogProps(records);
+    return (dialogProps, records, archiveEnabled = false, onSuccess) => {
+        const defaultProps = getDefaultDialogProps(records, archiveEnabled, onSuccess);
         model.dialog.add(ConfirmationDialog, { ...defaultProps, ...dialogProps });
     };
 }

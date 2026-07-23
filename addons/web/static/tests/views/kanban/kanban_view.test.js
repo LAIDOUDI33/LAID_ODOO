@@ -28,6 +28,7 @@ import {
     setInputFiles,
     test,
     tick,
+    waitFor,
 } from "@odoo/hoot";
 import { addNewRule } from "@web/../tests/core/tree_editor/condition_tree_editor_test_helpers";
 import {
@@ -1114,6 +1115,57 @@ test("click on a button type='delete' to delete a record in a column", async () 
 
     expect(queryAll(".o_kanban_record", { root: getKanbanColumn(0) })).toHaveCount(1);
     expect(queryAll(".o_kanban_load_more", { root: getKanbanColumn(0) })).toHaveCount(0);
+});
+
+test("deleting a record blocked by a foreign key, archive available", async () => {
+    Partner._fields.active = fields.Boolean({ default: true });
+    onRpc("unlink", () => {
+        expect.step("unlink");
+        throw makeServerError({
+            type: "ValidationError",
+            context: {
+                unlink_blocked: true,
+                archivable: true,
+                blocked_ids: [1],
+                model_name: "Bar",
+            },
+        });
+    });
+    onRpc("action_archive", ({ args }) => {
+        expect.step("action_archive");
+        expect(args[0]).toEqual([1]);
+        return true;
+    });
+
+    await mountView({
+        type: "kanban",
+        resModel: "partner",
+        arch: `
+            <kanban limit="3">
+                <templates>
+                    <t t-name="card">
+                        <a role="menuitem" type="delete" class="dropdown-item o_delete">Delete</a>
+                        <field name="foo"/>
+                    </t>
+                </templates>
+            </kanban>`,
+    });
+
+    await click(queryFirst(".o_kanban_record .o_delete"));
+    await animationFrame();
+    expect(".modal").toHaveCount(1);
+    await contains(".modal .btn-danger").click();
+
+    await waitFor(`.modal .modal-title:contains(Oops)`);
+    expect(".modal p:eq(0)").toHaveText(
+        "Not possible to delete the record because it is used in Bar"
+    );
+    expect(".modal p:eq(1)").toHaveText("How about archiving it instead?");
+    expect(".modal-footer .btn-primary").toHaveText("Archive");
+
+    await contains(".modal-footer .btn-primary").click();
+    expect(".modal").toHaveCount(0);
+    expect.verifySteps(["unlink", "action_archive"]);
 });
 
 test("click on a button type='archive' to archive a record in a column", async () => {

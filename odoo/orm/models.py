@@ -3634,6 +3634,45 @@ class BaseModel(metaclass=MetaModel):
             return self.env['ir.access']._make_model_access_error(self._name, operation)
         return self.env['ir.access']._make_record_access_error(self, operation)
 
+    def _raise_unlink_blocked_error(
+        self, exc: psycopg2.errors.RestrictViolation | psycopg2.errors.ForeignKeyViolation,
+    ) -> typing.NoReturn:
+        """ Turn a foreign key violation triggered while deleting ``self`` into
+        a :class:`~odoo.exceptions.ValidationError`.
+
+        The error's message is left to the usual :meth:`_sql_error_to_message`
+        mechanism (unchanged for non-web clients). Its ``context`` carries the
+        structured facts the web client needs to build its own friendly
+        wording: the display name of the model blocking the deletion, whether
+        ``self``'s model can be archived instead, and exactly which of the ids
+        being deleted are blocked (so the client can offer to show them).
+        """
+        diag = exc.diag
+        child_model_name = next(
+            (rclass._name for rclass in self.env.registry.values() if rclass._table == diag.table_name),
+            'base',
+        )
+        model_display = self.env['ir.model']._get(child_model_name).name or child_model_name
+
+        blocked_ids = list(self.ids)
+        columns = get_columns_from_sql_diagnostics(self.env.cr, diag, check_registry=True)
+        if len(columns) == 1:
+            rows = self.env.execute_query(SQL(
+                "SELECT DISTINCT %s FROM %s WHERE %s IN %s",
+                SQL.identifier(columns[0]), SQL.identifier(diag.table_name),
+                SQL.identifier(columns[0]), tuple(self.ids),
+            ))
+            blocked_ids = [row[0] for row in rows if row[0] is not None]
+
+        error = ValidationError(self._sql_error_to_message(exc))
+        error.context = {
+            'unlink_blocked': True,
+            'archivable': bool(self._active_name),
+            'blocked_ids': blocked_ids,
+            'model_name': model_display,
+        }
+        raise error from exc
+
     def unlink(self) -> typing.Literal[True]:
         """ Delete the records in ``self``.
 
@@ -3680,10 +3719,14 @@ class BaseModel(metaclass=MetaModel):
         for sub_ids in split_every(cr.IN_MAX, self.ids):
             records = self.browse(sub_ids)
 
-            cr.execute(SQL(
-                "DELETE FROM %s WHERE id IN %s",
-                SQL.identifier(self._table), sub_ids,
-            ))
+            try:
+                with cr.savepoint(flush=False):
+                    cr.execute(SQL(
+                        "DELETE FROM %s WHERE id IN %s",
+                        SQL.identifier(self._table), sub_ids,
+                    ))
+            except (psycopg2.errors.RestrictViolation, psycopg2.errors.ForeignKeyViolation) as e:
+                self._raise_unlink_blocked_error(e)
 
             # Removing the ir_model_data reference if the record being deleted
             # is a record created by xml/csv file, as these are not connected

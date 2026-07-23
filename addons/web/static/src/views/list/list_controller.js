@@ -24,7 +24,7 @@ import { MultiRecordViewButton } from "@web/views/view_button/multi_record_view_
 import { ViewButton } from "@web/views/view_button/view_button";
 import { executeButtonCallback, useViewButtons } from "@web/views/view_button/view_button_hook";
 import { SelectionBox } from "@web/views/view_components/selection_box";
-import { useDeleteRecords, useExportRecords } from "@web/views/view_hook";
+import { computeArchiveEnabled, useDeleteRecords, useExportRecords } from "@web/views/view_hook";
 import { ListCogMenu } from "./list_cog_menu";
 import { ListConfirmationDialog } from "./list_confirmation_dialog";
 
@@ -97,12 +97,7 @@ export class ListController extends Component {
             this.isExportEnable = await user.hasGroup("base.group_allow_export");
         });
 
-        this.archiveEnabled =
-            "active" in this.props.fields
-                ? !this.props.fields.active.readonly
-                : "x_active" in this.props.fields
-                ? !this.props.fields.x_active.readonly
-                : false;
+        this.archiveEnabled = computeArchiveEnabled(this.props.fields);
         useSubEnv({ model: this.model }); // do this in useModelWithSampleData?
         useViewButtons(this.rootRef, {
             beforeExecuteAction: this.beforeExecuteActionButton.bind(this),
@@ -318,7 +313,11 @@ export class ListController extends Component {
     }
 
     onDeleteSelectedRecords() {
-        this.deleteRecordsWithConfirmation(this.deleteConfirmationDialogProps);
+        this.deleteRecordsWithConfirmation(
+            this.deleteConfirmationDialogProps,
+            undefined,
+            this.archiveEnabled
+        );
     }
 
     /**

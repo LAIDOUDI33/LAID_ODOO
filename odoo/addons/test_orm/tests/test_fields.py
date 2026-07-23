@@ -7,7 +7,6 @@ from datetime import date, datetime
 from unittest.mock import patch
 from contextlib import contextmanager
 
-import psycopg2
 from PIL import Image
 
 from odoo import Command, fields, models
@@ -3351,7 +3350,7 @@ class TestX2many(TransactionExpressionCase):
         record_a.write({
             'a_restricted_b_ids': [Command.set(record_b.ids)],
         })
-        with self.assertRaises(psycopg2.IntegrityError):
+        with self.assertRaises(ValidationError):
             with mute_logger('odoo.sql_db'):
                 record_a.unlink()
         # Test B is still cascade.
@@ -3365,7 +3364,7 @@ class TestX2many(TransactionExpressionCase):
         record_a.write({
             'b_restricted_b_ids': [Command.set(record_b.ids)],
         })
-        with self.assertRaises(psycopg2.IntegrityError):
+        with self.assertRaises(ValidationError):
             with mute_logger('odoo.sql_db'):
                 record_b.unlink()
         # Test A is still cascade.

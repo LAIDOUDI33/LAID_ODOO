@@ -6138,6 +6138,175 @@ test(`deleting record which throws UserError should close confirmation dialog`, 
     expect.verifyErrors(["Odoo Server Error"]);
 });
 
+test(`deleting a record blocked by a foreign key, archive available`, async () => {
+    Foo._fields.active = fields.Boolean({ default: true });
+    onRpc("unlink", () => {
+        expect.step("unlink");
+        throw makeServerError({
+            type: "ValidationError",
+            context: {
+                unlink_blocked: true,
+                archivable: true,
+                blocked_ids: [1],
+                model_name: "Bar",
+            },
+        });
+    });
+    onRpc("action_archive", ({ args }) => {
+        expect.step("action_archive");
+        expect(args[0]).toEqual([1]);
+        return true;
+    });
+
+    await mountView({
+        resModel: "foo",
+        type: "list",
+        arch: `<list><field name="foo"/></list>`,
+        actionMenus: {},
+    });
+    await clickRecordSelector();
+    await toggleActionMenu();
+    await toggleMenuItem("Delete");
+    expect(`.modal .modal-title`).toHaveText("Bye-bye, record!");
+
+    await contains(`.modal footer button.btn-danger`).click();
+    await waitFor(`.modal .modal-title:contains(Oops)`);
+    expect(`.modal p:eq(0)`).toHaveText(
+        "Not possible to delete the record because it is used in Bar"
+    );
+    expect(`.modal p:eq(1)`).toHaveText("How about archiving it instead?");
+    expect(`.modal-footer .btn-primary`).toHaveText("Archive");
+    expect(`.modal-footer .btn-secondary`).toHaveText("Discard");
+    expect(`.modal a`).toHaveCount(0, {
+        message: "a single-record delete has no 'view non-deletable records' link",
+    });
+
+    await contains(`.modal-footer .btn-primary`).click();
+    expect(`.modal`).toHaveCount(0);
+    expect.verifySteps(["unlink", "action_archive"]);
+});
+
+test(`deleting a record blocked by a foreign key, archive not available`, async () => {
+    onRpc("unlink", () => {
+        expect.step("unlink");
+        throw makeServerError({
+            type: "ValidationError",
+            context: {
+                unlink_blocked: true,
+                archivable: false,
+                blocked_ids: [1],
+                model_name: "Bar",
+            },
+        });
+    });
+
+    await mountView({
+        resModel: "foo",
+        type: "list",
+        arch: `<list><field name="foo"/></list>`,
+        actionMenus: {},
+    });
+    await clickRecordSelector();
+    await toggleActionMenu();
+    await toggleMenuItem("Delete");
+
+    await contains(`.modal footer button.btn-danger`).click();
+    await waitFor(`.modal .modal-title:contains(Oops)`);
+    expect(`.modal p:eq(0)`).toHaveText(
+        "Not possible to delete the record because it is used in Bar"
+    );
+    expect(`.modal-footer button`).toHaveCount(1, {
+        message: "only a single 'Close' button is available",
+    });
+    expect(`.modal-footer button`).toHaveText("Close");
+
+    await contains(`.modal-footer button`).click();
+    expect(`.modal`).toHaveCount(0);
+    expect(`tbody td.o_field_cell`).toHaveCount(4, { message: "nothing got deleted" });
+    expect.verifySteps(["unlink"]);
+});
+
+test(`deleting records partially blocked by a foreign key: view non-deletable records`, async () => {
+    onRpc("unlink", () => {
+        expect.step("unlink");
+        throw makeServerError({
+            type: "ValidationError",
+            context: {
+                unlink_blocked: true,
+                archivable: false,
+                blocked_ids: [2],
+                model_name: "Bar",
+            },
+        });
+    });
+
+    await mountView({
+        resModel: "foo",
+        type: "list",
+        arch: `<list><field name="foo"/></list>`,
+        actionMenus: {},
+    });
+    await clickRecordSelector(3);
+    await toggleActionMenu();
+    await toggleMenuItem("Delete");
+
+    await contains(`.modal footer button.btn-danger`).click();
+    await waitFor(`.modal .modal-title:contains(Oops)`);
+    expect(`.modal a`).toHaveText("View non-deletable records");
+
+    await contains(`.modal a`).click();
+    expect(`.modal`).toHaveCount(0);
+    if (isSmall()) {
+        await contains(".o_control_panel_navigation button:last").click();
+    }
+    expect(getFacetTexts()).toEqual(["Non-deletable records"]);
+    expect(`tbody td.o_field_cell`).toHaveCount(1, {
+        message: "the list now only shows the blocked record",
+    });
+    expect.verifySteps(["unlink"]);
+});
+
+test(`deleting records partially blocked by a foreign key, archive available`, async () => {
+    Foo._fields.active = fields.Boolean({ default: true });
+    onRpc("unlink", () => {
+        expect.step("unlink");
+        throw makeServerError({
+            type: "ValidationError",
+            context: {
+                unlink_blocked: true,
+                archivable: true,
+                blocked_ids: [2],
+                model_name: "Bar",
+            },
+        });
+    });
+    onRpc("action_archive", ({ args }) => {
+        expect.step("action_archive");
+        expect(args[0]).toEqual([1, 2, 3]);
+        return true;
+    });
+
+    await mountView({
+        resModel: "foo",
+        type: "list",
+        arch: `<list><field name="foo"/></list>`,
+        actionMenus: {},
+    });
+    await clickRecordSelector(3);
+    await toggleActionMenu();
+    await toggleMenuItem("Delete");
+
+    await contains(`.modal footer button.btn-danger`).click();
+    await waitFor(`.modal .modal-title:contains(Oops)`);
+    expect(`.modal a`).toHaveText("View non-deletable records");
+    expect(`.modal p:last`).toHaveText("How about archiving them instead?");
+    expect(`.modal-footer .btn-primary`).toHaveText("Archive");
+
+    await contains(`.modal-footer .btn-primary`).click();
+    expect(`.modal`).toHaveCount(0);
+    expect.verifySteps(["unlink", "action_archive"]);
+});
+
 test.tags("desktop");
 test(`delete all records matching the domain`, async () => {
     Foo._records.push({ id: 5, bar: true, foo: "xxx" });
