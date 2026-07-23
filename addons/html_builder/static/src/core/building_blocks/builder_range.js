@@ -1,34 +1,23 @@
-import { Component, props, signal, t } from "@odoo/owl";
+import { Component, signal, t, useProps } from "@odoo/owl";
+import { pick } from "@web/core/utils/objects";
 import {
+    basicContainerBuilderComponentProps,
     useActionInfo,
     useBuilderComponent,
+    useBuilderNumberInputUnits,
     useInputBuilderComponent,
     useInputDebouncedCommit,
-    useBuilderNumberInputUnits,
 } from "../utils";
 import { BuilderComponent } from "./builder_component";
-import { BuilderNumberInputBase } from "./builder_number_input_base";
 import { textInputBasePassthroughProps } from "./builder_input_base";
-import { pick } from "@web/core/utils/objects";
+import { BuilderNumberInputBase } from "./builder_number_input_base";
 
 export class BuilderRange extends Component {
+    static components = { BuilderComponent, BuilderNumberInputBase };
     static template = "html_builder.BuilderRange";
-    props = props({
-        // basicContainerBuilderComponentProps (converted inline)
-        id: t.string().optional(),
-        applyTo: t.string().optional(),
-        preview: t.boolean().optional(),
-        inheritedActions: t.array(t.string()).optional(),
 
-        action: t.string().optional(),
-        actionParam: t.any().optional(),
-
-        // Shorthand actions.
-        classAction: t.any().optional(),
-        attributeAction: t.any().optional(),
-        dataAttributeAction: t.any().optional(),
-        styleAction: t.any().optional(),
-
+    props = useProps({
+        ...basicContainerBuilderComponentProps,
         min: t.number().optional(0),
         max: t.number().optional(100),
         step: t.number().optional(1),
@@ -50,9 +39,8 @@ export class BuilderRange extends Component {
             .optional(),
         rangeClass: t.string().optional(""),
     });
-    static components = { BuilderComponent, BuilderNumberInputBase };
 
-    inputRefRange = signal.ref();
+    inputRefRange = signal.ref(HTMLInputElement);
 
     setup() {
         if (this.props.saveUnit && !this.props.unit) {
@@ -89,35 +77,34 @@ export class BuilderRange extends Component {
             }
             if (!this.convertorObject.ratioStep) {
                 this.convertorObject.ratioStep = Math.round(
-                    (this.props.step / (this.props.max - this.props.min)) * (this.maxRatio - this.minRatio)
+                    (this.props.step / (this.props.max - this.props.min)) *
+                        (this.maxRatio - this.minRatio)
                 );
             }
         }
 
-        if (this.props.withNumberInput) {
-            this.inputRefNumber = signal.ref();
-            this.debouncedCommitNumberValue = useInputDebouncedCommit(this.inputRefNumber);
-        }
-
-        const { formatRawValue, parseDisplayValue, clampValue } = useBuilderNumberInputUnits();
+        const { formatRawValue, parseDisplayValue, clampValue } = useBuilderNumberInputUnits(
+            this.props
+        );
         this.formatRawValue = formatRawValue;
         this.parseDisplayValue = parseDisplayValue;
         this.clampValue = clampValue;
 
-        this.info = useActionInfo();
-        useBuilderComponent();
-        const { state, commit, preview } = useInputBuilderComponent({
-            id: this.props.id,
+        this.info = useActionInfo(this.props);
+        useBuilderComponent(this.props);
+        const { state, commit, preview } = useInputBuilderComponent(this.props, {
             defaultValue: this.props.default === null ? null : this.props.default?.toString(),
             formatRawValue: this.formatRawValue.bind(this),
             parseDisplayValue: this.parseDisplayValue.bind(this),
         });
 
-        this.debouncedCommitRangeValue = useInputDebouncedCommit(this.inputRefRange);
+        this.debouncedCommitRangeValue = useInputDebouncedCommit(this.inputRefRange, commit);
 
         this.commit = commit;
-        this.preview = (value, isRatio = false) => {
-            if (this.props.withNumberInput) {
+        if (this.props.withNumberInput) {
+            this.inputRefNumber = signal.ref(HTMLInputElement);
+            this.debouncedCommitNumberValue = useInputDebouncedCommit(this.inputRefNumber, commit);
+            this.preview = (value, isRatio = false) => {
                 let ratio;
                 if (isRatio) {
                     ratio = value;
@@ -129,9 +116,11 @@ export class BuilderRange extends Component {
                 // Syncronize the values of range and text inputs during preview
                 this.inputRefRange().value = value || this.props.min;
                 this.state.value = this.parseDisplayValue(value);
-            }
-            return preview(value);
-        };
+                return preview(value);
+            };
+        } else {
+            this.preview = preview;
+        }
         this.state = state;
     }
 
