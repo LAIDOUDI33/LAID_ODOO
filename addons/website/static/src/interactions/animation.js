@@ -90,17 +90,21 @@ export class Animation extends Interaction {
      */
     startAnimation() {
         // Forces the browser to redraw using setTimeout.
-        this.waitForTimeout(() => {
-            this.isAnimating = true;
-            this.playState = "running";
-            for (const eventName of ["webkitAnimationEnd", "oanimationend", "msAnimationEnd", "animationend"]) {
-                this.addListener(this.el, eventName, () => {
-                    this.isAnimating = false;
-                    this.isAnimated = true;
-                    window.dispatchEvent(new Event("resize"));
-                }, { once: true });
-            }
-        });
+        return new Promise((resolve) =>
+            this.waitForTimeout(() => {
+                this.isAnimating = true;
+                this.isAnimated = false;
+                this.playState = "running";
+                for (const eventName of ["webkitAnimationEnd", "oanimationend", "msAnimationEnd", "animationend"]) {
+                    this.addListener(this.el, eventName, () => {
+                        this.isAnimating = false;
+                        this.isAnimated = true;
+                        window.dispatchEvent(new Event("resize"));
+                    }, { once: true });
+                }
+                resolve();
+            })
+        );
     }
 
     resetAnimation() {
@@ -188,6 +192,7 @@ export class Animation extends Interaction {
         } else {
             if (visible && this.playState === "paused") {
                 el.classList.add("o_visible");
+                this.registerCleanup(() => this.el.classList.remove("o_visible"));
                 this.startAnimation();
             } else if (!visible && el.classList.contains("o_animate_both_scroll") && this.playState === "running") {
                 el.classList.remove("o_visible");

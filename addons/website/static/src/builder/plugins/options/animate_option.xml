@@ -31,7 +31,7 @@
                             t-if="state.canHover">On Hover</BuilderSelectItem>
             </BuilderSelect>
             <t t-if="!!props.slots?.animationRowTrailing" t-slot="animationRowTrailing"/>
-            <t t-else="" t-call="website.animateOnScrollInOut"/> 
+            <t t-else="" t-call="website.animateOnScrollInOut"/>
         </BuilderRow>
         <BuilderRow label.translate="On Scroll" level="1" t-if="!!props.slots?.animationRowTrailing">
             <t t-call="website.animateOnScrollInOut"/>
@@ -57,7 +57,7 @@
         </BuilderRow>
         <!-- Trigger -->
         <BuilderRow label.translate="Trigger" level="1">
-            <BuilderSelect t-if="this.isActiveItem('animation_on_appearance_opt') and !state.isInDropdown">
+            <BuilderSelect t-if="this.isActiveItem('animation_on_appearance_opt') and !state.isInDropdown" preview="false">
                 <BuilderSelectItem classAction="''">First Time Only</BuilderSelectItem>
                 <BuilderSelectItem classAction="'o_animate_both_scroll'">Every Time</BuilderSelectItem>
             </BuilderSelect>
@@ -81,11 +81,11 @@
         <BuilderContext t-if="this.isActiveItem('animation_on_appearance_opt')">
             <!-- Start After -->
             <BuilderRow label.translate="Start After" level="1">
-                <BuilderNumberInput styleAction="'animation-delay'" action="'forceAnimation'" unit="'s'" />
+                <BuilderNumberInput styleAction="'animation-delay'" action="'forceAnimation'" unit="'s'" min="0" preview="false"/>
             </BuilderRow>
             <!-- Duration -->
             <BuilderRow label.translate="Duration" level="1">
-                <BuilderNumberInput styleAction="'animation-duration'" action="'forceAnimation'" default="0.4" unit="'s'" />
+                <BuilderNumberInput styleAction="'animation-duration'" action="'forceAnimation'" default="0.4" unit="'s'" min="0" preview="false"/>
             </BuilderRow>
         </BuilderContext>
         <t t-if="this.isActiveItem('animation_on_hover_opt')">
