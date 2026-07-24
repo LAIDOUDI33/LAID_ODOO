@@ -12,7 +12,7 @@ import { useAutofocus, useBus, useChildRef, useService } from "@web/core/utils/h
 import { useSortable } from "@web/core/utils/sortable_owl";
 import { getTabableElements } from "@web/core/utils/ui";
 import { AGGREGATABLE_FIELD_TYPES, combineModifiers } from "@web/model/relational_model/utils";
-import { onWillRender, render } from "@web/owl2/utils";
+import { render } from "@web/owl2/utils";
 import { Field, getPropertyFieldInfo } from "@web/views/fields/field";
 import { getTooltipInfo } from "@web/views/fields/field_tooltip";
 import {
@@ -28,6 +28,8 @@ import { useMagicColumnWidths } from "./column_width_hook";
 
 import {
     Component,
+    computed,
+    effect,
     onMounted,
     onPatched,
     onWillDestroy,
@@ -40,6 +42,7 @@ import {
     signal,
     status,
     t,
+    untrack,
     useListener,
 } from "@odoo/owl";
 import { getCurrencyRates } from "@web/core/currency";
@@ -139,6 +142,19 @@ export class ListRenderer extends Component {
         GroupConfigMenu,
     };
     props = props(listRendererProps);
+    editedRecord = computed(() => this.props.list.editedRecord);
+    computedAllColumns = computed(() => {
+        const list = this.props.list;
+        // Property field definitions are raw; record data changes invalidate their columns.
+        for (const record of list.records) {
+            Object.keys(record.data);
+        }
+        return this.processAllColumn(this.props.archInfo.columns, list);
+    });
+    computedColumns = computed(() => this.getActiveColumns());
+    computedAggregates = computed(() => this.computeAggregates());
+    debugOpenViewState = signal(false);
+    storageRevision = signal(0);
 
     setup() {
         this.uiService = useService("ui");
@@ -189,20 +205,26 @@ export class ListRenderer extends Component {
             const activeRow = document.activeElement.closest(".o_data_row.o_selected_row");
             this.activeRowId = activeRow ? activeRow.dataset.id : null;
         });
-        this.optionalActiveFields = this.props.optionalActiveFields || {};
-        /** @type {Column[]} */
-        this.allColumns = [];
-        /** @type {Column[]} */
-        this.columns = [];
-        this.editedRecord = signal(null);
-        onWillRender(() => {
-            this.editedRecord.set(this.props.list.editedRecord);
-            this.allColumns = this.processAllColumn(this.props.archInfo.columns, this.props.list);
-            Object.assign(this.optionalActiveFields, this.computeOptionalActiveFields());
-            this.debugOpenView = exprToBoolean(browser.localStorage.getItem(this.keyDebugOpenView));
-            this.columns = this.getActiveColumns();
-            this.withHandleColumn = this.columns.some((col) => col.widget === "handle");
-            this.aggregates = this.computeAggregates();
+        this.optionalActiveFields = proxy(this.props.optionalActiveFields || {});
+        let disposeStorageEffect;
+        onWillStart(() => {
+            disposeStorageEffect = effect(() => {
+                this.storageRevision();
+                Object.assign(this.optionalActiveFields, this.computeOptionalActiveFields());
+                this.debugOpenViewState.set(
+                    exprToBoolean(browser.localStorage.getItem(this.keyDebugOpenView))
+                );
+            });
+        });
+        onWillDestroy(() => disposeStorageEffect?.());
+        useListener(window, "storage", (event) => {
+            if (
+                event.key === null ||
+                event.key === this.keyOptionalFields ||
+                event.key === this.keyDebugOpenView
+            ) {
+                this.storageRevision.set(this.storageRevision() + 1);
+            }
         });
         this.multiCurrencyPopover = usePopover(MultiCurrencyPopover, {
             position: "right",
@@ -350,8 +372,8 @@ export class ListRenderer extends Component {
         });
     }
 
-    getActiveColumns() {
-        return this.allColumns.filter((col) => {
+    getActiveColumns(allColumns = this.allColumns) {
+        return allColumns.filter((col) => {
             if (col.optional && !this.optionalActiveFields[col.name]) {
                 return false;
             }
@@ -362,8 +384,28 @@ export class ListRenderer extends Component {
         });
     }
 
+    get allColumns() {
+        return this.computedAllColumns();
+    }
+
+    get columns() {
+        return this.computedColumns();
+    }
+
+    get aggregates() {
+        return this.computedAggregates();
+    }
+
+    get debugOpenView() {
+        return this.debugOpenViewState();
+    }
+
     get hasSelectors() {
         return this.props.allowSelectors && !this.uiService.isSmall;
+    }
+
+    get withHandleColumn() {
+        return this.columns.some((column) => column.widget === "handle");
     }
 
     get hasOpenFormViewColumn() {
@@ -1361,7 +1403,10 @@ export class ListRenderer extends Component {
         // only apply list_optional_show once when filter changes to keep it possible
         // to untoggle optional fields even if they occur in list_optional_show
         if (optionalShowChanged) {
-            Object.assign(optionalActiveFields, this.optionalActiveFields);
+            Object.assign(
+                optionalActiveFields,
+                untrack(() => ({ ...this.optionalActiveFields }))
+            );
             this.lastOptionalShow = JSON.stringify(optionalShow);
             if (optionalShow) {
                 for (const fieldName of optionalShow) {
@@ -2291,7 +2336,6 @@ export class ListRenderer extends Component {
         this.saveOptionalActiveFields(
             this.allColumns.filter((col) => this.optionalActiveFields[col.name] && col.optional)
         );
-        render(this);
     }
 
     /**
@@ -2313,13 +2357,12 @@ export class ListRenderer extends Component {
         this.saveOptionalActiveFields(
             this.allColumns.filter((col) => this.optionalActiveFields[col.name] && col.optional)
         );
-        render(this);
     }
 
     toggleDebugOpenView() {
-        this.debugOpenView = !this.debugOpenView;
-        browser.localStorage.setItem(this.keyDebugOpenView, this.debugOpenView);
-        render(this);
+        const debugOpenView = !this.debugOpenView;
+        browser.localStorage.setItem(this.keyDebugOpenView, debugOpenView);
+        this.debugOpenViewState.set(debugOpenView);
     }
 
     /**
