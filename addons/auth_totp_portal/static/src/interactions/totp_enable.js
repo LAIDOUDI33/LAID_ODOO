@@ -170,7 +170,7 @@ export class TOTPEnable extends Interaction {
                 } catch (e) {
                     const errorMessage = (
                         !e.message ? e.toString()
-                            : !e.message.data ? e.message.message
+                            : !e.message.data ? e.message.message || _t("Verification failed, please double-check the 6-digit code")
                                 : e.message.data.message || _t("Operation failed for unknown reason.")
                     );
                     inputEl.classList.add("is-invalid");
