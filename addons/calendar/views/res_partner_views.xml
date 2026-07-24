@@ -14,7 +14,10 @@
                             icon="fa-calendar"
                             context="{'partner_id': id, 'partner_name': name}"
                             invisible="not next_meeting_id">
-                            <field string="Next Meeting" name="next_meeting_start" widget="datetime"/>
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Next Meeting</span>
+                                <field name="next_meeting_start" class="o_stat_value"/>
+                            </div>
                         </button>
                         <button class="oe_stat_button" type="object"
                             name="action_show_meetings"

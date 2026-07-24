@@ -69,7 +69,7 @@
                 <templates>
                     <t t-name="card">
                         <div>
-                            <field name="alarm_type"/> - <field name="duration"/> <field name="interval"/>
+                            <h5><field name="alarm_type"/> - <field name="duration"/> <field name="interval"/></h5>
                         </div>
                         <div name="message_template">
                             <field name="mail_template_id" invisible="not mail_template_id"/>

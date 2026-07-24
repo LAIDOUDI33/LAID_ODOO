@@ -231,7 +231,7 @@ export class CalendarCommonPopover extends Component {
                 ? ` <small class="fw-bold">${this.dateDuration}</small>`
                 : "";
             items.push(`
-                <div class="d-flex align-items-baseline gap-2">
+                <div class="d-flex align-items-center gap-2">
                     <i class="fa fa-fw fa-calendar text-400"/>
                     <span class="fw-bold">${this.date}</span>${duration}
                 </div>
@@ -242,7 +242,7 @@ export class CalendarCommonPopover extends Component {
                 ? ` <small class="fw-bold">(${this.timeDuration})</small>`
                 : "";
             items.push(`
-                <div class="d-flex align-items-baseline gap-2">
+                <div class="d-flex align-items-center gap-2">
                     <i class="fa fa-fw fa-clock-o text-400"/>
                     <span class="fw-bold">${this.time}</span>${duration}
                 </div>
@@ -266,7 +266,7 @@ export class CalendarCommonPopover extends Component {
             }
             const invisible = fieldNode.invisible ? `invisible="${fieldNode.invisible}"` : "";
             items.push(
-                `<div class="d-flex align-items-baseline gap-2" ${invisible}>${label}${field}</div>`
+                `<div class="d-flex align-items-center gap-2" ${invisible}>${label}${field}</div>`
             );
         }
         return parseXML(`<t t-name="${CARD_ATTRIBUTE}" class="gap-3">${items.join("")}</t>`);
