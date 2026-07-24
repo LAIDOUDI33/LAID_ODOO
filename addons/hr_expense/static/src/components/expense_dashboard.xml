@@ -2,7 +2,7 @@
 <templates xml:space="preserve">
     <t t-name="hr_expense.ExpenseDashboard">
         <div class="d-none d-md-flex o_expense_container position-sticky start-0 d-flex o_form_statusbar">
-            <t t-foreach="Object.entries(this.state.expenses)" t-as="expense" t-key="expense[0]">
+            <t t-foreach="Object.entries(this.expenses())" t-as="expense" t-key="expense[0]">
                 <t t-set="name" t-value="expense[0]"/>
                 <t t-set="data" t-value="expense[1]"/>
                 <div t-attf-class="o_expense_card o_arrow_button flex-grow-1 d-flex flex-column p-3 border-bottom text-center cursor-pointer"
