@@ -13,6 +13,7 @@ class HrEmployeePublic(models.Model):
     hours_today = fields.Float(related='employee_id.hours_today', readonly=True,
         groups="hr_attendance.group_hr_attendance_own,hr_attendance.group_hr_attendance_officer")
     hours_last_month = fields.Float(related='employee_id.hours_last_month')
+    hours_last_month_display = fields.Char(related='employee_id.hours_last_month_display')
     hours_last_month_overtime = fields.Float(related='employee_id.hours_last_month_overtime')
     last_attendance_id = fields.Many2one(related='employee_id.last_attendance_id', readonly=True,
         groups="hr_attendance.group_hr_attendance_own,hr_attendance.group_hr_attendance_officer")
@@ -23,7 +24,6 @@ class HrEmployeePublic(models.Model):
         groups="hr_attendance.group_hr_attendance_own,hr_attendance.group_hr_attendance_officer")
     last_check_out = fields.Datetime(related='employee_id.last_check_out',
         groups="hr_attendance.group_hr_attendance_own,hr_attendance.group_hr_attendance_officer")
-    display_extra_hours = fields.Boolean(related='company_id.hr_attendance_display_overtime')
     display_attendances = fields.Boolean(related='employee_id.display_attendances')
 
     def action_open_last_month_attendances(self):
