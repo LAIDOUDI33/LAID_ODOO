@@ -106,6 +106,7 @@ export function getActiveHotkey(ev) {
     return hotkey.join("+");
 }
 
+/** @satisfies {import("registries").ServicesRegistryItemShape} */
 export const hotkeyService = {
     dependencies: ["ui"],
     // Be aware that all odoo hotkeys are designed with this modifier in mind,

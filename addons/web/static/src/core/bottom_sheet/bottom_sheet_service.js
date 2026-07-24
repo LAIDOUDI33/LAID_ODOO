@@ -15,7 +15,8 @@ import { registry } from "@web/core/registry";
  * @typedef {ReturnType<popoverService["start"]>["add"]} PopoverServiceAddFunction
  */
 
-export const popoverService = {
+/** @satisfies {import("registries").ServicesRegistryItemShape} */
+export const bottomSheetService = {
     dependencies: ["overlay"],
     start(_, { overlay }) {
         let bottomSheetCount = 0;
@@ -68,4 +69,4 @@ export const popoverService = {
     },
 };
 
-registry.category("services").add("bottom_sheet", popoverService);
+registry.category("services").add("bottom_sheet", bottomSheetService);

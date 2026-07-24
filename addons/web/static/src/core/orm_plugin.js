@@ -390,7 +390,8 @@ services.add(ORM);
  * ...
  * const result = await this.orm.silent.read('res.partner', [id]);
  */
-registry.category("services").add("orm", {
+
+export const ormService = {
     async: [
         "call",
         "create",
@@ -411,4 +412,6 @@ registry.category("services").add("orm", {
         orm.toString = () => "orm";
         return orm;
     },
-});
+};
+
+registry.category("services").add("orm", ormService);

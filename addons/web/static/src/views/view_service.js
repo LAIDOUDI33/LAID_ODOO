@@ -40,6 +40,7 @@ import { UPDATE_METHODS } from "@web/core/orm_plugin";
  * @property {boolean} loadIrFilters
  */
 
+/** @satisfies {import("registries").ServicesRegistryItemShape} */
 export const viewService = {
     dependencies: ["orm", "ui"],
     async: ["loadViews"],

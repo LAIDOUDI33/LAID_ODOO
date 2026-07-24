@@ -31,6 +31,7 @@ class DialogWrapper extends Component {
  *  }} DialogServiceInterface
  */
 
+/** @satisfies {import("registries").ServicesRegistryItemShape} */
 export const dialogService = {
     dependencies: ["overlay"],
     /** @returns {DialogServiceInterface} */

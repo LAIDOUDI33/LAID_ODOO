@@ -157,9 +157,12 @@ services.add(LocalizationPlugin);
  * temporary - to remove when all use of localization services are removed
  * -----------------------------------------------------------------------------
  */
-registry.category("services").add("localization", {
+
+export const localizationService = {
     start() {
         const localizationPlugin = plugin(LocalizationPlugin);
         return localizationPlugin.localization;
     },
-});
+};
+
+registry.category("services").add("localization", localizationService);

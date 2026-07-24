@@ -51,7 +51,8 @@ services.add(TitlePlugin);
  * temporary - to remove when all use of title services are removed
  * -----------------------------------------------------------------------------
  */
-registry.category("services").add("title", {
+
+export const titleService = {
     start() {
         const titlePlugin = plugin(TitlePlugin);
         const titleService = Object.create(titlePlugin);
@@ -75,4 +76,6 @@ registry.category("services").add("title", {
         };
         return titleService;
     },
-});
+};
+
+registry.category("services").add("title", titleService);

@@ -1939,6 +1939,7 @@ export function makeActionManager(env, router = _router) {
     };
 }
 
+/** @satisfies {import("registries").ServicesRegistryItemShape} */
 export const actionService = {
     dependencies: ["dialog", "effect", "localization", "notification", "title", "ui"],
     start(env) {
