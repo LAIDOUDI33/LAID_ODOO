@@ -3,7 +3,7 @@
 import itertools
 from collections import defaultdict
 from datetime import datetime
-from urllib.parse import parse_qs, urlencode, urlparse
+from urllib.parse import parse_qs, urlencode, urlparse, urlsplit
 
 from werkzeug.exceptions import Forbidden, NotFound
 from werkzeug.urls import url_decode, url_encode, url_parse
@@ -837,9 +837,7 @@ class WebsiteSale(payment_portal.PaymentPortal):
         )
         variant_media_values = {}
         if is_variant_media:
-            variant_media_values["attribute_value_ids"] = [
-                Command.set(product_product.product_template_attribute_value_ids.ids)
-            ]
+            variant_media_values["attribute_value_ids"] = [Command.set(combination_ids)]
 
         if type == "image":  # Image case
             image_ids = self.env["ir.attachment"].browse(i["id"] for i in media)
@@ -855,7 +853,7 @@ class WebsiteSale(payment_portal.PaymentPortal):
             ]
         elif type == "video":  # Video case
             video_data = media[0]
-            url = urlparse(video_data["video_url"])
+            url = urlsplit(video_data["video_url"])
             if not url.netloc:
                 raise ValidationError(self.env._("Invalid video URL provided."))
             media_create_data = [
@@ -913,7 +911,7 @@ class WebsiteSale(payment_portal.PaymentPortal):
         is_main_image_computed = bool(computed_main_image)
 
         if is_main_image_computed:
-            product_images = list(product._get_all_extra_images_to_display())
+            product_images = list((product or product_template)._get_all_extra_images_to_display())
             if image_to_resequence._name != "product.image":
                 image_to_resequence = computed_main_image
         else:

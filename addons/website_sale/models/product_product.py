@@ -254,7 +254,7 @@ class ProductProduct(models.Model):
         followed by template-level images that are not associated with any
         attribute values.
 
-        Note: ``self.ensure_one()``
+        Note: self.ensure_one()
 
         :rtype: product.image
         :return: Recordset of extra images to display.

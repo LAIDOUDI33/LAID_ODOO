@@ -1313,10 +1313,21 @@ class ProductTemplate(models.Model):
         """
         self.ensure_one()
         extra_images = list(
-            self.product_template_image_ids.sorted("sequence") - self.computed_main_image_id
+            self._get_all_extra_images_to_display() - self.computed_main_image_id
         )
 
         return [self] + extra_images
+
+    def _get_all_extra_images_to_display(self):
+        """Return the extra images to display for this template on the website.
+
+        Note: self.ensure_one()
+
+        :rtype: product.image
+        :return: Recordset of extra images to display.
+        """
+        self.ensure_one()
+        return self.product_template_image_ids.sorted("sequence")
 
     def _get_product_page_documents(self, variant=None):
         self.ensure_one()
