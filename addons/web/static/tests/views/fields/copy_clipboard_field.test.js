@@ -19,10 +19,13 @@ class Partner extends models.Model {
         trim: true,
     });
 
+    url_field = fields.Char();
+
     _records = [
         {
             id: 1,
             char_field: "char value",
+            url_field: "https://www.example.com",
         },
     ];
 
@@ -177,4 +180,40 @@ test("CopyClipboardButtonField can be disabled", async () => {
     expect(".o_clipboard_button.o_btn_char_copy[disabled]").toHaveCount(1);
     await fieldInput("char_field").edit("another char value");
     expect(".o_clipboard_button.o_btn_char_copy[disabled]").toHaveCount(0);
+});
+
+test("CopyClipboardURLField takes its text from text option", async () => {
+    await mountView({
+        type: "form",
+        resModel: "res.partner",
+        resId: 1,
+        arch: `
+            <form>
+                <sheet>
+                    <group>
+                        <field name="url_field" readonly="1" widget="CopyClipboardURL" options="{'text': 'Example URL'}"/>
+                    </group>
+                </sheet>
+            </form>`,
+    });
+    expect(".o_field_widget.o_form_uri").toHaveAttribute("href", "https://www.example.com");
+    expect(".o_field_widget.o_form_uri").toHaveText("Example URL");
+});
+
+test("CopyClipboardURLField displays url if text empty", async () => {
+    await mountView({
+        type: "form",
+        resModel: "res.partner",
+        resId: 1,
+        arch: `
+            <form>
+                <sheet>
+                    <group>
+                        <field name="url_field" readonly="1" widget="CopyClipboardURL"/>
+                    </group>
+                </sheet>
+            </form>`,
+    });
+    expect(".o_field_widget.o_form_uri").toHaveAttribute("href", "https://www.example.com");
+    expect(".o_field_widget.o_form_uri").toHaveText("https://www.example.com");
 });
