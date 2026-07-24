@@ -1994,39 +1994,24 @@ class TestXMLDuplicateTranslations(TransactionCase):
         self.assertEqual(self.view1_fr.arch_db, new_xml2 % ('une étudiante', 'une étudiante'))  # 'un étudiant' is dropped
         self.assertEqual(self.view1_es.arch_db, new_xml2 % ('una estudiante', 'una estudiante'))  # 'un estudiante' is dropped
 
-    # tricky behaviour
     def test_copy(self):
         """ copy record
 
-        translations are lost when 2 other language terms are translated to the
+        translations are kept when 2 other language terms are translated to the
         same term in the current language value
         """
 
-        # copy translated field means
-        # 1. create with the current language value
-        # 2. use the translation mapping from current_lang_terms to other_lang_terms to update_field_translations
-
         # copy the record in fr_FR
         view1_fr_copy = self.view1_fr.copy({'name': 'view1_fr_copy'})
-        # view1_en_copy.update_field_translations('arch_db', {
-        #     'en_US': {'un étudiant': 'a student', 'une étudiante': 'a student'},
-        #     'es_ES': {'un étudiant': 'un estudiante', 'une étudiante': 'una estudiante'},
-        # })
-        # is called when copy
         self.assertEqual(view1_fr_copy.with_context(lang='en_US').arch_db, self.xml % ('a student', 'a student'))
         self.assertEqual(view1_fr_copy.arch_db, self.xml % ('un étudiant', 'une étudiante'))
         self.assertEqual(view1_fr_copy.with_context(lang='es_ES').arch_db, self.xml % ('un estudiante', 'una estudiante'))
 
         # copy the record in en_US
         view1_en_copy = self.view1_en.copy({'name': 'view1_us_copy'})
-        # view1_en_copy.update_field_translations('arch_db', {
-        #     'fr_FR': {'a student': 'une étudiante'},
-        #     'es_ES': {'a student': ''una estudiante'},
-        # })
-        # is called when copy
         self.assertEqual(view1_en_copy.arch_db, self.xml % ('a student', 'a student'))
-        self.assertEqual(view1_en_copy.with_context(lang='fr_FR').arch_db, self.xml % ('une étudiante', 'une étudiante'))  # 'un étudiant' is dropped
-        self.assertEqual(view1_en_copy.with_context(lang='es_ES').arch_db, self.xml % ('una estudiante', 'una estudiante'))  # 'un estudiante' is dropped
+        self.assertEqual(view1_en_copy.with_context(lang='fr_FR').arch_db, self.xml % ('un étudiant', 'une étudiante'))
+        self.assertEqual(view1_en_copy.with_context(lang='es_ES').arch_db, self.xml % ('un estudiante', 'una estudiante'))
 
 
 @tagged('at_install', '-post_install')  # LEGACY at_install
