@@ -2338,8 +2338,8 @@ class TestStoredTranslations(TransactionCase):
         html_field = self._get_html_field()
         st = StoredTranslations({})
         translation_dict = {
-            'fr_FR': ParsedTranslation('<div>New French</div>', html_field),
-            'nl_NL': ParsedTranslation('<div>New Dutch</div>', html_field),
+            'fr_FR': ParsedTranslation(html_field, '<div>New French</div>'),
+            'nl_NL': ParsedTranslation(html_field, '<div>New Dutch</div>'),
         }
         result = st.written(self.env, html_field, translation_dict)
         self.assertEqual(dict(result), {
@@ -2362,8 +2362,8 @@ class TestStoredTranslations(TransactionCase):
             '_fr_FR': '<div>Couteau</div>',
         })
         translation_dict = {
-            'nl_NL': ParsedTranslation('<div>Mes</div>', html_field),  # new translation for nl_NL
-            'fr_FR': ParsedTranslation('<div>Couteau</div>', html_field),  # confirm the fr_FR translation is not changed
+            'nl_NL': ParsedTranslation(html_field, '<div>Mes</div>'),  # new translation for nl_NL
+            'fr_FR': ParsedTranslation(html_field, '<div>Couteau</div>'),  # confirm the fr_FR translation is not changed
         }
         result = st.written(self.env, html_field, translation_dict)
         self.assertEqual(dict(result), {
@@ -2384,8 +2384,8 @@ class TestStoredTranslations(TransactionCase):
             '_nl_NL': '<div>Mes</div>',
         })
         translation_dict = {
-            'en_US': ParsedTranslation('<div>Knife</div><div>Fork</div>', html_field),
-            'fr_FR': ParsedTranslation('<div>Couteau</div><div>Fourchette</div>', html_field),
+            'en_US': ParsedTranslation(html_field, '<div>Knife</div><div>Fork</div>'),
+            'fr_FR': ParsedTranslation(html_field, '<div>Couteau</div><div>Fourchette</div>'),
         }
         result = st.written(self.env, html_field, translation_dict)
         self.assertEqual(dict(result), {
@@ -2405,8 +2405,8 @@ class TestStoredTranslations(TransactionCase):
             '_nl_NL': '<p>Mes</p>',
         })
         translation_dict = {
-            'en_US': ParsedTranslation('<div>Fork</div>', html_field),
-            'fr_FR': ParsedTranslation('<div>Fourchette</div>', html_field),
+            'en_US': ParsedTranslation(html_field, '<div>Fork</div>'),
+            'fr_FR': ParsedTranslation(html_field, '<div>Fourchette</div>'),
         }
         result = st.written(self.env, html_field, translation_dict, delay_translations=True)
         self.assertEqual(dict(result), {
@@ -2424,8 +2424,8 @@ class TestStoredTranslations(TransactionCase):
             '_nl_NL': '<p>Mes</p>',
         })
         translation_dict = {
-            'en_US': ParsedTranslation('<div>Knife</div>', html_field),
-            'fr_FR': ParsedTranslation('<div>Couteau</div>', html_field),
+            'en_US': ParsedTranslation(html_field, '<div>Knife</div>'),
+            'fr_FR': ParsedTranslation(html_field, '<div>Couteau</div>'),
         }
         result = st.written(self.env, html_field, translation_dict, delay_translations=True)
         self.assertEqual(dict(result), {
@@ -2444,7 +2444,7 @@ class TestStoredTranslations(TransactionCase):
             '_fr_FR': '<div>Bonjour le monde</div>',
         })
         translation_dict = {
-            'en_US': ParsedTranslation('<div>Hello World</div>', html_field),
+            'en_US': ParsedTranslation(html_field, '<div>Hello World</div>'),
         }
         result = st.written(self.env, html_field, translation_dict)
         self.assertEqual(dict(result), {
@@ -2459,7 +2459,7 @@ class TestStoredTranslations(TransactionCase):
             '_fr_FR': '<p>Bonjaur le monde</p><div>Bonjour le monde</div>',
         })
         translation_dict = {
-            'en_US': ParsedTranslation('<div>Hello World</div><div>Hello World</div>', html_field),
+            'en_US': ParsedTranslation(html_field, '<div>Hello World</div><div>Hello World</div>'),
         }
         result = st.written(self.env, html_field, translation_dict)
         self.assertEqual(dict(result), {
@@ -2481,7 +2481,7 @@ class TestStoredTranslations(TransactionCase):
             # new xml term '<span invisible="0">English</span>' shares the same text with all old terms
             # but is close to '<span invisible="1">English</span>' and shares the same html structure
             # should reuse and adapt the translation mapping for the old xml term '<span invisible="1">English</span>'
-            'en_US': ParsedTranslation('<form><div><span invisible="0">English</span></div></form>', xml_field),
+            'en_US': ParsedTranslation(xml_field, '<form><div><span invisible="0">English</span></div></form>'),
         }
         result = st.written(self.env, xml_field, translation_dict, adapt_close_terms=True)
         self.assertEqual(dict(result), {
@@ -2499,7 +2499,7 @@ class TestStoredTranslations(TransactionCase):
             'fr_FR': '<div><span help="Couteau"></span></div><div><span help="Fourchette"></span></div>',
         })
         result = st.written(self.env, html_field, ({
-            'fr_FR': ParsedTranslation('<div><span title="Couteau"></span></div><div><span title="Fourchette"></span></div>', html_field)
+            'fr_FR': ParsedTranslation(html_field, '<div><span title="Couteau"></span></div><div><span title="Fourchette"></span></div>')
         }))
         self.assertEqual(dict(result), {
             'en_US': '<div><span title="Couteau"></span></div><div><span title="Fourchette"></span></div>',
@@ -2518,7 +2518,7 @@ class TestStoredTranslations(TransactionCase):
             # old xml term '<span invisible="1">English</span></div>' is removed
             # new text term 'English' used in attribute and text and shares the same text with all old terms
             # it shouldn't reuse the translation mapping for the old xml term '<i>English</i>' and '<span invisible="1">English</span>'
-            'en_US': ParsedTranslation('<form><div title="English"/>English</form>', field),
+            'en_US': ParsedTranslation(field, '<form><div title="English"/>English</form>'),
         }
         result = st.written(self.env, field, translation_dict, adapt_close_terms=True)
         self.assertEqual(dict(result), {
@@ -2535,7 +2535,7 @@ class TestStoredTranslations(TransactionCase):
             # old xml term '<span invisible="1">English</span>' is removed
             # new xml term '<b>English</b>' shares the same text with all old terms
             # it shouldn't reuse the translation mapping because it has different structure
-            'en_US': ParsedTranslation('<form><b>English</b></form>', field),
+            'en_US': ParsedTranslation(field, '<form><b>English</b></form>'),
         }
         result = st.written(self.env, field, translation_dict, adapt_close_terms=True)
         self.assertEqual(dict(result), {

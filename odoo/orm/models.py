@@ -2961,8 +2961,8 @@ class BaseModel(metaclass=MetaModel):
                 'value': self_lang.with_context(lang=lang)[field_name]
             } for lang in langs]
         else:
-            translation_dictionary = field.get_translation_dictionary(
-                val_en, {lang: self_lang.with_context(lang=lang)[field_name] for lang in langs}
+            translation_dictionary = StoredTranslations._get_translation_dictionary(
+                field, val_en, {lang: self_lang.with_context(lang=lang)[field_name] for lang in langs}
             )
             translations = [{
                 'lang': lang,

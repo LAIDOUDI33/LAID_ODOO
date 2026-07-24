@@ -493,6 +493,42 @@ class StoredTranslations(dict):
             return lang, lang[1:], '_en_US', 'en_US'
         return lang, 'en_US'
 
+    @staticmethod
+    def _get_translation_dictionary(field: Field, from_lang_value, to_lang_values):
+        """ Build a dictionary from terms in from_lang_value to terms in to_lang_values
+
+        :param str from_lang_value: from xml/html
+        :param dict to_lang_values: {lang: lang_value}
+
+        :return: {from_lang_term: {lang: lang_term}}
+        :rtype: dict
+        """
+        if not isinstance(from_lang_value, str) or not from_lang_value:
+            return defaultdict(lambda: defaultdict(dict))
+        if callable(field.translate):
+            from_lang_terms = ParsedTranslation(field, from_lang_value).terms
+        else:
+            # Ensure translation terms are stringified.
+            # Double quotes inside Markup are not escaped when the value is used as a polib.POEntry msgid.
+            from_lang_terms = [str(from_lang_value)]
+        dictionary = defaultdict(lambda: defaultdict(dict))
+        if not from_lang_terms:
+            return dictionary
+        dictionary.update({from_lang_term: defaultdict(dict) for from_lang_term in from_lang_terms})
+
+        for lang, to_lang_value in to_lang_values.items():
+            if callable(field.translate):
+                to_lang_terms = ParsedTranslation(field, to_lang_value).terms if to_lang_value else []
+            else:
+                to_lang_terms = [str(to_lang_value)] if isinstance(to_lang_value, str) else []
+            if len(from_lang_terms) != len(to_lang_terms):
+                for from_lang_term in from_lang_terms:
+                    dictionary[from_lang_term][lang] = from_lang_term
+            else:
+                for from_lang_term, to_lang_term in zip(from_lang_terms, to_lang_terms):
+                    dictionary[from_lang_term][lang] = to_lang_term
+        return dictionary
+
     def __getitem__(self, key):
         """ Retrieve the translation for the specified language code with automatic fallback.
 
@@ -589,9 +625,9 @@ class StoredTranslations(dict):
             # all translations must share the same structure
             if len({*translations.values()}) > 1:
                 translation_en = translations['en_US']
-                structure_en = ParsedTranslation(translation_en, field).structure
+                structure_en = ParsedTranslation(field, translation_en).structure
                 for k, v in translations.items():
-                    if v != translation_en and ParsedTranslation(v, field).structure != structure_en:
+                    if v != translation_en and ParsedTranslation(field, v).structure != structure_en:
                         if not auto_fix:
                             raise ValidationError(env._("Translations %(translations)s for field %(field)s have different structures", translations=self, field=field))
                         issues.append(f"Its translation for language '{k}' has different structure from 'en_US.'")
@@ -666,7 +702,7 @@ class StoredTranslations(dict):
         }
 
         # parse the translation term mapping for old non-update translations
-        translation_dictionary = field.get_translation_dictionary(valid_self['_' + base_lang], other_old_translations)
+        translation_dictionary = StoredTranslations._get_translation_dictionary(field, valid_self['_' + base_lang], other_old_translations)
 
         # best effort to migrate old translation terms to new close translation terms
         get_text_content = field.translate.get_text_content if hasattr(field.translate, 'get_text_content') else lambda term: term
@@ -785,7 +821,7 @@ class StoredTranslations(dict):
             if (value := valid_self['_' + lang]) != old_source_lang_value
         }
         # {source_term: {lang: translated_term}}
-        old_translation_dictionary = field.get_translation_dictionary(old_source_lang_value, old_values_to_translate)
+        old_translation_dictionary = StoredTranslations._get_translation_dictionary(field, old_source_lang_value, old_values_to_translate)
 
         if digest:
             # replace digested old source terms with real old source terms
@@ -844,7 +880,7 @@ class StoredTranslations(dict):
             return {}
 
         # {source_term: {lang: translated_term}}
-        translation_dictionary = field.get_translation_dictionary(source_value, target_lang_values)
+        translation_dictionary = StoredTranslations._get_translation_dictionary(field, source_value, target_lang_values)
 
         # Invert to {lang: {source_term: translated_term}}
         result: dict[str, dict[str, str]] = {}
@@ -862,7 +898,7 @@ class StoredTranslations(dict):
 
 
 class ParsedTranslation:
-    def __init__(self, value: str, field: Field):
+    def __init__(self, field: Field, value: str):
         assert isinstance(value, str)
         self.value: str = value
 
@@ -1739,7 +1775,7 @@ class TranslationReader:
                 value_lang = record.with_context(lang=self._lang)[field_name] or ''
                 trans_type = 'model_terms' if callable(field.translate) else 'model'
                 try:
-                    translation_dictionary = field.get_translation_dictionary(value_en, {self._lang: value_lang})
+                    translation_dictionary = StoredTranslations._get_translation_dictionary(field, value_en, {self._lang: value_lang})
                 except Exception:
                     _logger.exception("Failed to extract terms from %s %s", xml_name, name)
                     continue
@@ -2457,10 +2493,10 @@ def _get_translation_upgrade_queries(cr, field):
                 continue
             # new_translations contains translations updated from the latest po files
             src_value = new_translations.pop('en_US')
-            src_terms = field.get_trans_terms(src_value)
+            src_terms = ParsedTranslation(field, src_value).terms
             for lang, dst_value in new_translations.items():
                 terms_mapping = translations.setdefault(lang, {})
-                dst_terms = field.get_trans_terms(dst_value)
+                dst_terms = ParsedTranslation(field, dst_value).terms
                 for src_term, dst_term in zip(src_terms, dst_terms):
                     if src_term == dst_term or noupdate:
                         terms_mapping.setdefault(src_term, dst_term)

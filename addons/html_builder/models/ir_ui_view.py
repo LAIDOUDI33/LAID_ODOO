@@ -83,7 +83,7 @@ class IrUiView(models.Model):
             # Special case for `arch` which is a kind of related (through a
             # compute) to `arch_db` but which is hosting XML/HTML content while
             # being a char field.. Which is then messing around with the
-            # `get_translation_dictionary` call, returning XML instead of
+            # `_get_translation_dictionary` call, returning XML instead of
             # strings
             field = 'arch_db'
         res_id = self.env.context.get('resId')
