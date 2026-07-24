@@ -166,10 +166,10 @@ class MassMailingList(models.Model):
         return action
 
     def action_view_contacts(self):
-        action = self.env["ir.actions.actions"]._for_xml_id("mass_mailing.action_view_mass_mailing_contacts")
-        action['domain'] = [('list_ids', 'in', self.ids)]
-        action['context'] = {'default_list_ids': self.ids}
-        return action
+        self.ensure_one()
+        return self.env["ir.actions.actions"]._for_xml_id(
+            "mass_mailing.action_view_mailing_contacts_from_list"
+        )
 
     def action_view_contacts_email(self):
         action = self.action_view_contacts()

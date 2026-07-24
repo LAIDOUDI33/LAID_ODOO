@@ -176,6 +176,21 @@
         </field>
     </record>
 
+    <record model="ir.actions.act_window" id="action_view_mailing_contacts_from_list">
+        <field name="name">Recipients</field>
+        <field name="res_model">mailing.contact</field>
+        <field name="view_mode">list,kanban,form,graph,pivot</field>
+        <field name="domain">[('list_ids', 'in', [active_id])]</field>
+        <field name="context">{'default_list_ids': [active_id]}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a mailing contact
+            </p><p>
+                Mailing contacts allow you to separate your marketing audience from your business contact directory.
+            </p>
+        </field>
+    </record>
+
 <data noupdate="1">
     <!-- Activated dynamically when the option that splits name into first and last name is enabled. -->
     <!-- We set them into a noupdate block to avoid the configuration to be reset after an update. -->
