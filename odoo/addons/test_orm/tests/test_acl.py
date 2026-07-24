@@ -106,7 +106,7 @@ class TestACL(TransactionCaseWithUserDemo):
         self.assertFalse(has_group_test, "`demo` user should not belong to the restricted group")
         self.assertTrue(partner.read(['bank_ids']))
         self.assertTrue(partner.write({'bank_ids': []}))
-        some_bank = partner.bank_ids.create({'account_number': '1234', 'partner_id': partner.id})
+        some_bank = partner.bank_ids.create({'formatted_account_number': '1234', 'partner_id': partner.id})
 
         # Now restrict access to the field and check it's forbidden
         self._set_field_groups(partner, 'bank_ids', self.TEST_GROUP)
@@ -120,9 +120,9 @@ class TestACL(TransactionCaseWithUserDemo):
         with self.assertRaises(AccessError):
             partner.write({'bank_ids': []})
         with self.assertRaises(AccessError):
-            partner.write({'bank_ids': [Command.create({'account_number': 'TEST 1234', 'holder_name': 'test'})]})
+            partner.write({'bank_ids': [Command.create({'formatted_account_number': 'TEST 1234', 'holder_name': 'test'})]})
         with self.assertRaises(AccessError):
-            partner.create({'name': 'create bank', 'bank_ids': [Command.create({'account_number': 'TEST 1234', 'holder_name': 'test'})]})
+            partner.create({'name': 'create bank', 'bank_ids': [Command.create({'formatted_account_number': 'TEST 1234', 'holder_name': 'test'})]})
         with self.assertRaises(AccessError):
             partner.write({'bank_ids': [Command.delete(some_bank.id)]})
         self.assertTrue(some_bank.exists())
@@ -140,23 +140,23 @@ class TestACL(TransactionCaseWithUserDemo):
         has_group_test = self.user_demo.has_group(self.TEST_GROUP)
         self.assertFalse(has_group_test, "`demo` user should not belong to the restricted group")
 
-        partner.write({'bank_ids': [Command.clear(), Command.create({'partner_id': partner.id, 'account_number': '1234'})]})
+        partner.write({'bank_ids': [Command.clear(), Command.create({'partner_id': partner.id, 'formatted_account_number': '1234'})]})
         bank = partner.bank_ids
         bank.ensure_one()
 
         self._set_field_groups(bank, 'holder_name', self.TEST_GROUP)
         with self.assertRaises(AccessError):
-            partner.write({'bank_ids': [Command.create({'account_number': 'TEST 1234', 'holder_name': 'test'})]})
+            partner.write({'bank_ids': [Command.create({'formatted_account_number': 'TEST 1234', 'holder_name': 'test'})]})
         with self.assertRaises(AccessError):
             partner.write({'bank_ids': [Command.update(bank.id, {'holder_name': 'test'})]})
 
         with self.assertRaises(AccessError):
-            partner.create({'name': 'ok', 'bank_ids': [Command.create({'account_number': 'TEST 1234', 'holder_name': 'test'})]})
+            partner.create({'name': 'ok', 'bank_ids': [Command.create({'formatted_account_number': 'TEST 1234', 'holder_name': 'test'})]})
         with self.assertRaises(AccessError):
             partner.create({'name': 'ok', 'bank_ids': [Command.update(bank.id, {'holder_name': 'test'})]})
 
         with self.assertRaises(AccessError):
-            partner.with_context(default_bank_ids=[Command.create({'account_number': 'TEST 1234', 'holder_name': 'test'})]).create({'name': 'ok'})
+            partner.with_context(default_bank_ids=[Command.create({'formatted_account_number': 'TEST 1234', 'holder_name': 'test'})]).create({'name': 'ok'})
         with self.assertRaises(AccessError):
             partner.with_context(default_bank_ids=[Command.update(bank.id, {'holder_name': 'test'})]).create({'name': 'ok'})
 
@@ -165,19 +165,19 @@ class TestACL(TransactionCaseWithUserDemo):
         partner = self.env.ref('base.main_partner').with_user(self.user_demo)
         self.env['res.partner'].create({
             'name': 'New Guy',
-            'bank_ids': [Command.create({'account_number': '9876'})]
+            'bank_ids': [Command.create({'formatted_account_number': '9876'})]
         })
 
         # check we can create partners
         partner.create({'name': 'ok'})
 
-        partner.write({'bank_ids': [Command.clear(), Command.create({'partner_id': partner.id, 'account_number': '1234'})]})
+        partner.write({'bank_ids': [Command.clear(), Command.create({'partner_id': partner.id, 'formatted_account_number': '1234'})]})
         bank = partner.bank_ids
         bank.ensure_one()
 
         self._set_field_groups(bank, 'holder_name', self.TEST_GROUP)
         with self.assertRaises(AccessError):
-            partner.write({'bank_ids': [Command.create({'account_number': 'TEST 1234', 'holder_name': 'test'})]})
+            partner.write({'bank_ids': [Command.create({'formatted_account_number': 'TEST 1234', 'holder_name': 'test'})]})
         with self.assertRaises(AccessError):
             partner.write({'bank_ids': [Command.update(bank.id, {'holder_name': 'test'})]})
         with self.assertRaises(AccessError):
