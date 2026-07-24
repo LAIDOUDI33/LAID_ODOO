@@ -4,15 +4,16 @@ import { registry } from "@web/core/registry";
 import { omit } from "@web/core/utils/objects";
 
 import { CopyButton } from "@web/core/copy_button/copy_button";
-import { CharField } from "../char/char_field";
+import { charField, CharField } from "../char/char_field";
 import { standardFieldProps } from "../standard_field_props";
-import { UrlField } from "../url/url_field";
+import { urlField, UrlField } from "../url/url_field";
 
 import { Component, props, t } from "@odoo/owl";
 
 export const copyClipboardFieldProps = {
     ...standardFieldProps,
     string: t.string().optional(),
+    text: t.string().optional(),
     disabledExpr: t.string().optional(),
 };
 
@@ -97,7 +98,10 @@ export const copyClipboardCharField = {
     component: CopyClipboardCharField,
     displayName: _t("Copy Text to Clipboard"),
     supportedTypes: ["char"],
-    extractProps,
+    extractProps: (fieldInfo, dynamicInfo) => ({
+        ...charField.extractProps(fieldInfo, dynamicInfo),
+        ...extractProps(fieldInfo,dynamicInfo),
+    }),
 };
 
 registry.category("fields").add("CopyClipboardChar", copyClipboardCharField);
@@ -106,7 +110,11 @@ export const copyClipboardURLField = {
     component: CopyClipboardURLField,
     displayName: _t("Copy URL to Clipboard"),
     supportedTypes: ["char"],
-    extractProps,
+    extractProps: (fieldInfo) => ({
+        ...urlField.extractProps(fieldInfo),
+        ...extractProps(fieldInfo),
+        text: fieldInfo.options.text,
+    }),
 };
 
 registry.category("fields").add("CopyClipboardURL", copyClipboardURLField);
