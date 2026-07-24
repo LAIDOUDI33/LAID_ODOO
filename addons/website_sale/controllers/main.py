@@ -359,7 +359,6 @@ class WebsiteSale(payment_portal.PaymentPortal):
                 pair.split("-") for pair in attribute_values if pair and pair.count("-") == 1
             ])
         attribute_value_dict = self._get_attribute_value_dict(attribute_value_params)
-        attribute_ids = set(attribute_value_dict.keys())
         attribute_value_ids = set(itertools.chain.from_iterable(attribute_value_dict.values()))
         grouped_attributes_values = (
             self
@@ -460,6 +459,7 @@ class WebsiteSale(payment_portal.PaymentPortal):
         shop_query = request.env["product.template"]._search(shop_domain)
 
         filter_by_price_enabled = website.is_view_active("website_sale.filter_products_price")
+        price_domain = None
         if filter_by_price_enabled:
             # TODO Find an alternative way to obtain the domain through the search metadata.
             # This is ~4 times more efficient than a search for the cheapest and most expensive
@@ -616,21 +616,33 @@ class WebsiteSale(payment_portal.PaymentPortal):
         ProductAttribute = self.env["product.attribute"]
         ProductAttributeValue = self.env["product.attribute.value"]
         pavs_per_attribute = defaultdict(lambda: ProductAttributeValue)
-        if products:
-            grouped_pavs = ProductAttributeValue._read_group(
-                domain=[
-                    ("pav_attribute_line_ids.product_tmpl_id", "in", filtered_query),
-                    ("attribute_id.visibility", "=", "visible"),
-                ],
-                groupby=["attribute_id"],
-                order="attribute_id",
-                aggregates=["id:recordset"],
-            )
-            pavs_per_attribute.update({attribute: pavs.sorted() for attribute, pavs in grouped_pavs})
-            # Return attributes as recordset of `product.attribute`
-            attributes = ProductAttribute.union(pavs_per_attribute.keys())
-        else:
-            attributes = ProductAttribute.browse(attribute_ids).exists().sorted()
+        shop_domain_without_attributes = self._get_shop_domain(
+            search_term,
+            category,
+            attribute_value_dict={},
+            tags=tags if filter_by_tags_enabled else None,
+        )
+        if price_domain:
+            shop_domain_without_attributes = Domain.AND([
+                shop_domain_without_attributes,
+                price_domain,
+            ])
+        shop_query_without_attributes = request.env["product.template"]._search(
+            shop_domain_without_attributes
+        )
+
+        grouped_pavs = ProductAttributeValue._read_group(
+            domain=[
+                ("pav_attribute_line_ids.product_tmpl_id", "in", shop_query_without_attributes),
+                ("attribute_id.visibility", "=", "visible"),
+            ],
+            groupby=["attribute_id"],
+            order="attribute_id",
+            aggregates=["id:recordset"],
+        )
+        pavs_per_attribute.update({attribute: pavs.sorted() for attribute, pavs in grouped_pavs})
+        # Return attributes as recordset of `product.attribute`
+        attributes = ProductAttribute.union(pavs_per_attribute.keys())
         products_prices = products._get_sales_prices(
             # Make sure latest context is applied (see update_context calls in overrides)
             request.pricelist.with_context(self.env.context),

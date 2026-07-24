@@ -14,7 +14,7 @@ function updateCartNavBar(data) {
     browser.sessionStorage.setItem('website_sale_cart_quantity', data.cart_quantity);
     // Mobile and Desktop elements have to be updated.
     const cartQuantityElements = document.querySelectorAll('.my_cart_quantity');
-    for(const cartQuantityElement of cartQuantityElements) {
+    for (const cartQuantityElement of cartQuantityElements) {
         if (data.cart_quantity === 0) {
             cartQuantityElement.classList.add('d-none');
         } else {
@@ -70,7 +70,7 @@ function updateCartSummary(data) {
  * @return {void}
  */
 function updateQuickReorderSidebar(data) {
-    const quickReorderButton  = document.getElementById('quick_reorder_button');
+    const quickReorderButton = document.getElementById('quick_reorder_button');
     document.querySelectorAll('.o_wsale_quick_reorder_line_group').forEach(el => el.remove());
     if (data['website_sale.quick_reorder_history'].trim()) {
         document.querySelector('#quick_reorder_sidebar .offcanvas-body').insertAdjacentHTML(
@@ -85,52 +85,114 @@ function updateQuickReorderSidebar(data) {
     }
 }
 
+/**
+ * Replace the content of the current element with the content of the element
+ * matching `selector` inside `newRoot`. No-op if either side of the swap
+ * can't be found.
+ *
+ * @param {Element} newRoot - root element containing the freshly fetched markup
+ * @param {string} selector - selector of the element to read from `newRoot`
+ * @param {Object} [optionalParams={}]
+ * @param {function(Element): Element} [optionalParams.preUpdate] - callback to
+ *  alter the new element before its content is used.
+ * @param {function(Element): void} [optionalParams.postUpdate] - callback to
+ *  alter the current element once its content has been updated.
+ * @param {string} [optionalParams.currSelector] - selector of the current
+ *  element, if different from `selector`
+ * @return {void}
+ */
+function updateElementContent(newRoot, selector, optionalParams = {}) {
+    let newEl = newRoot.querySelector(selector);
+    const { preUpdate = (el) => el, postUpdate = () => { }, currSelector = null } = optionalParams;
+    const currentSelector = currSelector ?? selector;
+    const currentEl = document.querySelector(currentSelector);
+    if (newEl && currentEl) {
+        newEl = preUpdate(newEl);
+        setElementContent(currentEl, markup(newEl.innerHTML));
+        postUpdate(currentEl);
+    }
+}
+
+/**
+ * Re-apply the "expanded" state of the accordion buttons that were open before the update.
+ *
+ * @param {Element} sidebar
+ * @return {void}
+ */
+function restoreExpandedAccordions(sidebar, expandedTargets) {
+    const buttonsToExpand = [...sidebar.querySelectorAll(".accordion-button")].filter(
+        (button) => expandedTargets.has(button.dataset.bsTarget)
+    );
+    for (const button of buttonsToExpand) {
+        button.ariaExpanded = true;
+        button.classList.remove("collapsed");
+        sidebar.querySelector(button.dataset.bsTarget)?.classList.add("show");
+    }
+}
+
 async function updateShopContent(interaction, {
     url,
     searchParams,
 }) {
     const targetUrl = `${url.pathname}?${searchParams.toString()}`;
-
-    const productGridWrapper = document.querySelector('.o_wsale_products_grid_table_wrapper');
-    productGridWrapper?.classList?.add('opacity-50');
+    const expandedTargets = new Set(
+        [...document.querySelectorAll(".accordion-item .accordion-button[aria-expanded=true]")]
+            .map((el) => el.dataset.bsTarget)
+    );
+    const productGridWrapper = document.querySelector(".o_wsale_products_grid_table_wrapper");
+    productGridWrapper?.classList?.add("opacity-50");
 
     try {
         const paramsObject = Object.fromEntries(searchParams.entries());
         const headerEl = document.querySelector("#o_wsale_products_header");
-        if (headerEl){
+        if (headerEl) {
             paramsObject.category = headerEl.dataset.categoryId;
         }
-        const data = await interaction.waitFor(rpc('/shop/reload', paramsObject));
-        const updatedShopPage = document.createElement('div');
-        setElementContent(updatedShopPage, markup(data.html))
-        const shopPageEl = document.querySelector('.o_wsale_products_page');
-        interaction.services['public.interactions'].stopInteractions(shopPageEl);
+        const data = await interaction.waitFor(rpc("/shop/reload", paramsObject));
+        const updatedShopPage = createElementWithContent("div", markup(data.html));
+        const shopPageEl = document.querySelector(".o_wsale_products_page");
+        interaction.services["public.interactions"].stopInteractions(shopPageEl);
 
-        const newSidebar = updatedShopPage.querySelector('#products_grid_before');
-        const currentSidebar = document.querySelector('#products_grid_before');
-        if (newSidebar && currentSidebar) {
-            setElementContent(currentSidebar, markup(newSidebar.innerHTML))
-        }
+        updateElementContent(
+            updatedShopPage,
+            "#products_grid_before",
+            {
+                preUpdate: (el) => createElementWithContent("div", markup(el.innerHTML)),
+                postUpdate: (el) => restoreExpandedAccordions(el, expandedTargets)
+            }
+        );
 
-        const newGrid = updatedShopPage.querySelector('.o_wsale_products_grid_table');
-        const currentGrid = document.querySelector('.o_wsale_products_grid_table');
-        setElementContent(currentGrid, markup(newGrid.innerHTML))
+        const productGridSelector = ".o_wsale_products_grid_table_wrapper";
+        const isEmptyGrid = !updatedShopPage.querySelector(productGridSelector);
+        const gridSelector = isEmptyGrid ? "#o_wsale_empty_products_grid" : productGridSelector;
+        const adjustClasses = (newEl) => {
+            if (isEmptyGrid) {
+                newEl.classList.add("text-center", "mt128", "mb256");
+            }
+            else {
+                newEl.classList.remove("text-center", "mt128", "mb256");
+            }
+        };
+        updateElementContent(
+            updatedShopPage,
+            gridSelector,
+            { postUpdate: adjustClasses, currSelector: productGridSelector },
+        );
 
-        const newPager = updatedShopPage.querySelector('.products_pager');
-        const currentPager = document.querySelector('.products_pager');
-        setElementContent(currentPager, markup(newPager.innerHTML))
+        updateElementContent(updatedShopPage, ".products_pager");
+        updateElementContent(
+            updatedShopPage,
+            ".o_website_offcanvas",
+            { postUpdate: (el) => restoreExpandedAccordions(el, expandedTargets) },
+        );
 
-        const newOffcanvas = updatedShopPage.querySelector('.o_website_offcanvas');
-        const currentOffcanvas = document.querySelector('.o_website_offcanvas');
-        setElementContent(currentOffcanvas, markup(newOffcanvas.innerHTML))
-
-        const applyBtn = document.querySelector('#o_wsale_offcanvas_product_count');
+        const applyBtn = document.querySelector("#o_wsale_offcanvas_product_count");
         if (applyBtn) {
-            setElementContent(applyBtn, data.product_count)
+            setElementContent(applyBtn, data.product_count);
         }
-        history.pushState({}, '', targetUrl);
-        interaction.services['public.interactions'].startInteractions(shopPageEl);
-        productGridWrapper?.classList.remove('opacity-50');
+        history.pushState({}, "", targetUrl);
+        interaction.services["public.interactions"].startInteractions(shopPageEl);
+        productGridWrapper?.classList.remove("opacity-50");
     } catch {
         redirect(targetUrl);
     }
