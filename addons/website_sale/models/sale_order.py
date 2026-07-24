@@ -856,6 +856,33 @@ class SaleOrder(models.Model):
         res["website_id"] = self.website_id.id
         return res
 
+    @api.model
+    def _find_by_reference_and_email(self, order_reference, email):
+        """Return the order matching both the given reference and customer email."""
+        return self.sudo().search(
+            [
+                ("name", "=", order_reference),
+                ("partner_id.email", "=ilike", email),
+                ("state", "=", "sale"),
+            ],
+            limit=1,
+        )
+
+    def _send_withdrawal_request_confirmation_email(self):
+        """Send the withdrawal request confirmation email
+
+        :return: the subject and body of the message logged on the order's chatter.
+        """
+        self.ensure_one()
+        template = self.env.ref("website_sale.mail_template_sale_withdrawal_request_confirmation")
+        message = self.with_context(force_send=True).message_post_with_source(
+            template,
+            message_type="comment",
+            email_layout_xmlid="mail.mail_notification_light",
+            subtype_xmlid="mail.mt_comment",
+        )
+        return {"subject": message.subject, "body": message.body}
+
     def _cart_recovery_email_send(self):
         """Send the cart recovery email on the current recordset,
         making sure that the portal token exists to avoid broken links, and marking the email as
