@@ -42,10 +42,11 @@ class ResCompany(models.Model):
     )
     attendance_work_entry_type_id = fields.Many2one(
         'hr.work.entry.type',
-        string="Attendance Work Entry Type",
+        string="Attendance Time Type",
         domain=[('count_as', '=', 'working_time')],
         store=True,
         compute='_compute_attendance_work_entry_type_id',
+        readonly=False,
         groups="hr.group_hr_user",
         help="Work entry type assigned to attendances and read by the time rule engine.",
     )
