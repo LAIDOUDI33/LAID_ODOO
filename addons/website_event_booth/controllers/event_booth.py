@@ -168,8 +168,16 @@ class WebsiteEventBoothController(WebsiteEventController):
             },
         })
 
-    @http.route('/event/booth/check_availability', type='jsonrpc', auth='public', methods=['POST'])
+    @http.route('/event/booth/check_availability', type='jsonrpc', auth='public', methods=['POST'],
+                ai_allowed_route=True)
     def check_booths_availability(self, event_booth_ids=None):
+        """Tell which of the given booths can no longer be booked.
+
+        :param list event_booth_ids: `event.booth` ids to check.
+        :return: dict holding `unavailable_booths`, the subset of those ids that are taken.
+            Empty dict when no id is given.
+        :rtype: dict
+        """
         if not event_booth_ids:
             return {}
         booths = request.env['event.booth'].sudo().browse(event_booth_ids)
@@ -177,8 +185,16 @@ class WebsiteEventBoothController(WebsiteEventController):
             'unavailable_booths': booths.filtered(lambda booth: not booth.is_available).ids
         }
 
-    @http.route(['/event/booth_category/get_available_booths'], type='jsonrpc', auth='public')
+    @http.route(['/event/booth_category/get_available_booths'], type='jsonrpc', auth='public',
+                ai_allowed_route=True)
     def get_booth_category_available_booths(self, event_id, booth_category_id):
+        """List the booths of a category that are still free for an event.
+
+        :param int event_id: the `event.event` to look into.
+        :param int booth_category_id: the `event.booth.category` to filter on.
+        :return: one dict per available booth, with its `id` and `name`.
+        :rtype: list[dict]
+        """
         booth_ids = request.env['event.booth'].sudo().search([
             ('event_id', '=', int(event_id)),
             ('booth_category_id', '=', int(booth_category_id)),

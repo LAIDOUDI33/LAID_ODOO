@@ -7,8 +7,17 @@ from odoo.http import request
 
 class WebsiteMail(http.Controller):
 
-    @http.route(['/website_mail/follow'], type='jsonrpc', auth="public", website=True)
+    @http.route(['/website_mail/follow'], type='jsonrpc', auth="public", website=True,
+                ai_allowed_route=True)
     def website_message_subscribe(self, id=0, object=None, message_is_follower="on", email=False, **post):
+        """Subscribe the visitor to a record's followers, or unsubscribe them from it.
+
+        :param int id: id of the record to follow.
+        :param str object: model name of that record.
+        :param str message_is_follower: 'on' to subscribe, any other value to unsubscribe.
+        :param str email: address to subscribe, for visitors who are not logged in.
+        :return: False if the record does not exist, the resulting follower state otherwise.
+        """
         # TDE FIXME: check this method with new followers
         res_id = int(id)
         is_follower = message_is_follower == 'on'
@@ -47,7 +56,8 @@ class WebsiteMail(http.Controller):
 
         record.sudo().message_unsubscribe([partner_id])
 
-    @http.route(['/website_mail/is_follower'], type='jsonrpc', auth="public", website=True, readonly=True)
+    @http.route(['/website_mail/is_follower'], type='jsonrpc', auth="public", website=True, readonly=True,
+                ai_allowed_route=True)
     def is_follower(self, records, **post):
         """ Given a list of `models` containing a list of res_ids, return
             the res_ids for which the user is follower and some practical info.

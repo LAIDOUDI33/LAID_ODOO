@@ -8,8 +8,18 @@ from odoo.addons.website_event_track.controllers.event_track import EventTrackCo
 
 class EventTrackLiveController(EventTrackController):
 
-    @http.route('/event_track/get_track_suggestion', type='jsonrpc', auth='public', website=True)
+    @http.route('/event_track/get_track_suggestion', type='jsonrpc', auth='public', website=True,
+                ai_allowed_route=True)
     def get_next_track_suggestion(self, track_id):
+        """Return a talk to watch after the given one.
+
+        Picks another talk of the same event that has a video attached.
+
+        :param int track_id: the `event.track` currently being watched.
+        :return: the display values of the suggested talk, or False when there is none
+            left to suggest.
+        :rtype: dict|bool
+        """
         track = self._fetch_track(track_id)
         track_suggestion = track._get_track_suggestions(
             restrict_domain=Domain.AND([

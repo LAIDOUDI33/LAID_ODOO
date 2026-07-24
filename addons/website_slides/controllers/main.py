@@ -873,8 +873,16 @@ class WebsiteSlides(WebsiteProfile):
                 return request.redirect(f'/web/login?redirect=/slides/{channel_id}&auth_login={partner_sudo.user_ids[0].login}')
         return self._redirect_to_slides_main('identify_fail')
 
-    @http.route(['/slides/channel/join'], type='jsonrpc', auth='public', website=True)
+    @http.route(['/slides/channel/join'], type='jsonrpc', auth='public', website=True,
+                ai_allowed_route=True)
     def slide_channel_join(self, channel_id):
+        """Enroll the current user in a course.
+
+        :param int channel_id: the `slide.channel` to join.
+        :return: True once enrolled, or a dict holding an `error` key - 'public_user' when
+            nobody is logged in, 'join_done' when the enrollment did not go through.
+        :rtype: bool|dict
+        """
         if self.env.website.is_public_user():
             return {
                 'error': 'public_user',
@@ -1123,8 +1131,17 @@ class WebsiteSlides(WebsiteProfile):
             'next_category_id': False,
         }
 
-    @http.route('/slides/slide/like', type='jsonrpc', auth="public", website=True)
+    @http.route('/slides/slide/like', type='jsonrpc', auth="public", website=True,
+                ai_allowed_route=True)
     def slide_like(self, slide_id, upvote):
+        """Vote on a course content.
+
+        :param int slide_id: the `slide.slide` to vote on.
+        :param bool upvote: True to like it, False to dislike it.
+        :return: the updated vote counts, or a dict holding an `error` key when voting is
+            not allowed (nobody logged in, not a member of the course, votes disabled).
+        :rtype: dict
+        """
         if self.env.website.is_public_user():
             return {'error': 'public_user', 'error_signup_allowed': request.env['res.users'].sudo()._get_signup_invitation_scope() == 'b2c'}
         # check slide access
@@ -1257,8 +1274,16 @@ class WebsiteSlides(WebsiteProfile):
             'question': slide_question,
         })
 
-    @http.route('/slides/slide/quiz/get', type="jsonrpc", auth="public", website=True)
+    @http.route('/slides/slide/quiz/get', type="jsonrpc", auth="public", website=True,
+                ai_allowed_route=True)
     def slide_quiz_get(self, slide_id):
+        """Return the questions and possible answers of a content's quiz.
+
+        :param int slide_id: the `slide.slide` holding the quiz.
+        :return: the quiz data, or a dict holding an `error` key when the content is not
+            accessible.
+        :rtype: dict
+        """
         fetch_res = self._fetch_slide(slide_id)
         if fetch_res.get('error'):
             return fetch_res
@@ -1275,8 +1300,17 @@ class WebsiteSlides(WebsiteProfile):
             ('partner_id', '=', request.env.user.partner_id.id)
         ]).write({'completed': False, 'quiz_attempts_count': 0})
 
-    @http.route('/slides/slide/quiz/submit', type="jsonrpc", auth="public", website=True)
+    @http.route('/slides/slide/quiz/submit', type="jsonrpc", auth="public", website=True,
+                ai_allowed_route=True)
     def slide_quiz_submit(self, slide_id, answer_ids):
+        """Submit answers to a content's quiz and get the correction.
+
+        :param int slide_id: the `slide.slide` holding the quiz.
+        :param list answer_ids: the `slide.answer` ids picked by the user.
+        :return: the correction and the points earned, or a dict holding an `error` key
+            when the quiz cannot be answered (nobody logged in, already completed).
+        :rtype: dict
+        """
         if self.env.website.is_public_user():
             return {'error': 'public_user'}
         fetch_res = self._fetch_slide(slide_id)
