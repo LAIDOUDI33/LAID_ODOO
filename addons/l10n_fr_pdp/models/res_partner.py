@@ -75,6 +75,20 @@ class ResPartner(models.Model):
     # OVERRIDE AND HELPERS
     # -------------------------------------------------------------------------
 
+    def _get_einvoicing_network_name(self, identifier_scheme=None):
+        self.ensure_one()
+        if self.env.company._get_peppol_proxy_type() == 'pdp':
+            if identifier_scheme is None:
+                proxy_type = self._get_pdp_receiver_identification_info()[0]
+            else:
+                proxy_type = self._get_peppol_proxy_identification_info(
+                    identifier_scheme,
+                    self.peppol_endpoint,
+                )[0]
+            if proxy_type == 'pdp':
+                return self.env._("Approved Platform")
+        return super()._get_einvoicing_network_name(identifier_scheme=identifier_scheme)
+
     def _l10n_fr_pdp_is_b2c(self):
         self.ensure_one()
         return self.vat == '/' or not self.vat
@@ -113,7 +127,7 @@ class ResPartner(models.Model):
         if eas != '0225':
             return super()._build_error_peppol_endpoint(eas, endpoint)
         if not self.env["res.company"]._check_pdp_identifier(endpoint):
-            return self.env._("The Peppol endpoint is not valid. The expected format is: SIREN, SIREN_SIRET, SIREN_SIRET_CodeRoutage or SIREN_SuffixeAdressage")
+            return self.env._("The French e-invoicing identifier is not valid. The expected format is: SIREN, SIREN_SIRET, SIREN_SIRET_CodeRoutage or SIREN_SuffixeAdressage")
 
     def _get_edi_builder(self, invoice_edi_format):
         # EXTENDS 'account_edi_ubl_cii'

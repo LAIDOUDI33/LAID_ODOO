@@ -6,7 +6,7 @@
         <field name="inherit_id" ref="account_peppol.account_peppol_view_move_form"/>
         <field name="arch" type="xml">
             <xpath expr="//page[@name='other_info']" position="inside">
-                <group string="Peppol info"
+                <group string="E-Invoicing Info"
                         name="accounting_info_group"
                         invisible="not peppol_message_uuid"
                         groups="base.group_no_one">

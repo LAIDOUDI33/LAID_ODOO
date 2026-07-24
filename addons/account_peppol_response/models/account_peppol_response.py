@@ -3,9 +3,9 @@ from odoo import fields, models
 
 class AccountPeppolResponse(models.Model):
     _name = 'account.peppol.response'
-    _description = 'Business Level Responses for Peppol'
+    _description = 'E-Invoicing Responses'
 
-    peppol_message_uuid = fields.Char('Peppol UUID')
+    peppol_message_uuid = fields.Char('E-Invoicing UUID')
     response_code = fields.Selection(
         selection=[
             ('AB', 'Acknowledgement'),
@@ -24,7 +24,7 @@ class AccountPeppolResponse(models.Model):
             ('error', 'Error'),
             ('not_serviced', 'Not Serviced'),
         ],
-        string='Peppol status',
+        string='E-Invoicing Status',
     )
     move_id = fields.Many2one('account.move', ondelete='cascade')
     company_id = fields.Many2one(related='move_id.company_id')
