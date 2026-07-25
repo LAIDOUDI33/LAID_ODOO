@@ -7,7 +7,7 @@ export class ThemeShadowOption extends BaseOptionComponent {
 
     setup() {
         super.setup();
-        this.shadowSizeToShow = this.env.shadowSizeToShow;
+        this.shadowSizeToShow = this.env.themeOptionToShow.shadowSize;
 
         onMounted(() => {
             if (this.shadowSizeToShow) {

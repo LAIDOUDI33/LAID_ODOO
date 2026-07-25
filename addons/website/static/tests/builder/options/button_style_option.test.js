@@ -115,7 +115,7 @@ test("should have a button linking to theme tab", async () => {
     await setupWebsiteBuilder('<p><a href="#" class="btn btn-primary test-target">clickme</a></p>');
 
     await contains(":iframe p > a.test-target").click();
-    await contains("a.o-hb-button-style-btn-edit").click();
+    await contains("a.o-hb-theme-edit-option-button").click();
     await animationFrame();
     expect("button[data-name='theme']").toHaveClass("active");
 });

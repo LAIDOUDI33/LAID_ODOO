@@ -20,7 +20,7 @@ test("edit box-shadow with ShadowOption", async () => {
     );
 
     await contains(".o-hb-select-toggle").click();
-    await contains("div.o-hb-select-dropdown-item:contains(Normal)").click();
+    await contains(".o_popover div.o-hb-select-dropdown-item:contains('Normal')").click();
     expect(":iframe .test-options-target").toHaveOuterHTML(
         '<div class="test-options-target shadow">b</div>'
     );

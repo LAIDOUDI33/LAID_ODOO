@@ -93,8 +93,7 @@ export class Builder extends Component {
 
         this.lastTrigerUpdateId = 0;
         this.editorBus = new EventBus();
-        this.colorPresetToShow = null;
-        this.shadowSizeToShow = null;
+        this.themeOptionToShow = {};
         this.activeTargetEl = null;
         const mobileBreakpoint = this.props.config.mobileBreakpoint ?? "lg";
 
@@ -267,8 +266,7 @@ export class Builder extends Component {
             editor: this.editor,
             editorBus: this.editorBus,
             triggerDomUpdated: this.triggerDomUpdated.bind(this),
-            editColorCombination: this.editColorCombination.bind(this),
-            editShadow: this.editShadow.bind(this),
+            showThemeOption: this.showThemeOption.bind(this),
         });
         onWillDestroy(() => {
             this.resizeObserver?.disconnect();
@@ -301,10 +299,10 @@ export class Builder extends Component {
      * Called when clicking on a tab. Sets the active tab to the given tab.
      *
      * @param {String} tab the tab to set
-     * @param {Number | null} presetId the color preset expanding on "theme" tab
-     * open.
+     * @param {Object} themeOptionToShow the theme option to expand to after
+     * switching to the theme tab.
      */
-    onTabClick(tab, { presetId = null, shadowSize = null } = {}) {
+    onTabClick(tab, themeOptionToShow = {}) {
         if (this.state.activeTab === tab) {
             // If the tab is already active, do nothing.
             return;
@@ -312,8 +310,7 @@ export class Builder extends Component {
         this.setTab(tab);
         // Deactivate the options when clicking on the "BLOCKS" or "THEME" tabs.
         if (tab === "theme" || tab === "blocks") {
-            this.colorPresetToShow = presetId;
-            this.shadowSizeToShow = shadowSize;
+            this.themeOptionToShow = themeOptionToShow;
             this.activeTargetEl = this.activeTargetEl || this.getActiveTarget();
             this.editor.shared.builderOptions.deactivateContainers();
         } else if (this.activeTargetEl) {
@@ -356,12 +353,8 @@ export class Builder extends Component {
         return this.editor.resources["lower_panel_entries"] ?? [];
     }
 
-    editColorCombination(presetId) {
-        this.onTabClick("theme", { presetId });
-    }
-
-    editShadow(shadowSize) {
-        this.onTabClick("theme", { shadowSize });
+    showThemeOption(option) {
+        this.onTabClick("theme", option);
     }
 
     getActiveTarget() {

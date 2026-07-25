@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+<t t-name="html_builder.ThemeEditOptionButton">
+    <div class="d-flex flex-grow-1 align-items-center">
+        <div class="flex-grow-1">
+            <t t-call-slot="default"/>
+        </div>
+        <a class="fa fa-pencil btn o-hb-theme-edit-option-button"
+            t-att-class="this.props.buttonClass"
+            title="Edit"
+            t-on-click="this.props.onClick"
+            t-att-tabindex="this.props.tabIndex"
+        />
+    </div>
+</t>
+
+</templates>
