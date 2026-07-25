@@ -23,9 +23,20 @@ patch(DiscussClientAction.prototype, {
         await this.joinCallWithDefaultSettings();
     },
     closeWelcomePage() {
-        super.closeWelcomePage(...arguments);
+        super.closeWelcomePage();
+    },
+    async requestCloseWelcomePage() {
         if (this.store.discuss.thread.channel.default_display_mode === "video_full_screen") {
-            this.joinCallWithDefaultSettings();
+            await this.requestJoinCallWithDefaultSettings();
+        } else {
+            this.closeWelcomePage();
         }
+    },
+    async requestJoinCallWithDefaultSettings() {
+        if (this.rtc.channel && !(await this.rtc.askCallSwitchConfirmation())) {
+            return;
+        }
+        this.closeWelcomePage();
+        this.joinCallWithDefaultSettings();
     },
 });

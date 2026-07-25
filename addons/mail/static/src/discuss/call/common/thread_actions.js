@@ -9,7 +9,7 @@ registerThreadAction("call", {
     icon: "fa fa-fw fa-phone",
     name: ({ channel }) => (channel?.hasRtcSessionActive ? _t("Join the Call") : _t("Start Call")),
     onSelected: ({ channel, store }) =>
-        store.rtc.toggleCall(channel, {
+        store.rtc.requestToggleCall(channel, {
             fullscreen: channel.channel_type !== "channel" && !store.inPublicPage,
         }),
     sequence: 10,
@@ -21,9 +21,11 @@ registerThreadAction("camera-call", {
     icon: "fa fa-fw fa-video-camera",
     name: ({ channel }) =>
         channel?.hasRtcSessionActive ? _t("Join the Call with Camera") : _t("Start Video Call"),
-    onSelected: async ({ channel, store }) => {
-        await store.rtc.toggleCall(channel, { camera: true, fullscreen: !store.inPublicPage });
-    },
+    onSelected: ({ channel, store }) =>
+        store.rtc.requestToggleCall(channel, {
+            camera: true,
+            fullscreen: !store.inPublicPage,
+        }),
     sequence: 5,
     sequenceQuick: ({ owner }) => (owner.env.inDiscussApp ? 25 : 35),
     tags: [ACTION_TAGS.SUCCESS, ACTION_TAGS.JOIN_LEAVE_CALL],
