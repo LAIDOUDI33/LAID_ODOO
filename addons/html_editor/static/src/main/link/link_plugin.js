@@ -12,6 +12,7 @@ import {
     isProtected,
     isProtecting,
     isVisible,
+    isVisibleTextNode,
     isZwnbsp,
 } from "@html_editor/utils/dom_info";
 import { KeepLast } from "@web/core/utils/concurrency";
@@ -514,7 +515,10 @@ export class LinkPlugin extends Plugin {
         }
 
         const selectionTextContent = cleanZWChars(selection?.textContent());
-        const isImage = !!findInSelection(selection, "img, .fa");
+        const isImage =
+            !!findInSelection(selection, "img, .fa") ||
+            (!!linkElement.querySelector("img, .fa") &&
+                ![...linkElement.childNodes].some(isVisibleTextNode));
 
         const applyCallback = (
             url,
