@@ -36,9 +36,9 @@ class BaiwangClient:
         self._ensure_proxy_user()
         return True
 
-    def _call_proxy(self, method_name, *args, error_prefix="", allow_failed_with_response=False):
+    def _call_proxy(self, method, *args, error_prefix="", allow_failed_with_response=False):
         self._ensure_proxy_user()
-        result = getattr(self.proxy_user, method_name)(self.company, *args)
+        result = method(self.company, *args)
         if not result.get('success') and not (allow_failed_with_response and 'response' in result):
             err_details = result.get('error', 'Unknown error')
             # Safely format with %s if present, otherwise append
@@ -48,7 +48,7 @@ class BaiwangClient:
 
     def issue_invoice(self, invoice_data: dict):
         return self._call_proxy(
-            '_l10n_cn_baiwang_issue_invoice',
+            self.proxy_user._l10n_cn_baiwang_issue_invoice,
             invoice_data,
             error_prefix=self.company.env._("Baiwang proxy error: %s"),
             allow_failed_with_response=True,
@@ -56,14 +56,14 @@ class BaiwangClient:
 
     def query_invoice(self, query_data: dict):
         return self._call_proxy(
-            '_l10n_cn_baiwang_query_invoice',
+            self.proxy_user._l10n_cn_baiwang_query_invoice,
             query_data,
             error_prefix=self.company.env._("Baiwang invoice query failed: %s"),
         )
 
     def add_red_confirmation(self, red_form_data: dict):
         return self._call_proxy(
-            '_l10n_cn_baiwang_submit_red_form',
+            self.proxy_user._l10n_cn_baiwang_submit_red_form,
             red_form_data,
             error_prefix=self.company.env._("Baiwang red form submission failed: %s"),
             allow_failed_with_response=True,
@@ -71,7 +71,7 @@ class BaiwangClient:
 
     def operate_red_confirmation(self, red_confirm_uuid: str, red_confirm_no: str, confirm_type: str):
         return self._call_proxy(
-            '_l10n_cn_baiwang_operate_red_form',
+            self.proxy_user._l10n_cn_baiwang_operate_red_form,
             red_confirm_uuid,
             red_confirm_no,
             confirm_type,
@@ -80,14 +80,14 @@ class BaiwangClient:
 
     def query_red_form_list(self, filters: dict | None = None):
         return self._call_proxy(
-            '_l10n_cn_baiwang_poll_red_form_list',
+            self.proxy_user._l10n_cn_baiwang_poll_red_form_list,
             filters or {},
             error_prefix=self.company.env._("Baiwang red form list query failed: %s"),
         )
 
     def query_red_form_detail(self, red_confirm_uuid: str):
         return self._call_proxy(
-            '_l10n_cn_baiwang_query_red_form',
+            self.proxy_user._l10n_cn_baiwang_query_red_form,
             red_confirm_uuid,
             error_prefix=self.company.env._("Baiwang red form detail query failed: %s"),
         )
