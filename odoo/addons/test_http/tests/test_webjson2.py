@@ -26,7 +26,7 @@ class TestHttpWebJson_2(TestHttpBase):
         cls.jackoneill = new_test_user(cls.env, 'jackoneill', context={'lang': 'en_US'})
         cls.jackoneill = cls.jackoneill.with_user(cls.jackoneill)
         key = cls.jackoneill.env['res.users.apikeys']._generate(
-            scope='rpc', name='test', expiration_date=datetime.now() + timedelta(days=0.5))
+            scope='rpc', name='test', expiration_date=datetime.now() + timedelta(days=0.5))[0]
         cls.bearer_header = {"Authorization": f"Bearer {key}"}
 
     def assertErrorLike(self, response, expected_error):

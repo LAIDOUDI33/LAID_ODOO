@@ -63,7 +63,7 @@ class TestHttpGreeting(TestHttpBase):
         joe = new_test_user(self.env, 'joe', context={'lang': 'en_US'})
         joe = joe.with_user(joe)
         key_expiration = datetime.datetime.now() + datetime.timedelta(days=0.5)
-        key = joe.env['res.users.apikeys']._generate('rpc', 'test', key_expiration)
+        key = joe.env['res.users.apikeys']._generate('rpc', 'test', key_expiration)[0]
 
         for path, authorization, expected_code, expected_pattern in [
             ('/test_http/greeting-bearer', None, 401, r".*Unauthorized.*"),

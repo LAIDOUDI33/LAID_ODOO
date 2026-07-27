@@ -64,7 +64,7 @@ class TestDoc(HttpCaseWithUserDemo):
 
     def test_doc_index_bearer(self):
         key = self.env['res.users.apikeys'].with_user(self.user_demo)._generate(
-            scope='rpc', name='test', expiration_date=datetime.now() + timedelta(days=0.5))
+            scope='rpc', name='test', expiration_date=datetime.now() + timedelta(days=0.5))[0]
         self._doc_index('doc-bearer', headers={"Authorization": f"Bearer {key}"})
 
     def _doc_index(self, prefix, headers={}):
@@ -108,7 +108,7 @@ class TestDoc(HttpCaseWithUserDemo):
 
     def test_doc_model_bearer(self):
         key = self.env['res.users.apikeys'].with_user(self.user_demo)._generate(
-            scope='rpc', name='test', expiration_date=datetime.now() + timedelta(days=0.5))
+            scope='rpc', name='test', expiration_date=datetime.now() + timedelta(days=0.5))[0]
         self._doc_model('doc-bearer', headers={"Authorization": f"Bearer {key}"})
 
     def _doc_model(self, prefix, headers={}):

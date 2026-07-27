@@ -1,0 +1,5 @@
+id,name,model_id,group_id/id,operation,domain
+access_oauth_proxy_remote_client_system,oauth.proxy.remote.client.system,oauth.proxy.remote.client,base.group_system,crud,
+access_oauth_proxy_pending_authorize_system,oauth.proxy.pending.authorize.system,oauth.proxy.pending.authorize,base.group_system,crud,
+access_oauth_proxy_authorization_code_system,oauth.proxy.authorization.code.system,oauth.proxy.authorization.code,base.group_system,crud,
+access_oauth_proxy_token_system,oauth.proxy.token.system,oauth.proxy.token,base.group_system,crud,

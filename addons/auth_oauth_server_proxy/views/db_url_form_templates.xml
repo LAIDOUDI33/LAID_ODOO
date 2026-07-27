@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="db_url_form" name="OAuth Proxy - Odoo Server URL">
+        <t t-call="web.login_layout">
+            <h1 class="h4 text-center mb-4">Connect to your Odoo server</h1>
+            <p>Enter the URL of the Odoo database you want to connect this application to.</p>
+            <form method="post" action="/oauth/authorize/submit_db_url" target="_top">
+                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                <t t-foreach="params.items()" t-as="param">
+                    <input type="hidden" t-att-name="param[0]" t-att-value="param[1]"/>
+                </t>
+                <div class="mb-3">
+                    <label for="db_url" class="form-label">Odoo server URL</label>
+                    <input type="text" name="db_url" id="db_url" class="form-control"
+                        placeholder="https://mycompany.odoo.com" required="required" autofocus="autofocus"/>
+                </div>
+                <div class="d-grid mt-4">
+                    <button type="submit" class="btn btn-primary">Continue</button>
+                </div>
+            </form>
+        </t>
+    </template>
+</odoo>
