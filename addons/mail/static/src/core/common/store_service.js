@@ -67,6 +67,8 @@ export class Store extends BaseStore {
     // messaging menu
     menu = { counter: 0 };
     chatHub = fields.One("ChatHub", { compute: () => ({}) });
+    /** @type {typeof import("@mail/core/common/follower_list_view_model").FollowerListView} */
+    FollowerListView;
     failures = fields.Many("Failure", {
         /**
          * @param {import("models").Failure} f1

@@ -6,6 +6,7 @@ from markupsafe import Markup
 from werkzeug.exceptions import NotFound
 
 from odoo.exceptions import UserError
+from odoo.fields import Domain
 from odoo.http import request
 from odoo.tools.misc import verify_limited_field_access_token
 
@@ -145,6 +146,36 @@ class ThreadController(StoreController):
                 ),
             ).ids,
         }
+
+    @mail_route("/mail/thread/get_followers", methods=["POST"], type="jsonrpc", auth="user")
+    def mail_thread_get_followers(self, thread_model, thread_id, offset=0):
+        """This method returns a page of followers sorted by name.
+        :param thread_model: Model on which we are currently working.
+        :param thread_id: ID of the document whose followers are fetched.
+        :param offset: Number of sorted followers already fetched.
+        :return: Follower data and IDs. If offset is 0, also returns:
+            followersCount: including the current user, to update the global thread count.
+            followers_count: excluding the current user, for load more requests.
+        :rtype: dict
+        """
+        thread = self._get_thread_with_access(thread_model, thread_id)
+        thread_domain = (
+            Domain("res_id", "=", thread_id)
+            & Domain("res_model", "=", thread_model)
+        )
+        domain = thread_domain & Domain("partner_id", "!=", request.env.user.partner_id.id)
+        # ID only stabilizes pagination when followers have the same name.
+        followers = request.env["mail.followers"].search(domain, offset=offset, limit=20, order="name ASC, id ASC")
+        store = Store().add(followers, "_store_follower_fields")
+        result = {"store_data": store, "follower_ids": followers.ids}
+        if not offset:
+            store.add(
+                thread,
+                {"followersCount": request.env["mail.followers"].search_count(thread_domain)},
+                as_thread=True,
+            )
+            result["followers_count"] = request.env["mail.followers"].search_count(domain)
+        return result
 
     def _prepare_message_data(self, post_data, *, thread, from_create=True, **kwargs):
         res = {

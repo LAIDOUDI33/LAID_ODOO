@@ -2,6 +2,7 @@ import {
     click,
     contains,
     defineMailModels,
+    hover,
     openFormView,
     scroll,
     start,
@@ -9,7 +10,7 @@ import {
 } from "@mail/../tests/mail_test_helpers";
 
 import { describe, expect, test } from "@odoo/hoot";
-import { tick } from "@odoo/hoot-dom";
+import { animationFrame, queryOne, tick } from "@odoo/hoot-dom";
 import { mockService, serverState } from "@web/../tests/web_test_helpers";
 import { range } from "@web/core/utils/numbers";
 
@@ -113,13 +114,13 @@ test("click on remove follower", async () => {
     await contains(".o-mail-Followers-dropdown");
 });
 
-test("Load 100 followers at once", async () => {
+test("Load 20 followers at once", async () => {
     const pyEnv = await startServer();
     const partnerIds = pyEnv["res.partner"].create(
-        range(210).map((i) => ({ display_name: `Partner${i}`, name: `Partner${i}` }))
+        range(80).map((i) => ({ display_name: `Partner${i}`, name: `Partner${i}` }))
     );
     pyEnv["mail.followers"].create(
-        range(210).map((i) => ({
+        range(80).map((i) => ({
             is_active: true,
             partner_id: i === 0 ? serverState.partnerId : partnerIds[i],
             res_id: partnerIds[0],
@@ -128,15 +129,28 @@ test("Load 100 followers at once", async () => {
     );
     await start();
     await openFormView("res.partner", partnerIds[0]);
-    await contains("button[title='Show Followers']:text('210')");
+    await contains("button[title='Show Followers']:text('80')");
     await click("[title='Show Followers']");
-    await contains(".o-mail-Follower", { count: 100 });
+    await contains(".o-mail-Follower", { count: 20 });
+    await contains("button[title='Show Followers']:text('80')");
+    await contains(".o-mail-FollowerList-list > div:nth-child(1):text('Partner1')");
+    await contains(".o-mail-FollowerList-list > div:nth-child(2):text('Partner10')");
+    await contains(".o-mail-FollowerList-list > div:nth-child(3):text('Partner11')");
     await contains(".o-mail-Followers-dropdown:has(:text('Load more'))");
+    await animationFrame();
+    await contains(".o-mail-Follower", { count: 20 });
+    const initialScrollTop = queryOne(".o-mail-Followers-dropdown").scrollTop;
+    await click(".o-mail-Followers-dropdown .btn:text('Load more')");
+    await contains(".o-mail-Follower", { count: 40 });
+    expect(queryOne(".o-mail-Followers-dropdown").scrollTop).toBe(initialScrollTop);
+    await hover(".o-mail-Follower:first");
     await scroll(".o-mail-Followers-dropdown", "bottom");
-    await contains(".o-mail-Follower", { count: 200 });
-    await tick(); // give enough time for the useVisible hook to register load more as hidden
+    const scrollTop = queryOne(".o-mail-Followers-dropdown").scrollTop;
+    await contains(".o-mail-Follower", { count: 60 });
+    expect(queryOne(".o-mail-Followers-dropdown").scrollTop).toBe(scrollTop);
+    await tick();
     await scroll(".o-mail-Followers-dropdown", "bottom");
-    await contains(".o-mail-Follower", { count: 209 });
+    await contains(".o-mail-Follower", { count: 79 });
     await contains(".o-mail-Followers-dropdown:has(:text('Load more'))", { count: 0 });
 });
 
