@@ -25,6 +25,8 @@ Note:
     'website': 'https://www.odoo.com/documentation/latest/applications/finance/fiscal_localizations.html',
     'depends': [
         'account',
+        'stock',
+        'purchase',
     ],
     'auto_install': ['account'],
     'data': [
@@ -39,6 +41,8 @@ Note:
         'data/account_report_jct_deduction_schedule_4_3.xml',
         'data/account_report_jct_deduction_schedule_5_3.xml',
         'data/account_report_jct_return.xml',
+        'security/ir.access.csv',
+        'wizards/total_average_cost_views.xml',
     ],
     'demo': [
         'demo/demo_company.xml',
