@@ -77,6 +77,10 @@ export class EmployeeUserStatus extends Component {
             await this.props.record.save();
         }
         const result = await this.orm.call("hr.employee", item.method, [resId]);
+        if (item.key === 'create_user') {
+            browser.location.reload();
+            return;
+        }
         if (item.key === 'copy') {
             if (result) {
                 await browser.navigator.clipboard.writeText(result);
