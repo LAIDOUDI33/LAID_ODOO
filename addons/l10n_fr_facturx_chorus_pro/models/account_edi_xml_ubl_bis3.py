@@ -9,6 +9,15 @@ class AccountEdiXmlUBLBIS3(models.AbstractModel):
     Chorus Pro documentation: https://communaute.chorus-pro.gouv.fr/wp-content/uploads/2017/07/Specifications_Externes_Annexe_EDI_V4.22.pdf
     """
 
+    def _l10n_fr_get_siren(self, partner):
+        partner = partner.commercial_partner_id
+        identifier = (
+            partner.siret
+            if 'siret' in partner._fields and partner.siret
+            else partner.company_registry
+        ) or ''
+        return identifier[:9] if len(identifier) in (9, 14) and identifier.isdigit() else False
+
     def _export_invoice_vals(self, invoice):
         """
         * Pagero doc states that the siret of the final customer (that has the Chorus peppol ID) should be located in
@@ -41,6 +50,14 @@ class AccountEdiXmlUBLBIS3(models.AbstractModel):
                 vals['vals'][f'accounting_{role}_party_vals']['party_vals']['party_identification_vals'] = [{
                     'id': partner.vat,
                 }]
+
+        supplier = vals['supplier'].commercial_partner_id
+        supplier_siren = self._l10n_fr_get_siren(supplier)
+        if supplier.country_code in france_country_codes and not supplier.vat and supplier_siren:
+            vals['vals']['accounting_supplier_party_vals']['party_vals']['party_tax_scheme_vals'] = [{
+                'company_id': supplier_siren,
+                'tax_scheme_vals': {'id': 'TAX'},
+            }]
         return vals
 
     def _get_partner_party_legal_entity_vals_list(self, partner):
@@ -67,11 +84,42 @@ class AccountEdiXmlUBLBIS3(models.AbstractModel):
             if 'siret' not in customer._fields or not customer.siret:
                 constraints['chorus_customer'] = _("The siret of the final recipient is mandatory for the customer when invoicing through Chorus Pro.")
             france_country_codes = self.env['res.company']._get_france_country_codes()
-            if supplier.country_code in france_country_codes and ('siret' not in supplier._fields or not supplier.siret):
-                constraints['chorus_supplier_fr'] = _("The siret is mandatory for french suppliers when invoicing to Chorus Pro.")
+            if supplier.country_code in france_country_codes and not (('siret' in supplier._fields and supplier.siret) or self._l10n_fr_get_siren(supplier)):
+                constraints['chorus_supplier_fr'] = _("A SIREN or SIRET is mandatory for French suppliers when invoicing through Chorus Pro.")
             if supplier.country_code not in france_country_codes and not supplier.vat:
                 constraints['chorus_supplier_not_fr'] = _("The VAT is mandatory for non-french suppliers when invoicing to Chorus Pro.")
         return constraints
+
+    def _export_invoice_constraints_new(self, invoice, vals):
+        constraints = super()._export_invoice_constraints_new(invoice, vals)
+        customer, supplier = vals['customer'].commercial_partner_id, vals['supplier'].commercial_partner_id
+        if self._is_customer_behind_chorus_pro(customer):
+            if 'siret' not in customer._fields or not customer.siret:
+                constraints['chorus_customer'] = _("The siret of the final recipient is mandatory for the customer when invoicing through Chorus Pro.")
+            france_country_codes = self.env['res.company']._get_france_country_codes()
+            if supplier.country_code in france_country_codes and not (('siret' in supplier._fields and supplier.siret) or self._l10n_fr_get_siren(supplier)):
+                constraints['chorus_supplier_fr'] = _("A SIREN or SIRET is mandatory for French suppliers when invoicing through Chorus Pro.")
+            if supplier.country_code not in france_country_codes and not supplier.vat:
+                constraints['chorus_supplier_not_fr'] = _("The VAT is mandatory for non-french suppliers when invoicing to Chorus Pro.")
+        return constraints
+
+    def _get_tax_unece_codes(self, customer, supplier, tax):
+        codes = super()._get_tax_unece_codes(customer, supplier, tax)
+        invoice = self._context.get('tax_exemption_reason_invoice')
+        if (
+            invoice
+            and self._is_customer_behind_chorus_pro(customer)
+            and supplier.country_code in self.env['res.company']._get_france_country_codes()
+            and not supplier.vat
+            and self._l10n_fr_get_siren(supplier)
+            and (not tax or tax.amount == 0)
+        ):
+            codes.update({
+                'tax_category_code': 'E',
+                'tax_exemption_reason_code': 'VATEX-FR-FRANCHISE',
+                'tax_exemption_reason': None,
+            })
+        return codes
 
     # -------------------------------------------------------------------------
     # EXPORT: New (dict_to_xml) helpers
@@ -145,5 +193,26 @@ class AccountEdiXmlUBLBIS3(models.AbstractModel):
                 'cbc:CompanyID': {
                     '_text': commercial_partner.siret,
                     'schemeID': '0009',
+                },
+            }]
+
+    def _ubl_add_accounting_supplier_party_tax_scheme_nodes(self, vals):
+        super()._ubl_add_accounting_supplier_party_tax_scheme_nodes(vals)
+
+        customer = vals['customer'].commercial_partner_id
+        if not self._is_customer_behind_chorus_pro(customer):
+            return
+
+        supplier = vals['supplier'].commercial_partner_id
+        supplier_siren = self._l10n_fr_get_siren(supplier)
+        if (
+            supplier.country_code in self.env['res.company']._get_france_country_codes()
+            and not supplier.vat
+            and supplier_siren
+        ):
+            vals['party_node']['cac:PartyTaxScheme'] = [{
+                'cbc:CompanyID': {'_text': supplier_siren},
+                'cac:TaxScheme': {
+                    'cbc:ID': {'_text': 'TAX'},
                 },
             }]
