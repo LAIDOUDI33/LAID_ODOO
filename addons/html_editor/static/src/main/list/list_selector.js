@@ -17,11 +17,9 @@ export class ListSelector extends Component {
         ...toolbarButtonProps,
         getButtons: Function,
         getListMode: Function,
-        key: Object,
-        applyListResetPreview: Function,
-        applyListPreview: Function,
-        applyListCommit: Function,
-        overlay: { type: Object, optional: true },
+        onSelected: Function,
+        onPreview: Function,
+        onPreviewReset: Function,
     };
     static components = { Dropdown, DropdownItem };
 
@@ -34,10 +32,10 @@ export class ListSelector extends Component {
         useDropdownAutoVisibility(this.env.overlayState, this.menuRef);
         this.preview = useToolbarDropdownPreview({
             dropdown: this.dropdown,
-            overlay: this.props.overlay,
-            preview: (item) => this.props.applyListPreview(item),
-            commit: (item) => this.props.applyListCommit(item),
-            revert: () => this.props.applyListResetPreview(),
+            getItems: () => this.props.getButtons(),
+            preview: (item) => this.props.onPreview(item),
+            commit: (item) => this.props.onSelected(item),
+            revert: () => this.props.onPreviewReset(),
         });
     }
     getActiveMode() {
@@ -48,10 +46,6 @@ export class ListSelector extends Component {
 
     onSelected(item) {
         this.preview.commit(item);
-    }
-
-    onItemHover(ev, item) {
-        this.preview.preview(ev, item);
     }
 
     onItemHoverOut() {

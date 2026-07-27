@@ -159,7 +159,7 @@ export const DISABLED_NAMESPACE = "disabled";
 
 export class ToolbarPlugin extends Plugin {
     static id = "toolbar";
-    static dependencies = ["overlay", "selection", "userCommand"];
+    static dependencies = ["overlay", "selection", "userCommand", "history"];
     static shared = ["getToolbarInfo", "getIsToolbarOpen"];
     /** @type {import("plugins").EditorResources} */
     resources = {
@@ -288,10 +288,6 @@ export class ToolbarPlugin extends Plugin {
                 this.addDomListener(this.editable, "mousedown", () => (this.isMouseDown = true));
                 this.addDomListener(this.document, "mouseup", () => (this.isMouseDown = false));
             }
-            this.isPreviewActive = false;
-            this.overlay.bus?.addEventListener("previewChange", ({ detail }) => {
-                this.isPreviewActive = detail.isPreviewActive;
-            });
         }
         this.isToolbarExpanded = false;
         this.toolbarProps = {
@@ -299,7 +295,6 @@ export class ToolbarPlugin extends Plugin {
             getSelection: () => this.dependencies.selection.getSelectionData(),
             focusEditable: () => this.dependencies.selection.focusEditable(),
             state: this.state,
-            overlay: this.overlay,
         };
     }
 
@@ -408,11 +403,13 @@ export class ToolbarPlugin extends Plugin {
         if (this.isDestroyed) {
             return;
         }
-        // Prevent toolbar to open if the selection is not in the editable area,
-        // or if the selection is protected or protecting.
-        if (this.isPreviewActive) {
+        // Ignore toolbar updates while a preview is active. The toolbar will be
+        // updated once the preview is committed or reverted.
+        if (this.dependencies.history.getIsPreviewing()) {
             return;
         }
+        // Prevent toolbar to open if the selection is not in the editable area,
+        // or if the selection is protected or protecting.
         if (
             !(
                 selectionData.documentSelectionIsInEditable &&

@@ -653,7 +653,6 @@ test("toolbar works: change font size correctly when closest block element has a
     expect(fontSizeInputEl).toHaveValue(h1Size);
 });
 
-test.tags("desktop");
 test("toolbar works: show the correct text alignment", async () => {
     const { el } = await setupEditor("<p>[test</p><p><br>]</p>");
     await expandToolbar();
@@ -663,20 +662,6 @@ test("toolbar works: show the correct text alignment", async () => {
     );
     await click("button[name='text_align']");
     await contains(".o-we-toolbar-dropdown .btn[data-icon='format_align_right']").click();
-    expect(getContent(el)).toBe(
-        `<p style="text-align: end;">[test</p><p style="text-align: end;">]<br></p>`
-    );
-    expect("button[name='text_align'] span").toHaveInnerHTML(`<i class="fa fa-align-right"> </i>`);
-});
-
-test.tags("mobile");
-test("toolbar works: show the correct text alignment(mobile)", async () => {
-    const { el } = await setupEditor("<p>[test</p><p><br>]</p>");
-    await expandToolbar();
-    expect("button[name='text_align']").toHaveCount(1);
-    expect("button[name='text_align'] span").toHaveInnerHTML(`<i class="fa fa-align-left"> </i>`);
-    await click("button[name='text_align']");
-    await contains(".o-we-toolbar-dropdown .btn.fa-align-right").click();
     expect(getContent(el)).toBe(
         `<p style="text-align: end;">[test</p><p style="text-align: end;"><br>]</p>`
     );

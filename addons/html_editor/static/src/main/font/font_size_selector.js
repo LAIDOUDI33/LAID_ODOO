@@ -28,10 +28,8 @@ export class FontSizeSelector extends Component {
         title: t.or([t.string(), t.function()]),
         getSelection: t.function(),
         isDisabled: t.boolean(),
-        applyFontSizeResetPreview: t.function(),
-        applyFontSizePreview: t.function(),
-        applyFontSizeCommit: t.function(),
-        overlay: t.object().optional(),
+        onPreview: t.function(),
+        onPreviewReset: t.function(),
     });
     static components = { Dropdown, DropdownItem, IframeInput };
 
@@ -49,10 +47,10 @@ export class FontSizeSelector extends Component {
         useToolbarDropdownFocus(this.dropdown, this.fontSizeSelector);
         this.preview = useToolbarDropdownPreview({
             dropdown: this.dropdown,
-            overlay: this.props.overlay,
-            preview: (item) => this.props.applyFontSizePreview(item, this.props.onSelected),
-            commit: (item) => this.props.applyFontSizeCommit(item, this.props.onSelected),
-            revert: () => this.props.applyFontSizeResetPreview(),
+            getItems: () => this.items,
+            preview: (item) => this.props.onPreview(item),
+            commit: (item) => this.props.onSelected(item),
+            revert: () => this.props.onPreviewReset(),
         });
         const htmlStyle = getHtmlStyle(document);
         this.fontFamily = getCSSVariableValue("o-system-fonts", htmlStyle);
@@ -121,10 +119,6 @@ export class FontSizeSelector extends Component {
 
     onSelected(item) {
         this.preview.commit(item);
-    }
-
-    onItemHover(ev, item) {
-        this.preview.preview(ev, item);
     }
 
     onItemHoverOut() {

@@ -18,6 +18,8 @@ export class ImageAlignSelector extends Component {
         getDisplay: Function,
         focusEditable: Function,
         onSelected: Function,
+        onPreview: Function,
+        onPreviewReset: Function,
         ...toolbarButtonProps,
     };
 
@@ -31,22 +33,18 @@ export class ImageAlignSelector extends Component {
         useDropdownAutoVisibility(this.env.overlayState, this.menuRef);
         this.preview = useToolbarDropdownPreview({
             dropdown: this.dropdown,
-            overlay: this.props.overlay,
-            preview: (item) => this.props.applyPreview(item, this.props.onSelected),
+            getItems: () => this.props.items,
+            preview: (item) => this.props.onPreview(item),
             commit: (item) => {
-                this.props.applyCommit(item, this.props.onSelected);
+                this.props.onSelected(item);
                 this.props.focusEditable();
             },
-            revert: () => this.props.applyResetPreview(),
+            revert: () => this.props.onPreviewReset(),
         });
     }
 
     onSelected(item) {
         this.preview.commit(item);
-    }
-
-    onItemHover(ev, item) {
-        this.preview.preview(ev, item);
     }
 
     onItemHoverOut() {

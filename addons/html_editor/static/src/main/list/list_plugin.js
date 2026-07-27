@@ -144,10 +144,9 @@ export class ListPlugin extends Plugin {
                 props: {
                     getButtons: () => this.listSelectorButtons,
                     getListMode: this.getListMode.bind(this),
-                    key: this.toolbarListSelectorKey,
-                    applyListResetPreview: this.applyListResetPreview.bind(this),
-                    applyListPreview: this.applyListPreview.bind(this),
-                    applyListCommit: this.applyListCommit.bind(this),
+                    onSelected: (item) => this.previewableToggleList.commit(item),
+                    onPreview: (item) => this.previewableToggleList.preview(item),
+                    onPreviewReset: () => this.previewableToggleList.revert(),
                 },
                 isAvailable: this.canToggleList.bind(this),
             }),
@@ -236,7 +235,7 @@ export class ListPlugin extends Plugin {
             (selection) =>
                 isHtmlContentSupported(selection) && this.getBlocksToToggleList().length > 0
         );
-        this.previewableApplyList = this.dependencies.history.makePreviewableOperation((item) =>
+        this.previewableToggleList = this.dependencies.history.makePreviewableOperation((item) =>
             item.run()
         );
     }
@@ -1335,17 +1334,5 @@ export class ListPlugin extends Plugin {
             }
         }
         return container;
-    }
-
-    applyListCommit(item) {
-        this.previewableApplyList.commit(item);
-    }
-
-    applyListPreview(item) {
-        this.previewableApplyList.preview(item);
-    }
-
-    applyListResetPreview() {
-        this.previewableApplyList.revert();
     }
 }

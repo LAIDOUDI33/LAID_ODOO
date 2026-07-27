@@ -18,10 +18,8 @@ export class AlignSelector extends Component {
         onSelected: Function,
         focusEditable: Function,
         ...toolbarButtonProps,
-        applyAlignResetPreview: Function,
-        applyAlignPreview: Function,
-        applyAlignCommit: Function,
-        overlay: { type: Object, optional: true },
+        onPreview: Function,
+        onPreviewReset: Function,
     };
     static components = { Dropdown, DropdownItem };
 
@@ -36,22 +34,18 @@ export class AlignSelector extends Component {
         useDropdownAutoVisibility(this.env.overlayState, this.menuRef);
         this.preview = useToolbarDropdownPreview({
             dropdown: this.dropdown,
-            overlay: this.props.overlay,
-            preview: (item) => this.props.applyAlignPreview(item, this.props.onSelected),
+            getItems: () => this.items,
+            preview: (item) => this.props.onPreview(item),
             commit: (item) => {
-                this.props.applyAlignCommit(item, this.props.onSelected);
+                this.props.onSelected(item);
                 this.props.focusEditable();
             },
-            revert: () => this.props.applyAlignResetPreview(),
+            revert: () => this.props.onPreviewReset(),
         });
     }
 
     onSelected(item) {
         this.preview.commit(item);
-    }
-
-    onItemHover(ev, item) {
-        this.preview.preview(ev, item);
     }
 
     onItemHoverOut() {

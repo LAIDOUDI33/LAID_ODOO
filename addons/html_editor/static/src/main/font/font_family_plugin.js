@@ -65,16 +65,9 @@ export class FontFamilyPlugin extends Plugin {
                     fontFamilyItems: fontFamilyItems,
                     currentFontFamily: this.fontFamily,
                     focusEditable: () => this.dependencies.selection.focusEditable(),
-                    onSelected: (item) => {
-                        this.dependencies.format.requestFormat("fontFamily", {
-                            applyStyle: item.fontFamily !== false,
-                            formatProps: item,
-                        });
-                        this.fontFamily.displayName = item.nameShort;
-                    },
-                    applyFontFamilyResetPreview: this.applyFontFamilyResetPreview.bind(this),
-                    applyFontFamilyPreview: this.applyFontFamilyPreview.bind(this),
-                    applyFontFamilyCommit: this.applyFontFamilyCommit.bind(this),
+                    onSelected: (item) => this.previewableSetFontFamily.commit(item),
+                    onPreview: (item) => this.previewableSetFontFamily.preview(item),
+                    onPreviewReset: () => this.previewableSetFontFamily.revert(),
                 },
                 isDisabled: (sel, nodes) => nodes.some((node) => !isStylable(node)),
                 isAvailable: (selection) =>
@@ -88,8 +81,14 @@ export class FontFamilyPlugin extends Plugin {
     };
 
     setup() {
-        this.previewableApplyFontFamily = this.dependencies.history.makePreviewableOperation(
-            (item, onSelected) => onSelected(item)
+        this.previewableSetFontFamily = this.dependencies.history.makePreviewableOperation(
+            (item) => {
+                this.dependencies.format.requestFormat("fontFamily", {
+                    applyStyle: item.fontFamily !== false,
+                    formatProps: item,
+                });
+                this.fontFamily.displayName = item.nameShort;
+            }
         );
     }
 
@@ -105,17 +104,5 @@ export class FontFamilyPlugin extends Plugin {
             fontFamilyItems.find((item) => item.fontFamily === anchorElementFontFamily);
 
         this.fontFamily.displayName = (currentFontItem || defaultFontFamily).nameShort;
-    }
-
-    applyFontFamilyCommit(item, onSelected) {
-        this.previewableApplyFontFamily.commit(item, onSelected);
-    }
-
-    applyFontFamilyPreview(item, onSelected) {
-        this.previewableApplyFontFamily.preview(item, onSelected);
-    }
-
-    applyFontFamilyResetPreview() {
-        this.previewableApplyFontFamily.revert();
     }
 }

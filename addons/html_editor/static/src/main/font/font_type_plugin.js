@@ -119,16 +119,9 @@ export class FontTypePlugin extends Plugin {
                 props: {
                     getItems: () => this.availableFontTypeItems,
                     getDisplay: () => this.fontType,
-                    onSelected: (item) => {
-                        this.dependencies.dom.setBlock({
-                            tagName: item.tagName,
-                            extraClass: item.extraClass,
-                        });
-                        this.updateFontTypeSelectorParams();
-                    },
-                    applyFontTypeResetPreview: this.applyFontTypeResetPreview.bind(this),
-                    applyFontTypePreview: this.applyFontTypePreview.bind(this),
-                    applyFontTypeCommit: this.applyFontTypeCommit.bind(this),
+                    onSelected: (item) => this.previewableSetBlock.commit(item),
+                    onPreview: (item) => this.previewableSetBlock.preview(item),
+                    onPreviewReset: () => this.previewableSetBlock.revert(),
                 },
                 isAvailable: this.blockFormatIsAvailable.bind(this),
                 isDisabled: (sel, nodes) => nodes.some((node) => !isStylable(node)),
@@ -259,9 +252,13 @@ export class FontTypePlugin extends Plugin {
                 !SUPPORTED_BASE_CONTAINER_NAMES.includes(tagName.toUpperCase()) ||
                 this.config.baseContainers.includes(tagName.toUpperCase())
         );
-        this.previewableApplyFontType = this.dependencies.history.makePreviewableOperation(
-            (item, onSelected) => onSelected(item)
-        );
+        this.previewableSetBlock = this.dependencies.history.makePreviewableOperation((item) => {
+            this.dependencies.dom.setBlock({
+                tagName: item.tagName,
+                extraClass: item.extraClass,
+            });
+            this.updateFontTypeSelectorParams();
+        });
     }
 
     normalize(root) {
@@ -464,17 +461,5 @@ export class FontTypePlugin extends Plugin {
             block.remove();
             return true;
         }
-    }
-
-    applyFontTypeCommit(item, onSelected) {
-        this.previewableApplyFontType.commit(item, onSelected);
-    }
-
-    applyFontTypePreview(item, onSelected) {
-        this.previewableApplyFontType.preview(item, onSelected);
-    }
-
-    applyFontTypeResetPreview() {
-        this.previewableApplyFontType.revert();
     }
 }

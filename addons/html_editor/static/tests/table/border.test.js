@@ -14,6 +14,10 @@ async function setupTableBorderDropdown(content, type) {
     return { el };
 }
 
+const TABLE_WITH_SELECTED_CELL = `<table class="o_selected_table"><tbody><tr>
+                <td class="o_selected_td">11[]</td>
+            </tr></tbody></table>`;
+
 function getBorderPreviewItem(property, value) {
     return queryOne(
         `.o-dropdown-item:has(.o-border-preview[style*='border-${property}: ${value}'])`
@@ -196,5 +200,74 @@ describe("Table border width preview with mixed interactions", () => {
         await animationFrame();
 
         expect("td").toHaveStyle({ "border-width": "2px" }, { inline: true });
+    });
+});
+
+describe("Table border style preview with mouse hover", () => {
+    test.tags("desktop");
+    test("should preview different border styles on hover", async () => {
+        await setupTableBorderDropdown(TABLE_WITH_SELECTED_CELL, "style");
+
+        await hover(getBorderPreviewItem("style", "dashed"));
+        expect("td").toHaveStyle({ "border-style": "dashed" }, { inline: true });
+
+        await hover(getBorderPreviewItem("style", "dotted"));
+        expect("td").toHaveStyle({ "border-style": "dotted" }, { inline: true });
+    });
+
+    test.tags("desktop");
+    test("should preview the 'None' border style on hover", async () => {
+        const { el } = await setupTableBorderDropdown(TABLE_WITH_SELECTED_CELL, "style");
+
+        await hover(queryOne(".o-dropdown-item:contains('None')"));
+        expect("td").toHaveStyle({ "border-style": "none" }, { inline: true });
+
+        await hover(el);
+        expect("td").not.toHaveStyle("border-style", { inline: true });
+    });
+
+    test.tags("desktop");
+    test("should revert preview when mouse leaves without applying border style", async () => {
+        const { el } = await setupTableBorderDropdown(TABLE_WITH_SELECTED_CELL, "style");
+
+        await hover(getBorderPreviewItem("style", "dotted"));
+        expect("td").toHaveStyle({ "border-style": "dotted" }, { inline: true });
+
+        await hover(el);
+        expect("td").not.toHaveStyle("border-style", { inline: true });
+    });
+});
+
+describe("Table border style preview with keyboard", () => {
+    test.tags("desktop");
+    test("should preview different border styles while navigating with keyboard", async () => {
+        await setupTableBorderDropdown(TABLE_WITH_SELECTED_CELL, "style");
+
+        // The first item of the menu is "None", the styles follow it.
+        await press("ArrowDown");
+        expect("td").toHaveStyle({ "border-style": "none" }, { inline: true });
+
+        await press("ArrowDown");
+        expect(getBorderPreviewItem("style", "solid")).toBeFocused();
+        expect("td").toHaveStyle({ "border-style": "solid" }, { inline: true });
+
+        await press("ArrowDown");
+        expect(getBorderPreviewItem("style", "dashed")).toBeFocused();
+        expect("td").toHaveStyle({ "border-style": "dashed" }, { inline: true });
+    });
+
+    test.tags("desktop");
+    test("should revert preview when Escape closes the dropdown", async () => {
+        await setupTableBorderDropdown(TABLE_WITH_SELECTED_CELL, "style");
+
+        await press("ArrowDown");
+        await press("ArrowDown");
+        expect(getBorderPreviewItem("style", "solid")).toBeFocused();
+        expect("td").toHaveStyle({ "border-style": "solid" }, { inline: true });
+
+        await press("Escape");
+        await animationFrame();
+
+        expect("td").not.toHaveStyle("border-style", { inline: true });
     });
 });

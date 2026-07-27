@@ -29,7 +29,7 @@ export class TableBorderWidthSelector extends Component {
         useDropdownAutoVisibility(this.env.overlayState, this.menuRef);
         this.preview = useToolbarDropdownPreview({
             dropdown: this.dropdown,
-            overlay: this.props.overlay,
+            getItems: () => this.items,
             preview: (item) => this.props.onPreview(item),
             commit: (item) => this.props.onSelected(item),
             revert: () => this.props.onPreviewReset(),
@@ -38,10 +38,6 @@ export class TableBorderWidthSelector extends Component {
 
     onSelected(item) {
         this.preview.commit(item);
-    }
-
-    onItemHover(ev, item) {
-        this.preview.preview(ev, item);
     }
 
     onItemHoverOut() {

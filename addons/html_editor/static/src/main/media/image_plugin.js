@@ -103,12 +103,12 @@ export class ImagePlugin extends Plugin {
                     items: IMAGE_ALIGNMENT,
                     getDisplay: () => this.imageAlignment,
                     focusEditable: () => this.dependencies.selection.focusEditable(),
-                    onSelected: (item) => {
-                        this.setImageAlignment(item);
+                    onSelected: (item) => this.previewableSetImageAlignment.commit(item),
+                    onPreview: (item) => this.previewableSetImageAlignment.preview(item),
+                    onPreviewReset: () => {
+                        this.previewableSetImageAlignment.revert();
+                        this.updateImageParams();
                     },
-                    applyResetPreview: this.applyResetPreview.bind(this),
-                    applyPreview: this.applyPreview.bind(this),
-                    applyCommit: this.applyCommit.bind(this),
                 },
                 isAvailable: isHtmlContentSupported,
             },
@@ -122,12 +122,12 @@ export class ImagePlugin extends Plugin {
                     icon: "html_editor.ImagePaddingIcon",
                     items: IMAGE_PADDING,
                     focusEditable: () => this.dependencies.selection.focusEditable(),
-                    onSelected: (item) => {
-                        this.setImagePadding({ size: item.value });
+                    onSelected: (item) => this.previewableSetImagePadding.commit(item),
+                    onPreview: (item) => this.previewableSetImagePadding.preview(item),
+                    onPreviewReset: () => {
+                        this.previewableSetImagePadding.revert();
+                        this.updateImageParams();
                     },
-                    applyResetPreview: this.applyResetPreview.bind(this),
-                    applyPreview: this.applyPreview.bind(this),
-                    applyCommit: this.applyCommit.bind(this),
                 },
                 isAvailable: isHtmlContentSupported,
             },
@@ -142,13 +142,12 @@ export class ImagePlugin extends Plugin {
                     items: IMAGE_SIZE,
                     focusEditable: () => this.dependencies.selection.focusEditable(),
                     icon: "expand_content",
-                    onSelected: (item) => {
-                        this.resizeImage({ size: item.value });
+                    onSelected: (item) => this.previewableResizeImage.commit(item),
+                    onPreview: (item) => this.previewableResizeImage.preview(item),
+                    onPreviewReset: () => {
+                        this.previewableResizeImage.revert();
                         this.updateImageParams();
                     },
-                    applyResetPreview: this.applyResetPreview.bind(this),
-                    applyPreview: this.applyPreview.bind(this),
-                    applyCommit: this.applyCommit.bind(this),
                 },
                 isAvailable: (selection) =>
                     isHtmlContentSupported(selection) && (this.config.allowImageResize ?? true),
@@ -189,9 +188,16 @@ export class ImagePlugin extends Plugin {
             }
         });
         this.fileViewer = this.services.fileViewer();
-        this.previewableApplyAlign = this.dependencies.history.makePreviewableOperation(
-            (item, onSelected) => onSelected(item)
+        const previewable = (operation) =>
+            this.dependencies.history.makePreviewableOperation(operation);
+        this.previewableSetImageAlignment = previewable((item) => this.setImageAlignment(item));
+        this.previewableSetImagePadding = previewable((item) =>
+            this.setImagePadding({ size: item.value })
         );
+        this.previewableResizeImage = previewable((item) => {
+            this.resizeImage({ size: item.value });
+            this.updateImageParams();
+        });
     }
 
     destroy() {
@@ -348,18 +354,5 @@ export class ImagePlugin extends Plugin {
             focusOffset,
         });
         this.dependencies.selection.focusEditable();
-    }
-
-    applyCommit(item, onSelected) {
-        this.previewableApplyAlign.commit(item, onSelected);
-    }
-
-    applyPreview(item, onSelected) {
-        this.previewableApplyAlign.preview(item, onSelected);
-    }
-
-    applyResetPreview() {
-        this.previewableApplyAlign.revert();
-        this.updateImageParams();
     }
 }

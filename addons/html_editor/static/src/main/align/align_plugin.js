@@ -1,14 +1,13 @@
 import { proxy } from "@odoo/owl";
 import { Plugin } from "@html_editor/plugin";
 import { closestBlock } from "@html_editor/utils/blocks";
-import { isEmptyBlock, isVisibleTextNode } from "@html_editor/utils/dom_info";
+import { isVisibleTextNode } from "@html_editor/utils/dom_info";
 import { _t } from "@web/core/l10n/translation";
 import { AlignSelector } from "./align_selector";
 import { isHtmlContentSupported } from "@html_editor/core/selection_plugin";
 import { weakMemoize } from "@html_editor/utils/functions";
 import { READ, withSequence } from "@html_editor/utils/resource";
 import { removeStyle } from "@html_editor/utils/dom";
-import { descendants } from "@html_editor/utils/dom_traversal";
 
 const alignmentItems = [
     // In RTL, left and right icons are reverted to represent start and end.
@@ -55,12 +54,12 @@ export class AlignPlugin extends Plugin {
                     getItems: () => alignmentItems,
                     getDisplay: () => this.alignment,
                     focusEditable: () => this.dependencies.selection.focusEditable(),
-                    onSelected: (item) => {
-                        this.setAlignment(item.mode);
+                    onSelected: (item) => this.previewableSetAlignment.commit(item),
+                    onPreview: (item) => this.previewableSetAlignment.preview(item),
+                    onPreviewReset: () => {
+                        this.previewableSetAlignment.revert();
+                        this.updateAlignmentParams();
                     },
-                    applyAlignResetPreview: this.applyAlignResetPreview.bind(this),
-                    applyAlignPreview: this.applyAlignPreview.bind(this),
-                    applyAlignCommit: this.applyAlignCommit.bind(this),
                 },
                 isAvailable: this.canSetAlignment.bind(this),
             },
@@ -97,8 +96,8 @@ export class AlignPlugin extends Plugin {
         this.canSetAlignmentMemoized = weakMemoize(
             (selection) => isHtmlContentSupported(selection) && this.getBlocksToAlign().length > 0
         );
-        this.previewableApplyAlign = this.dependencies.history.makePreviewableOperation(
-            (item, onSelected) => onSelected(item)
+        this.previewableSetAlignment = this.dependencies.history.makePreviewableOperation((item) =>
+            this.setAlignment(item.mode)
         );
     }
 
@@ -139,12 +138,8 @@ export class AlignPlugin extends Plugin {
     }
 
     getBlocksToAlign() {
-        const selection = this.dependencies.selection.getEditableSelection();
-        const targetedNodes = this.dependencies.selection.getTargetedNodes();
-        if (isEmptyBlock(selection.endContainer)) {
-            targetedNodes.push(selection.endContainer, ...descendants(selection.endContainer));
-        }
-        return targetedNodes
+        return this.dependencies.selection
+            .getTargetedNodes()
             .filter((node) => isVisibleTextNode(node) || node.nodeName === "BR")
             .map((node) => closestBlock(node))
             .filter((block) => block.isContentEditable);
@@ -205,18 +200,5 @@ export class AlignPlugin extends Plugin {
         if (areAllBlocksFullySelected) {
             this.setAlignment();
         }
-    }
-
-    applyAlignCommit(item, onSelected) {
-        this.previewableApplyAlign.commit(item, onSelected);
-    }
-
-    applyAlignPreview(item, onSelected) {
-        this.previewableApplyAlign.preview(item, onSelected);
-    }
-
-    applyAlignResetPreview() {
-        this.previewableApplyAlign.revert();
-        this.updateAlignmentParams();
     }
 }

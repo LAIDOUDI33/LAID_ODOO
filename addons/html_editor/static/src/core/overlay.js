@@ -51,17 +51,16 @@ export class EditorOverlay extends Component {
             getTarget = this.getSelectionTarget.bind(this);
         }
 
-        let isPreviewActive = false;
-        useListener(this.props.bus, "previewChange", ({ detail }) => {
-            isPreviewActive = detail.isPreviewActive;
-        });
         useListener(this.props.bus, "updatePosition", () => {
             position.unlock();
         });
 
         if (this.props.positionOptions?.updatePositionOnResize ?? true) {
             const resizeObserver = new ResizeObserver(() => {
-                if (!isPreviewActive) {
+                // A preview resizes the content without the user moving the
+                // selection, so repositioning here would make the overlay
+                // jump away from its anchor.
+                if (!this.props.shared.getIsPreviewing()) {
                     position.unlock();
                 }
             });

@@ -19,10 +19,8 @@ export class FontFamilySelector extends Component {
         onSelected: Function,
         focusEditable: Function,
         ...toolbarButtonProps,
-        applyFontFamilyResetPreview: Function,
-        applyFontFamilyPreview: Function,
-        applyFontFamilyCommit: Function,
-        overlay: { type: Object, optional: true },
+        onPreview: Function,
+        onPreviewReset: Function,
     };
     static components = { Dropdown, DropdownItem };
 
@@ -35,22 +33,18 @@ export class FontFamilySelector extends Component {
         useDropdownAutoVisibility(this.env.overlayState, this.menuRef);
         this.preview = useToolbarDropdownPreview({
             dropdown: this.dropdown,
-            overlay: this.props.overlay,
-            preview: (item) => this.props.applyFontFamilyPreview(item, this.props.onSelected),
+            getItems: () => this.props.fontFamilyItems,
+            preview: (item) => this.props.onPreview(item),
             commit: (item) => {
-                this.props.applyFontFamilyCommit(item, this.props.onSelected);
+                this.props.onSelected(item);
                 this.props.focusEditable();
             },
-            revert: () => this.props.applyFontFamilyResetPreview(),
+            revert: () => this.props.onPreviewReset(),
         });
     }
 
     onSelected(item) {
         this.preview.commit(item);
-    }
-
-    onItemHover(ev, item) {
-        this.preview.preview(ev, item);
     }
 
     onItemHoverOut() {

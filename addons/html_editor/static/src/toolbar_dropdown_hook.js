@@ -43,50 +43,61 @@ export function useToolbarDropdownFocus(dropdown, buttonRef) {
     );
 }
 
-export function useToolbarDropdownPreview({ overlay, dropdown, preview, commit, revert }) {
+/**
+ * Previews a toolbar dropdown item while it is hovered or navigated to, and
+ * reverts the preview when the pointer leaves the menu or the dropdown closes.
+ *
+ * @param {Object} params
+ * @param {Object} params.dropdown state of the dropdown, as returned by `useDropdownState`
+ * @param {() => any[]} params.getItems
+ * @param {(item: any) => void} params.preview
+ * @param {(item: any) => void} params.commit
+ * @param {() => void} params.revert
+ */
+export function useToolbarDropdownPreview({ dropdown, getItems, preview, commit, revert }) {
     const reactiveDropdown = proxy(dropdown);
+    /** @type {import("@web/core/navigation/navigation").Navigator} */
+    let navigator;
+    let activeEl;
+
+    const resetPreview = () => {
+        navigator?._setActiveItem(-1);
+        activeEl = undefined;
+        revert();
+    };
+
+    let wasOpen = false;
     useLayoutEffect(
         () => {
-            if (!reactiveDropdown.isOpen) {
+            if (wasOpen && !reactiveDropdown.isOpen) {
                 resetPreview();
             }
+            wasOpen = reactiveDropdown.isOpen;
         },
         () => [reactiveDropdown.isOpen]
     );
 
-    let focusedItem;
-
-    const setPreviewActive = (isPreviewActive) => {
-        overlay?.bus?.trigger("previewChange", { isPreviewActive });
-    };
-
-    const previewItem = (item) => {
-        setPreviewActive(true);
-        preview(item);
-    };
-
-    const resetPreview = () => {
-        setPreviewActive(false);
-        revert();
-    };
-
     return {
         commit(item) {
-            setPreviewActive(false);
+            activeEl = undefined;
             commit(item);
         },
         reset: resetPreview,
-        preview(ev, item) {
-            const target = ev.target;
-            if (focusedItem === target) {
-                focusedItem = undefined;
-                return;
-            }
-            focusedItem = target;
-            previewItem(item);
-            if (document.activeElement !== target) {
-                target.focus();
-            }
+        navigationOptions: {
+            onUpdated: (nav) => {
+                navigator = nav;
+            },
+            onItemActivated: (el) => {
+                if (el === activeEl) {
+                    return;
+                }
+                activeEl = el;
+                const item = getItems()[Number(el.dataset.previewIndex)];
+                if (item) {
+                    preview(item);
+                    el.focus();
+                }
+            },
         },
     };
 }
