@@ -183,6 +183,13 @@ class PosOrderReceipt(models.AbstractModel):
     def _order_receipt_generate_cashier_name(self):
         return self.user_id.name.split(' ')[0] if self.user_id else ''
 
+    def _get_total_item_count(self):
+        return sum(
+            line.qty if line.product_id.uom_id.is_pos_groupable else 1
+            for line in self.lines
+            if not line.combo_line_ids
+        )
+
     def order_receipt_generate_data(self, basic_receipt=False):
         self.ensure_one()
 
@@ -194,6 +201,7 @@ class PosOrderReceipt(models.AbstractModel):
         return {
             **self._get_common_record_data(),
             'lines': self._order_receipt_generate_line_data(),
+            'total_item_count': self._get_total_item_count(),
             'payments': self._order_receipt_generate_payment_data(),
             'image': {
                 'logo': config_logo,
