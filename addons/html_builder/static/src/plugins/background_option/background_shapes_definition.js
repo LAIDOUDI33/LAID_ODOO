@@ -257,7 +257,7 @@ export const backgroundShapesDefinition = {
                         selectLabel: _t("Miscellaneous 07"),
                         animated: true,
                     },
-                    "html_builder/Zigs/01_001": {
+                    "html_builder/Zigs/01_002": {
                         selectLabel: _t("Miscellaneous 08"),
                         animated: true,
                     },
