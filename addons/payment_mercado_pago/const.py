@@ -5,6 +5,7 @@ from odoo.tools import LazyTranslate
 _lt = LazyTranslate(__name__)
 
 PROXY_URL = "https://mercadopago.api.odoo.com/api/mercado_pago/"
+SANDBOX_PROXY_URL = "https://mercadopago.test.odoo.com/api/mercado_pago/"
 
 PAYMENT_RETURN_ROUTE = "/payment/mercado_pago/return"
 OAUTH_RETURN_ROUTE = "/payment/mercado_pago/oauth/return"
@@ -112,4 +113,12 @@ ERROR_MESSAGE_MAPPING = {
     "cc_rejected_other_reason": _lt(
         "Payment was not processed, use another card or contact issuer."
     ),
+}
+
+# Mapping of error codes returned by the IAP proxy to user-facing messages.
+PROXY_ERROR_MESSAGE_MAPPING = {
+    "account_mode_mismatch": _lt(
+        'The connection mode does not match the Mercado Pago account: use "Connect" for a'
+        ' production account and "Connect a Test Account" for a test account.'
+    )
 }
