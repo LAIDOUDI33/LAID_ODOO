@@ -7,7 +7,8 @@
 Bridge module between MRP subcontracting and Repair
     """,
     'depends': [
-        'mrp_subcontracting', 'repair'
+        "mrp_subcontracting",
+        "mrp_repair",
     ],
     'data': [
         'security/ir.access.csv',
