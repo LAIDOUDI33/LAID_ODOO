@@ -3,6 +3,7 @@
 from datetime import UTC
 
 from odoo.addons.mail.controllers.discuss.rtc import RtcController
+from odoo.http import request
 
 
 class CloudStorageRtcController(RtcController):
@@ -18,7 +19,7 @@ class CloudStorageRtcController(RtcController):
             "start_ms": int(start_ms) - call_start_ms,
             "end_ms": int(end_ms) - call_start_ms,
         })
-        content_type = self.httprequest.content_type or "application/octet-stream"
+        content_type = request.httprequest.content_type or "application/octet-stream"
         attachment_sudo = self.env["ir.attachment"].sudo().create({
             "name": f"media_{call_history.id}",
             "type": "cloud_storage",
