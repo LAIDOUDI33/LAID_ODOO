@@ -1,4 +1,5 @@
-import { onWillRender, useComponent, useLayoutEffect, useRef } from "@web/owl2/utils";
+import { useEffect, useListener } from "@odoo/owl";
+import { onWillRender, useComponent, useRef } from "@web/owl2/utils";
 import { getActiveHotkey } from "@web/core/hotkeys/hotkey_service";
 import { useBus } from "@web/core/utils/hooks";
 import { resolveRefEl } from "@web/core/utils/ref_utils";
@@ -109,21 +110,9 @@ export function useInputField(params) {
         }
     }
 
-    useLayoutEffect(
-        (inputEl) => {
-            if (inputEl) {
-                inputEl.addEventListener("input", onInput);
-                inputEl.addEventListener("change", onChange);
-                inputEl.addEventListener("keydown", onKeydown);
-                return () => {
-                    inputEl.removeEventListener("input", onInput);
-                    inputEl.removeEventListener("change", onChange);
-                    inputEl.removeEventListener("keydown", onKeydown);
-                };
-            }
-        },
-        () => [getEl()]
-    );
+    useListener(() => getEl(), "input", onInput);
+    useListener(() => getEl(), "change", onChange);
+    useListener(() => getEl(), "keydown", onKeydown);
 
     // We need to call getValue to always observe
     // the corresponding value in the record. Otherwise, in some cases,
@@ -136,7 +125,7 @@ export function useInputField(params) {
      * we need to do nothing.
      * If it is not such a case, we update the field with the new value.
      */
-    useLayoutEffect(() => {
+    useEffect(() => {
         const value = params.getValue();
         const el = getEl();
         if (!el) {
