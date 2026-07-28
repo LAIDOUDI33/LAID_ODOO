@@ -41,18 +41,29 @@ export class TableOfContentManager {
             return;
         }
         const { target } = heading;
-        let offset = 0;
         const scrollable = closestScrollableY(target);
-        for (const el of scrollable.children) {
-            const { position, top, height } = getComputedStyle(el);
-            if (position === "sticky" && parseInt(top) === 0) {
-                offset = Math.max(offset, parseInt(height));
+        if (scrollable) {
+            let offset = 0;
+            for (const el of scrollable.children) {
+                const { position, top, height } = getComputedStyle(el);
+                if (position === "sticky" && parseInt(top) === 0) {
+                    offset = Math.max(offset, parseInt(height));
+                }
             }
+            const { top, bottom } = scrollable.getBoundingClientRect();
+            // calculate offset to scroll element to middle of screen
+            offset += (bottom - top) / 2;
+            const targetY = target.getBoundingClientRect().y;
+
+            scrollTo(target, {
+                behavior: "smooth",
+                // check if target is above or below from current position
+                offset: targetY > 0 ? offset : -offset,
+            }).then(() => {
+                // Scroll again in case we actually went downwards.
+                scrollTo(target, { behavior: "smooth" });
+            });
         }
-        scrollTo(target, { behavior: "smooth", offset: -offset }).then(() => {
-            // Scroll again in case we actually went downwards.
-            scrollTo(target, { behavior: "smooth" });
-        });
         target.classList.add("o_embedded_toc_header_highlight");
         window.setTimeout(() => {
             target.classList.remove("o_embedded_toc_header_highlight");
