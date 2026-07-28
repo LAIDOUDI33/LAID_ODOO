@@ -6,13 +6,12 @@ import { useRecordObserver } from "@web/model/relational_model/utils";
 import { standardFieldProps } from "@web/views/fields/standard_field_props";
 import {
     Component,
-    onWillUpdateProps,
-    onWillStart,
     onWillDestroy,
     props,
     proxy,
     signal,
     t,
+    useEffect,
 } from "@odoo/owl";
 
 function formatMinutes(value) {
@@ -48,21 +47,11 @@ export class MrpTimer extends Component {
             duration: this.props.value,
         });
         this.lastDateTime = Date.now();
-        this.ongoing = this.props.ongoing;
-        onWillStart(() => {
-            if (this.ongoing) {
-                this._runTimer();
-                this._runSleepTimer();
-            }
-        });
-        onWillUpdateProps((nextProps) => {
-            const rerun = !this.ongoing && nextProps.ongoing;
-            this.ongoing = nextProps.ongoing;
-            if (rerun) {
-                this.state.duration = nextProps.value;
-                this._runTimer();
-                this._runSleepTimer();
-            }
+        useEffect(() => {
+            this.ongoing = this.props.ongoing;
+            this.state.duration = this.props.value;
+            this._runTimer();
+            this._runSleepTimer();
         });
         onWillDestroy(() => clearTimeout(this.timer));
     }

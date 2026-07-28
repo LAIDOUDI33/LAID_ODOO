@@ -1,4 +1,4 @@
-import { Component, onWillUpdateProps, props, proxy, t } from "@odoo/owl";
+import { Component, props, proxy, t, useEffect } from "@odoo/owl";
 import { useBus } from "@web/core/utils/hooks";
 import { MoOverviewLine } from "../mo_overview_line/mrp_mo_overview_line";
 import { MoOverviewOperationsBlock } from "../mo_overview_operations_block/mrp_mo_overview_operations_block";
@@ -44,9 +44,9 @@ export class MoOverviewComponentsBlock extends Component {
 
         useBus(this.env.overviewBus, "unfold-all", () => this.unfoldAll());
 
-        onWillUpdateProps(newProps => {
+        useEffect(()=>{
             // Update the fold indexes so it matches the newly added lines.
-            this.state.fold = { ...this.getIndexStates(newProps), ...this.state.fold };
+            this.state.fold = { ...this.getIndexStates(this.props), ...this.state.fold };
         });
     }
 
