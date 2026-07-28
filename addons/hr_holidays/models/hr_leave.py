@@ -902,6 +902,14 @@ Versions:
         if any(not vals.get('employee_id') for vals in vals_list):
             raise UserError(_("There is no employee set on the time off. Please make sure you're logged in the correct company."))
         holidays = super(HrLeave, self.with_context(mail_create_nosubscribe=True)).create(vals_list)
+
+        for holiday in holidays:
+            if holiday.leave_type_support_document and not holiday.supported_attachment_ids and holiday.state in ['confirm', 'validate1', 'validate']:
+                raise ValidationError(_(
+                    "You must attach a supporting document to submit a time off request for the leave type %(leave_type)s.",
+                    leave_type=holiday.holiday_status_id.name
+                ))
+
         holidays._check_validity()
         self.env['hr.leave.allocation'].invalidate_model(['leaves_taken', 'max_leaves'])  # missing dependency on compute
 
@@ -926,6 +934,7 @@ Versions:
 
     def write(self, vals):
         values = vals
+        old_states = {holiday.id: holiday.state for holiday in self}
         is_officer = self.env.user.has_group('hr_holidays.group_hr_holidays_user') or self.env.is_superuser()
         if not is_officer and values.keys() - {'attachment_ids', 'supported_attachment_ids', 'message_main_attachment_id'}:
             if any(hol.date_from.date() < fields.Date.today() and hol.employee_id.leave_manager_id != self.env.user
@@ -956,6 +965,22 @@ Versions:
             if 'date_to' in values:
                 values['request_date_to'] = values['date_to']
         result = super().write(values)
+
+        if 'state' in values:
+            active_states = ['confirm', 'validate1', 'validate']
+
+            for holiday in self:
+                if holiday.leave_type_support_document and not holiday.supported_attachment_ids:
+                    old_state = old_states.get(holiday.id)
+                    new_state = holiday.state
+                    if new_state in active_states:
+                        is_moving_forward = old_state not in active_states or active_states.index(new_state) > active_states.index(old_state)
+                        if is_moving_forward:
+                            raise ValidationError(_(
+                                "You must attach a supporting document to submit or approve a time off request for the leave type %(leave_type)s.",
+                                leave_type=holiday.holiday_status_id.name
+                            ))
+
         if any(field in values for field in ['request_date_from', 'date_from', 'request_date_from', 'date_to', 'holiday_status_id', 'employee_id', 'state']):
             if not values.get('state') or values.get('state') not in ('refuse', 'cancel'):
                 self._check_validity()
