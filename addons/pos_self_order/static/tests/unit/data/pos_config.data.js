@@ -8,6 +8,12 @@ patch(PosConfig.prototype, {
         records[0]._self_ordering_image_home_ids = [];
         return records;
     },
+    get_pos_qr_order_data(self) {
+        return {
+            success: false,
+            error: "INVALID_SELF_ORDERING_MODE",
+        };
+    },
 });
 
 PosConfig._records = PosConfig._records.map((record) => ({
