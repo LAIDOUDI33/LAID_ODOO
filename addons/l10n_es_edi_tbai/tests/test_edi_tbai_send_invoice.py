@@ -3,7 +3,15 @@ from unittest.mock import patch
 from odoo.exceptions import UserError
 from odoo.tests import tagged
 
+<<<<<<< c614653fccad5468d0f69a35322db8f75a38ca73
 from .common import TestEsEdiTbaiCommonGipuzkoa
+||||||| 4f071f910dafdf5260cc9081d853591bc7d2a3d6
+from .common import TestEsEdiTbaiCommonGipuzkoa
+import base64
+=======
+from .common import TestEsEdiTbaiCommonGipuzkoa, mock_tbai_agency_request
+import base64
+>>>>>>> 519dcca935638edf0b0b4353ed2cdde3e1881d20
 from lxml import etree
 
 
@@ -19,10 +27,7 @@ class TestSendAndPrintEdiGipuzkoa(TestEsEdiTbaiCommonGipuzkoa):
         self.assertFalse(invoice.l10n_es_tbai_post_document_id.xml_attachment_id)
 
         # Post with success
-        with patch(
-            'odoo.addons.l10n_es_edi_tbai.models.l10n_es_edi_tbai_document.requests.Session.request',
-            return_value=self.mock_response_post_invoice_success,
-        ):
+        with mock_tbai_agency_request(self.mock_response_post_invoice_success):
             invoice_send_wizard.action_send_and_print()
 
         self.assertEqual(invoice.l10n_es_tbai_state, 'sent')
@@ -34,10 +39,7 @@ class TestSendAndPrintEdiGipuzkoa(TestEsEdiTbaiCommonGipuzkoa):
         self.assertFalse(invoice.l10n_es_tbai_cancel_document_id.xml_attachment_id)
 
         # Cancel with success
-        with patch(
-            'odoo.addons.l10n_es_edi_tbai.models.l10n_es_edi_tbai_document.requests.Session.request',
-            return_value=self.mock_response_cancel_invoice_success,
-        ):
+        with mock_tbai_agency_request(self.mock_response_cancel_invoice_success):
             invoice.l10n_es_tbai_cancel()
 
         self.assertEqual(invoice.l10n_es_tbai_state, 'cancelled')
@@ -54,10 +56,7 @@ class TestSendAndPrintEdiGipuzkoa(TestEsEdiTbaiCommonGipuzkoa):
         # In a non-test environment, the changes would be commited before raising the UserError,
         # here we have to catch it in order to keep them.
         try:
-            with patch(
-                'odoo.addons.l10n_es_edi_tbai.models.l10n_es_edi_tbai_document.requests.Session.request',
-                return_value=self.mock_response_failure,
-            ):
+            with mock_tbai_agency_request(self.mock_response_failure):
                 invoice_send_wizard.action_send_and_print()
             raise AssertionError("A UserError should have been raised.")
 
@@ -70,10 +69,7 @@ class TestSendAndPrintEdiGipuzkoa(TestEsEdiTbaiCommonGipuzkoa):
         failed_document_id = invoice.l10n_es_tbai_post_document_id.id
 
         # Post with success
-        with patch(
-            'odoo.addons.l10n_es_edi_tbai.models.l10n_es_edi_tbai_document.requests.Session.request',
-            return_value=self.mock_response_post_invoice_success,
-        ):
+        with mock_tbai_agency_request(self.mock_response_post_invoice_success):
             invoice_send_wizard.action_send_and_print()
 
         self.assertNotEqual(invoice.l10n_es_tbai_post_document_id.id, failed_document_id)
@@ -88,18 +84,12 @@ class TestSendAndPrintEdiGipuzkoa(TestEsEdiTbaiCommonGipuzkoa):
         invoice_send_wizard = self._get_invoice_send_wizard(invoice)
 
         # Post with success
-        with patch(
-            'odoo.addons.l10n_es_edi_tbai.models.l10n_es_edi_tbai_document.requests.Session.request',
-            return_value=self.mock_response_post_invoice_success,
-        ):
+        with mock_tbai_agency_request(self.mock_response_post_invoice_success):
             invoice_send_wizard.action_send_and_print()
 
         # Cancel with error
         try:
-            with patch(
-                'odoo.addons.l10n_es_edi_tbai.models.l10n_es_edi_tbai_document.requests.Session.request',
-                return_value=self.mock_response_failure,
-            ):
+            with mock_tbai_agency_request(self.mock_response_failure):
                 invoice.l10n_es_tbai_cancel()
             raise AssertionError("A UserError should have been raised.")
 
@@ -111,10 +101,7 @@ class TestSendAndPrintEdiGipuzkoa(TestEsEdiTbaiCommonGipuzkoa):
         failed_document_id = invoice.l10n_es_tbai_cancel_document_id.id
 
         # Cancel with success
-        with patch(
-            'odoo.addons.l10n_es_edi_tbai.models.l10n_es_edi_tbai_document.requests.Session.request',
-            return_value=self.mock_response_cancel_invoice_success,
-        ):
+        with mock_tbai_agency_request(self.mock_response_cancel_invoice_success):
             invoice.l10n_es_tbai_cancel()
 
         self.assertNotEqual(invoice.l10n_es_tbai_cancel_document_id.id, failed_document_id)
@@ -146,10 +133,7 @@ class TestSendAndPrintEdiGipuzkoa(TestEsEdiTbaiCommonGipuzkoa):
         chain_index = invoice.l10n_es_tbai_chain_index
 
         # Post with success
-        with patch(
-            'odoo.addons.l10n_es_edi_tbai.models.l10n_es_edi_tbai_document.requests.Session.request',
-            return_value=self.mock_response_post_invoice_success,
-        ):
+        with mock_tbai_agency_request(self.mock_response_post_invoice_success):
             invoice_send_wizard.action_send_and_print()
 
         self.assertEqual(invoice.l10n_es_tbai_post_document_id.id, pending_document_id)
@@ -164,10 +148,7 @@ class TestSendAndPrintEdiGipuzkoa(TestEsEdiTbaiCommonGipuzkoa):
         invoice_send_wizard = self._get_invoice_send_wizard(invoice)
 
         # Post with success
-        with patch(
-            'odoo.addons.l10n_es_edi_tbai.models.l10n_es_edi_tbai_document.requests.Session.request',
-            return_value=self.mock_response_post_invoice_success,
-        ):
+        with mock_tbai_agency_request(self.mock_response_post_invoice_success):
             invoice_send_wizard.action_send_and_print()
 
         # Cancel with request error
@@ -187,10 +168,7 @@ class TestSendAndPrintEdiGipuzkoa(TestEsEdiTbaiCommonGipuzkoa):
         pending_document_id = invoice.l10n_es_tbai_cancel_document_id.id
 
         # Cancel with success
-        with patch(
-            'odoo.addons.l10n_es_edi_tbai.models.l10n_es_edi_tbai_document.requests.Session.request',
-            return_value=self.mock_response_cancel_invoice_success,
-        ):
+        with mock_tbai_agency_request(self.mock_response_cancel_invoice_success):
             invoice.l10n_es_tbai_cancel()
 
         self.assertEqual(invoice.l10n_es_tbai_cancel_document_id.id, pending_document_id)
@@ -203,10 +181,7 @@ class TestSendAndPrintEdiGipuzkoa(TestEsEdiTbaiCommonGipuzkoa):
         invoice = self._create_posted_invoice()
         invoice_send_wizard = self._get_invoice_send_wizard(invoice)
 
-        with patch(
-            'odoo.addons.l10n_es_edi_tbai.models.l10n_es_edi_tbai_document.requests.Session.request',
-            return_value=self.mock_response_post_invoice_success,
-        ):
+        with mock_tbai_agency_request(self.mock_response_post_invoice_success):
             invoice_send_wizard.action_send_and_print()
 
             reversal = self.env['account.move.reversal'].with_context(
@@ -234,10 +209,7 @@ class TestSendAndPrintEdiGipuzkoa(TestEsEdiTbaiCommonGipuzkoa):
         invoice = self._create_posted_invoice()
 
         invoice_send_wizard = self._get_invoice_send_wizard(invoice)
-        with patch(
-            'odoo.addons.l10n_es_edi_tbai.models.l10n_es_edi_tbai_document.requests.Session.request',
-            return_value=self.mock_response_post_invoice_success,
-        ):
+        with mock_tbai_agency_request(self.mock_response_post_invoice_success):
             invoice_send_wizard.action_send_and_print()
 
         self.assertEqual(invoice.l10n_es_tbai_state, 'sent')
