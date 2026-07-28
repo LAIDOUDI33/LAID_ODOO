@@ -158,12 +158,19 @@ def _mock_can_connect(func, self, *args, **kwargs):
     }
 
 
+def _mock_authorize_sg_corppass(func, self, *args, **kwargs):
+    # Unreachable in practice: `_mock_can_connect` never sets `available_auths`, so the
+    # "Authenticate with CorpPass" button is never shown in demo mode. Kept for safety.
+    return {'error': 'sgnic_unavailable'}
+
+
 _demo_behaviour = {
     '_call_peppol_proxy': _mock_call_peppol_proxy,  # account_edi_proxy_client.user
     '_get_peppol_verification_state': _mock_get_peppol_verification_state,  # res.partner
     '_check_peppol_participant_exists': _mock_check_peppol_participant_exists,  # res.partner
     '_create_connection': _mock_create_connection,  # peppol.registration
     '_can_connect': _mock_can_connect,  # peppol.registration
+    '_authorize_sg_corppass': _mock_authorize_sg_corppass,  # peppol.registration
     '_peppol_deregister_participant': _mock_peppol_deregister_participant,  # account_edi_proxy_client.user
 }
 
