@@ -16,7 +16,6 @@ L10N_SA_DOCUMENT_STATES = [
     ('accepted', "Accepted"),
     ('warning', "Accepted (warning(s))"),
     ('rejected', "Rejected"),
-    ('error', "Error"),
     ('unknown', "Unknown"),
 ]
 
@@ -37,13 +36,6 @@ class L10nSaEdiDocument(models.Model):
     state = fields.Selection(string="ZATCA State", readonly=True, selection=L10N_SA_DOCUMENT_STATES)
     message = fields.Html("ZATCA Errors/Warnings", translate=True, help="Detailed Errors/Warnings")
     content = fields.Binary(compute="_compute_content")
-    l10n_sa_edi_chain_head_id = fields.Many2one(
-        comodel_name='l10n_sa_edi.document',
-        string="ZATCA chain stopping document",
-        copy=False,
-        readonly=True,
-        help="Technical field to know if the chain has been stopped by a previous invoice",
-    )
     l10n_sa_chain_index = fields.Integer(
         string="ZATCA chain index", copy=False, readonly=True,
         help="Invoice index in chain, set if and only if an in-chain XML was submitted and did not error",
@@ -267,7 +259,7 @@ class L10nSaEdiDocument(models.Model):
         if self.resource.l10n_sa_invoice_type == 'simplified':
             # if invoice is B2C, it is a SIMPLIFIED invoice, and thus it is only reported and returns
             # no signed invoice. In this case, we just return the original content
-            return signed_xml.decode()
+            return signed_xml
         return b64decode(clearance_data['clearedInvoice']).decode()
 
     def _l10n_sa_apply_qr_code(self, xml_content):
@@ -291,13 +283,13 @@ class L10nSaEdiDocument(models.Model):
             return self._l10n_sa_apply_qr_code(signed_xml)
         return signed_xml
 
-    def _l10n_sa_export_zatca_invoice(self, xml_content=None):
+    def _l10n_sa_export_zatca_invoice(self, xml_content=None, presigned=False):
         """
         Generate a ZATCA compliant UBL file, make API calls to authenticate, sign and include QR Code and
         Cryptographic Stamp, then create an attachment with the final contents of the UBL file
         """
         # Prepare UBL invoice values and render XML file
-        unsigned_xml = xml_content or self.resource._l10n_sa_generate_zatca_template()
+        xml_str = xml_content or self.resource._l10n_sa_generate_zatca_template()
 
         # Load PCISD data and certificate
         try:
@@ -306,14 +298,18 @@ class L10nSaEdiDocument(models.Model):
             return ({
                 'error': e.args[0],
                 'blocking_level': 'error',
-                'response': unsigned_xml,
-            }, unsigned_xml)
+                'response': xml_str,
+            }, xml_str)
 
         certificate_sudo = self.env['certificate.certificate'].sudo().browse(certificate)
 
+        if presigned:
+            # If the invoice is presigned, we skip the signing step and just resubmit it to ZATCA as-is
+            return self._l10n_sa_submit_einvoice(xml_str.encode(), PCSID_data), xml_str
+
         # Apply Signature/QR code on the generated XML document
         try:
-            signed_xml = self._l10n_sa_get_signed_xml(unsigned_xml, certificate_sudo)
+            signed_xml = self._l10n_sa_get_signed_xml(xml_str, certificate_sudo)
         except UserError:
             _logger.warning(
                 "ZATCA_ERROR: ZATCA signing failed for %s=%s (id=%s, journal_id=%s, company_id=%s, api_mode=%s)",
@@ -327,11 +323,11 @@ class L10nSaEdiDocument(models.Model):
             return ({
                 'error': self.env._("Something went wrong. Please retry, and if that does not work, then onboard the journal again."),
                 'blocking_level': 'error',
-                'response': unsigned_xml,
-            }, unsigned_xml)
+                'response': xml_str,
+            }, xml_str)
 
         # Once the XML content has been generated and signed, we submit it to ZATCA
-        return self._l10n_sa_submit_einvoice(signed_xml, PCSID_data), signed_xml
+        return self._l10n_sa_submit_einvoice(signed_xml, PCSID_data), signed_xml.decode()
 
     def _l10n_sa_generate_attachment(self, content, is_rejected=False):
         name = self.env['account.edi.xml.ubl_21.zatca']._export_invoice_filename(self.resource)
@@ -349,26 +345,10 @@ class L10nSaEdiDocument(models.Model):
             'mimetype': 'application/xml',
         })
 
-    def _l10n_sa_check_chain_prerequisites(self, notify):
-        """Check if chain head was sent successfuly and current document was not already successfuly sent"""
-        self.ensure_one()
-        chain_head = self._l10n_sa_get_chain_head()
-        if chain_head and chain_head != self and not chain_head._l10n_sa_is_in_chain():
-            # Chain integrity check: chain head must have been REALLY posted, and did not time out
-            # When a submission times out, we reset the chain index of the invoice to False, so it has to be submitted again
-            # According to ZATCA, if we end up submitting the same invoice more than once, they will directly reach out
-            # to the taxpayer for clarifications
-            self.l10n_sa_edi_chain_head_id = chain_head
-            self.state = 'error'
-            self.message = self.env._("Error: This invoice is blocked due to %s. Please check it.", chain_head.resource.name)
-            self._l10n_sa_create_log(notify)
-            return False
-
-        return True
-
     def _l10n_sa_handle_submission_error(self, response_data, xml_content, notify):
         # Check for submission errors
         title = subtitle = content = attachment = False
+        update_hash = False
 
         # Failed to receive a response from ZATCA
         if response_data.get("excepted"):
@@ -379,14 +359,13 @@ class L10nSaEdiDocument(models.Model):
 
         # Rejection Response
         elif response_data.get('rejected'):
-            attachment = self._l10n_sa_generate_attachment(xml_content.encode(), True)
+            attachment = self._l10n_sa_generate_attachment(xml_content, True)
             title = self.env._("Error: Invoice rejected by ZATCA")
             subtitle = self.env._("Please check the details below and retry after addressing them:")
             content = response_data['error']
             self.state = 'rejected'
-            self.journal_id.l10n_sa_latest_submission_hash = self.env['account.edi.xml.ubl_21.zatca']._l10n_sa_generate_invoice_xml_hash(xml_content)
             self.l10n_sa_chain_index = False
-            self.env['l10n_sa_edi.document'].search([('l10n_sa_edi_chain_head_id', '=', self.id)]).l10n_sa_edi_chain_head_id = False  # Reset invoices blocked by this since rejections aren't blocking
+            update_hash = True
 
         else:
             # if there is an error, but no exception or rejection in the response
@@ -395,6 +374,15 @@ class L10nSaEdiDocument(models.Model):
             subtitle = self.env._("Please check the details below and retry after addressing them:")
             content = response_data['error']
             self.state = 'unknown'
+
+        if self.state == 'unknown' and not self.attachment_id:
+            # If the document is in 'unknown' state, store the attachment for future resubmission,
+            # and update the journal's latest submission hash
+            self.attachment_id = self._l10n_sa_generate_attachment(xml_content)
+            update_hash = True
+
+        if update_hash:
+            self.journal_id.l10n_sa_latest_submission_hash = self.env['account.edi.xml.ubl_21.zatca']._l10n_sa_generate_invoice_xml_hash(xml_content)
 
         self.message = f"{title or ''}\n{subtitle or ''}\n{content or ''}\n"
         self._l10n_sa_create_log(notify, attachment)
@@ -445,7 +433,6 @@ class L10nSaEdiDocument(models.Model):
             self.message = self.env._("Success: Invoice accepted by ZATCA")
             self.state = 'accepted'
 
-        self.env['l10n_sa_edi.document'].search([('l10n_sa_edi_chain_head_id', '=', self.id)]).l10n_sa_edi_chain_head_id = False  # Reset invoices blocked by this invoice
         self.journal_id.l10n_sa_latest_submission_hash = self.env['account.edi.xml.ubl_21.zatca']._l10n_sa_generate_invoice_xml_hash(cleared_xml.encode())
         self.attachment_id = self._l10n_sa_generate_attachment(cleared_xml.encode())
         self._l10n_sa_create_log(notify)
@@ -460,22 +447,19 @@ class L10nSaEdiDocument(models.Model):
         except LockError:
             raise UserError(self.env._('This document is being processed already.'))
 
-        if not self._l10n_sa_check_chain_prerequisites(notify):
-            return
-
-        if not self.l10n_sa_chain_index:
+        # If the document is in 'unknown' state, it means that the invoice XML content was generated and stored,
+        # but no response was retrieved from ZATCA. In this case, we resend the same XML content to ZATCA, without
+        # regenerating a new XML with a new ICV, which would cause chaining issues with ZATCA.
+        if self.state == 'unknown':
+            response_data, submitted_xml = self._l10n_sa_export_zatca_invoice(self.attachment_id.raw.decode(), presigned=True)
+        else:
+            # For Fresh invoice, assign new ICV, generate XML, store hash
             self.l10n_sa_chain_index = self.journal_id._l10n_sa_edi_get_next_chain_index()
-
-        # Generate XML, sign it, then submit it to ZATCA
-        xml_content = self.resource._l10n_sa_generate_unsigned_data()
-        response_data, submitted_xml = self._l10n_sa_export_zatca_invoice(xml_content)
+            xml_content = self.resource._l10n_sa_generate_unsigned_data()
+            response_data, submitted_xml = self._l10n_sa_export_zatca_invoice(xml_content)
 
         # Check for submission errors
-        self._l10n_sa_handle_submission_error(response_data, xml_content, notify) if response_data.get('error') else self._l10n_sa_handle_submission_success(response_data, submitted_xml, notify)
-
-    def _l10n_sa_get_chain_head(self):
-        self.ensure_one()
-        return self.journal_id._l10n_sa_get_last_posted_doc()
+        self._l10n_sa_handle_submission_error(response_data, submitted_xml.encode(), notify) if response_data.get('error') else self._l10n_sa_handle_submission_success(response_data, submitted_xml, notify)
 
     def _l10n_sa_is_in_chain(self):
         """
