@@ -10,6 +10,7 @@ export class ProductCardTracking extends Interaction {
     };
 
     onSelectItem(event) {
+        // Quick-add "Add to Cart" buttons inside cards must not also fire select_item.
         if (event.target.closest("button")) return;
         const { item_list_name, ...trackingInfo } = JSON.parse(
             this.el.dataset.productTrackingInfo

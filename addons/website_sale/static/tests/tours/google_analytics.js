@@ -38,6 +38,7 @@ function patchTracking() {
         },
         onAddToCart(event) {
             const productsTrackingInfo = event.detail;
+            if (!productsTrackingInfo.items?.length) return;
             document.body.setAttribute("cart-event-id", productsTrackingInfo.items[0].item_id);
         },
         onUpdateCart(event) {

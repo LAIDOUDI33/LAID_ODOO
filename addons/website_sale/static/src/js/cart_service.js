@@ -494,7 +494,7 @@ export class CartService {
         if (!data) {
             return 0;
         }
-        if (data.quantity) {
+        if (data.quantity && data.tracking_info?.length) {
             wSaleUtils.dispatchTrackingEvent("add_to_cart_event", {
                 currency: data.currency,
                 items: data.tracking_info,

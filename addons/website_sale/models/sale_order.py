@@ -316,19 +316,11 @@ class SaleOrder(models.Model):
         self.ensure_one()
         return {
             "currency": self.currency_id.name,
-            "value": self._get_order_tracking_value(),
+            "value": self.currency_id.round(
+                sum(line.price_subtotal for line in self._get_order_tracking_lines())
+            ),
             "items": self._get_order_tracking_items(),
         }
-
-    def _get_order_tracking_value(self):
-        """Return the GA4 event value for the order, sum of item subtotals excluding delivery.
-
-        :rtype: float
-        """
-        self.ensure_one()
-        return self.currency_id.round(
-            sum(line.price_subtotal for line in self._get_order_tracking_lines())
-        )
 
     def _get_order_tracking_items(self):
         """Return GA4 items array for an order.
@@ -338,28 +330,8 @@ class SaleOrder(models.Model):
         self.ensure_one()
         items = []
         for line in self._get_order_tracking_lines():
-            price_unit_taxexcl = line.tax_ids.compute_all(
-                line.price_unit,
-                currency=line.currency_id,
-                quantity=1,
-                product=line.product_id,
-                partner=line.order_id.partner_shipping_id,
-            )["total_excluded"]
-            tracking_data = line.product_id.product_tmpl_id._get_google_analytics_data(
-                line.product_id,
-                {
-                    "combination": line.product_id.product_template_attribute_value_ids
-                    | line.product_no_variant_attribute_value_ids,
-                    "display_name": line.product_id.with_context(
-                        display_default_code=False
-                    ).display_name,
-                    "currency": line.currency_id,
-                    "price": line.price_reduce_taxexcl,
-                    "list_price": price_unit_taxexcl,
-                },
-            )
+            tracking_data = self._get_order_line_tracking_data(line)
             items.append({**tracking_data, "quantity": line.product_uom_qty})
-
         return items
 
     def _get_order_tracking_lines(self):
@@ -369,6 +341,33 @@ class SaleOrder(models.Model):
         """
         self.ensure_one()
         return self.order_line.filtered(lambda line: not line.is_delivery and line.product_id)
+
+    def _get_order_line_tracking_data(self, line):
+        """Build a GA4 tracking dict for a single order line.
+
+        :param line: a `sale.order.line` record
+        :rtype: dict
+        """
+        price_unit_taxexcl = line.tax_ids.compute_all(
+            line.price_unit,
+            currency=line.currency_id,
+            quantity=1,
+            product=line.product_id,
+            partner=line.order_id.partner_id,
+        )["total_excluded"]
+        return line.product_id.product_tmpl_id._get_google_analytics_data(
+            line.product_id,
+            {
+                "combination": line.product_id.product_template_attribute_value_ids
+                | line.product_no_variant_attribute_value_ids,
+                "display_name": line.product_id.with_context(
+                    display_default_code=False
+                ).display_name,
+                "currency": line.currency_id,
+                "price": line.price_reduce_taxexcl,
+                "list_price": price_unit_taxexcl,
+            },
+        )
 
     def _get_cart_lines_tracking_info(self, line_ids, added_qty_per_line=None):
         """Get GA4 tracking data for specific cart lines with delta quantities.
@@ -385,26 +384,7 @@ class SaleOrder(models.Model):
             delta = added_qty_per_line.get(line.id, line.product_uom_qty)
             if not delta:
                 continue
-            price_unit_taxexcl = line.tax_ids.compute_all(
-                line.price_unit,
-                currency=line.currency_id,
-                quantity=1,
-                product=line.product_id,
-                partner=line.order_id.partner_shipping_id,
-            )["total_excluded"]
-            tracking_data = line.product_id.product_tmpl_id._get_google_analytics_data(
-                line.product_id,
-                {
-                    "combination": line.product_id.product_template_attribute_value_ids
-                    | line.product_no_variant_attribute_value_ids,
-                    "display_name": line.product_id.with_context(
-                        display_default_code=False
-                    ).display_name,
-                    "currency": line.currency_id,
-                    "price": line.price_reduce_taxexcl,
-                    "list_price": price_unit_taxexcl,
-                },
-            )
+            tracking_data = self._get_order_line_tracking_data(line)
             # delta_quantity: used by tracking.js to route add_to_cart (positive)
             # vs remove_from_cart (negative) events, stripped before reaching GA4.
             result.append({
@@ -601,9 +581,13 @@ class SaleOrder(models.Model):
             "line_id": order_line.id,
             "quantity": quantity,
             "warning": warning,
-            "tracking_info": self._get_cart_lines_tracking_info(
-                [order_line.id] if order_line else [],
-                {order_line.id: quantity} if order_line else {},
+            "tracking_info": (
+                self._get_cart_lines_tracking_info(
+                    [order_line.id] if order_line else [],
+                    {order_line.id: quantity} if order_line else {},
+                )
+                if self.website_id.google_analytics_key
+                else []
             ),
         }
 
@@ -708,19 +692,24 @@ class SaleOrder(models.Model):
         added_qty = quantity - order_line.product_uom_qty  # new_qty - old_qty
 
         # Capture tracking before deletion since the line will no longer exist after.
-        if quantity == 0:
-            tracking_info = self._get_cart_lines_tracking_info(
-                [order_line.id], {order_line.id: -order_line.product_uom_qty}
+        if quantity <= 0:
+            tracking_info = (
+                self._get_cart_lines_tracking_info(
+                    [order_line.id], {order_line.id: -order_line.product_uom_qty}
+                )
+                if self.website_id.google_analytics_key
+                else []
             )
 
         order_line = self._cart_update_order_line(order_line, quantity, **kwargs)
         if not self.env.context.get("skip_cart_verification"):
             self._verify_cart_after_update()
 
-        if quantity != 0:
-            tracking_info = self._get_cart_lines_tracking_info(
-                [order_line.id] if order_line else [],
-                {order_line.id: added_qty} if order_line else {},
+        if quantity > 0:
+            tracking_info = (
+                self._get_cart_lines_tracking_info([order_line.id], {order_line.id: added_qty})
+                if self.website_id.google_analytics_key
+                else []
             )
 
         return {

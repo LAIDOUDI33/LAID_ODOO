@@ -37,10 +37,12 @@ export class SaleOrderPortalReorder extends Interaction {
             // since `website_sale_cart_quantity` updates only via the cart service.
             browser.sessionStorage.setItem('website_sale_cart_quantity', values.cart_quantity);
 
-            wSaleUtils.dispatchTrackingEvent("add_to_cart_event", {
-                currency: values.currency,
-                items: values.tracking_info,
-            });
+            if (values.tracking_info?.length) {
+                wSaleUtils.dispatchTrackingEvent("add_to_cart_event", {
+                    currency: values.currency,
+                    items: values.tracking_info,
+                });
+            }
             redirect('/shop/cart');
         } catch (error) {
             console.error("Error during reordering:", error);

@@ -30,6 +30,7 @@ export class Tracking extends Interaction {
         const cartTrackingEl = this.el.querySelector("#cart_tracking_info");
         if (cartTrackingEl?.dataset?.cartTrackingInfo) {
             const cartTrackingData = JSON.parse(cartTrackingEl.dataset.cartTrackingInfo);
+            // coupon added by website_sale_loyalty for begin_checkout; not part of view_cart spec.
             delete cartTrackingData.coupon;
             this._trackGa(
                 "event",
