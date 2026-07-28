@@ -62,7 +62,7 @@ class WebsiteSaleVisitorTests(WebsiteSaleCommon):
             len(new_tracks), 3, "New tracks should be created after visiting other tracked products"
         )
 
-    def test_dynamic_filter_newest_products(self):
+    def test_dynamic_filter_newest_arrivals(self):
         """Test that a product is not displayed anymore after
         changing it company.
         """
@@ -73,7 +73,7 @@ class WebsiteSaleVisitorTests(WebsiteSaleCommon):
             "website_published": True,
             "sale_ok": True,
         })
-        snippet_filter = self.env.ref("website_sale.dynamic_filter_newest_products").with_context(website_id=self.website.id)
+        snippet_filter = self.env.ref("website_sale.dynamic_filter_newest_arrivals").with_context(website_id=self.website.id)
 
         with self.mock_request():
             res = snippet_filter._prepare_values(limit=16, search_domain=[])
