@@ -88,20 +88,26 @@ class ProductCatalogMixin(models.AbstractModel):
         """
         res = {}
 
-        price_type = self and self._get_product_price_type()
-        prices = (
-            products._price_compute(price_type, currency=self._get_catalog_currency())
-            if price_type
-            else {}
-        )
+        default_prices = self._get_default_prices(products, **kwargs)
         catalog_is_readonly = bool(self and self._is_readonly())
         for product in products:
             res[product.id] = {
                 "quantity": 0,
-                "readOnly": catalog_is_readonly,
-                **({"price": prices[product.id]} if price_type else {}),
+                **({"readOnly": True} if catalog_is_readonly else {}),
+                **({"price": default_prices[product.id]} if product.id in default_prices else {}),
                 **self._get_product_catalog_product_data(product, **kwargs),
             }
+
+        return res
+
+    def _get_default_prices(self, products, **kwargs) -> dict:  # noqa: ARG002
+        res = {}
+        if not self or not self._show_prices():
+            return res
+
+        price_type = self._get_product_price_type()
+        if price_type:
+            res = products._price_compute(price_type, currency=self._get_catalog_currency())
 
         return res
 
@@ -110,7 +116,9 @@ class ProductCatalogMixin(models.AbstractModel):
         self.ensure_one()
         return False
 
-    # TODO disable price computation (and display) on model level (see showPrice in js)
+    def _show_prices(self) -> bool:
+        return True
+
     def _get_product_price_type(self) -> str:
         """Specify the price type that should be computed as product 'price' in the catalog."""
         self.ensure_one()
@@ -123,7 +131,6 @@ class ProductCatalogMixin(models.AbstractModel):
         :param dict kwargs: additional values forwarded to called methods.
         """
         return {
-            "productType": product.type,
             "code": product.code or "",
             **self._get_product_catalog_uom_data(product, product.uom_id, **kwargs),
         }
@@ -136,14 +143,12 @@ class ProductCatalogMixin(models.AbstractModel):
         :param dict kwargs: additional values available for overrides.
         """
         if not self.env["res.groups"]._is_feature_enabled("uom.group_uom"):
-            return {"uomId": uom.id}
+            return {}
 
         return {
-            "availableUoms": product._get_available_uoms().read(["name", "factor"]),
+            "availableUoms": product._get_available_uoms().read(["display_name", "factor"]),
             "uomId": uom.id,
-            "uomDisplayName": uom.display_name,
-            "productUomFactor": product.uom_id.factor / uom.factor,
-            "productUomDisplayName": product.uom_id.display_name,
+            "productUomId": product.uom_id.id,
         }
 
     def _get_product_catalog_record_lines(self, product_ids, child_field, **kwargs) -> dict:
@@ -161,7 +166,7 @@ class ProductCatalogMixin(models.AbstractModel):
         )
         return lines_to_consider.grouped("product_id")
 
-    def _update_order_line_info(self, product, quantity, uom, child_field, **kwargs) -> float:
+    def _update_order_line_info(self, product, quantity, uom, child_field, **kwargs) -> dict:
         """Update the line information for a given product or create a new one if none exists yet.
 
         :param object product: recordset of `product.product`.
@@ -170,7 +175,7 @@ class ProductCatalogMixin(models.AbstractModel):
         :param str child_field: name of the one2many field holding the catalog lines.
         :param dict kwargs: additional values forwarded to called methods.
 
-        :return: The unit price of the product to display in the catalog.
+        :return: The updated product data.
         """
         self.ensure_one()
         if self._is_readonly():
@@ -205,10 +210,16 @@ class ProductCatalogMixin(models.AbstractModel):
                 child_field, product, quantity, uom, **kwargs
             )
 
-        if catalog_line:
-            return catalog_line._get_catalog_unit_price(parent_record=self, **kwargs)
+        res = {}
+        if self._show_prices():
+            if catalog_line:
+                price = catalog_line._get_catalog_unit_price(parent_record=self, **kwargs)
+            else:
+                price = self._get_product_catalog_default_unit_price(product, uom, **kwargs)
 
-        return self._get_product_catalog_default_unit_price(product, uom, **kwargs)
+            res['price'] = price
+
+        return res
 
     def _catalog_create_new_line(self, child_field, product, quantity, uom, **kwargs):
         """Create a new product line according to the provided values."""

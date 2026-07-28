@@ -8,14 +8,14 @@
                 <span t-if="this.showPrice" t-out="this.price" class="o_product_catalog_price fw-bold me-4"/>
                 <span t-if="this.props.code" t-out="this.props.code" class="text-muted"/>
             </div>
-            <span t-if="this.displayPriceByProductUoM" class="d-flex text-muted small" t-out="`${this.productUnitPrice}/${this.props.productUomDisplayName}`"/>
+            <span t-if="this.displayPriceByProductUoM" class="d-flex text-muted small" t-out="`${this.productUnitPrice}/${this.productUomDisplayName}`"/>
         </Portal>
-        <div 
+        <div
             t-if="this.props.readOnly and this.props.warning"
             class="text-danger text-truncate my-2 pt-3 border-top">
             <i class="oi" data-icon="warning" t-att-title="this.props.warning"/>
-            <span 
-                class="px-1" 
+            <span
+                class="px-1"
                 t-att-title="this.props.warning"
                 t-out="this.props.warning"/>
         </div>
@@ -42,21 +42,25 @@
                     t-on-change="this.env.setQuantity"
                     t-on-focus="this._onFocus"
                 />
-                <select t-if="this.hasMultipleUoms"
+                <select
+                    t-if="this.hasMultipleUoms"
                     class="input-group-text form-select rounded-0"
                     t-att-style="this.uomSelectStyle"
                     t-on-change="this.onUomChange"
                 >
-                    <option t-foreach="this.props.availableUoms" t-as="uom" t-key="uom.id"
+                    <option
+                        t-foreach="this.props.availableUoms"
+                        t-as="uom"
+                        t-key="uom.id"
                         t-att-value="uom.id"
                         t-att-selected="uom.id === this.props.uomId"
-                        t-out="uom.name"
+                        t-out="uom.display_name"
                     />
                 </select>
                 <span
-                    t-elif="this.props.uomDisplayName"
+                    t-elif="this.isUoMFeatureEnabled"
                     class="input-group-text d-block rounded-0 text-truncate cursor-default"
-                    t-out="this.props.uomDisplayName" t-att-title="this.props.uomDisplayName"
+                    t-out="this.uomDisplayName" t-att-title="this.uomDisplayName"
                 />
                 <button
                     class="btn btn-primary border"
@@ -68,12 +72,12 @@
             </div>
             <t t-elif="this.props.warning">
                 <i class="oi text-warning" data-icon="warning" t-att-title="this.props.warning"/>
-                <span 
-                    class="text-truncate text-warning px-1" 
+                <span
+                    class="text-truncate text-warning px-1"
                     t-att-title="this.props.warning"
                     t-out="this.props.warning"/>
             </t>
-            <div 
+            <div
                 class="ms-auto o_product_catalog_buttons o_product_catalog_cancel_global_click"
                 style="min-width: max-content;">
                 <button t-if="!this.isInOrder()"

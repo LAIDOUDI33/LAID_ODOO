@@ -2642,18 +2642,17 @@ class SaleOrder(models.Model):
         # Disable the default price computation as the pricelist should be considered instead
         return ""
 
-    def _get_product_catalog_order_data(self, products, **kwargs):
-        res = super()._get_product_catalog_order_data(products, **kwargs)
-        prices = self.pricelist_id._get_products_price(
+    def _get_default_prices(self, products, **kwargs) -> dict:
+        if not self:
+            return {}
+
+        return self.pricelist_id._get_products_price(
             quantity=1.0,
             products=products,
             currency=self.currency_id,
             date=self.date_order,
             **kwargs,
         )
-        for product in products:
-            res[product.id]["price"] = prices.get(product.id)
-        return res
 
     def _is_readonly(self) -> bool:
         """Return whether the sale order is read-only or not based on the state or the lock status.
