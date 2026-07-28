@@ -96,6 +96,7 @@ class TestConfigManager(TransactionCase):
             'http_enable': True,
             'proxy_mode': False,
             'x_sendfile': False,
+            'dbsc': False,
 
             # web
             'dbfilter': '',
@@ -216,6 +217,7 @@ class TestConfigManager(TransactionCase):
             'http_enable': False,
             'proxy_mode': True,
             'x_sendfile': True,
+            'dbsc': False,
 
             # web
             'dbfilter': '.*',
@@ -342,6 +344,7 @@ class TestConfigManager(TransactionCase):
             'db_template': 'template0',
             'db_user': '',
             'dbfilter': '',
+            'dbsc': False,
             'demo': '{}',
             'email_from': '',
             'geoip_city_db': '/usr/share/GeoIP/GeoLite2-City.mmdb',
@@ -515,6 +518,7 @@ class TestConfigManager(TransactionCase):
             'http_enable': False,
             'proxy_mode': True,
             'x_sendfile': True,
+            'dbsc': False,
 
             # web
             'dbfilter': '.*',
@@ -646,6 +650,7 @@ class TestConfigManager(TransactionCase):
             'http_enable': False,
             'proxy_mode': True,
             'x_sendfile': True,
+            'dbsc': False,
 
             # web
             'dbfilter': '.*',

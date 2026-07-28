@@ -7,6 +7,7 @@ import re
 import threading
 import typing
 from contextlib import nullcontext
+from http import HTTPStatus
 from os.path import join as opj
 from urllib.parse import urlparse
 
@@ -21,6 +22,7 @@ from werkzeug.exceptions import (
 )
 from werkzeug.security import safe_join
 from werkzeug.urls import url_encode  # TODO: use urllib
+from werkzeug.wrappers import Response as WZ_Response  # To set cookie without env
 
 # TODO: drop the fallback
 try:
@@ -232,6 +234,39 @@ class Application:
 
         headers['Content-Security-Policy'] = "default-src 'none'"
 
+    def _get_dbsc_response(self) -> WZ_Response | None:
+        session = request.session
+
+        if (
+            # DBSC only for authenticated user
+            session.uid is None
+            # DBSC only for untrusted device
+            or get_device(session, request).get('trusted', True)
+            # Untrusted device can reach refresh endpoint
+            or request.httprequest.path == DBSC_URL_REFRESH
+        ):
+            # If a new device was detected and so mark the session dirty, it is
+            # not the role of the DBSC detection logic to write session.
+            session.is_dirty = False
+            return None
+
+        if not request.httprequest.cookies.get(DBSC_COOKIE_NAME):
+            # If the dbsc cookie is not present, it means that a redirect has been triggered.
+            # As a result, a refresh was attempted but failed (the private/public key failed).
+            # Without this check, we enter in a infinite loop of redirect with an untrusted device.
+            logout(session)
+            _logger.warning("Untrusted device detected for unbound session %s", session.sid[:8])
+            return None
+
+        _logger.warning("Untrusted device detected for bound session %s", session.sid[:8])
+
+        # Make a temporary redirect response to replay the same **deferred** request.
+        # Will be replay after a refresh.
+        response = WZ_Response("DBSC Re-authentication Required", status=HTTPStatus.TEMPORARY_REDIRECT)
+        response.headers['Location'] = request.httprequest.url
+        response.set_cookie(DBSC_COOKIE_NAME, '', max_age=0, **DBSC_COOKIE_ATTRIBUTES)  # Delete the DBSC cookie
+        return response
+
     def __call__(self, environ: WSGIEnvironment, start_response: StartResponse) -> Iterable[bytes]:
         """
         WSGI application entry point.
@@ -271,7 +306,10 @@ class Application:
                 _set_session_and_dbname(request)
                 current_thread.url = httprequest.url
 
-                if self.get_static_file(httprequest.path):
+                if response := self._get_dbsc_response():
+                    pass
+
+                elif self.get_static_file(httprequest.path):
                     response = serve_static(request)
                 elif request.db:
                     try:
@@ -608,5 +646,14 @@ from .requestlib import (
 from .response import Response
 from .retrying import retrying
 from .routing_map import ROUTING_KEYS, _generate_routing_rules
-from .session import SessionExpiredException, get_default_session, logout, session_store
+from .session import (
+    DBSC_COOKIE_ATTRIBUTES,
+    DBSC_COOKIE_NAME,
+    DBSC_URL_REFRESH,
+    SessionExpiredException,
+    get_default_session,
+    get_device,
+    logout,
+    session_store,
+)
 from .stream import STATIC_CACHE, Stream

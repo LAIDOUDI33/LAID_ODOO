@@ -259,6 +259,8 @@ class configmanager:
                          help="Activate X-Sendfile (apache) and X-Accel-Redirect (nginx) "
                               "HTTP response header to delegate the delivery of large "
                               "files (assets/attachments) to the web server.")
+        group.add_option("--dbsc", dest="dbsc", action="store_true", my_default=False,
+                         help="Activate Device Bound Session Credential.")
         parser.add_option_group(group)
 
         # WEB

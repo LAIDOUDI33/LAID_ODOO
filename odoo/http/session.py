@@ -17,7 +17,7 @@ from http import HTTPStatus
 from zlib import adler32
 
 from odoo.api import Environment
-from odoo.tools import config, consteq, get_lang
+from odoo.tools import config, consteq, frozendict, get_lang
 
 if typing.TYPE_CHECKING:
     from collections.abc import Iterable
@@ -70,9 +70,19 @@ used for calculating the csrf token and be stored inside the database.
 DEVICE_ACTIVITY_UPDATE_FREQUENCY = 3600  # 1 hour
 """ The frequency with which a device's activity is updated. """
 
+# DBSC API hardcoded values
+DBSC_COOKIE_ATTRIBUTES = frozendict(path='/', httponly=True, secure=True, samesite='Lax')
+DBSC_COOKIE_NAME = 'dbsc'
+DBSC_HEADER_REGISTRATION = 'Secure-Session-Registration'
+DBSC_HEADER_RESPONSE = 'Secure-Session-Response'
+DBSC_HEADER_SESSION_CHALLENGE = 'Secure-Session-Challenge'
+DBSC_HEADER_SESSION_ID = 'Sec-Secure-Session-Id'
+DBSC_URL_REFRESH = '/dbsc/refresh'
+DBSC_URL_REGISTRATION = '/dbsc/register'
+
 # TODO: remove `84` length when v18.4 is deprecated
 # This will invalidate sessions generated with the old sid generator
-_base64_urlsafe_re = re.compile(r'^[A-Za-z0-9_-]{84,86}$')
+_base64_urlsafe_re = re.compile(r'^[A-Za-z0-9_-]{84,86}(?:\.pkey)?$')
 _session_identifier_re = re.compile(r'^[A-Za-z0-9_-]{42}$')
 
 
@@ -316,7 +326,9 @@ def get_device(session: Session, request: Request) -> Device:
         'last_activity': None,
         'country': geoip.country.name,
         'city': geoip.city.name,
-        'trusted': not session['_devices'],  # First device in a session is always trusted
+        # First device in a session is always trusted.
+        # Only DBSC sessions can have untrusted devices.
+        'trusted': not session['_devices'] or not session_store().has_public_key(session),
     }
     session.is_dirty = True
     return new_device
@@ -536,6 +548,8 @@ class SessionStore:
         Meanwhile with a hard rotation the entire session id is changed, which
         is useful in cases such as logging the user out.
         """
+        # Take care to keep public key for the new session id
+        public_key = self.get_public_key(session)
         if soft:
             # Multiple network requests can occur at the same time, all using the old session.
             # We don't want to create a new session for each request, it's better to reference the one already made.
@@ -564,6 +578,8 @@ class SessionStore:
         session.should_rotate = False
         session['create_time'] = time.time()
         self.save(session)
+        if public_key:
+            self.make_public_key(session, **public_key)
 
     def vacuum(self, max_lifetime=SESSION_LIFETIME):
         """ Remove expired session files older than the given lifetime. """
@@ -619,6 +635,19 @@ class SessionStore:
                 self.delete_from_identifiers([session.sid[:STORED_SESSION_BYTES]])
                 del session['gc_previous_sessions']
                 self.save(session)
+
+    def make_public_key(self, session: Session, **key_data) -> None:
+        pkey = self.session_cls(key_data, f'{session.sid}.pkey')
+        self.save(pkey)
+        _logger.info("Public key created for session %s", session.sid[:8])
+        return pkey.sid
+
+    def has_public_key(self, session: Session) -> bool:
+        pkey_path = self.get_session_path(f'{session.sid}.pkey')
+        return bool(os.path.isfile(pkey_path))
+
+    def get_public_key(self, session: Session) -> Session | typing.Literal[False]:
+        return self.has_public_key(session) and self.get(f'{session.sid}.pkey')
 
 
 @functools.cache
