@@ -132,6 +132,9 @@ export const datetimePickerService = {
                  * is actually focused.
                  */
                 function focusActiveInput() {
+                    if (isBottomSheet()) {
+                        return;
+                    }
                     const inputEl = getInput(pickerProps.focusedDateIndex);
                     if (!inputEl) {
                         shouldFocus = true;
