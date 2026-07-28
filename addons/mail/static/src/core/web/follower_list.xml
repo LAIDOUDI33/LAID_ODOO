@@ -3,6 +3,9 @@
 
     <t t-name="mail.FollowerList">
         <div>
+            <div t-if="this.otherFollowersCount > 20 || this.search.searchTerm" class="px-1 pb-1">
+                <SearchInput search="this.search" placeholder.translate="Search by name or email" autofocus="true" onClear="() => this.onClearSearch()"/>
+            </div>
             <DropdownItem t-if="this.props.thread.selfFollower" class="'d-flex px-1 o-mail-FollowerList-unfollow'" onSelected="() => this.onClickUnfollow()">
                 <span class="o-mail-FollowerList-unfollowBtn text-danger d-flex align-items-center flex-grow-1 px-3 fw-bold">
                     Unfollow
@@ -27,7 +30,10 @@
                         <Follower follower="follower" onFollowerChanged.bind="this.onFollowerChanged" close="() => this.props.dropdown.close()"/>
                     </div>
                 </t>
-                <span t-if="!this.followerListView.isFullyLoaded" class="btn btn-link" t-ref="this.loadMoreRef" t-on-click="() => this.followerListView.loadFollowers({ abortSignal: this.scope.abortSignal })">Load more</span>
+                <span t-if="!this.followerListView.isFullyLoaded" class="btn btn-link" t-ref="this.loadMoreRef" t-on-click="() => this.followerListView.loadFollowers({ abortSignal: this.scope.abortSignal, searchTerm: this.search.searchTerm })">Load more</span>
+            </div>
+            <div t-elif="this.search.searchTerm" class="dropdown-item disabled">
+                No matching followers
             </div>
             <div t-elif="!this.props.thread.hasWriteAccess" class="dropdown-item disabled">
                 No Followers

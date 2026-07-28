@@ -3,6 +3,7 @@ import {
     contains,
     defineMailModels,
     hover,
+    insertText,
     openFormView,
     scroll,
     start,
@@ -152,6 +153,69 @@ test("Load 20 followers at once", async () => {
     await scroll(".o-mail-Followers-dropdown", "bottom");
     await contains(".o-mail-Follower", { count: 79 });
     await contains(".o-mail-Followers-dropdown:has(:text('Load more'))", { count: 0 });
+});
+
+test("opening and searching follower list refreshes the follower count", async () => {
+    const pyEnv = await startServer();
+    const threadId = pyEnv["res.partner"].create({ name: "Thread" });
+    const partnerIds = pyEnv["res.partner"].create(
+        range(22).map((i) => ({
+            email: `partner${i}@example.com`,
+            name: `Partner${i}`,
+        }))
+    );
+    pyEnv["mail.followers"].create(
+        [serverState.partnerId, ...partnerIds.slice(0, 19)].map((partnerId) => ({
+            is_active: true,
+            partner_id: partnerId,
+            res_id: threadId,
+            res_model: "res.partner",
+        }))
+    );
+    await start();
+    await openFormView("res.partner", threadId);
+    await contains(".o-mail-Followers-counter:text('20')");
+
+    pyEnv["mail.followers"].create({
+        is_active: true,
+        partner_id: partnerIds[19],
+        res_id: threadId,
+        res_model: "res.partner",
+    });
+    await click("[title='Show Followers']");
+
+    await contains(".o-mail-Followers-counter:text('21')");
+    await contains("input[placeholder='Search by name or email']", { count: 0 });
+    await contains(".o-mail-Follower", { count: 20 });
+    await contains(".o-mail-Followers-dropdown .btn:text('Load more')", { count: 0 });
+    await click("[title='Show Followers']");
+
+    pyEnv["mail.followers"].create({
+        is_active: true,
+        partner_id: partnerIds[20],
+        res_id: threadId,
+        res_model: "res.partner",
+    });
+    await click("[title='Show Followers']");
+
+    await contains(".o-mail-Followers-counter:text('22')");
+    await contains("input[placeholder='Search by name or email']");
+    await contains(".o-mail-Followers-dropdown .btn:text('Load more')");
+
+    pyEnv["mail.followers"].create({
+        is_active: true,
+        partner_id: partnerIds[21],
+        res_id: threadId,
+        res_model: "res.partner",
+    });
+    await insertText("input[placeholder='Search by name or email']", "Partner21");
+
+    await contains(".o-mail-Followers-counter:text('23')");
+    await contains(".o-mail-Follower", { count: 1, text: "Partner21" });
+    await click("[title='Clear']");
+    await contains(".o-mail-Follower", { count: 20 });
+    await insertText("input[placeholder='Search by name or email']", "partner21@example.com");
+    await contains(".o-mail-Follower", { count: 1, text: "Partner21" });
 });
 
 test("Load 100 recipients at once", async () => {

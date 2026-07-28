@@ -790,7 +790,12 @@ async function read_subscription_data(request) {
 registerRoute("/mail/thread/get_followers", mail_thread_get_followers);
 /** @type {RouteCallback} */
 async function mail_thread_get_followers(request) {
-    const { thread_id, thread_model, offset = 0 } = await parseRequestParams(request);
+    const {
+        thread_id,
+        thread_model,
+        offset = 0,
+        search_term = "",
+    } = await parseRequestParams(request);
 
     /** @type {import("mock_models").MailFollowers} */
     const MailFollowers = this.env["mail.followers"];
@@ -806,7 +811,16 @@ async function mail_thread_get_followers(request) {
         const [partner] = ResPartner.browse(follower.partner_id);
         return (follower[fieldName] || partner?.[fieldName] || "").toLowerCase();
     };
-    let followers = MailFollowers._filter(domain);
+    const normalizedSearchTerm = (search_term || "").toLowerCase();
+    let followers = MailFollowers._filter(domain).filter((follower) => {
+        if (!normalizedSearchTerm) {
+            return true;
+        }
+        return (
+            getFollowerValue(follower, "name").includes(normalizedSearchTerm) ||
+            getFollowerValue(follower, "email").includes(normalizedSearchTerm)
+        );
+    });
     followers = followers.sort((a, b) => {
         const nameA = getFollowerValue(a, "name");
         const nameB = getFollowerValue(b, "name");
@@ -818,7 +832,7 @@ async function mail_thread_get_followers(request) {
         }
         return a.id - b.id;
     });
-    const followersCount = followers.length;
+    const filteredCount = followers.length;
     followers = followers.slice(offset, offset + 20);
     const followerRecords = MailFollowers.browse(followers.map((follower) => follower.id));
     const store = new Store().add(followerRecords, "_store_follower_fields");
@@ -831,7 +845,7 @@ async function mail_thread_get_followers(request) {
             { followersCount: MailFollowers.search_count(threadDomain) },
             { as_thread: true }
         );
-        result.followers_count = followersCount;
+        result.followers_count = filteredCount;
     }
     result.store_data = store.as_dict();
     return result;
