@@ -99,7 +99,7 @@ export class ImageShapeOptionPlugin extends Plugin {
                 this.editable,
                 {
                     selector: "img",
-                    exclude: "[data-oe-type='image'] > img",
+                    exclude: "[data-oe-type='image'] > img, [data-oe-type='image_url'] > img",
                 }
             ),
         on_will_save_media_dialog_handlers: withSequence(

@@ -12,7 +12,7 @@ from odoo import SUPERUSER_ID, api, fields, models
 from odoo.exceptions import MissingError
 from odoo.fields import Domain
 from odoo.http import request
-from odoo.tools import BinaryBytes, file_open
+from odoo.tools import BinaryBytes, file_open, lazy
 
 from odoo.addons.website_sale import const
 
@@ -23,6 +23,7 @@ CART_SESSION_CACHE_KEY = "sale_order_id"
 FISCAL_POSITION_SESSION_CACHE_KEY = "fiscal_position_id"
 PRICELIST_SESSION_CACHE_KEY = "website_sale_current_pl"
 PRICELIST_SELECTED_SESSION_CACHE_KEY = "website_sale_selected_pl_id"
+COUNTRY_SELECTED_SESSION_CACHE_KEY = "website_sale_selected_country_id"
 
 
 class Website(models.Model):
@@ -261,13 +262,6 @@ class Website(models.Model):
         string="Categories", comodel_name="product.public.category"
     )
 
-    currency_id = fields.Many2one(
-        string="Default Currency",
-        comodel_name="res.currency",
-        compute="_compute_currency_id",
-        compute_sql="_compute_sql_currency_id",
-        compute_sudo=True,
-    )
     pricelist_ids = fields.One2many(
         string="Price list available for this Ecommerce/Website",
         comodel_name="product.pricelist",
@@ -286,6 +280,31 @@ class Website(models.Model):
         check_company=True,
     )
 
+    # Session dependant
+    pricelist_id = fields.Many2one(
+        comodel_name="product.pricelist",
+        compute="_compute_pricelist_id",
+        compute_sudo=True,
+        inverse="_inverse_pricelist_id",
+    )
+    country_id = fields.Many2one(
+        comodel_name="res.country",
+        compute="_compute_country_id",
+        compute_sudo=True,
+        inverse="_inverse_country_id",
+    )
+    currency_id = fields.Many2one(
+        string="Default Currency",
+        comodel_name="res.currency",
+        compute="_compute_currency_id",
+        compute_sql="_compute_sql_currency_id",
+        compute_sudo=True,
+    )
+    tax_display = fields.Selection(
+        selection=[("tax_excluded", "Tax Excluded"), ("tax_included", "Tax Included")],
+        compute="_compute_tax_display",
+    )
+
     # === COMPUTE METHODS ===#
 
     def _compute_pricelist_ids(self):
@@ -296,12 +315,51 @@ class Website(models.Model):
                 ProductPricelist._get_website_pricelists_domain(website)
             )
 
+    def _compute_pricelist_id(self):
+        self.pricelist_id = self.env["product.pricelist"].browse(
+            request and hasattr(request, "pricelist") and request.pricelist.id
+        )
+
+    def _inverse_pricelist_id(self):
+        self.ensure_one()
+        if not request:
+            return
+        if self.pricelist_id:
+            request.session[PRICELIST_SESSION_CACHE_KEY] = self.pricelist_id.id
+            request.session[PRICELIST_SELECTED_SESSION_CACHE_KEY] = self.pricelist_id.id
+            request.pricelist = self.pricelist_id.with_env(request.env).sudo()
+        else:
+            request.session.pop(PRICELIST_SESSION_CACHE_KEY, None)
+            request.session.pop(PRICELIST_SELECTED_SESSION_CACHE_KEY, None)
+            request.pricelist = lazy(self.with_env(request.env)._get_and_cache_current_pricelist)
+        self.invalidate_model(["pricelist_id"], flush=False)
+
     @api.depends("company_id")
+    def _compute_country_id(self):
+        def get_geoip_country():
+            if request and request.geoip.country_code:
+                return self.env["res.country"].search(
+                    [("code", "=", request.geoip.country_code)], limit=1
+                )
+
+        session_country = self.env["res.country"].browse(
+            request and request.session.get(COUNTRY_SELECTED_SESSION_CACHE_KEY)
+        )
+        geoip_country = lazy(get_geoip_country)
+
+        for website in self:
+            website.country_id = session_country or geoip_country or website.company_id.country_id
+
+    def _inverse_country_id(self):
+        self.ensure_one()
+        if request:
+            request.session[COUNTRY_SELECTED_SESSION_CACHE_KEY] = self.country_id.id
+            self.invalidate_model(["country_id"], flush=False)
+
+    @api.depends("pricelist_id", "company_id")
     def _compute_currency_id(self):
         for website in self:
-            website.currency_id = (
-                request and hasattr(request, "pricelist") and request.pricelist.currency_id
-            ) or website.company_id.sudo().currency_id
+            website.currency_id = website.pricelist_id.currency_id or website.company_id.currency_id
 
     def _compute_sql_currency_id(self, table):  # noqa: ARG002
         msg = "website.currency_id is not searchable"
@@ -317,6 +375,13 @@ class Website(models.Model):
     def _compute_show_line_subtotals_tax_selection(self):
         for website in self:
             website.show_line_subtotals_tax_selection = "tax_excluded"
+
+    @api.depends("country_id", "show_line_subtotals_tax_selection")
+    def _compute_tax_display(self):
+        for website in self:
+            website.tax_display = (
+                website.country_id.tax_display or website.show_line_subtotals_tax_selection
+            )
 
     # === SELECTION METHODS ===#
 
@@ -1160,8 +1225,29 @@ class Website(models.Model):
 
     @api.model
     def _get_settings_to_copy_onto_new_default_website(self):
-        """ Provides a list of settings that should always be set on the default
-        website. When the default website changes, a check is performed. If some
-        of these settings are not already set on the new default website, they
-        are copied from the previous default website."""
-        return super()._get_settings_to_copy_onto_new_default_website() + ['salesperson_id', 'salesteam_id']
+        """Provide a list of settings that should always be set on the default website.
+
+        When the default website changes, a check is performed. If some of these settings are not
+        already set on the new default website, they are copied from the previous default website.
+        """
+        return super()._get_settings_to_copy_onto_new_default_website() + [
+            "salesperson_id",
+            "salesteam_id",
+        ]
+
+    def _prepare_pricelist_selector_values(self):
+        self.ensure_one()
+        selectable_pricelists = self.get_pricelist_available(show_visible=True)
+        all_countries = self.env["res.country"].browse(self.env["res.country"]._cached_data()["id"])
+        first_pricelist_by_currency = {pl.currency_id: pl for pl in reversed(selectable_pricelists)}
+        default_pricelist = (
+            first_pricelist_by_currency.get(self.company_id.sudo().currency_id) or self.pricelist_id
+        )
+
+        return {
+            "currencies": first_pricelist_by_currency,
+            "countries": {
+                country: first_pricelist_by_currency.get(country.currency_id, default_pricelist)
+                for country in all_countries
+            },
+        }

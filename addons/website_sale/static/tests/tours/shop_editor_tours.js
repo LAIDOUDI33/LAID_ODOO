@@ -7,43 +7,6 @@ import {
 } from "@website/js/tours/tour_utils";
 
 registerWebsitePreviewTour(
-    "website_sale.shop_editor",
-    {
-        edition: true,
-    },
-    () => [
-        {
-            content: "Click on pricelist dropdown",
-            trigger: ":iframe div.o_pricelist_dropdown a[data-bs-toggle=dropdown]",
-            run: "click",
-        },
-        {
-            trigger:
-                ":iframe div.o_pricelist_dropdown a[data-bs-toggle=dropdown][aria-expanded=true]",
-        },
-        {
-            trigger: ":iframe input[name=search]",
-            content: "Click somewhere else in the shop.",
-            run: "click",
-        },
-        {
-            trigger:
-                ":iframe div.o_pricelist_dropdown a[data-bs-toggle=dropdown][aria-expanded=false]",
-        },
-        {
-            trigger: ":iframe div.o_pricelist_dropdown a[data-bs-toggle=dropdown]",
-            content: "Click on the pricelist again.",
-            run: "click",
-        },
-        {
-            trigger:
-                ":iframe div.o_pricelist_dropdown a[data-bs-toggle=dropdown][aria-expanded=true]",
-            content: "Check pricelist dropdown opened",
-        },
-    ]
-);
-
-registerWebsitePreviewTour(
     "website_sale.shop_editor_set_product_ribbon",
     {
         edition: true,

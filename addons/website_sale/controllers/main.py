@@ -21,10 +21,7 @@ from odoo.addons.sale.controllers import portal as sale_portal
 from odoo.addons.website.controllers.main import QueryURL
 from odoo.addons.website.models.ir_http import sitemap_qs2dom
 from odoo.addons.website_sale.const import MAX_EXPANDED_FILTER_SECTIONS, SHOP_PATH
-from odoo.addons.website_sale.models.website import (
-    PRICELIST_SELECTED_SESSION_CACHE_KEY,
-    PRICELIST_SESSION_CACHE_KEY,
-)
+from odoo.addons.website_sale.models.website import COUNTRY_SELECTED_SESSION_CACHE_KEY
 
 _lt = LazyTranslate(__name__)
 
@@ -400,7 +397,7 @@ class WebsiteSale(payment_portal.PaymentPortal):
         if "website_sale_pricelist_time" in request.session:
             pricelist_save_time = request.session["website_sale_pricelist_time"]
             if pricelist_save_time < now - 60 * 60:
-                request.session.pop(PRICELIST_SESSION_CACHE_KEY, None)
+                self.env.website.sudo().pricelist_id = False
                 # restart the counter
                 request.session["website_sale_pricelist_time"] = now
 
@@ -416,7 +413,7 @@ class WebsiteSale(payment_portal.PaymentPortal):
         if search:
             post["search"] = search
 
-        tax_display = website.show_line_subtotals_tax_selection
+        tax_display = website.tax_display
         sale_tax = request.fiscal_position.map_tax(website.company_id.sudo().account_sale_tax_id)
 
         if tax_display == "tax_included" and sale_tax:
@@ -1060,24 +1057,20 @@ class WebsiteSale(payment_portal.PaymentPortal):
             or request.session.get("stock_notification_email", ""),
         }
 
-    @route(
-        '/shop/change_pricelist/<model("product.pricelist"):pricelist>',
-        type="http",
-        auth="public",
-        website=True,
-        sitemap=False,
-    )
-    def pricelist_change(self, pricelist, **_post):
+    @route("/shop/change_pricelist", type="http", auth="public", website=True, sitemap=False)
+    def pricelist_change(self, *, pricelist_id=None, country_id=None, **_kwargs):
         website = self.env.website
         redirect_url = request.httprequest.referrer
-        prev_pricelist = request.pricelist
+        prev_currency = website.currency_id
+        pricelist_id = self._cast_as_int(pricelist_id)
         if (
-            self._apply_selectable_pricelist(pricelist.id)
+            pricelist_id
+            and self._apply_selectable_pricelist(pricelist_id)
             and redirect_url
+            and prev_currency != website.currency_id
             and website.is_view_active("website_sale.filter_products_price")
-            and prev_pricelist != pricelist
         ):
-            # Convert prices to the new priceslist currency in the query params of the referrer
+            # Convert prices to the new currency in the query params of the referrer
             decoded_url = url_parse(redirect_url)
             args = url_decode(decoded_url.query)
             min_price = args.get("min_price")
@@ -1086,8 +1079,8 @@ class WebsiteSale(payment_portal.PaymentPortal):
                 try:
                     min_price = float(min_price)
                     args["min_price"] = min_price and str(
-                        prev_pricelist.currency_id._convert(
-                            min_price, pricelist.currency_id, website.company_id, round=False
+                        prev_currency._convert(
+                            min_price, website.currency_id, website.company_id, round=False
                         )
                     )
                 except (ValueError, TypeError):
@@ -1095,13 +1088,16 @@ class WebsiteSale(payment_portal.PaymentPortal):
                 try:
                     max_price = float(max_price)
                     args["max_price"] = max_price and str(
-                        prev_pricelist.currency_id._convert(
-                            max_price, pricelist.currency_id, website.company_id, round=False
+                        prev_currency._convert(
+                            max_price, website.currency_id, website.company_id, round=False
                         )
                     )
                 except (ValueError, TypeError):
                     pass
             redirect_url = decoded_url.replace(query=url_encode(args)).to_url()
+
+        if country_id := self._cast_as_int(country_id):
+            website.sudo().country_id = country_id
 
         return request.redirect(redirect_url or SHOP_PATH)
 
@@ -1150,31 +1146,20 @@ class WebsiteSale(payment_portal.PaymentPortal):
 
         :param 'product.pricelist'|None pricelist: The new pricelist. If None resets the pricelist.
         """
-        if pricelist is None:  # Reset the pricelist
-            request.session.pop(PRICELIST_SESSION_CACHE_KEY, None)
-            request.session.pop(PRICELIST_SELECTED_SESSION_CACHE_KEY, None)
-            request.pricelist = lazy(self.env.website._get_and_cache_current_pricelist)
+        self.env.website.sudo().pricelist_id = pricelist
 
-            if order_sudo := request.cart:
-                pl_before = order_sudo.pricelist_id
-                order_sudo._compute_pricelist_id()
-                if order_sudo.pricelist_id != pl_before:
-                    order_sudo._recompute_prices()
+        if not (order_sudo := request.cart):
             return
 
-        pricelist.ensure_one()
-
-        if pricelist.id == request.pricelist.id:
-            # Nothing to do
-            return
-
-        request.session[PRICELIST_SESSION_CACHE_KEY] = pricelist.id
-        request.session[PRICELIST_SELECTED_SESSION_CACHE_KEY] = pricelist.id
-        request.pricelist = pricelist.sudo()
-
-        if order_sudo := request.cart:
+        if pricelist:
             order_sudo.pricelist_id = pricelist
             order_sudo._recompute_prices()
+        else:
+            # Reset the pricelist
+            pl_before = order_sudo.pricelist_id
+            order_sudo._compute_pricelist_id()
+            if order_sudo.pricelist_id != pl_before:
+                order_sudo._recompute_prices()
 
     # ------------------------------------------------------
     # Checkout
@@ -1338,13 +1323,8 @@ class WebsiteSale(payment_portal.PaymentPortal):
     def _get_default_country(self, order_sudo=False, **kwargs):
         """Override `portal` to return country of customer if customer is not logged in."""
         is_anonymous_cart = order_sudo and order_sudo._is_anonymous_cart()
-        if is_anonymous_cart and request.geoip.country_code:
-            return (
-                self
-                .env["res.country"]
-                .sudo()
-                .search([("code", "=", request.geoip.country_code)], limit=1)
-            )
+        if is_anonymous_cart or request.session.get(COUNTRY_SELECTED_SESSION_CACHE_KEY):
+            return self.env.website.sudo().country_id
         return super()._get_default_country(order_sudo=order_sudo, **kwargs)
 
     @route(

@@ -69,6 +69,9 @@ class WebsiteSaleCommon(DeliveryCommon):
         if "enforce_cities" in cls.env["res.country"]._fields:
             cls.env.company.country_id.enforce_cities = False
 
+        # Disable country specific tax display by default
+        cls.env.company.country_id.tax_display = False
+
         # Publish tests products
         (cls.product + cls.service_product).website_published = True
 

@@ -1,5 +1,7 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
+from urllib.parse import urlencode
+
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 
@@ -123,3 +125,8 @@ class ProductPricelist(models.Model):
             ("selectable", "=", True),
             ("code", "!=", False),
         ]
+
+    def _get_shop_switch_url(self, **kwargs):
+        if self:
+            kwargs["pricelist_id"] = self.id
+        return f"/shop/change_pricelist?{urlencode(kwargs)}"

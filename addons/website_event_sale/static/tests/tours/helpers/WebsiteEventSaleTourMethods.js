@@ -6,31 +6,6 @@ const closeModal = {
     run: "click",
 };
 
-export function changePricelist(pricelistName) {
-    return [
-        {
-            content: "Go to page Shop",
-            trigger: '.nav-link:contains("Shop")',
-            run: "click",
-            expectUnloadPage: true,
-        },
-        {
-            content: "Toggle Pricelist",
-            trigger: '.o_pricelist_dropdown > .dropdown-toggle',
-            run: 'click',
-        },
-        {
-            content: `Activate Pricelist ${pricelistName}`,
-            trigger: `.dropdown-item:contains(${pricelistName})`,
-            run: 'click',
-            expectUnloadPage: true,
-        },
-        {
-            content: 'Wait for pricelist to load',
-            trigger: `.dropdown-toggle:contains(${pricelistName})`,
-        },
-    ];
-}
 function checkPriceEvent(eventName, price, close = true) {
     const steps = [
         {
@@ -76,12 +51,13 @@ export function checkPriceCart(price) {
         ...wsTourUtils.assertCartAmounts({total: price}),
     ]
 }
-export const getPriceListChecksSteps = function ({pricelistName, eventName, price, priceBeforeDiscount=false}) {
+export const getPriceListChecksSteps = function ({currency, eventName, price, priceBeforeDiscount=false}) {
     const checkPriceSteps = priceBeforeDiscount ? checkPriceDiscountEvent(eventName, price, priceBeforeDiscount) : checkPriceEvent(eventName, price);
     return [
-        ...changePricelist(pricelistName),
+        wsTourUtils.goToCart(),
+        ...wsTourUtils.changeCurrency(currency),
         ...checkPriceSteps,
         ...checkPriceCart(price),
     ]
 }
-export default { getPriceListChecksSteps, changePricelist, checkPriceCart }
+export default { getPriceListChecksSteps, checkPriceCart }

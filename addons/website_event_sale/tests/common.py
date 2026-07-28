@@ -17,11 +17,8 @@ class TestWebsiteEventSaleCommon(WebsiteSaleCommon):
         super().setUpClass()
 
         cls.env.company.country_id = cls.env.ref('base.us')
-        cls.currency_test = cls.env['res.currency'].create({
-            'name': 'eventX',
-            'rounding': 0.01,
-            'symbol': 'EX',
-        })
+        cls.currency_usdt = cls.env["res.currency"].create({"name": "UST", "symbol": "USDT"})
+        cls.currency_test = cls.env["res.currency"].create({"name": "EX", "symbol": "EX"})
         cls.env['res.currency.rate'].search([]).unlink()
         cls.rate = cls.env['res.currency.rate'].create({
             'company_id': cls.env.company.id,
@@ -91,5 +88,7 @@ class TestWebsiteEventSaleCommon(WebsiteSaleCommon):
             })
 
         cls.pricelist = cls._enable_pricelists()
-        cls.pricelist_without_discount = create_pricelist(currency=cls.env.company.currency_id, name='EUR Without Discount Included')
+        cls.pricelist_without_discount = create_pricelist(
+            currency=cls.currency_usdt, name="USDT Without Discount Included"
+        )
         cls.ex_pricelist_without_discount = create_pricelist(currency=cls.currency_test, name='EX Without Discount Included')
