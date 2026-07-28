@@ -55,7 +55,7 @@ class StockMove(models.Model):
         for line, line_data in exploded_lines:
             qty_per_kit_by_line[line] += line.uom_id._compute_quantity(
                 line_data['qty'], line.product_id.uom_id, round=False,
-            ) / root_bom.uom_id._compute_quantity(root_bom.product_qty, root_bom.product_id.uom_id, round=False)
+            ) / root_bom.uom_id._compute_quantity(root_bom.product_qty, kit_product.uom_id, round=False)
 
         price_unit = 0
         for bom_line, moves in kit_moves.grouped('bom_line_id').items():

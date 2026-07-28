@@ -688,7 +688,7 @@ class TestLotValuation(TestStockValuationCommon):
         self.assertAlmostEqual(self.product.standard_price, 75.45, places=2)
     # ---------------------------------------------------------------- BATCH
     # The following cases exercise the per-method batch valuation
-    # (``_run_standard_batch`` / ``_run_avco`` / ``_run_fifo_batch``) with a
+    # (``_run_standard`` / ``_run_avco`` / ``_run_fifo``) with a
     # lot-valuated product across several incoming and outgoing moves, and through
     # the replay/correction machinery (backdating / editing a done move).
 
