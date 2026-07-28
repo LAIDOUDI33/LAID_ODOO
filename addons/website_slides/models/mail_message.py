@@ -5,7 +5,13 @@ from odoo.addons.mail.tools.discuss import Store
 
 
 class MailMessage(models.Model):
-    _inherit = "mail.message"
+    _name = 'mail.message'
+    _inherit = ['mail.message', 'website.ugc.mixin']
+
+    def _get_rel_values_to_add(self):
+        value_dict = super()._get_rel_values_to_add()
+        value_dict['slide.slide'] = {'ugc', 'nofollow'}
+        return value_dict
 
     def _store_message_fields(self, res: Store.FieldList, **kwargs):
         super()._store_message_fields(res, **kwargs)

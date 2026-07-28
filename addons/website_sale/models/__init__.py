@@ -9,6 +9,7 @@ from . import (
     digest,
     ir_http,
     ir_module_module,
+    mail_message,
     payment_token,
     payment_transaction,
     product_attribute,

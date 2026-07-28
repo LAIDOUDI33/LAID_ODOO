@@ -10,6 +10,7 @@ from . import gamification_challenge
 from . import gamification_karma_tracking
 from . import ir_attachment
 from . import ir_http
+from . import mail_message
 from . import mail_thread
 from . import res_users
 from . import website

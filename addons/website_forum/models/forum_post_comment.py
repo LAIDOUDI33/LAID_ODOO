@@ -7,6 +7,7 @@ from odoo.exceptions import AccessError
 class ForumPostMessage(models.Model):
     _name = "forum.post.comment"
     _description = "Forum Post Comment"
+    _inherit = 'website.ugc.mixin'
 
     _order = 'create_date ASC, id ASC'
 
@@ -90,3 +91,8 @@ class ForumPostMessage(models.Model):
             subtype_xmlid='website_forum.mt_comment_new',
             partners=self.post_id.sudo().follower_ids,
         )
+
+    def _get_rel_values_to_add(self):
+        value_dict = super()._get_rel_values_to_add()
+        value_dict['forum.post.comment'] = {'ugc', 'nofollow'}
+        return value_dict

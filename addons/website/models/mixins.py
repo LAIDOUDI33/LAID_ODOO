@@ -4,6 +4,9 @@ import re
 import urllib.parse
 from datetime import UTC, date, datetime
 
+from lxml import html as lxml_html
+from lxml.etree import ParserError as LxmlParserError
+
 from odoo import _, api, fields, models
 from odoo.exceptions import AccessError, UserError
 from odoo.fields import Domain
@@ -1074,3 +1077,54 @@ class WebsiteSearchableMixin(models.AbstractModel):
             return False, value, 'html'
 
         return True, value, 'tags'
+
+
+class WebsiteUserGeneratedContentMixin(models.AbstractModel):
+    _name = "website.ugc.mixin"
+    _description = "Mixin to saniize user-generated content such as links in comments"
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            new_rels = self._get_rel_values_to_add().get(vals.get("model") or self._name, [])
+            if new_rels and vals.get("body"):
+                vals["body"] = self._add_rel_values_to_links(vals["body"], new_rels)
+        return super().create(vals_list)
+
+    def write(self, vals):
+        new_rels = self._get_rel_values_to_add().get(vals.get("model") or self._name, [])
+        if new_rels and vals.get("body"):
+            vals["body"] = self._add_rel_values_to_links(vals["body"], new_rels)
+        return super().write(vals)
+
+    @api.model
+    def _get_rel_values_to_add(self):
+        """
+        Return a dictionary mapping model names to rel values to add to links.
+
+        Here is how to add a new model to the mapping:
+        ```
+        value_dict = super()._get_rel_values_to_add()
+        value_dict['slide.slide'] = {'ugc', 'nofollow'}
+        return value_dict
+        ```
+        """
+        return {}
+
+    def _add_rel_values_to_links(self, html, new_rels):
+        if not html:
+            return html
+        try:
+            tree = lxml_html.fragment_fromstring(str(html), create_parent=True)
+            links = list(tree.iter("a"))
+            if not links:
+                return html
+            for link in links:
+                rels = set(link.get("rel", "").split())
+                rels.update(new_rels)
+                link.set("rel", " ".join(rels))
+            return "".join(
+                str(lxml_html.tostring(child, encoding="unicode")) for child in tree
+            )
+        except LxmlParserError:
+            return html
