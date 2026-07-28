@@ -411,3 +411,54 @@ class TestConsumptionWarning(common.TransactionCase):
                 self.assertEqual(move.quantity, 1.2, "Wrong quantity of the component was consumed.")
             else:
                 self.assertEqual(move.product_id, self.salt, "Foreign component in the MO.")
+
+    def test_no_consumption_warning_on_service_and_combo(self):
+        """Check that the consumption warning wizard will not appear
+        for product types service or combo."""
+
+        self.cooking_service = self.env['product.product'].create([
+            {'name': 'Cooking Service', 'type': "service"}
+        ])
+
+        self.combo = self.env["product.combo"].create(
+            {
+                "name": "Combo",
+            }
+        )
+        self.combo_item = self.env["product.product"].create(
+            {
+                "name": "Combo Item"
+            }
+        )
+        self.env["product.combo.item"].create(
+            {
+                "product_id": self.combo_item.id,
+                "combo_id": self.combo.id
+            }
+        )
+
+        self.bom_service_combo = self.env['mrp.bom'].create({
+            'product_tmpl_id': self.soup.product_tmpl_id.id,
+            'uom_id': self.uom_m3.id,
+            'product_qty': 1,
+            'type': 'normal',
+            'bom_line_ids': [
+                Command.create({
+                    'product_id': self.cooking_service.id,
+                    'uom_id': self.uom_unit.id,
+                    'product_qty': 1,
+                }),
+                Command.create({
+                    'product_id': self.combo_item.id,
+                    'uom_id': self.uom_unit.id,
+                    'product_qty': 1,
+                })
+            ]
+        })
+
+        mo = self._make_mo(self.bom_service_combo, 5, self.uom_m3)
+        mo.action_confirm()
+
+        result = mo.button_mark_done()
+        # Make sure there's no warning again.
+        self.assertIs(result, True, "The moves the wizard recreated didn't conform to the BoM.")
