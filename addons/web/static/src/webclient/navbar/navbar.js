@@ -60,11 +60,10 @@ export class NavBar extends Component {
         };
 
         systrayRegistry.addEventListener("UPDATE", renderAndAdapt);
-        this.env.bus.addEventListener("MENUS:APP-CHANGED", renderAndAdapt);
+        useListener(this.env.bus, "MENUS:APP-CHANGED", renderAndAdapt);
 
         onWillUnmount(() => {
             systrayRegistry.removeEventListener("UPDATE", renderAndAdapt);
-            this.env.bus.removeEventListener("MENUS:APP-CHANGED", renderAndAdapt);
         });
 
         // We don't want to adapt every time we are patched
