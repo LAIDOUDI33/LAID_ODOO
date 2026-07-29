@@ -183,12 +183,6 @@ export class ClosePosPopup extends Component {
     canCancel() {
         return true;
     }
-    //TODO-manv-master: we can remove this? see bboxV2 is_session_closable etc...
-    get bankPaymentMethodDiffPairs() {
-        return this.props.non_cash_payment_methods
-            .filter((pm) => pm.type == "bank")
-            .map((pm) => [pm.id, this.getDifference(pm.id)]);
-    }
     async closeSession() {
         this.pos._resetConnectedCashier();
         // If there are orders in the db left unsynced, we try to sync.
