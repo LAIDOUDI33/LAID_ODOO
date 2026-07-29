@@ -196,7 +196,7 @@ class RtcController(Controller):
     ##########
 
     def _get_recording_destination(self, call_history, start_ms, end_ms):
-        """Save the recording, to be overriden by (cloud) storage modules"""
+        """Return the recording upload contract."""
         pass
 
     @route(
@@ -207,9 +207,10 @@ class RtcController(Controller):
     )
     def get_routing(self, call_history, start_ms, end_ms):
         _check_jwt(request, call_history.channel_id)
-        return request.make_json_response({
-            "destination": self._get_recording_destination(call_history, start_ms, end_ms),
-        }, status=200)
+        return request.make_json_response(
+            self._get_recording_destination(call_history, start_ms, end_ms),
+            status=200,
+        )
 
     @route(
         '/mail/rtc/recording/<model("discuss.call.history"):call_history>/transcribe',
