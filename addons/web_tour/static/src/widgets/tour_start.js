@@ -32,7 +32,7 @@ export class TourStartWidget extends CharField {
             mode: "auto",
             url: this.tourData.url,
             fromDB: this.tourData.custom,
-            showPointerDuration: 250,
+            showPointer: true,
             rainbowManMessage: this.tourData.rainbow_man_message,
         });
     }
