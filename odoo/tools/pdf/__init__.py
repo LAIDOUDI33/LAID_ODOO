@@ -539,6 +539,19 @@ class OdooPdfFileWriter(PdfFileWriter):
         else:
             _logger.warning('The fonttools package is not installed. Generated PDF may not be PDF/A compliant.')
 
+        # Every annotation dictionary, except those whose subtype is Popup,
+        # must contain the /F key (annotation flags), as required by PDF/A.
+        PDFA_ANNOT_FLAG_PRINT = 4  # bit 3 (value 2**2): "Print"
+
+        for page in pages:
+            page_obj = page.getObject()
+            for annot_ref in page_obj.get('/Annots', []):
+                annot = annot_ref.getObject()
+                if annot.get('/Subtype') == '/Popup':
+                    continue
+                if '/F' not in annot:
+                    annot[NameObject('/F')] = NumberObject(PDFA_ANNOT_FLAG_PRINT)
+
         outlines = self._root_object['/Outlines'].getObject()
         outlines[NameObject('/Count')] = NumberObject(1)
 
