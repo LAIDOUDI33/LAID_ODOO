@@ -5,7 +5,7 @@ import { browser } from "@web/core/browser/browser";
 import { usePosition } from "@web/core/position/position_hook";
 import { _t } from "@web/core/l10n/translation";
 import { usePopover } from "@web/core/popover/popover_hook";
-import { getScrollParent, isInPage } from "@web_tour/js/utils/tour_utils";
+import { containsAcrossFrames, getScrollParent, isInPage } from "@web_tour/js/utils/tour_utils";
 
 const oppositeSides = {
     left: "right",
@@ -152,6 +152,8 @@ export class TourPointer extends Component {
             pointerPositionOptions
         );
 
+        const uiService = useService("ui");
+
         useLayoutEffect(
             () => {
                 const trigger = this.trigger;
@@ -159,6 +161,7 @@ export class TourPointer extends Component {
                     return;
                 }
 
+                this.state.triggerBelow = !containsAcrossFrames(uiService.activeElement, trigger);
                 this.popover.close();
                 if (this.props.pointerState.isZone && this.dropzoneRef()) {
                     const triggerRect = this.trigger.getBoundingClientRect();
@@ -195,12 +198,11 @@ export class TourPointer extends Component {
             set: () => {},
             enumerable: true,
         });
-        const uiService = useService("ui");
         const onActiveElementChanged = () => {
             const activeEl = uiService.activeElement;
             const pointerAnchor = this.trigger;
             if (pointerAnchor) {
-                this.state.triggerBelow = !activeEl.contains(pointerAnchor);
+                this.state.triggerBelow = !containsAcrossFrames(activeEl, pointerAnchor);
             }
         };
         useBus(uiService.bus, "active-element-changed", onActiveElementChanged);

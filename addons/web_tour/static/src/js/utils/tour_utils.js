@@ -38,3 +38,22 @@ export function isInPage(element) {
     }
     return false;
 }
+
+/**
+ * Like {@link Node.contains}, but also returns true when `element` is inside
+ * an iframe nested (at any depth) within `container`, since `Node.contains`
+ * never crosses frame boundaries.
+ * @param {Node} container
+ * @param {HTMLElement} [element]
+ * @returns {boolean}
+ */
+export function containsAcrossFrames(container, element) {
+    let current = element;
+    while (current) {
+        if (container.contains(current)) {
+            return true;
+        }
+        current = current.ownerDocument?.defaultView?.frameElement;
+    }
+    return false;
+}
