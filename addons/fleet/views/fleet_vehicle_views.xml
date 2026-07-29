@@ -116,7 +116,6 @@
                             <group>
                                 <group col="1" name="fiscality_group" string="Fiscality">
                                     <group col="1" name="fiscality_first_group">
-                                        <field name="horsepower_tax" widget="monetary"/>
                                     </group>
                                 </group>
                                 <group string="Contract">
