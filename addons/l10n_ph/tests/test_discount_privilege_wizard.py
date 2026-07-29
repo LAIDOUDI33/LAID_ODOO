@@ -61,7 +61,8 @@ class TestDiscountPrivilegeWizard(TestPhCommon):
             .sudo()
             .create(
                 {
-                    "name": "Senior Citizen VAT EXCL",
+                    "name": "Special Discount 20% No FP",
+                    "discount_type": "special",
                     "discount_amount": 20.0,
                     "account_id": cls.special_discount_account.id,
                 },
@@ -280,6 +281,12 @@ class TestDiscountPrivilegeWizard(TestPhCommon):
                     "account_id": self.special_discount_account.id,
                 },
             )
+
+    def test_privilege_copy_appends_copy_suffix(self):
+        priv_copy = self.privilege.copy()
+        self.assertEqual(priv_copy.name, "Senior Citizen (copy)")
+        self.assertEqual(priv_copy.discount_amount, self.privilege.discount_amount)
+        self.assertEqual(priv_copy.account_id, self.privilege.account_id)
 
     def test_privilege_archive_in_use(self):
         invoice = self._create_invoice(
@@ -608,7 +615,8 @@ class TestDiscountPrivilegeWizard(TestPhCommon):
             .sudo()
             .create(
                 {
-                    "name": "SC 20% No FP (tax-incl)",
+                    "name": "Special Discount 20% No FP (tax-incl)",
+                    "discount_type": "special",
                     "discount_amount": 20.0,
                     "account_id": self.special_discount_account.id,
                 },
@@ -728,7 +736,8 @@ class TestDiscountPrivilegeWizard(TestPhCommon):
             .sudo()
             .create(
                 {
-                    "name": "SC 20% No FP",
+                    "name": "Special Discount 20% Tax-Excl",
+                    "discount_type": "special",
                     "discount_amount": 20.0,
                     "account_id": self.special_discount_account.id,
                 },
@@ -759,7 +768,8 @@ class TestDiscountPrivilegeWizard(TestPhCommon):
             .sudo()
             .create(
                 {
-                    "name": "SC 5% VAT-able",
+                    "name": "Special Discount 5% Tax-Incl",
+                    "discount_type": "special",
                     "discount_amount": 5.0,
                     "account_id": self.special_discount_account.id,
                 },
@@ -788,7 +798,8 @@ class TestDiscountPrivilegeWizard(TestPhCommon):
             .sudo()
             .create(
                 {
-                    "name": "SC 5% VAT-able",
+                    "name": "Special Discount 5% Tax-Excl",
+                    "discount_type": "special",
                     "discount_amount": 5.0,
                     "account_id": self.special_discount_account.id,
                 },
@@ -1044,6 +1055,7 @@ class TestDiscountPrivilegeWizard(TestPhCommon):
             .create(
                 {
                     "name": "Full 100%",
+                    "discount_type": "special",
                     "discount_amount": 100.0,
                     "account_id": self.special_discount_account.id,
                 },
@@ -1233,6 +1245,7 @@ class TestDiscountPrivilegeWizard(TestPhCommon):
             .create(
                 {
                     "name": "Full Discount",
+                    "discount_type": "special",
                     "discount_amount": 100.0,
                     "account_id": self.special_discount_account.id,
                 },
@@ -1261,6 +1274,7 @@ class TestDiscountPrivilegeWizard(TestPhCommon):
             .create(
                 {
                     "name": "Full 100%",
+                    "discount_type": "special",
                     "discount_amount": 100.0,
                     "account_id": self.special_discount_account.id,
                 },
@@ -1290,6 +1304,7 @@ class TestDiscountPrivilegeWizard(TestPhCommon):
             .create(
                 {
                     "name": "Full 100%",
+                    "discount_type": "special",
                     "discount_amount": 100.0,
                     "account_id": self.special_discount_account.id,
                 },
@@ -1602,7 +1617,8 @@ class TestDiscountPrivilegeWizard(TestPhCommon):
             .sudo()
             .create(
                 {
-                    "name": "SC 5% VAT-able",
+                    "name": "SC 5% Special Discount",
+                    "discount_type": "special",
                     "discount_amount": 5.0,
                     "account_id": self.special_discount_account.id,
                 },
