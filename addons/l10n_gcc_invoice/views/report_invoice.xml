@@ -285,10 +285,22 @@
                                     <td class="text-end" name="account_invoice_line_name">
                                         <t t-if="line.product_id">
                                             <t t-set="english_name" t-value="line.with_context(lang='en_US').product_id.display_name"/>
+<<<<<<< 9eea59d205f5f9637b383e4bcd51e1d395c7e993
                                             <t t-set="arabic_name" t-value="line.with_context(lang=o.env['res.lang']._get_code('ar_001')).product_id.display_name"/>
                                             <span t-out="line.product_id.display_name" t-if="not line.name or line.product_id.display_name not in line.name"/>
                                             <span t-out="arabic_name + '\n'" t-if="arabic_name and arabic_name not in line.product_id.display_name" t-options="{'widget': 'text'}" dir="rtl"/>
                                             <span t-out="english_name + '\n'" t-if="english_name and (english_name != arabic_name) and (english_name not in line.product_id.display_name)" t-options="{'widget': 'text'}"/>
+||||||| ed561ab3bd9d88796d0afc905184a7998b51a1a1
+                                            <t t-set="arabic_name" t-value="line.with_context(lang='ar_001').product_id.display_name"/>
+
+                                            <span t-out="arabic_name + '\n'" t-if="arabic_name not in line.name" t-options="{'widget': 'text'}" dir="rtl"/>
+                                            <span t-out="english_name + '\n'" t-if="(english_name != arabic_name) and (english_name not in line.name)" t-options="{'widget': 'text'}"/>
+=======
+                                            <t t-set="arabic_name" t-value="line.with_context(lang='ar_001').product_id.display_name"/>
+
+                                            <span t-out="arabic_name + '\n'" t-if="line.name and arabic_name not in line.name" t-options="{'widget': 'text'}" dir="rtl"/>
+                                            <span t-out="english_name + '\n'" t-if="line.name and (english_name != arabic_name) and (english_name not in line.name)" t-options="{'widget': 'text'}"/>
+>>>>>>> df98f3b0397ed4ec5ca58ee5061d1c7584da9efd
                                         </t>
                                         <span t-out="line.name" t-options="{'widget': 'text'}" t-att-dir="o.env['res.lang']._get_data(code=o.partner_id.lang).direction"/>
                                     </td>
