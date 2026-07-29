@@ -2,6 +2,7 @@ import { toolbarButtonProps } from "@html_editor/main/toolbar/toolbar";
 import {
     useDropdownAutoVisibility,
     useToolbarDropdownFocus,
+    useToolbarDropdownPreview,
 } from "@html_editor/toolbar_dropdown_hook";
 import { Component, proxy, signal } from "@odoo/owl";
 import { Dropdown } from "@web/core/dropdown/dropdown";
@@ -17,6 +18,8 @@ export class ImageAlignSelector extends Component {
         getDisplay: Function,
         focusEditable: Function,
         onSelected: Function,
+        onPreview: Function,
+        onPreviewReset: Function,
         ...toolbarButtonProps,
     };
 
@@ -28,10 +31,23 @@ export class ImageAlignSelector extends Component {
         this.dropdown = useDropdownState();
         useToolbarDropdownFocus(this.dropdown, this.imageAlignSelector);
         useDropdownAutoVisibility(this.env.overlayState, this.menuRef);
+        this.preview = useToolbarDropdownPreview({
+            dropdown: this.dropdown,
+            getItems: () => this.props.items,
+            preview: (item) => this.props.onPreview(item),
+            commit: (item) => {
+                this.props.onSelected(item);
+                this.props.focusEditable();
+            },
+            revert: () => this.props.onPreviewReset(),
+        });
     }
 
     onSelected(item) {
-        this.props.onSelected(item);
-        this.props.focusEditable();
+        this.preview.commit(item);
+    }
+
+    onItemHoverOut() {
+        this.preview.reset();
     }
 }

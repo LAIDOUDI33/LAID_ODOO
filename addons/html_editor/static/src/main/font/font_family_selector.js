@@ -4,6 +4,7 @@ import { DropdownItem } from "@web/core/dropdown/dropdown_item";
 import { toolbarButtonProps } from "@html_editor/main/toolbar/toolbar";
 import {
     useDropdownAutoVisibility,
+    useToolbarDropdownPreview,
     useToolbarDropdownFocus,
 } from "@html_editor/toolbar_dropdown_hook";
 import { useChildRef } from "@web/core/utils/hooks";
@@ -18,6 +19,8 @@ export class FontFamilySelector extends Component {
         onSelected: Function,
         focusEditable: Function,
         ...toolbarButtonProps,
+        onPreview: Function,
+        onPreviewReset: Function,
     };
     static components = { Dropdown, DropdownItem };
 
@@ -28,10 +31,23 @@ export class FontFamilySelector extends Component {
         this.dropdown = useDropdownState();
         useToolbarDropdownFocus(this.dropdown, this.fontFamilySelector);
         useDropdownAutoVisibility(this.env.overlayState, this.menuRef);
+        this.preview = useToolbarDropdownPreview({
+            dropdown: this.dropdown,
+            getItems: () => this.props.fontFamilyItems,
+            preview: (item) => this.props.onPreview(item),
+            commit: (item) => {
+                this.props.onSelected(item);
+                this.props.focusEditable();
+            },
+            revert: () => this.props.onPreviewReset(),
+        });
     }
 
     onSelected(item) {
-        this.props.onSelected(item);
-        this.props.focusEditable();
+        this.preview.commit(item);
+    }
+
+    onItemHoverOut() {
+        this.preview.reset();
     }
 }
