@@ -289,7 +289,10 @@ export class ProductTemplate extends Base {
                 );
                 excludedPTAV.add(disablePTAV);
             }
-            if (ptavCommon.length === attributeValueIds.length) {
+            if (
+                ptavCommon.length === attributeValueIds.length &&
+                attributeValueIds.length === archivedCombination.length
+            ) {
                 isCombinationArchived = true;
             }
         }
