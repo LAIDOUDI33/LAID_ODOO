@@ -221,7 +221,8 @@ registerCallAction("record-call", {
         store.rtc.recordingState.recording ? _t("Stop recording") : _t("Start recording"),
     disabledCondition: ({ store }) => store.rtc?.recordingRequest,
     isActive: ({ store }) => store.rtc?.recordingState.recording,
-    icon: ({ action }) => (action.isActive ? "fa fa-dot-circle-o" : "fa fa-circle text-danger"),
+    icon: ({ action }) => (action.isActive ? "radio_button_checked" : "circle"),
+    iconClass: ({ action }) => (action.isActive ? "" : "oi-filled text-danger"),
     onSelected: ({ store }) => {
         store.env.services.dialog.add(RecordingDialog, {});
     },

@@ -1,7 +1,7 @@
 <templates>
 
     <t t-name="discuss.CallRecordingIndicator">
-        <div t-custom-ref="root" class="o-discuss-CallRecordingIndicator d-flex align-items-center gap-3 px-2 py-1 rounded-2" t-att-class="{ 'o-hovered': this.rootHover.isHover }">
+        <div t-ref="this.rootRef" class="o-discuss-CallRecordingIndicator d-flex align-items-center gap-3 px-2 py-1 rounded-2" t-att-class="{ 'o-hovered': this.rootHover.isHover }">
             <div class="o-discuss-CallRecordingIndicator-icons d-flex align-items-center gap-2">
                 <i class="fa fa-circle text-danger o-blinking"/>
                 <i t-if="this.rtc.recordingState.video" title="recording video" class="fa fa-desktop"/>
