@@ -12,7 +12,7 @@ async function paypalOnboardingAction(env, action) {
         return;
     }
 
-    const { paypal_url: paypalUrl, partner_js_url: partnerJsUrl } = response;
+    const { paypal_url: paypalUrl, partner_sdk_url: partnerSdkUrl } = response;
 
     window.onboardedCallback = async function (authCode, sharedId) {
         let result;
@@ -36,18 +36,10 @@ async function paypalOnboardingAction(env, action) {
         env.services.action.doAction("soft_reload");
     };
 
-    let onboardBtn = document.getElementById("partner-js");
-    if (!onboardBtn) {
-        onboardBtn = document.createElement("a");
-        onboardBtn.id = "partner-js";
-        onboardBtn.setAttribute("data-paypal-onboard-complete", "onboardedCallback");
-        onboardBtn.setAttribute("data-paypal-button", "true");
-        onboardBtn.setAttribute("target", "_blank");
-        document.body.appendChild(onboardBtn);
-    }
+    const onboardBtn = document.getElementById("partner-js");
     onboardBtn.href = `${paypalUrl}&displayMode=minibrowser`;
 
-    await loadJS(partnerJsUrl);
+    await loadJS(partnerSdkUrl);
     // Give partner.js time to load its follow-up script and wire the button before clicking
     await new Promise((resolve) => setTimeout(resolve, 500));
     onboardBtn.click();
