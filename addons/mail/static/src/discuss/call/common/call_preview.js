@@ -12,7 +12,16 @@ import { CallSettingsDialog } from "@mail/discuss/call/common/call_settings";
 import { DeviceSelect } from "@mail/discuss/call/common/device_select";
 import { closeStream, onChange } from "@mail/utils/common/misc";
 
-import { Component, onWillDestroy, proxy, signal, status, types, useProps } from "@odoo/owl";
+import {
+    Component,
+    computed,
+    onWillDestroy,
+    proxy,
+    signal,
+    status,
+    types,
+    useProps,
+} from "@odoo/owl";
 
 import { _t } from "@web/core/l10n/translation";
 import { useService } from "@web/core/utils/hooks";
@@ -152,7 +161,7 @@ export class CallPreview extends Component {
         return this.env.inWelcomePage && this.ui.isSmall;
     }
 
-    get actions() {
+    actions = computed(() => {
         const cameraOnActionUpdated = {
             ...cameraOnAction,
             isActive: () => this.state.videoStream,
@@ -229,7 +238,7 @@ export class CallPreview extends Component {
         }
 
         return [callAudioActions, callVideoActions];
-    }
+    });
 
     async enableMicrophone() {
         if (
