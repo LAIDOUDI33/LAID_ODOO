@@ -195,7 +195,9 @@ class RtcController(Controller):
     # Recording / Transcription
     ##########
 
-    def _get_recording_destination(self, call_history, start_ms, end_ms):
+    def _get_recording_destination(
+        self, call_history, start_ms, end_ms, mimetype="application/octet-stream",
+    ):
         """Return the recording upload contract."""
         pass
 
@@ -205,10 +207,12 @@ class RtcController(Controller):
         auth="public",
         cors="*",
     )
-    def get_routing(self, call_history, start_ms, end_ms):
+    def get_routing(
+        self, call_history, start_ms, end_ms, mimetype="application/octet-stream",
+    ):
         _check_jwt(request, call_history.channel_id)
         return request.make_json_response(
-            self._get_recording_destination(call_history, start_ms, end_ms),
+            self._get_recording_destination(call_history, start_ms, end_ms, mimetype),
             status=200,
         )
 
