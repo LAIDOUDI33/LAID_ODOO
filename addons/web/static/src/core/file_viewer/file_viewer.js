@@ -1,5 +1,13 @@
+<<<<<<< a6290b387cb8776ddfbc88ba0e27a48dfe94d93c
 import { Component, useEffect, useRef, useState } from "@odoo/owl";
 import { download } from "@web/core/network/download";
+||||||| 4d60d5693f3d0253a28dd38412125b2fc6d6b41f
+import { Component, useRef, useState } from "@odoo/owl";
+import { download } from "@web/core/network/download";
+=======
+import { Component, useRef, useState } from "@odoo/owl";
+import { downloadFile } from "@web/core/network/download";
+>>>>>>> dfe0fe52254b4fc788439c38777679a2049c5746
 import { useAutofocus, useService } from "@web/core/utils/hooks";
 import { hidePDFJSButtons } from "@web/core/utils/pdfjs";
 
@@ -257,9 +265,6 @@ export class FileViewer extends Component {
     }
 
     onClickDownload() {
-        download({
-            data: {},
-            url: this.state.file.downloadUrl,
-        });
+        downloadFile(this.state.file.downloadUrl);
     }
 }
