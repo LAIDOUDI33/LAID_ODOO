@@ -2,7 +2,7 @@ import { Interaction } from '@web/public/interaction';
 import { registry } from '@web/core/registry';
 
 export class AddToCart extends Interaction {
-    static selector = '.oe_website_sale button[name="add_to_cart"]';
+    static selector = '.oe_website_sale button[name="add_to_cart"], #o_wsale_mobile_bar_cart';
     dynamicContent = {
         _root: { "t-on-click.prevent": this.locked(this.addToCart, true) },
     };
@@ -15,7 +15,17 @@ export class AddToCart extends Interaction {
     async addToCart(ev) {
         const button = ev.currentTarget;
 
-        const productEl = button.closest('.js_product');
+        const productEl = button.closest(".js_product") || button.closest("#wrap")?.querySelector(".js_product");
+
+        if (button.id === "o_wsale_mobile_bar_cart") {
+            const mainButton = productEl?.querySelector(
+                ".js_product #add_to_cart_wrap button[name='add_to_cart']"
+            );
+
+            mainButton?.click();
+            return;
+        }
+
         const productPageData = productEl ? {
             quantity: parseFloat(productEl.querySelector('input[name="add_qty"]')?.value) || 1,
             uomId: parseInt(productEl.querySelector('input[name="uom_id"]:checked')?.value),
