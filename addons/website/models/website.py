@@ -693,10 +693,8 @@ class Website(models.CachedModel):
         if not configurator_snippets_addons:
             return configurator_snippets
 
-        installed_modules = self.env['ir.module.module']._installed()
-
         for module_name, module_addon in configurator_snippets_addons.items():
-            if module_name not in installed_modules:
+            if self.env['ir.module.module']._get(module_name).state != 'installed':
                 continue
             for page, snippets_to_insert in module_addon.items():
                 snippet_list = configurator_snippets.setdefault(page, [])

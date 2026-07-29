@@ -2449,7 +2449,7 @@ class AccountMove(models.Model):
             move.highlight_send_button = not move.is_being_sent and not move.invoice_pdf_report_id
 
     def _compute_is_sale_installed(self):
-        self.is_sale_installed = 'sale_management' in self.env['ir.module.module']._installed()
+        self.is_sale_installed = self.env['ir.module.module']._get('sale_management').state == 'installed'
 
     @api.depends('line_ids.matched_debit_ids', 'line_ids.matched_credit_ids', 'matched_payment_ids', 'matched_payment_ids.state')
     def _compute_reconciled_payment_ids(self):

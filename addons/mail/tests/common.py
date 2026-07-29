@@ -64,7 +64,7 @@ class MockEmail(common.BaseCase, MockSmtplibCase):
 
     def setUp(self):
         super().setUp()
-        self.is_mail_track_installed = 'mail_tracking' in self.env['ir.module.module']._installed()
+        self.is_mail_track_installed = self.env['ir.module.module']._get('mail_tracking').state == 'installed'
 
     # ------------------------------------------------------------
     # UTILITY MOCKS

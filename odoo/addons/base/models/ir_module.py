@@ -157,13 +157,14 @@ XML_DECLARATION = (
 )
 
 
-class IrModuleModule(models.Model):
+class IrModuleModule(models.CachedModel):
     _name = 'ir.module.module'
     _rec_name = "shortdesc"
     _rec_names_search = ('name', 'shortdesc', 'summary')
     _description = "Module"
     _order = 'application desc,sequence,name'
     _allow_sudo_commands = False
+    _cached_data_fields = ('name', 'state')
 
     @classmethod
     def get_module_info(cls, name):
@@ -338,12 +339,6 @@ class IrModuleModule(models.Model):
         for module in self:
             if module.state in ('installed', 'to upgrade', 'to remove', 'to install'):
                 raise UserError(_('You are trying to remove a module that is installed or will be installed.'))
-
-    def unlink(self):
-        res = super().unlink()
-        if self:
-            self.env.transaction.invalidate_ormcache('stable')
-        return res
 
     def _get_modules_to_load_domain(self):
         """ Domain to retrieve the modules that should be loaded by the registry. """
@@ -917,18 +912,15 @@ class IrModuleModule(models.Model):
 
     @api.ormcache('name', cache='stable')
     def _get_id(self, name):
-        self.flush_model(['name'])
-        self.env.cr.execute("SELECT id FROM ir_module_module WHERE name=%s", (name,))
-        result = self.env.cr.fetchone()
-        return result and result[0]
+        return next((module for module in self.get_all().sudo() if module.name == name), self.browse()).id
 
     @api.model
-    @api.ormcache(cache='stable')
     def _installed(self):
         """ Return the set of installed modules as a dictionary {name: id} """
         return {
             module.name: module.id
-            for module in self.sudo().search([('state', '=', 'installed')])
+            for module in self.get_all().sudo()
+            if module.state == 'installed'
         }
 
     @api.model
@@ -1033,14 +1025,8 @@ class IrModuleModuleDependency(models.Model):
 
     @api.depends('name')
     def _compute_depend(self):
-        # retrieve all modules corresponding to the dependency names
-        names = {dep.name for dep in self}
-        mods = self.env['ir.module.module'].search([('name', 'in', names)])
-
-        # index modules by name, and assign dependencies
-        name_mod = {mod.name: mod for mod in mods}
         for dep in self:
-            dep.depend_id = name_mod.get(dep.name)
+            dep.depend_id = self.env['ir.module.module']._get(dep.name)
 
     def _search_depend(self, operator, value):
         if operator not in ('in', 'any'):
@@ -1093,14 +1079,8 @@ class IrModuleModuleExclusion(models.Model):
 
     @api.depends('name')
     def _compute_exclusion(self):
-        # retrieve all modules corresponding to the exclusion names
-        names = {excl.name for excl in self}
-        mods = self.env['ir.module.module'].search([('name', 'in', names)])
-
-        # index modules by name, and assign dependencies
-        name_mod = {mod.name: mod for mod in mods}
         for excl in self:
-            excl.exclusion_id = name_mod.get(excl.name)
+            excl.exclusion_id = self.env['ir.module.module']._get(excl.name)
 
     def _search_exclusion(self, operator, value):
         if operator not in ('in', 'any'):

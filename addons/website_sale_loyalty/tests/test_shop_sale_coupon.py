@@ -21,7 +21,7 @@ class WebsiteSaleLoyaltyTestUi(TestSaleCommon, HttpCase):
     def setUpClass(cls):
         super().setUpClass()
 
-        if "payment_stripe" in cls.env["ir.module.module"]._installed():
+        if cls.env["ir.module.module"]._get("payment_stripe").state == 'installed':
             cls.env["payment.provider"].search([
                 ("code", "=", "stripe")
             ]).allow_express_checkout = False
