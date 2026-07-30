@@ -952,3 +952,30 @@ test("validates a date against today resolved when the form is mounted", async (
     await fillAndSubmitForm(dateInputEl, "11/15/2025");
     checkField(dateInputEl, true, false);
 });
+
+test("add aria-invalid to invalid fields", async () => {
+    await startInteractions(formTemplate);
+    const mailEl = queryOne("input[name=email_from]");
+
+    expect(mailEl.getAttribute("aria-invalid")).toBeEmpty();
+    expect(mailEl.getAttribute("aria-errormessage")).toBeEmpty();
+
+    // Submit
+    await click("a.s_website_form_send");
+    expect(mailEl.getAttribute("aria-invalid")).toBe("true");
+    const errorMessage = mailEl.getAttribute("aria-errormessage");
+    expect(errorMessage).not.toBeEmpty();
+    const errorMessageEl = queryOne(`#${errorMessage}`);
+    expect(errorMessageEl).toHaveText("Please fill out this field.");
+    expect(errorMessageEl).toHaveClass("visually-hidden");
+
+    // Fill mail
+    await click("input[name=email_from]");
+    await fill("a@b.com");
+    await advanceTime(400); // Debounce delay.
+
+    // Submit
+    await click("a.s_website_form_send");
+    expect(mailEl.getAttribute("aria-invalid")).toBeEmpty();
+    expect(mailEl.getAttribute("aria-errormessage")).toBeEmpty();
+});

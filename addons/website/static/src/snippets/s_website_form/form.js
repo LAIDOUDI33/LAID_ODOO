@@ -20,6 +20,7 @@ import {
     serializeDateTime,
 } from "@web/core/l10n/dates";
 import { getParsedDataFor } from "@website/js/utils";
+import { generateHTMLId } from "@web/core/utils/strings";
 
 const { DateTime } = luxon;
 
@@ -607,7 +608,9 @@ export class Form extends Interaction {
             // FIXME that seems broken, "for" does not contain the field
             // but this is used to retrieve errors sent from the server...
             // need more investigation.
-            const fieldName = fieldEl.querySelector(".col-form-label")?.getAttribute("for");
+            const fieldName = fieldEl
+                .querySelector(".col-form-label, .s_website_form_field")
+                ?.getAttribute("for");
 
             // Validate inputs for this field
             const inputEls = [
@@ -699,11 +702,26 @@ export class Form extends Interaction {
             fieldEl.classList.remove("o_has_error");
             for (const controlEl of controlEls) {
                 controlEl.classList.remove("is-invalid");
+                controlEl.removeAttribute("aria-invalid");
+                // remove error-message
+                const errorMessage = controlEl.getAttribute("aria-errormessage");
+                if (errorMessage) {
+                    document.getElementById(errorMessage)?.remove();
+                }
+                controlEl.removeAttribute("aria-errormessage");
             }
             if (invalidInputs.length || errorFields[fieldName]) {
                 fieldEl.classList.add("o_has_error");
                 for (const controlEl of controlEls) {
                     controlEl.classList.add("is-invalid");
+                    controlEl.setAttribute("aria-invalid", "true");
+                    // add error-message
+                    const errorMessageEl = document.createElement("p");
+                    errorMessageEl.id = generateHTMLId();
+                    errorMessageEl.innerText = controlEl.validationMessage;
+                    errorMessageEl.classList.add("visually-hidden");
+                    fieldEl.appendChild(errorMessageEl);
+                    controlEl.setAttribute("aria-errormessage", errorMessageEl.id);
                 }
                 if (typeof errorFields[fieldName] === "string") {
                     // update error message and show it.
