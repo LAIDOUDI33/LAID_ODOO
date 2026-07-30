@@ -851,12 +851,10 @@ class ProductTemplate(models.Model):
             product=product_or_template, quantity=quantity, uom=uom, currency=currency
         )
 
-        price_before_discount = pricelist_price
         pricelist_item = self.env["product.pricelist.item"].browse(pricelist_rule_id)
-        if pricelist_item._show_discount_on_shop():
-            price_before_discount = pricelist_item._compute_price_before_discount(
-                product=product_or_template, quantity=quantity or 1.0, uom=uom, currency=currency
-            )
+        price_before_discount = self._get_price_before_discount(
+            pricelist_item, pricelist_price, product_or_template, quantity, uom, currency
+        )
 
         has_discounted_price = currency.compare_amounts(price_before_discount, pricelist_price) == 1
         combination_info = {
@@ -1001,6 +999,29 @@ class ProductTemplate(models.Model):
             combination_info.update({"free_qty": 0, "cart_qty": 0})
 
         return combination_info
+
+    def _get_price_before_discount(
+        self, pricelist_item, pricelist_price, product_or_template, quantity, uom, currency
+    ):
+        """Compute the reference price to show as a discounted-from price on the shop.
+
+        :param pricelist_item: `product.pricelist.item` record that was applied to reach
+            `pricelist_price`, or an empty recordset if no rule matched.
+        :param float pricelist_price: Price actually applied, as computed from `pricelist_item`.
+        :param product_or_template: `product.product` or `product.template` record.
+        :param float quantity: Requested quantity.
+        :param uom: `uom.uom` record.
+        :param currency: `res.currency` record in which the returned price must be expressed.
+        :returns: The price before discount, in `currency`. Equal to `pricelist_price` unless
+            `pricelist_item` is configured to show its discount on the shop.
+        :rtype: float
+        """
+        price_before_discount = pricelist_price
+        if pricelist_item._show_discount_on_shop():
+            price_before_discount = pricelist_item._compute_price_before_discount(
+                product=product_or_template, quantity=quantity or 1.0, uom=uom, currency=currency
+            )
+        return price_before_discount
 
     def _get_dynamic_attribute_images(self, combination_ids, website_id):
         """Compute the 'closest variant' image for every value based on the current selection.
