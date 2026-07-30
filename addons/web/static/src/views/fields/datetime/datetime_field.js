@@ -51,6 +51,7 @@ export const dateTimeFieldProps = {
     warnFuture: t.boolean().optional(),
     showSeconds: t.boolean().optional(false),
     showTime: t.boolean().optional(true),
+    showWeekday: t.boolean().optional(false),
     minPrecision: t.selection(["days", "months", "years", "decades"]).optional(),
     maxPrecision: t.selection(["days", "months", "years", "decades"]).optional(),
 };
@@ -280,7 +281,7 @@ export class DateTimeField extends Component {
         if (!value) {
             return "";
         }
-        const { showSeconds, showTime } = this.props;
+        const { showSeconds, showTime, showWeekday } = this.props;
         if (this.field.type === "date") {
             return formatDate(value, { numeric });
         } else {
@@ -291,6 +292,7 @@ export class DateTimeField extends Component {
                 showSeconds,
                 showTime,
                 showDate,
+                showWeekday: showWeekday && showDate,
             });
         }
     }
@@ -474,6 +476,11 @@ export const dateField = {
             type: "field",
             availableTypes: ["date", "char"],
         },
+        {
+            label: _t("Show Weekday"),
+            name: "show_weekday",
+            type: "boolean",
+        }
     ],
     supportedTypes: ["date"],
     extractProps: ({ options, placeholder }, dynamicInfo) => ({
@@ -484,6 +491,7 @@ export const dateField = {
         placeholder,
         required: dynamicInfo.required,
         rounding: options.rounding && parseInt(options.rounding, 10),
+        showWeekday: options.show_weekday,
         startDateField: options[START_DATE_FIELD_OPTION],
         numeric: options.numeric,
         warnFuture: Boolean(options.warn_future),
@@ -557,6 +565,7 @@ export const dateTimeField = {
         ...dateField.extractProps(fieldInfo, dynamicInfo),
         showSeconds: fieldInfo.options.show_seconds ?? false,
         showTime: fieldInfo.options.show_time ?? true,
+        showWeekday: fieldInfo.options.show_weekday ?? false,
     }),
     supportedTypes: ["datetime"],
     listViewWidth: ({ options }) => {
