@@ -8,7 +8,8 @@ import {
     start,
     startServer,
 } from "@mail/../tests/mail_test_helpers";
-import { describe, globals, test } from "@odoo/hoot";
+import { describe, expect, globals, test } from "@odoo/hoot";
+import { queryOne, setInputRange } from "@odoo/hoot-dom";
 import { mockDate } from "@odoo/hoot-mock";
 import { Command, patchWithCleanup, serverState } from "@web/../tests/web_test_helpers";
 
@@ -37,14 +38,8 @@ test("make voice message in chat", async () => {
             return res;
         },
         async fetchFile() {
-            return super.fetchFile("/mail/static/src/audio/call-invitation.mp3");
-        },
-        _fetch(url) {
-            if (url.includes("call-invitation.mp3")) {
-                const realFetch = globals.fetch;
-                return realFetch(...arguments);
-            }
-            return super._fetch(...arguments);
+            const response = await globals.fetch("/mail/static/src/audio/call-invitation.mp3");
+            return response.blob();
         },
     });
     mockGetMedia();
@@ -90,8 +85,104 @@ test("make voice message in chat", async () => {
     await voicePlayerDrawn;
     await contains(".o-mail-VoicePlayer button[title='Play']");
     await contains(".o-mail-VoicePlayer canvas", { count: 2 }); // 1 for global waveforms, 1 for played waveforms
-    await contains(".o-mail-VoicePlayer:text('00 : 03')"); // duration of call-invitation_.mp3
+    await contains(".o-mail-VoicePlayer:contains('00 : 04')"); // duration of call-invitation.mp3
     await click(".o-mail-Composer button[title='More Actions']");
     await contains(".dropdown-item:contains('Attach Files')"); // check menu loaded
     await contains(".dropdown-item:contains('Voice Message')", { count: 0 }); // only 1 voice message at a time
+});
+
+test("controls are only shown on voice messages", async () => {
+    patchVoiceMessageAudio();
+    patchWithCleanup(VoicePlayer.prototype, {
+        async fetchFile() {
+            const response = await globals.fetch("/mail/static/tests/fixtures/audio_60s.webm");
+            return response.blob();
+        },
+    });
+    const pyEnv = await startServer();
+    const channelId = pyEnv["discuss.channel"].create({ channel_type: "channel", name: "General" });
+    pyEnv["mail.message"].create([
+        {
+            attachment_ids: [
+                Command.create({
+                    mimetype: "audio/mpeg",
+                    name: "voicemessage",
+                    res_id: channelId,
+                    res_model: "discuss.channel",
+                    voice_ids: [Command.create({ display_name: "voicemessage" })],
+                }),
+            ],
+            body: "Voice message",
+            message_type: "comment",
+            model: "discuss.channel",
+            res_id: channelId,
+        },
+        {
+            attachment_ids: [
+                Command.create({
+                    mimetype: "audio/mpeg",
+                    name: "Audio.mp3",
+                    res_id: channelId,
+                    res_model: "discuss.channel",
+                }),
+            ],
+            body: "Regular audio",
+            message_type: "comment",
+            model: "discuss.channel",
+            res_id: channelId,
+        },
+    ]);
+    await start();
+    await openDiscuss(channelId);
+    await contains(".o-mail-AttachmentContainer", { count: 2 });
+    await contains(".o-mail-VoicePlayer-controls", { count: 1 });
+    await contains(".o-mail-Message", {
+        text: "Voice message",
+        contains: [".o-mail-VoicePlayer-controls"],
+    });
+    await contains(".o-mail-Message", {
+        text: "Regular audio",
+        contains: [".o-mail-AttachmentCard-image.o_image"],
+    });
+});
+
+test("change playback speed and volume of voice message", async () => {
+    patchVoiceMessageAudio();
+    patchWithCleanup(VoicePlayer.prototype, {
+        async fetchFile() {
+            const response = await globals.fetch("/mail/static/tests/fixtures/audio_60s.webm");
+            return response.blob();
+        },
+    });
+    const pyEnv = await startServer();
+    const channelId = pyEnv["discuss.channel"].create({ channel_type: "channel", name: "General" });
+    pyEnv["mail.message"].create({
+        attachment_ids: [
+            Command.create({
+                mimetype: "audio/mpeg",
+                name: "voicemessage",
+                res_id: channelId,
+                res_model: "discuss.channel",
+                voice_ids: [Command.create({ display_name: "voicemessage" })],
+            }),
+        ],
+        message_type: "comment",
+        model: "discuss.channel",
+        res_id: channelId,
+    });
+    await start();
+    await openDiscuss(channelId);
+    await contains(".o-mail-VoicePlayer:contains('01 : 00')"); // duration of audio_60s.webm
+    await click(".o-mail-VoicePlayer button[title='Play']");
+    await contains(".o-mail-VoicePlayer button[title='Pause']");
+    await click("button[title='Playback speed']");
+    await click(".dropdown-item:contains('2x')");
+    await contains("button[title='Playback speed']:contains('2x')");
+    expect(queryOne(".o-mail-VoicePlayer audio").playbackRate).toBe(2);
+    await click("button[title='Volume']");
+    await contains("input[type='range'][max='1']");
+    await setInputRange("input[type='range'][max='1']", 0.5);
+    expect(queryOne(".o-mail-VoicePlayer audio").volume).toBe(0.5);
+    queryOne(".o-mail-VoicePlayer audio").dispatchEvent(new Event("ended"));
+    await contains(".o-mail-VoicePlayer button[title='Replay']");
 });
