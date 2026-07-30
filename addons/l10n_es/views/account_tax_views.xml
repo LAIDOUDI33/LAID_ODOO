@@ -21,10 +21,6 @@
                     <field name="l10n_es_regime_code"
                            widget="dynamic_selection"
                            options="{'available_field': 'l10n_es_available_regime_codes'}"/>
-                    <field name="l10n_es_regime_code_additional"
-                           widget="dynamic_selection"
-                           options="{'available_field': 'l10n_es_available_regime_codes'}"
-                           invisible="not l10n_es_regime_code"/>
                 </xpath>
             </field>
         </record>

@@ -18,15 +18,6 @@ class ResCompany(models.Model):
         default=True,
         copy=False,
     )
-    l10n_es_edi_verifactu_special_vat_regime = fields.Selection(
-        string="Veri*Factu VAT Regime",
-        selection=[
-            ('simplified', "Simplified Regime"),
-            ('reagyp', "REAGYP (Special Regime for Agriculture, Livestock and Fisheries)"),
-            ('recargo', "Recargo de Equivalencia"),
-        ],
-        help="Leave empty for the normal regimen.",
-    )
 
     def _l10n_es_edi_verifactu_get_endpoints(self):
         """

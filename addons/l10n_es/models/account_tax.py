@@ -69,37 +69,10 @@ class AccountTax(models.Model):
         readonly=False,
         store=True,
     )
-    l10n_es_regime_code_additional = fields.Selection(
-        string="VAT Regime Code (Additional)",
-        selection="_l10n_es_regime_code_selection",
-        compute="_compute_l10n_es_regime_codes",
-        readonly=False,
-        store=True,
-    )
 
     # -------------------------------------------------------------------------
     # EDI HELPERS
     # -------------------------------------------------------------------------
-
-    @api.model
-    @api.ormcache()
-    def _l10n_es_get_oss_tag(self):
-        return self.env.ref('l10n_eu_oss.tag_oss', raise_if_not_found=False)
-
-    def _l10n_es_get_regime_code(self):
-        # Regime codes (ClaveRegimenEspecialOTrascendencia)
-        # NOTE there's 11 more codes to implement, also there can be up to 3 in total
-        # See https://www.gipuzkoa.eus/documents/2456431/13761128/Anexo+I.pdf/2ab0116c-25b4-f16a-440e-c299952d683d
-        oss_tag_id = self._l10n_es_get_oss_tag()
-
-        # If there's an OSS tax, it is considered an OSS operation
-        if oss_tag_id and oss_tag_id in self.invoice_repartition_line_ids.tag_ids.ids:
-            return '17'
-
-        if self.filtered(lambda t: t.l10n_es_exempt_reason == 'E2'):
-            return '02'
-
-        return '01'
 
     @api.model
     def _l10n_es_get_sujeto_tax_types(self):
@@ -211,11 +184,18 @@ class AccountTax(models.Model):
             valid = tax._l10n_es_regime_get_available_codes()
             tax.l10n_es_available_regime_codes = ','.join(valid) if valid else False
 
+    @api.model
+    def _l10n_es_special_vat_regime_codes(self, company=None):
+        return {
+            'cash_basis': '07',
+            'equivalence_surcharge': '18_iva',
+            'reagyp': '19_iva',
+            'simplified': '20',
+        }
+
     @api.depends('type_tax_use')
     def _compute_l10n_es_regime_codes(self):
         for tax in self:
             valid = tax._l10n_es_regime_get_available_codes()
             if tax.l10n_es_regime_code not in valid:
                 tax.l10n_es_regime_code = False
-            if tax.l10n_es_regime_code_additional not in valid:
-                tax.l10n_es_regime_code_additional = False

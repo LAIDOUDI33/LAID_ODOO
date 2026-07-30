@@ -178,7 +178,6 @@ class AccountMove(models.Model):
             else:
                 move.l10n_es_invoice_type = False
 
-
     @api.depends(
         'move_type', 'invoice_line_ids.tax_ids',
         'invoice_line_ids.tax_ids.l10n_es_available_regime_codes',
@@ -196,16 +195,15 @@ class AccountMove(models.Model):
     @api.depends(
         'move_type', 'invoice_line_ids.tax_ids',
         'invoice_line_ids.tax_ids.l10n_es_regime_code',
-        'invoice_line_ids.tax_ids.l10n_es_regime_code_additional',
+        'company_id.l10n_es_special_vat_regime',
     )
     def _compute_l10n_es_regime_codes(self):
         for move in self:
             if move.state == 'posted' and move.l10n_es_regime_code:
                 continue
             tax = move._l10n_es_regime_representative_tax()
-            move.l10n_es_regime_code = tax.l10n_es_regime_code or False
-            move.l10n_es_regime_code_additional = tax.l10n_es_regime_code_additional or False
-
+            move.l10n_es_regime_code = tax.l10n_es_regime_code or self.env['account.tax']._l10n_es_special_vat_regime_codes(
+                company=move.company_id).get(move.company_id.l10n_es_special_vat_regime, '01')
 
     @api.model
     def _l10n_es_regime_code_selection(self):

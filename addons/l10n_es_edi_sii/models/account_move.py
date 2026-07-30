@@ -106,7 +106,7 @@ class AccountMove(models.Model):
     def _compute_show_reset_to_draft_button(self):
         super()._compute_show_reset_to_draft_button()
         for move in self:
-            if move.l10n_es_edi_is_required and move.l10n_es_edi_sii_state == 'sent' and not move.state == 'draft':
+            if move.l10n_es_edi_is_required and move.l10n_es_edi_sii_state == 'sent' and move.state != 'draft':
                 move.show_reset_to_draft_button = True
 
     def button_request_cancel(self):
@@ -376,7 +376,7 @@ class AccountMove(models.Model):
                     )
                     invoice_node['ImporteTotal'] = float_round(sign * total_amount, 2)
 
-                    if move.l10n_es_real_estate_id:
+                    if 'l10n_es_real_estate_id' in move._fields and move.l10n_es_real_estate_id:
                         real_estate_details = invoice_node.setdefault('DatosInmueble', {}).setdefault('DetalleInmueble', {})
                         real_estate_details['SituacionInmueble'] = move.l10n_es_real_estate_id.real_estate_location
                         real_estate_details['ReferenciaCatastral'] = move.l10n_es_real_estate_id.cadastral_reference

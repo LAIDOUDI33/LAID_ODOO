@@ -112,10 +112,16 @@ class PosOrder(models.Model):
         self.ensure_one()
         if not self._l10n_es_edi_verifactu_get_tax_applicability():
             return False
+        AccountTax = self.env['account.tax']
         taxes = self.lines.tax_ids.flatten_taxes_hierarchy()
         for tax in taxes:
             if tax.l10n_es_regime_code:
-                return tax.l10n_es_regime_code.split('_', 1)[0]
+                return AccountTax._l10n_es_regime_code_aeat(tax.l10n_es_regime_code)
+        # No tax has an explicit regime code: fall back to the company's special VAT regime,
+        # mirroring account.move._compute_l10n_es_regime_codes (default '01' - general regime).
+        special_regime_code = AccountTax._l10n_es_special_vat_regime_codes(company=self.company_id).get(
+            self.company_id.l10n_es_special_vat_regime, '01')
+        return AccountTax._l10n_es_regime_code_aeat(special_regime_code)
 
     def l10n_es_edi_verifactu_button_send(self):
         self._l10n_es_edi_verifactu_mark_for_next_batch()

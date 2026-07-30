@@ -13,7 +13,6 @@
         'views/certificate_certificate_views.xml',
         'views/l10n_es_edi_verifactu_document_views.xml',
         'views/report_invoice.xml',
-        'views/res_company_views.xml',
         'views/res_config_settings_views.xml',
         'data/ir_cron.xml',
         'security/ir.access.csv',

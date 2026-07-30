@@ -21,6 +21,14 @@ class AccountTax(models.Model):
             codes = codes + [code for code in extra if code not in codes]
         return codes
 
+    @api.model
+    def _l10n_es_special_vat_regime_codes(self, company=None):
+        company = company or self.env.company
+        codes = super()._l10n_es_special_vat_regime_codes(company=company)
+        if company.l10n_es_tbai_is_enabled:
+            codes = codes | {'equivalence_surcharge': '51', 'simplified': '52'}
+        return codes
+
     @api.depends('company_id.l10n_es_tbai_is_enabled')
     def _compute_l10n_es_regime_available(self):
         super()._compute_l10n_es_regime_available()

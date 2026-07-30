@@ -175,6 +175,20 @@ class PosOrder(models.Model):
     # XML VALUES
     # -------------------------------------------------------------------------
 
+    def _l10n_es_tbai_get_regime_code(self):
+        # POS orders don't carry their own `l10n_es_regime_code` (unlike account.move): read it off
+        # the first tax that has one, falling back to the company's special VAT regime (mirroring
+        # account.move._compute_l10n_es_regime_codes, default '01' - general regime).
+        self.ensure_one()
+        AccountTax = self.env['account.tax']
+        taxes = self.lines.tax_ids.flatten_taxes_hierarchy()
+        for tax in taxes:
+            if tax.l10n_es_regime_code:
+                return AccountTax._l10n_es_regime_code_aeat(tax.l10n_es_regime_code)
+        special_regime_code = AccountTax._l10n_es_special_vat_regime_codes(company=self.company_id).get(
+            self.company_id.l10n_es_special_vat_regime, '01')
+        return AccountTax._l10n_es_regime_code_aeat(special_regime_code)
+
     def _l10n_es_tbai_get_values(self):
         self.ensure_one()
 
@@ -198,9 +212,7 @@ class PosOrder(models.Model):
             **self._l10n_es_tbai_get_credit_note_values(),
             'origin': 'manual',
             'taxes': self.lines.tax_ids,
-            # POS orders don't carry their own `l10n_es_regime_code` (unlike account.move); reuse
-            # the same generic heuristic account.move still relies on for OSS detection.
-            'regime_code': self.lines.tax_ids._l10n_es_get_regime_code(),
+            'regime_code': self._l10n_es_tbai_get_regime_code(),
             'rate': self.currency_rate,
             'base_lines': base_lines,
         }

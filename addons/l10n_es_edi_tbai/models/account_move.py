@@ -292,8 +292,8 @@ class AccountMove(models.Model):
             base_line['discount_amount'] = sign * base_line['discount_amount']
             base_line['price_total'] = sign * base_line['price_total']
         taxes = self.invoice_line_ids.tax_ids.flatten_taxes_hierarchy()
-        is_oss = any(tax._l10n_es_get_regime_code() == '17' for tax in taxes)
         regime_code = self.env['account.tax']._l10n_es_regime_code_aeat(self.l10n_es_regime_code) or '01'
+        is_oss = regime_code == '17'
 
         return {
             **self._l10n_es_tbai_get_credit_note_values(),
