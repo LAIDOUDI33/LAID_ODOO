@@ -108,7 +108,7 @@
             <div class="row">
                 <div class="col-md-6 col-12 pt16 pb16">
                     <blockquote class="s_mail_blockquote s_blockquote oe_unmovable o_mail_snippet_general o_cc w-100 h-100 mx-auto rounded fst-normal" data-snippet="s_blockquote" data-name="Review" style="border: 0;border-radius: 6.4px !important;">
-                        <t t-call="mass_mailing.s_rating" t-call-context="{...this, title: 'Rating', activeStars: 4}"/>
+                        <t t-call="mass_mailing.s_rating" title="'Rating'" activeStars="4"/>
                         <div class="py-4">
                             <p class="mb-0">"Engaging with this team was effortless from start to end. Their proficiency and meticulous approach greatly enhanced our project. I couldn't be happier with the final product!"</p>
                         </div>
@@ -127,7 +127,7 @@
                 </div>
                 <div class="col-md-6 col-12 pt16 pb16">
                     <blockquote class="s_mail_blockquote s_blockquote oe_unmovable o_mail_snippet_general o_cc w-100 h-100 mx-auto rounded fst-normal" data-snippet="s_blockquote" data-name="Review" style="border: 0;border-radius: 6.4px !important;">
-                        <t t-call="mass_mailing.s_rating" t-call-context="{...this, title: 'Rating', activeStars: 4}"/>
+                        <t t-call="mass_mailing.s_rating" title="'Rating'" activeStars="4"/>
                         <div class="py-4">
                             <p class="mb-auto">"Working with this team was smooth and efficient at every stage. Their skills and commitment to quality had a major impact on our project. I am thrilled with the final results!"</p>
                         </div>
@@ -146,7 +146,7 @@
                 </div>
                 <div class="col-md-6 col-12 pt16 pb16">
                     <blockquote class="s_mail_blockquote s_blockquote oe_unmovable o_mail_snippet_general o_cc w-100 h-100 mx-auto rounded fst-normal" data-snippet="s_blockquote" data-name="Review" style="border: 0;border-radius: 6.4px !important;">
-                        <t t-call="mass_mailing.s_rating" t-call-context="{...this, title: 'Rating', activeStars: 4}"/>
+                        <t t-call="mass_mailing.s_rating" title="'Rating'" activeStars="4"/>
                         <div class="py-4">
                             <p class="mb-auto">"From the first meeting, it was clear we were in good hands. They took our vision and turned it into something even better than we had imagined. Highly recommend!"</p>
                         </div>
@@ -165,7 +165,7 @@
                 </div>
                 <div class="col-md-6 col-12 pt16 pb16">
                     <blockquote class="s_mail_blockquote s_blockquote oe_unmovable o_mail_snippet_general o_cc w-100 h-100 mx-auto rounded fst-normal" data-snippet="s_blockquote" data-name="Review" style="border: 0;border-radius: 6.4px !important;">
-                        <t t-call="mass_mailing.s_rating" t-call-context="{...this, title: 'Rating', activeStars: 4}"/>
+                        <t t-call="mass_mailing.s_rating" title="'Rating'" activeStars="4"/>
                         <div class="py-4">
                             <p class="mb-auto">"Exceptional service and great communication throughout the entire process. They went above and beyond to ensure our project was a complete success."</p>
                         </div>

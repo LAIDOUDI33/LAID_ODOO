@@ -121,7 +121,7 @@
                     <div class="col-md-6 col-12 pt16 pb16">
                         <h1><span class="h2-fs" t-out="company_id.name"/></h1>
                     </div>
-                    <t t-call="mass_mailing.s_social_media_template" t-call-context="{...this, optionalTextPosition: 'text-end', optionalSnippetClass: 'col-md-6 col-12 o_mail_header_social'}"/>
+                    <t t-call="mass_mailing.s_social_media_template" optionalTextPosition="'text-end'" optionalSnippetClass="'col-md-6 col-12 o_mail_header_social'"/>
                 </div>
             </div>
         </section>

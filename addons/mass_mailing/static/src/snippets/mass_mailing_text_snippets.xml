@@ -101,51 +101,51 @@
                         </div>
                         <div class="s_pricelist_boxed_section col-md-12 pt48 col-12" data-name="Menu Section">
                             <h3>✽<t t-out="nbsp + nbsp"/>Pizzas</h3>
-                            <t t-call="mass_mailing.s_pricelist_boxed_item" t-call-context="{
-                                    name: 'Margherita',
-                                    mobileSize: 4,
-                                    size: 3,
-                                    price: '$12.00',
-                                    description: 'Classic pizza with fresh mozzarella, San Marzano tomatoes, and basil leaves, drizzled with extra virgin olive oil.',
-                                }"/>
-                            <t t-call="mass_mailing.s_pricelist_boxed_item" t-call-context="{
-                                    name: 'Quattro Stagioni',
-                                    mobileSize: 6,
-                                    size: 4,
-                                    price: '$14.50',
-                                    description: 'A delicious mix of four toppings: mushrooms, artichokes, ham, and olives, all on a bed of mozzarella and tomato sauce.',
-                                }"/>
-                            <t t-call="mass_mailing.s_pricelist_boxed_item" t-call-context="{
-                                name: 'Diavola',
-                                mobileSize: 4,
-                                size: 3,
-                                price: '$13.50',
-                                description: 'Spicy pepperoni paired with fiery chili flakes, mozzarella, and tomato sauce for a flavorful kick.',
-                                }"/>
+                            <t t-call="mass_mailing.s_pricelist_boxed_item"
+                                name="'Margherita'"
+                                mobileSize="4"
+                                size="3"
+                                price="'$12.00'"
+                                description="'Classic pizza with fresh mozzarella, San Marzano tomatoes, and basil leaves, drizzled with extra virgin olive oil.'"
+                            />
+                            <t t-call="mass_mailing.s_pricelist_boxed_item"
+                                name="'Quattro Stagioni'"
+                                mobileSize="6"
+                                size="4"
+                                price="'$14.50'"
+                                description="'A delicious mix of four toppings: mushrooms, artichokes, ham, and olives, all on a bed of mozzarella and tomato sauce.'"
+                            />
+                            <t t-call="mass_mailing.s_pricelist_boxed_item"
+                                name="'Diavola'"
+                                mobileSize="4"
+                                size="3"
+                                price="'$13.50'"
+                                description="'Spicy pepperoni paired with fiery chili flakes, mozzarella, and tomato sauce for a flavorful kick.'"
+                            />
                         </div>
                         <div class="s_pricelist_boxed_section col-md-12 pt48 col-12" data-name="Menu Section">
                             <h3>✽<t t-out="nbsp + nbsp"/>Pastas</h3>
-                            <t t-call="mass_mailing.s_pricelist_boxed_item" t-call-context="{
-                                name: 'Spaghetti Carbonara',
-                                mobileSize: 7,
-                                size: 5,
-                                price: '$15.00',
-                                description: 'Traditional Roman dish with creamy egg, crispy pancetta, and Pecorino Romano, topped with black pepper.',
-                                }"/>
-                            <t t-call="mass_mailing.s_pricelist_boxed_item" t-call-context="{
-                                name: 'Penne all\'Arrabbiata',
-                                mobileSize: 7,
-                                size: 5,
-                                price: '$13.00',
-                                description: 'Penne pasta tossed in a spicy tomato and garlic sauce with a hint of chili peppers, finished with fresh parsley.',
-                                }"/>
-                            <t t-call="mass_mailing.s_pricelist_boxed_item" t-call-context="{
-                                name: 'Lasagna al Forno',
-                                mobileSize: 6,
-                                size: 5,
-                                price: '$16.00',
-                                description: 'Layers of pasta, rich meat ragu, béchamel sauce, and melted mozzarella, baked to perfection.',
-                                }"/>
+                            <t t-call="mass_mailing.s_pricelist_boxed_item"
+                                name="'Spaghetti Carbonara'"
+                                mobileSize="7"
+                                size="5"
+                                price="'$15.00'"
+                                description="'Traditional Roman dish with creamy egg, crispy pancetta, and Pecorino Romano, topped with black pepper.'"
+                            />
+                            <t t-call="mass_mailing.s_pricelist_boxed_item"
+                                name="'Penne all\'Arrabbiata'"
+                                mobileSize="7"
+                                size="5"
+                                price="'$13.00'"
+                                description="'Penne pasta tossed in a spicy tomato and garlic sauce with a hint of chili peppers, finished with fresh parsley.'"
+                                />
+                            <t t-call="mass_mailing.s_pricelist_boxed_item"
+                                name="'Lasagna al Forno'"
+                                mobileSize="6"
+                                size="5"
+                                price="'$16.00'"
+                                description="'Layers of pasta, rich meat ragu, béchamel sauce, and melted mozzarella, baked to perfection.'"
+                            />
                         </div>
                     </div>
                 </div>
