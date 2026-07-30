@@ -133,7 +133,26 @@ class ThreadController(StoreController):
         subtypes = record._mail_get_message_subtypes()
         if follower.partner_id.partner_share:
             subtypes = subtypes.filtered(lambda subtype: not subtype.internal)
-        store = Store().add(subtypes, ["name"]).add(follower, ["subtype_ids"])
+        store = Store().add(subtypes, ["name", "res_model"]).add(follower, ["subtype_ids"])
+        parent_data = dict()
+        relation_subtype_id = request.env["mail.message.subtype"].search_fetch(
+            [("parent_id", "in", subtypes.ids)], field_names=["relation_field"], limit=1)
+        if relation_subtype_id and (parent_record := record[relation_subtype_id.relation_field]):
+            parent_follower = request.env["mail.followers"].search([
+                ("res_model", "=", parent_record._name),
+                ("res_id", "=", parent_record.id),
+                ("partner_id", "in", follower.partner_id.ids),
+            ], limit=1)
+            parent_subtype_ids = parent_record._mail_get_message_subtypes()
+            store.add(parent_follower, ["subtype_ids"])
+            store.add(parent_subtype_ids, lambda res: (
+                res.one("parent_id", ["res_model"]), res.attr("res_model"),
+            ))
+            parent_data = {
+                "parent_field": relation_subtype_id.relation_field,
+                "parent_follower_id": parent_follower.id,
+                "parent_subtype_ids": parent_subtype_ids.ids,
+            }
         return {
             "store_data": store,
             "subtype_ids": subtypes.sorted(
@@ -144,6 +163,7 @@ class ThreadController(StoreController):
                     s.sequence,
                 ),
             ).ids,
+            **parent_data,
         }
 
     def _prepare_message_data(self, post_data, *, thread, from_create=True, **kwargs):
@@ -268,6 +288,48 @@ class ThreadController(StoreController):
         thread = self.env[res_model].browse(res_id)
         thread.message_subscribe(partner_ids)
         return Store().add(thread, self._store_thread_follow_fields, as_thread=True)
+
+    @mail_route("/mail/thread/update_subscription", methods=["POST"], type="jsonrpc", auth="user")
+    def mail_thread_update_subscription(
+        self,
+        partner_ids,
+        res_model,
+        res_id,
+        subtype_ids,
+        parent_field=None,
+        parent_subtype_ids=None,
+    ):
+        thread = self.env[res_model].browse(res_id)
+        self._update_subscription(thread, partner_ids, subtype_ids)
+        if parent_field:
+            parent_thread = thread[parent_field]
+            self._update_subscription(parent_thread, partner_ids, parent_subtype_ids)
+        return Store().add(thread, self._store_thread_follow_fields, as_thread=True)
+
+    @mail_route("/mail/thread/update_sibling_subscription", methods=["POST"], type="jsonrpc", auth="user")
+    def mail_thread_update_sibling_subscription(
+        self,
+        partner_ids,
+        res_model,
+        res_id,
+        subtype_ids,
+        parent_field,
+        parent_subtype_ids=None,
+    ):
+        thread = self.env[res_model].browse(res_id)
+        siblings = self.env[res_model].search([(parent_field, "in", thread[parent_field].id)])
+        self._update_subscription(siblings, partner_ids, subtype_ids)
+        parent_thread = thread[parent_field]
+        self._update_subscription(parent_thread, partner_ids, parent_subtype_ids)
+        return Store().add(thread, self._store_thread_follow_fields, as_thread=True)
+
+    @classmethod
+    def _update_subscription(cls, records, partner_ids, subtype_ids):
+        """ Subscribe the given partners to the given subtypes, or unsubscribe them when none are given """
+        if subtype_ids:
+            records.message_subscribe(partner_ids, subtype_ids)
+        else:
+            records.message_unsubscribe(partner_ids)
 
     @classmethod
     def _store_thread_follow_fields(cls, res: Store.FieldList):
