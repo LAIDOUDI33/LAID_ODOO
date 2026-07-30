@@ -1,10 +1,10 @@
 import { _t } from "@web/core/l10n/translation";
 import { registry } from "@web/core/registry";
 import { RadioField, radioField, radioFieldProps } from "@web/views/fields/radio/radio_field";
-import { onMounted, props, t } from "@odoo/owl";
+import { onMounted, t, useProps } from "@odoo/owl";
 
 export class BooleanRadio extends RadioField {
-    props = props({
+    props = useProps({
         ...radioFieldProps,
         yes_label_element_id: t.string(),
         no_label_element_id: t.string(),
@@ -82,10 +82,9 @@ export const booleanRadio = {
         },
     ],
     supportedTypes: ["boolean"],
-    extractProps({ options }, dynamicInfo) {
+    extractProps({ options }) {
         return {
             ...radioField.extractProps(...arguments),
-            readonly: dynamicInfo.readonly,
             yes_label_element_id: options.yes_label_element_id,
             no_label_element_id: options.no_label_element_id,
             first_element: options.first_element,
