@@ -20,7 +20,7 @@ def error_checker_bancontact_failed_rpc_request(message):
 @tagged("post_install", "-at_install")
 class TestFrontend(TestBancontactPay):
 
-    @mute_logger("odoo.http")
+    @mute_logger("odoo.http", "odoo.addons.pos_bancontact_pay.models.pos_payment_method")
     def test_bancontact_failed_to_create_payment(self):
         self.main_pos_config.with_user(self.pos_user).open_ui()
         with (self.mock_bancontact_call(post_status_code=401)):
@@ -46,13 +46,13 @@ class TestFrontend(TestBancontactPay):
         with self.mock_bancontact_call(prefix="bancontact_failed_"):
             self.start_pos_tour("bancontact_pay_failed_payment")
 
-    @mute_logger("odoo.http")
+    @mute_logger("odoo.http", "odoo.addons.pos_bancontact_pay.models.pos_payment_method")
     def test_bancontact_failed_to_cancel_payment_error_422(self):
         self.main_pos_config.with_user(self.pos_user).open_ui()
         with self.mock_bancontact_call(delete_status_code=422):
             self.start_pos_tour("bancontact_pay_failed_to_cancel_payment_error_422")
 
-    @mute_logger("odoo.http")
+    @mute_logger("odoo.http", "odoo.addons.pos_bancontact_pay.models.pos_payment_method")
     def test_bancontact_failed_to_cancel_payment_error_429(self):
         # It could be any other error code different than 422
         self.main_pos_config.with_user(self.pos_user).open_ui()

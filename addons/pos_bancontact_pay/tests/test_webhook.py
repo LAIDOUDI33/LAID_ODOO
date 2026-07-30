@@ -3,25 +3,29 @@ from contextlib import contextmanager
 from unittest.mock import patch
 
 from odoo.tests.common import tagged
+from odoo.tools import mute_logger
 
 from odoo.addons.point_of_sale.tests.common import CommonPosTest
 from odoo.addons.point_of_sale.tests.test_frontend import TestPointOfSaleHttpCommon
-from odoo.addons.pos_bancontact_pay.errors.exceptions import BancontactSignatureValidationError
+from odoo.addons.pos_bancontact_pay.errors.exceptions import (
+    BancontactSignatureValidationError,
+)
 
 
 @tagged("post_install", "-at_install")
 class TestWebhook(CommonPosTest, TestPointOfSaleHttpCommon):
     # ----- Payment Status ----- #
+    @mute_logger("odoo.addons.pos_bancontact_pay.controllers.webhook")
     def test_bancontact_webhook(self):
         payload = self._make_payload("any_id", "any_status")
 
         response = self._post_bancontact_webhook("string_config_id", payload)
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.text, "Invalid or missing config_id parameter")
+        self.assertEqual(response.text, "Invalid POS configuration")
 
         response = self._post_bancontact_webhook(999, payload)
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.text, "Invalid POS configuration ID")
+        self.assertEqual(response.text, "Invalid POS configuration")
 
         with self.mock_bancontact_signature_validation_error(verify_signature=True):
             response = self._post_bancontact_webhook(self.main_pos_config.id, payload)

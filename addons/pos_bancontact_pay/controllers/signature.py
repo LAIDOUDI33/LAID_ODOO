@@ -1,8 +1,7 @@
 import base64
 import json
-import logging
 from binascii import Error as BinasciiError
-from datetime import datetime, timedelta, UTC
+from datetime import UTC, datetime, timedelta
 
 import requests
 from cryptography.exceptions import InvalidSignature
@@ -14,9 +13,9 @@ from cryptography.hazmat.primitives.hashes import SHA256
 from odoo.http import request
 
 from odoo.addons.pos_bancontact_pay import const
-from odoo.addons.pos_bancontact_pay.errors.exceptions import BancontactSignatureValidationError
-
-_logger = logging.getLogger(__name__)
+from odoo.addons.pos_bancontact_pay.errors.exceptions import (
+    BancontactSignatureValidationError,
+)
 
 
 class BancontactSignatureValidation:
@@ -30,14 +29,10 @@ class BancontactSignatureValidation:
         if self.test_mode:
             return
 
-        try:
-            protected_b64, signature_b64, kid, protected = self._extract_jws_parts()
-            jwk = self._get_jwk_by_kid(kid)
-            self._verify_jws_signature(jwk, protected_b64, signature_b64)
-            self._validate_critical_headers(protected, ppid)
-        except BancontactSignatureValidationError as e:
-            _logger.warning("Bancontact signature verification failed:\n%s", e)
-            raise
+        protected_b64, signature_b64, kid, protected = self._extract_jws_parts()
+        jwk = self._get_jwk_by_kid(kid)
+        self._verify_jws_signature(jwk, protected_b64, signature_b64)
+        self._validate_critical_headers(protected, ppid)
 
     # ----- Private Methods ----- #
     def _extract_jws_parts(self):

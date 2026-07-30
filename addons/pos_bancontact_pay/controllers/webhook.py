@@ -1,4 +1,6 @@
 import io
+import logging
+import uuid
 
 from PIL import Image
 
@@ -6,12 +8,15 @@ from odoo import http
 from odoo.http import request
 from odoo.tools.misc import file_path
 
+from odoo.addons.pos_bancontact_pay import const
 from odoo.addons.pos_bancontact_pay.controllers.signature import (
     BancontactSignatureValidation,
 )
 from odoo.addons.pos_bancontact_pay.errors.exceptions import (
     BancontactSignatureValidationError,
 )
+
+_logger = logging.getLogger(__name__)
 
 
 class BancontactPayController(http.Controller):
@@ -58,30 +63,40 @@ class BancontactPayController(http.Controller):
 
     @http.route(["/bancontact_pay/webhook"], type="http", auth="public", methods=["POST"], csrf=False)
     def bancontact_pay_webhook(self, config_id=None, ppid=None, mode=None):
+        log_prefix = f"{const.LOG_PREFIX} - {uuid.uuid4().hex[:8]}"
+        _logger.info("%s webhook received: config_id=%s, ppid=%s, mode=%s", log_prefix, config_id, ppid, mode)
+
         bancontact_signature_validation = BancontactSignatureValidation(request.httprequest, mode == "test")
         try:
             bancontact_signature_validation.verify_signature(ppid)
         except BancontactSignatureValidationError as e:
+            _logger.warning("%s webhook rejected: %s", log_prefix, e)
             return http.Response(str(e), status=403)
 
-        try:
-            config_id = int(config_id)
-        except (TypeError, ValueError):
-            return http.Response("Invalid or missing config_id parameter", status=400)
-
-        pos_config = self.env['pos.config'].sudo().browse(config_id)
-        if not pos_config.exists():
-            return http.Response("Invalid POS configuration ID", status=400)
+        pos_config = self._get_pos_config(config_id)
+        if not pos_config:
+            _logger.warning("%s webhook rejected: invalid config_id=%s", log_prefix, config_id)
+            return http.Response("Invalid POS configuration", status=400)
 
         data = request.get_json_data()
         bancontact_id = data.get("paymentId")
         bancontact_status = data.get("status")
         if bancontact_status not in ["SUCCEEDED", "AUTHORIZATION_FAILED", "FAILED", "EXPIRED", "CANCELLED"]:
+            _logger.info("%s webhook ignored: unsupported status=%s (paymentId=%s)", log_prefix, bancontact_status, bancontact_id)
             return http.Response(status=204)
 
+        _logger.info("%s webhook processed: paymentId=%s, status=%s", log_prefix, bancontact_id, bancontact_status)
         self._notify_pos(pos_config, bancontact_id, bancontact_status)
 
         return http.Response(status=200)
+
+    def _get_pos_config(self, config_id):
+        try:
+            config_id = int(config_id)
+        except (TypeError, ValueError):
+            return None
+        pos_config = self.env['pos.config'].sudo().browse(config_id)
+        return pos_config if pos_config.exists() else None
 
     def _notify_pos(self, pos_config, bancontact_id, bancontact_status):
         pos_config._notify(
