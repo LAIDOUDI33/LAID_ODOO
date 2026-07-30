@@ -115,6 +115,11 @@ class AccountMove(models.Model):
     l10n_in_show_gstin_status = fields.Boolean(compute="_compute_l10n_in_show_gstin_status")
     l10n_in_gstin_verified_date = fields.Date(compute="_compute_l10n_in_partner_gstin_status_and_date")
 
+    l10n_in_credit_note_reason = fields.Selection([
+        ('goods_returned', 'Goods Returned'),
+        ('price_adjustment', 'Price Adjustment Only (No Goods Returned)'),
+    ], string="Credit Note Reason", default='goods_returned')
+
     # -------------------------------------------------------------------------
     # COMPUTE METHODS
     # -------------------------------------------------------------------------
