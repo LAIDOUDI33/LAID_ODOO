@@ -36,17 +36,6 @@ export class AttributeValueSelector extends Component {
         });
     }
 
-    get badgeLabel() {
-        const record = this.props.record;
-        return (
-            (record._parentRecord?.resModel === "product.template" &&
-                record.fields.image_type.selection.find(
-                    ([key]) => key === record.data.image_type
-                )?.[1]) ||
-            ""
-        );
-    }
-
     get showDropdown() {
         return this.props.record._parentRecord.data.product_variant_count > 1;
     }

@@ -293,8 +293,16 @@ class ProductTemplate(models.Model):
                 "suggest_accessory_products": not vals.get("accessory_product_ids"),
                 "suggest_alternative_products": not vals.get("alternative_product_ids"),
             })
-            if vals.get("product_template_image_ids") and not vals.get("image_1920"):
-                record._update_images_assignments()
+            if vals.get("image_1920"):
+                record.computed_main_image_id = self.env["product.image"].create({
+                    "name": record.name,
+                    "image_1920": vals.get("image_1920"),
+                    "sequence": 0,
+                    "product_tmpl_id": record.id,
+                })
+            elif vals.get("product_template_image_ids") and not vals.get("image_1920"):
+                record._update_computed_main_image()
+
         return records
 
     def write(self, vals):
@@ -319,7 +327,7 @@ class ProductTemplate(models.Model):
         res = super().write(vals)
 
         if vals.get("image_1920") and not self.env.context.get("from_computed_image"):
-            self._update_images_assignments()
+            self._update_computed_main_image()
 
         if "image_1920" in vals and not vals["image_1920"]:
             images_to_unlink = self.env["product.image"]
@@ -327,7 +335,7 @@ class ProductTemplate(models.Model):
                 if template.computed_main_image_id:
                     images_to_unlink |= template.computed_main_image_id
                 else:
-                    template._update_images_assignments()
+                    template._update_computed_main_image()
 
             if images_to_unlink:
                 images_to_unlink.unlink()
@@ -391,46 +399,52 @@ class ProductTemplate(models.Model):
         })
         self._update_suggested_products()
 
-    def _update_images_assignments(self, restore_computed=None):
+    def _update_computed_main_image(self, restore_computed=None):
         """Update image type assignments and the computed main image.
 
         If the template has no manually assigned main image, already uses a computed
-        one, or its ID is marked in `restore_computed`, the first non-attribute image is
-        selected as the computed main image and marked as primary. The second
-        non-attribute image, if any, is marked as secondary. If all images have
-        attribute values, the first two images by sequence are used instead.
+        one, or its ID is marked in `restore_computed`, the first extra image
+        (by sequence) is used as the computed main image.
 
-        Otherwise, the manually assigned main image is preserved, and the first
-        candidate image (preferring a non-attribute image, or otherwise the first
-        image by sequence) is marked as secondary.
+        Otherwise, the manually assigned main image is preserved.
         """
         for template in self:
-            should_restore_computed = (
-                restore_computed is not None
-                and restore_computed.get(template.id, False)
+            should_restore_computed = restore_computed is not None and restore_computed.get(
+                template.id, False
             )
 
             template_images = template.product_template_image_ids.sorted("sequence")
             if not template_images:
-                template.computed_main_image_id = False
+                if template.image_1920:
+                    image = self.env["product.image"].create({
+                        "name": template.name,
+                        "image_1920": template.image_1920,
+                        "product_tmpl_id": template.id,
+                    })
+                    template.computed_main_image_id = image
+                else:
+                    template.computed_main_image_id = False
                 continue
-            template_images.image_type = False
 
-            images_to_assign = (
-                template_images.filtered(lambda image: not image.has_attribute_value)[:2]
-                or template_images[:2]
-            )
+            first_image = template_images[0]
 
-            if not template.image_1920 or template.computed_main_image_id or should_restore_computed:
-                if images_to_assign[0].video_url:
+            if (
+                not template.image_1920
+                or template.computed_main_image_id
+                or should_restore_computed
+            ):
+                if first_image.video_url:
                     raise ValidationError(
                         template.env._("You can't use a video as the product's main image.")
                     )
-                images_to_assign[0].image_type = "primary"
-                images_to_assign[1:2].image_type = "secondary"
-                template.computed_main_image_id = images_to_assign[0]
-            else:
-                images_to_assign[0].image_type = "secondary"
+                template.computed_main_image_id = first_image[0]
+            elif template.image_1920:
+                template.computed_main_image_id = self.env["product.image"].create({
+                    "name": template.name,
+                    "image_1920": template.image_1920,
+                    "sequence": first_image.sequence - 1,
+                    "product_tmpl_id": template.id,
+                })
 
     def _update_suggested_products(self):
         """Update the current product templates' optional, accessory, and alternative products.
@@ -1312,9 +1326,7 @@ class ProductTemplate(models.Model):
         Template Extra Images.
         """
         self.ensure_one()
-        extra_images = list(
-            self._get_all_extra_images_to_display() - self.computed_main_image_id
-        )
+        extra_images = list(self._get_all_extra_images_to_display() - self.computed_main_image_id)
 
         return [self] + extra_images
 

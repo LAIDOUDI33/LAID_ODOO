@@ -33,9 +33,6 @@ class ProductImage(models.Model):
         relation="product_image_attribute_value_rel",
     )
     has_attribute_value = fields.Boolean(compute="_compute_has_attribute_value", store=True)
-    image_type = fields.Selection(
-        selection=[("primary", "Primary"), ("secondary", "Secondary")], default=False
-    )
 
     # === COMPUTE METHODS ===#
 
@@ -69,7 +66,6 @@ class ProductImage(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         images = super().create(vals_list)
-        images.product_tmpl_id._update_images_assignments()
         images.product_tmpl_id.product_variant_ids._update_computed_main_image()
         return images
 
@@ -77,7 +73,7 @@ class ProductImage(models.Model):
         res = super().write(vals)
 
         if {"sequence", "attribute_value_ids", "image_1920"} & vals.keys():
-            self.product_tmpl_id._update_images_assignments()
+            self.product_tmpl_id._update_computed_main_image()
             self.product_tmpl_id.product_variant_ids._update_computed_main_image()
         return res
 
@@ -96,7 +92,7 @@ class ProductImage(models.Model):
 
         res = super().unlink()
 
-        product_templates._update_images_assignments(
+        product_templates._update_computed_main_image(
             restore_computed=template_restore_computed,
         )
         product_variants._update_computed_main_image(

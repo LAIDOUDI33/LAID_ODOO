@@ -198,7 +198,7 @@
                             mode="kanban"
                             nolabel="1"
                             colspan="2"
-                            widget="product_image_x2_many_media_viewer"
+                            widget="x2_many_media_viewer"
                             options="{'convert_to_webp': True}"
                         />
                     </group>
@@ -228,6 +228,7 @@
                                 'default_name': name,
                                 'default_attribute_value_ids': product_template_attribute_value_ids,
                                 'default_product_tmpl_id': product_tmpl_id,
+                                'kanban_view_ref': 'website_sale.product_variant_product_image_view_kanban',
                                 'variant_image_ids': variant_image_ids,
                             }"
                             mode="kanban"

@@ -39,14 +39,13 @@
         <field name="name">product.image.view.kanban</field>
         <field name="model">product.image</field>
         <field name="arch" type="xml">
-            <kanban string="Product Images" default_order="has_attribute_value desc, sequence, id">
+            <kanban string="Product Images" default_order="sequence, id">
                 <field name="has_attribute_value"/>
                 <field name="sequence" widget="handle"/>
                  <!-- Needed to create new `product.image` records with default values. (see: x2many_media_viewer.js) -->
                 <field name="name"/>
                 <field name="video_url" invisible="1"/>
                 <!-- Needed in attribute_value_selector.js -->
-                <field name="image_type"/>
                 <field name="product_tmpl_id"/>
                 <templates>
                     <t t-name="card" class="p-0 border-0">
@@ -75,6 +74,18 @@
                         </div>
                     </t>
                 </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="product_variant_product_image_view_kanban" model="ir.ui.view">
+        <field name="name">product.variant.product.image.view.kanban</field>
+        <field name="model">product.image</field>
+        <field name="inherit_id" ref="website_sale.product_image_view_kanban"/>
+        <field name="mode">primary</field>
+        <field name="arch" type="xml">
+            <kanban position="attributes">
+                <attribute name="default_order">has_attribute_value desc, sequence, id</attribute>
             </kanban>
         </field>
     </record>
