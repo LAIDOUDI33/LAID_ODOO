@@ -400,7 +400,7 @@ Sincerely,<br/>
             <field name="email_layout_xmlid">mail.mail_notification_light</field>
             <field name="body_html" type="html">
 <p>
-A withdrawal request was submitted for order <t t-out="object.order_reference">S00001</t> by <t t-out="object.email">mail@example.com</t>.
+A withdrawal request was submitted for order <t t-out="object.order_reference">S00001</t>.
 </p>
 <div style="margin: 16px 0; text-align: center;">
     <a t-att-href="ctx.get('order_access_link')"
