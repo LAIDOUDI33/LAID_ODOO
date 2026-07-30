@@ -331,7 +331,7 @@ class TestWebsiteSaleGMC(WebsiteSaleGMCCommon, HttpCase):
         self.assertNotIn("unit_pricing_measure", self.items[six_pack])
 
         # enable "Product Reference Price" setting
-        self.env.user.group_ids |= self.env.ref("product.group_show_uom_price")
+        self.website.show_product_reference_price = True
         self.update_items()
 
         self.assertEqual("6.0l", self.items[six_pack]["unit_pricing_measure"], "$12 / 6l")

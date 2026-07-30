@@ -24,6 +24,9 @@ class ResConfigSettings(models.TransientModel):
         implied_group="website_sale.group_automate_suggested_products",
         group="website.group_website_restricted_editor",
     )
+    show_product_reference_price = fields.Boolean(
+        related="website_id.show_product_reference_price", readonly=False
+    )
 
     # Modules
     module_website_sale_collect = fields.Boolean("Click & Collect")
@@ -106,6 +109,12 @@ class ResConfigSettings(models.TransientModel):
             "group_automate_suggested_products"
         ]
         super().set_values()
+        if self.show_product_reference_price:
+            # Enabling this website-specific setting requires the (global) base unit price
+            # feature, but disabling it shouldn't disable that feature for other websites.
+            self.env.ref("base.group_user").sudo()._apply_group(
+                self.env.ref("product.group_show_uom_price").sudo()
+            )
         if self.website_id:
             website = self.with_context(website_id=self.website_id.id).website_id
 
