@@ -1,5 +1,13 @@
+<<<<<<< 5738fd9e54558a80575755311a3b78918385fb7b
 import { useLayoutEffect } from "@web/owl2/utils";
 import { onWillUnmount, useListener } from "@odoo/owl";
+||||||| c23cda2682b0895e03f35696b0a3e63330e45826
+import { useLayoutEffect, useRef } from "@web/owl2/utils";
+import { onWillUnmount, useListener } from "@odoo/owl";
+=======
+import { useLayoutEffect, useRef } from "@web/owl2/utils";
+import { onWillDestroy, useListener } from "@odoo/owl";
+>>>>>>> 5a29d29d356434e6419b419097754714cd1e6c53
 import { useService } from "@web/core/utils/hooks";
 import { deepMerge } from "@web/core/utils/objects";
 import { scrollTo } from "@web/core/utils/scrolling";
@@ -471,7 +479,7 @@ export function useNavigation(containerRef, options = {}) {
     );
 
     useListener(browser, "focus", ({ target }) => navigator._checkFocus(target), true);
-    onWillUnmount(() => navigator._destroy());
+    onWillDestroy(() => navigator._destroy());
 
     return navigator;
 }
