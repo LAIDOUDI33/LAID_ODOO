@@ -1,6 +1,7 @@
 import { useService } from "@web/core/utils/hooks";
 import { formatFloat } from "@web/views/fields/formatters";
 import { Component, markup } from "@odoo/owl";
+import { formatDate } from "@web/core/l10n/dates";
 
 export class ForecastedHeader extends Component {
     static template = "stock.ForecastedHeader";
@@ -41,9 +42,13 @@ export class ForecastedHeader extends Component {
             }
             return minProduct;
         }, null);
-        const today = new Date(Date.now());
-        product.leadtime["today"] = today.toLocaleDateString();
-        product.leadtime["earliestPossibleArrival"] = this.addDays(today, product.leadtime.total_delay);
+        const today = new luxon.DateTime.now();
+        product.leadtime["today"] = formatDate(today);
+        product.leadtime["earliestPossibleArrival"] = formatDate(
+            today.plus({ days: product.leadtime.total_delay })
+        );
+        const details = product.leadtime.details;
+        product.leadtime.details = details.filter((d) => d[0] !== "Time Horizon").reverse();
         return product.leadtime;
     }
 
@@ -73,12 +78,6 @@ export class ForecastedHeader extends Component {
 
     get uom() {
         return Object.values(this.products)[0].uom;
-    }
-
-    addDays(date, days) {
-        const result = new Date(date);
-        result.setDate(result.getDate() + days);
-        return result.toLocaleDateString();
     }
 
     toJsonString(obj) {
