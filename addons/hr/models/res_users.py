@@ -34,9 +34,10 @@ def related_employee_field(name: str, *, field_name: str | None = None, string: 
         for user in self:
             if user == current_user:
                 employee = user.sudo().employee_id.with_prefetch()
+                user.sudo()[field_name] = employee[name]
             else:
                 employee = user.employee_id
-            user[field_name] = employee[name]
+                user[field_name] = employee[name]
 
     def inverse_employee_field(self):
         current_user = self.env.user
