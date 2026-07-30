@@ -1,5 +1,5 @@
 import { rpc } from "@web/core/network/rpc";
-import { Component, onWillStart, props, signal, types } from "@odoo/owl";
+import { Component, computed, onWillStart, props, signal, types } from "@odoo/owl";
 
 import { Dialog } from "@web/core/dialog/dialog";
 import { _t } from "@web/core/l10n/translation";
@@ -17,54 +17,82 @@ export class FollowerSubtypeDialog extends Component {
             follower: types.instanceOf(this.store["mail.followers"].Class),
             onFollowerChanged: types.function([]),
         });
-        this.subtypes = signal(null, {
-            type: types.array(types.instanceOf(this.store["mail.message.subtype"].Class)),
-        });
+        const MailMessageSubtypeType = types.instanceOf(this.store["mail.message.subtype"].Class);
+        this.subtypes = signal(null, { type: types.array(MailMessageSubtypeType) });
+        this.parentSubtypes = signal(null, { type: types.array(MailMessageSubtypeType) });
+        this.selectedParentSubtypes = signal.Set(new Set(), { type: MailMessageSubtypeType });
+        this.isSoleChild = computed(() =>
+            this.parentSubtypes()
+                ?.filter((s) => s.parent_id)
+                // check if parent record controls auto subscriptions of models other than the current
+                .every((s) => s.parent_id.res_model === this.props.follower.thread.model)
+        );
+        this.parentSubtypeByChildSubtypeId = computed(() =>
+            Object.fromEntries(
+                this.parentSubtypes()
+                    ?.filter((s) => s.parent_id)
+                    .map((s) => [s.parent_id.id, s]) ?? []
+            )
+        );
         onWillStart(async () => {
-            const { store_data, subtype_ids } = await rpc("/mail/read_subscription_data", {
-                follower_id: this.props.follower.id,
-            });
+            const {
+                store_data,
+                subtype_ids,
+                parent_field,
+                parent_follower_id,
+                parent_subtype_ids,
+            } = await rpc("/mail/read_subscription_data", { follower_id: this.props.follower.id });
             this.store.insert(store_data);
             this.subtypes.set(subtype_ids.map((id) => this.store["mail.message.subtype"].get(id)));
+            this.parentSubtypes.set(
+                parent_subtype_ids?.map((id) => this.store["mail.message.subtype"].get(id))
+            );
+            this.parent_field = parent_field;
+            const parentFollower = this.store["mail.followers"].get(parent_follower_id);
+            parentFollower?.subtype_ids.forEach((s) => this.selectedParentSubtypes().add(s));
         });
     }
 
     /**
      * @param {Event} ev
-     * @param {SubtypeData} subtype
+     * @param {Set<import("models").MailMessageSubtype>} targetSubtypes
+     * @param {import("models").MailMessageSubtype} subtype
      */
-    onChangeCheckbox(ev, subtype) {
+    onChangeCheckbox(ev, targetSubtypes, subtype) {
         if (ev.target.checked) {
-            this.props.follower.subtype_ids.add(subtype);
+            targetSubtypes.add(subtype);
         } else {
-            this.props.follower.subtype_ids.delete(subtype);
+            targetSubtypes.delete(subtype);
         }
     }
 
-    async onClickApply() {
+    /**
+     * @param {Object} [param0={}]
+     * @param {string} [param0.all] whether to update all siblings or only this record
+     */
+    async onClickApply({ all }) {
         const thread = this.props.follower.thread;
         const selectedSubtypes = this.subtypes().filter((s) =>
             s.in(this.props.follower.subtype_ids)
         );
-        if (selectedSubtypes.length === 0) {
-            await this.props.follower.remove();
-        } else {
-            await this.env.services.orm.call(
-                this.props.follower.thread.model,
-                "message_subscribe",
-                [[this.props.follower.thread.id]],
-                {
-                    partner_ids: [this.props.follower.partner_id.id],
-                    subtype_ids: selectedSubtypes.map((subtype) => subtype.id),
-                }
-            );
-            if (this.store.mt_comment.notIn(selectedSubtypes)) {
-                this.props.follower.removeRecipient();
-            }
-            this.env.services.notification.add(_t("Notification preferences updated."), {
-                type: "success",
-            });
+        const route = all
+            ? "/mail/thread/update_sibling_subscription"
+            : "/mail/thread/update_subscription";
+        const data = await rpc(route, {
+            partner_ids: [this.props.follower.partner_id.id],
+            res_model: thread.model,
+            res_id: thread.id,
+            subtype_ids: selectedSubtypes.map((subtype) => subtype.id),
+            parent_field: this.parent_field,
+            parent_subtype_ids: Array.from(this.selectedParentSubtypes(), (subtype) => subtype.id),
+        });
+        this.store.insert(data);
+        if (this.store.mt_comment.notIn(selectedSubtypes)) {
+            this.props.follower.removeRecipient();
         }
+        this.env.services.notification.add(_t("Notification preferences updated."), {
+            type: "success",
+        });
         this.props.onFollowerChanged(thread);
         this.props.close();
     }

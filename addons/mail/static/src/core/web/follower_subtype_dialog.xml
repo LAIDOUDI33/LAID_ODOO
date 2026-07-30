@@ -1,24 +1,54 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <templates xml:space="preserve">
     <t t-name="mail.FollowerSubtypeDialog">
-        <Dialog t-if="this.props.follower.partner_id" bodyClass="'d-flex flex-column'" contentClass="'o-mail-FollowerSubtypeDialog'" size="'sm'" title="this.title">
+        <Dialog t-if="this.props.follower.partner_id" contentClass="'o-mail-FollowerSubtypeDialog'" size="'sm'" title="this.title">
             <t t-set-slot="default">
-                <div
-                    t-foreach="this.subtypes()"
-                    t-as="subtype"
-                    t-key="subtype.id"
-                    class="o-mail-FollowerSubtypeDialog-subtype"
-                    t-att-data-follower-subtype-id="subtype.id"
-                >
-                    <label class="flex-grow-1 align-items-center d-flex mb-0 p-2 cursor-pointer">
-                        <input class="form-check-input me-2" type="checkbox" t-att-checked="subtype.in(this.props.follower.subtype_ids) ? 'checked': ''" t-on-change="(ev) => this.onChangeCheckbox(ev, subtype)"/>
-                        <t t-out="subtype.name"/>
-                    </label>
-                </div>
+                <table class="table table-sm table-hover table-borderless mb-0">
+                    <thead t-if="this.parentSubtypes()">
+                        <tr>
+                            <th class="text-center fw-normal" style="width: 1rem">This Record</th>
+                            <th class="text-center fw-normal" style="width: 1rem">Future Records</th>
+                            <th/>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr
+                            t-foreach="this.subtypes()"
+                            t-as="subtype"
+                            t-key="subtype.id"
+                            class="o-mail-FollowerSubtypeDialog-subtype"
+                            t-att-data-follower-subtype-id="subtype.id"
+                        >
+                            <td class="text-center">
+                                <input
+                                    class="form-check-input mt-0 align-middle cursor-pointer"
+                                    type="checkbox"
+                                    t-attf-id="subtype-{{subtype.id}}"
+                                    t-att-checked="subtype.in(this.props.follower.subtype_ids) ? 'checked': ''"
+                                    t-on-change="(ev) => this.onChangeCheckbox(ev, this.props.follower.subtype_ids, subtype)"
+                                />
+                            </td>
+                            <td t-if="this.parentSubtypes()" class="text-center">
+                                <t t-set="parentSubtype" t-value="subtype.res_model === false ? subtype : this.parentSubtypeByChildSubtypeId()[subtype.id]"/>
+                                <input
+                                    t-if="parentSubtype and (this.isSoleChild() or parentSubtype.parent_id?.res_model === this.props.follower.thread.model)"
+                                    class="form-check-input mt-0 align-middle cursor-pointer"
+                                    type="checkbox"
+                                    t-att-checked="this.selectedParentSubtypes().has(parentSubtype) ? 'checked': ''"
+                                    t-on-change="(ev) => this.onChangeCheckbox(ev, this.selectedParentSubtypes(), parentSubtype)"
+                                />
+                            </td>
+                            <td><label class="cursor-pointer" t-attf-for="subtype-{{subtype.id}}" t-out="subtype.name"/></td>
+                        </tr>
+                    </tbody>
+                </table>
             </t>
             <t t-set-slot="footer">
                 <button class="btn btn-primary" t-on-click="this.onClickApply">
                     Update
+                </button>
+                <button t-if="this.parent_field" class="btn btn-secondary" t-on-click="() => this.onClickApply({ all: true })">
+                    Update All
                 </button>
                 <button class="btn btn-secondary" t-on-click="this.props.close">
                     Discard

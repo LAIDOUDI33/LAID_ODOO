@@ -1,3 +1,4 @@
+import { fields } from "@mail/model/misc";
 import { Record } from "@mail/model/record";
 
 export class MailMessageSubtype extends Record {
@@ -9,5 +10,7 @@ export class MailMessageSubtype extends Record {
     id;
     /** @type {string} */
     name;
+    // This field is not correctly named. To be read as "parent of"
+    parent_id = fields.One("mail.message.subtype");
 }
 MailMessageSubtype.register();
