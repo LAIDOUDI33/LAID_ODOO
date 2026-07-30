@@ -39,6 +39,12 @@
     </div>
 </t>
 
+<t t-name="mass_mailing.s_unsubscribe_link" name="Unsubscribe Link">
+    <p class="o_snippet_drop_in_only">
+        <a role="button" href="/unsubscribe_from_list" class="btn btn-link">Unsubscribe</a>
+    </p>
+</t>
+
 <t t-name="mass_mailing.s_inline_text" name="Text">
     <p class="o_snippet_drop_in_only">Text</p>
 </t>

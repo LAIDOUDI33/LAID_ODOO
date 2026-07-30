@@ -105,6 +105,8 @@
                 <snippet snippet="mass_mailing.s_badge" string="Badge" thumbnail="/mass_mailing/static/src/img/snippets_thumbs/s_badge.svg"/>
                 <snippet snippet="mass_mailing.s_cta_badge" string="CTA Badge" thumbnail="/mass_mailing/static/src/img/snippets_thumbs/s_cta_badge.svg"/>
                 <snippet snippet="mass_mailing.s_social_media" string="Social Media" thumbnail="/mass_mailing/static/src/img/snippets_thumbs/s_social_media.svg"/>
+                <!-- todo add proper icon (bell? crossed-out envelope?) -->
+                <snippet snippet="mass_mailing.s_unsubscribe_link" string="Unsubscribe Link" thumbnail="/mass_mailing/static/src/img/snippets_thumbs/s_badge.svg"/>
             </snippets>
         </t>
     </t>
