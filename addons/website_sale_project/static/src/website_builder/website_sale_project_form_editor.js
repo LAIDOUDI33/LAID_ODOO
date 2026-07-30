@@ -1,8 +1,14 @@
 import { _t } from "@web/core/l10n/translation";
 import { registry } from "@web/core/registry";
 
+const requestWithdrawalFormInfo = registry
+    .category("builder.form_editor_actions")
+    .get("request_withdrawal");
+
 registry.category("builder.form_editor_actions").add("request_withdrawal", {
+    ...requestWithdrawalFormInfo,
     fields: [
+        ...requestWithdrawalFormInfo.fields,
         {
             name: "project_id",
             type: "many2one",
@@ -12,4 +18,4 @@ registry.category("builder.form_editor_actions").add("request_withdrawal", {
             createAction: "project.open_view_project_all",
         },
     ],
-});
+}, { force: true });
