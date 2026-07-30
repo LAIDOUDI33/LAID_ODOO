@@ -95,11 +95,7 @@ export class SelfOrder extends Reactive {
             await this.initMobileData();
         }
 
-        this.data.connectWebSocket("SESSION_STATE_CHANGED", () => {
-            if (!session.test_mode) {
-                window.location.reload();
-            }
-        });
+        this.data.connectWebSocket("SESSION_STATE_CHANGED", () => this.onSessionStateChanged());
         this.data.connectWebSocket("ORDER_STATE_CHANGED", () => this.getUserDataFromServer());
         this.data.connectWebSocket("SNOOZE_CHANGED", async (payload) => {
             const { deleted_ids, records } = payload;
@@ -217,6 +213,11 @@ export class SelfOrder extends Reactive {
                 title: args.error || _t("Payment failed"),
                 type: "danger",
             });
+        }
+    }
+    async onSessionStateChanged() {
+        if (!session.test_mode) {
+            window.location.reload();
         }
     }
     async handleKioskSessionStatusChange(status) {
