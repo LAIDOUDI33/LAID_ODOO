@@ -29,7 +29,7 @@ export const getStrNotes = (note) => {
     return "";
 };
 
-export const filterChangeByCategories = (categoryIdsSet, currentOrderChange, models) => {
+export const filterChangeByCategories = (categoryIdsSet, currentOrderChange, models, opts = {}) => {
     const matchesCategories = (productId) => {
         const product = models["product.product"].get(productId);
         const categoryIds = product.parentPosCategIds;
@@ -41,13 +41,17 @@ export const filterChangeByCategories = (categoryIdsSet, currentOrderChange, mod
         return false;
     };
 
-    const filterChanges = (changes) =>
+    const filterChanges = (changes) => {
+        if (opts.forcePrint) {
+            return changes;
+        }
         // Combo line uuids to have at least one child line in the given categories
-        changes?.filter((change) =>
+        return changes?.filter((change) =>
             change.combo_line_ids && change.combo_line_ids.length > 0
                 ? change.combo_line_ids.some((child) => matchesCategories(child.product_id.id))
                 : matchesCategories(change["product_id"])
         );
+    };
 
     return {
         addedQuantity: filterChanges(currentOrderChange["addedQuantity"]),
