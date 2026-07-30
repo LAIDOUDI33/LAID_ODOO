@@ -71,7 +71,9 @@ class CloudStorageAttachmentMigration(models.Model):
             max_attachment_id = self.env['ir.attachment'].sudo().search_fetch([], ['id'], limit=1, order='id desc').id or 1
             ICP.set_param('cloud_storage_migration_max_attachment_id', max_attachment_id)
 
-        if request:
+        session = getattr(request, 'session', None)
+        session_token = getattr(session, 'session_token', None)
+        if session_token:
             # Don't upload in HTTP server, if the method is called by ``Manually Run`` button from web client
             # The cron job should be rescheduled asap in cron server
             cron._trigger()
