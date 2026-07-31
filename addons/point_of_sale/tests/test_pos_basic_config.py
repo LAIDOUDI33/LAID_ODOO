@@ -351,6 +351,7 @@ class TestPoSBasicConfig(TestPoSCommon):
         self.assertFalse(test_journal.active, "Journal should be archived when not linked to a POS payment method.")
 
     def test_archive_delete_special_product(self):
+        self.config.iface_tipproduct = True
         special_product = self.env.ref('point_of_sale.product_product_tip')
         with self.assertRaisesRegex(UserError, "a special product in a Point of Sale configuration"):
             special_product.action_archive()

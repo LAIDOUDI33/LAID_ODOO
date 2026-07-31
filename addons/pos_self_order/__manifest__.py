@@ -25,6 +25,9 @@
     "demo": [
         "data/kiosk_demo_data.xml",
     ],
+    'other_files': [
+        'data/self_order_data.xml',
+    ],
     "assets": {
         # Assets
         'web.assets_unit_tests_setup': [

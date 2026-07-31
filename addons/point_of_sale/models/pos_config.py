@@ -647,6 +647,15 @@ class PosConfig(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
+        if not self.env.ref('point_of_sale.product_product_service_fee', raise_if_not_found=False):
+            convert.convert_file(
+                self._env_with_clean_context(),
+                'point_of_sale',
+                'data/point_of_sale_service_fee_data.xml',
+                idref=None,
+                mode='init',
+                noupdate=True,
+            )
         for vals in vals_list:
             if not vals.get('iface_tipproduct', False):
                 vals['tip_product_id'] = False
@@ -733,10 +742,23 @@ class PosConfig(models.Model):
         if 'iface_tipproduct' in vals and not vals['iface_tipproduct']:
             vals['tip_product_id'] = False
             vals['set_tip_after_payment'] = False
-        elif vals.get('iface_tipproduct') and 'tip_product_id' not in vals \
-                and not all(config.tip_product_id for config in self) \
-                and (default_tip := self._get_default_tip_product()):
-            vals['tip_product_id'] = default_tip.id
+        else:
+            if vals.get('iface_tipproduct') and not self.env.ref(
+                'point_of_sale.product_product_tip',
+                raise_if_not_found=False,
+            ):
+                convert.convert_file(
+                    self._env_with_clean_context(),
+                    'point_of_sale',
+                    'data/point_of_sale_tips_data.xml',
+                    idref=None,
+                    mode='init',
+                    noupdate=True,
+                )
+            if 'tip_product_id' not in vals \
+                    and not all(config.tip_product_id for config in self) \
+                    and (default_tip := self._get_default_tip_product()):
+                vals['tip_product_id'] = default_tip.id
 
         self._check_header_footer(vals)
         self._reset_default_on_vals(vals)

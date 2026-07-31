@@ -74,6 +74,8 @@
         'data/scenarios/clothes_data.xml',
         'data/scenarios/furniture_category_data.xml',
         'data/scenarios/furniture_data.xml',
+        'data/point_of_sale_service_fee_data.xml',
+        'data/point_of_sale_tips_data.xml',
     ],
     'application': True,
     'website': 'https://www.odoo.com/app/point-of-sale-shop',
