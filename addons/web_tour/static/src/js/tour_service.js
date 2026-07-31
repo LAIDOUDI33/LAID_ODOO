@@ -164,6 +164,20 @@ export class TourService {
         };
     }
 
+    async loadPointer() {
+        await loadBundle("web_tour.interactive");
+        const { TourPointer } = odoo.loader.modules.get("@web_tour/js/tour_pointer/tour_pointer");
+        this.removePointer = this.overlay.add(
+            TourPointer,
+            {
+                pointerState,
+            },
+            {
+                sequence: 1100, // sequence based on bootstrap z-index values.
+            }
+        );
+    }
+
     /**
      * @param {string} name The name of the tour
      */
@@ -250,21 +264,12 @@ export class TourService {
             const { TourAutomatic } = odoo.loader.modules.get(
                 "@web_tour/js/tour_automatic/tour_automatic"
             );
-            new TourAutomatic(tour).start();
+            if (tourConfig.showPointer) {
+                await this.loadPointer();
+            }
+            new TourAutomatic(tour).start(() => this.removePointer());
         } else {
-            await loadBundle("web_tour.interactive");
-            const { TourPointer } = odoo.loader.modules.get(
-                "@web_tour/js/tour_pointer/tour_pointer"
-            );
-            this.removePointer = this.overlay.add(
-                TourPointer,
-                {
-                    pointerState,
-                },
-                {
-                    sequence: 1100, // sequence based on bootstrap z-index values.
-                }
-            );
+            await this.loadPointer();
             const { TourInteractive } = odoo.loader.modules.get(
                 "@web_tour/js/tour_interactive/tour_interactive"
             );
@@ -300,7 +305,7 @@ export class TourService {
      * @param {string} [options.url] - URL to start the tour.
      * @param {"auto"|"manual"} [options.mode="auto"] - Tour start mode ("auto" or "manual").
      * @param {number} [options.stepDelay=0] - Delay between each tour step.
-     * @param {number} [options.showPointerDuration=0] - Duration to show the pointer on each step.
+     * @param {boolean} [options.showPointer=false] - Whether to show the pointer on each step.
      * @param {boolean} [options.debug=false] - Enables debug mode for the tour.
      * @param {boolean} [options.redirect=true] - Whether to redirect to `tour.url` if necessary.
      */
@@ -318,7 +323,7 @@ export class TourService {
         const tourConfig = {
             stepDelay: 0,
             mode: "auto",
-            showPointerDuration: 0,
+            showPointer: false,
             debug: false,
             redirect: true,
             ...options,

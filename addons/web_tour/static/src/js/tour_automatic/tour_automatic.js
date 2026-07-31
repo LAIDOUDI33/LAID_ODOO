@@ -5,6 +5,7 @@ import { Macro } from "@web/core/macro";
 import { config as transitionConfig } from "@web/core/transition";
 import { TourStepAutomatic } from "@web_tour/js/tour_automatic/tour_step_automatic";
 import { tourState } from "@web_tour/js/tour_state";
+import { pointerState } from "@web_tour/js/tour_pointer/tour_pointer";
 
 export class TourAutomatic {
     mode = "auto";
@@ -27,7 +28,7 @@ export class TourAutomatic {
         return this.config.debug !== false;
     }
 
-    start() {
+    start(onTourEnd) {
         setupEventActions(document.createElement("div"), { allowSubmit: true });
         enableEventLogs(this.debugMode);
         const { stepDelay } = this.config;
@@ -69,6 +70,7 @@ export class TourAutomatic {
                                 this.throwError(message);
                             }, 20000);
                         }
+                        await this.showPointer(step);
                         await step.doAction();
                         if (this.debugMode) {
                             console.log(trigger);
@@ -94,6 +96,7 @@ export class TourAutomatic {
             delete window[hootNameSpace];
             transitionConfig.disabled = false;
             tourState.clear();
+            onTourEnd?.();
             //No need to catch error yet.
             window.addEventListener(
                 "error",
@@ -158,6 +161,26 @@ export class TourAutomatic {
         const hootNameSpace = hootDom.exposeHelpers(hootDom);
         console.debug(`Hoot DOM helpers available from \`window.${hootNameSpace}\``);
         this.macro.start();
+    }
+
+    /**
+     * Points at the step's element and waits for the pointer to actually be
+     * rendered, so a headless run can be visually checked (screenshot,
+     * recording, ...) at every step. No-op unless the caller opted in with
+     * `showPointer`.
+     */
+    async showPointer(step) {
+        const { showPointer } = this.config;
+        if (!showPointer || step.skipped || !step.run) {
+            return;
+        }
+        pointerState.trigger = step.element;
+        pointerState.content = step.content;
+        pointerState.position = step.tooltipPosition;
+        pointerState.isZone = false;
+        await hootDom.waitFor(".o_tour_pointer", { timeout: 2000 });
+        pointerState.trigger = undefined;
+        await hootDom.waitFor("body:not(:has(.o_tour_pointer))", { timeout: 2000 });
     }
 
     get describeWhereIFailed() {

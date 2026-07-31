@@ -2951,13 +2951,16 @@ class HttpCase(TransactionCase):
             if error:  # dont keep initial traceback, keep that outside of except
                 self.fail(str(error))
 
-    def start_tour(self, url_path, tour_name, step_delay=None, **kwargs):
+    def start_tour(self, url_path, tour_name, step_delay=None, show_pointer=False, **kwargs):
         """Wrapper for `browser_js` to start the given `tour_name` with the
-        optional delay between steps `step_delay`. Other arguments from
-        `browser_js` can be passed as keyword arguments."""
+        optional delay between steps `step_delay`. Set `show_pointer` to
+        point at (and wait for) the tour_pointer on every step, so it can be
+        checked even in a headless run. Other arguments from `browser_js`
+        can be passed as keyword arguments."""
         options = {
             'stepDelay': step_delay or 0,
             'debug': kwargs.get('debug', False),
+            'showPointer': show_pointer,
         }
         code = kwargs.pop('code', f"odoo.startTour({tour_name!r}, {json.dumps(options)})")
         ready = kwargs.pop('ready', f"odoo.isTourReady({tour_name!r})")
