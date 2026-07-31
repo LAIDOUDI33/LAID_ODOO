@@ -73,7 +73,9 @@ export class ChannelMemberList extends Component {
         );
         useOnChange(
             () => [this.props.channel],
-            () => this.search.reset(),
+            () => {
+                this.search.reset();
+            },
             { initialRun: false }
         );
     }
@@ -108,7 +110,9 @@ export class ChannelMemberList extends Component {
         return [...MEMBER_CATEGORIES]
             .sort((a, b) => a.sequence - b.sequence)
             .map(({ getMembers, label, showCount = true, sequenceGroup, icon, headerClass }) => {
-                const all = getMembers(this.props.channel).filter((m) => {
+                // ?? []: the getters resolve undefined when the channel was
+                // deleted and the component is briefly rendered before unmount
+                const all = (getMembers(this.props.channel) ?? []).filter((m) => {
                     if (shownMemberIds.has(m.id)) {
                         return false;
                     }

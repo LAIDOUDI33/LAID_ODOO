@@ -1,6 +1,5 @@
 import { Store } from "@mail/core/common/store_service";
 import { MENU_TABS } from "@mail/core/public_web/messaging_menu/messaging_menu_model";
-import { fields } from "@mail/model/export";
 import { browser } from "@web/core/browser/browser";
 import { _t } from "@web/core/l10n/translation";
 import { registry } from "@web/core/registry";
@@ -22,24 +21,15 @@ const StorePatch = {
         this.activityBroadcastChannel = null;
         this.activityCounter = 0;
         this.activity_counter_bus_id = 0;
+        this.activity_groups = undefined;
         this.activities_to_assign_count = undefined;
-        this.messagingMenuSystrayState = fields.One("MessagingMenuUIState", {
-            compute: () => ({ id: "mail.systray", activeTab: MENU_TABS.CHATS }),
-        });
-        this.showPushPermissionRequest = fields.Attr(false, {
-            compute() {
-                return (
-                    this.env.services["mail.notification.permission"]?.permission === "prompt" &&
-                    !this.isNotificationPermissionDismissed
-                );
-            },
-        });
-        /** @type {Object[]} */
-        this.activity_groups = fields.Attr(undefined, {
-            onUpdate() {
+        this.onChange(
+            () => this.activityGroups,
+            function onChangeActivityGroups() {
                 this.onUpdateActivityGroups();
             },
-        });
+            { immediate: true }
+        );
     },
     initialize() {
         super.initialize(...arguments);
@@ -70,6 +60,14 @@ const StorePatch = {
                 activityGroup.model === "mail.activity" ? Number.MAX_VALUE : activityGroup.id;
             return getSortId(g1) - getSortId(g2);
         });
+    },
+    get messagingMenuSystrayState() {
+        // get-or-insert: only seed activeTab on creation, so re-reads do not
+        // overwrite the user's selected tab (a plain insert would reset it)
+        return (
+            this.MessagingMenuUIState.get("mail.systray") ??
+            this.MessagingMenuUIState.insert({ id: "mail.systray", activeTab: MENU_TABS.CHAT })
+        );
     },
     onPushNotificationDisplayed() {
         super.onPushNotificationDisplayed(...arguments);
@@ -111,6 +109,12 @@ const StorePatch = {
                     },
                 }
             )
+        );
+    },
+    get showPushPermissionRequest() {
+        return Boolean(
+            this.env.services["mail.notification.permission"]?.permission === "prompt" &&
+                !this.isNotificationPermissionDismissed
         );
     },
     updateAppBadge() {

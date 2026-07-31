@@ -7,7 +7,10 @@ patch(Store.prototype, {
     setup() {
         super.setup(...arguments);
         this.discuss = fields.One("DiscussApp");
-        this.messagingMenu = fields.One("MessagingMenu", { compute: () => ({}) });
+    },
+    /** @returns {import("models").MessagingMenu} */
+    get messagingMenu() {
+        return this.MessagingMenu.insert({});
     },
     onStarted() {
         super.onStarted(...arguments);

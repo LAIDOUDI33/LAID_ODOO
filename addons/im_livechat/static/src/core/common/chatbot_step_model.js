@@ -11,22 +11,17 @@ export class ChatbotStep extends Record {
      */
     id;
     completed = false;
-
     operatorFound = false;
     scriptStep = fields.One("chatbot.script.step");
     message = fields.One("mail.message", { inverse: "chatbotStep" });
-    answer_ids = fields.Many("chatbot.script.answer", {
-        compute() {
-            return this.scriptStep?.answer_ids;
-        },
-    });
+    get answer_ids() {
+        return this.scriptStep?.answer_ids ?? [];
+    }
     selectedAnswer = fields.One("chatbot.script.answer");
     rawAnswer = fields.Html("");
-    step_type = fields.Attr("", {
-        compute() {
-            return this.scriptStep?.step_type;
-        },
-    });
+    get step_type() {
+        return this.scriptStep?.step_type;
+    }
     isLast = false;
 
     get expectAnswer() {

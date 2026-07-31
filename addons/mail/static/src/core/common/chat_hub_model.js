@@ -1,5 +1,5 @@
 import { browser } from "@web/core/browser/browser";
-import { fields, Record } from "@mail/model/export";
+import { Record, fields, syncWithLocalStorage } from "@mail/model/export";
 
 import { Mutex } from "@web/core/utils/concurrency";
 
@@ -18,14 +18,11 @@ export class ChatHub extends Record {
 
     BUBBLE = 56; // same value as $o-mail-ChatHub-bubblesWidth
     recomputeBubbleStart = 0;
-    BUBBLE_START = fields.Attr(CHAT_HUB_DEFAULT_BUBBLE_START, {
-        /** @this {import("models").Chathub} */
-        compute() {
-            void this.recomputeBubbleStart;
-            return this.computeBubbleStart();
-        },
-    });
-    computeBubbleStart() {
+    get BUBBLE_START() {
+        // Manual invalidation counter: bumped by overrides whose inputs are not
+        // reactive (e.g. website edit mode), so this getter recomputes.
+        // Overrides must always read super so the counter stays tracked.
+        void this.recomputeBubbleStart;
         return CHAT_HUB_DEFAULT_BUBBLE_START;
     }
     BUBBLE_LIMIT = 7;
@@ -34,34 +31,40 @@ export class ChatHub extends Record {
     WINDOW_INBETWEEN = 5;
     WINDOW = 380; // same value as $o-mail-ChatWindow-width
 
-    /** @returns {import("models").ChatHub} */
-    static new() {
-        /** @type {import("models").ChatHub} */
-        const chatHub = super.new(...arguments);
-        browser.addEventListener("storage", (ev) => {
-            if (ev.key === CHAT_HUB_KEY) {
-                chatHub.load(ev.newValue);
-            } else if (ev.key === null) {
-                chatHub.load();
+    setup() {
+        super.setup();
+        this.onRelationChange(
+            () => this.opened,
+            ({ added }) => {
+                if (added.length) {
+                    this.onRecompute();
+                }
             }
-        });
-        chatHub
-            .load(browser.localStorage.getItem(CHAT_HUB_KEY) ?? undefined)
-            .then(() => chatHub._resolveInit());
-        return chatHub;
+        );
+        this.onChange(
+            () => [], // one-shot init (no dependencies), clean up on delete
+            function initChatHub() {
+                const onStorage = (ev) => {
+                    if (ev.key === CHAT_HUB_KEY) {
+                        this.load(ev.newValue);
+                    } else if (ev.key === null) {
+                        this.load();
+                    }
+                };
+                browser.addEventListener("storage", onStorage);
+                this.load(browser.localStorage.getItem(CHAT_HUB_KEY) ?? undefined).then(() =>
+                    this._resolveInit()
+                );
+                return () => browser.removeEventListener("storage", onStorage);
+            }
+        );
     }
 
-    compact = fields.Attr(false, { localStorage: true });
+    compact = syncWithLocalStorage(this, false);
     canShowOpened = fields.Many("ChatWindow");
     canShowFolded = fields.Many("ChatWindow");
     /** From left to right. Right-most will actually be folded */
-    opened = fields.Many("ChatWindow", {
-        inverse: "hubAsOpened",
-        /** @this {import("models").ChatHub} */
-        onAdd(r) {
-            this.onRecompute();
-        },
-    });
+    opened = fields.Many("ChatWindow", { inverse: "hubAsOpened" });
     /** From top to bottom. Bottom-most will actually be hidden */
     folded = fields.Many("ChatWindow", { inverse: "hubAsFolded" });
     initPromise = new Promise((resolve) => (this._resolveInit = resolve));
@@ -149,11 +152,9 @@ export class ChatHub extends Record {
         );
     }
 
-    showConversations = fields.Attr(false, {
-        compute() {
-            return this.canShowOpened.length + this.canShowFolded.length > 0;
-        },
-    });
+    get showConversations() {
+        return this.canShowOpened.length + this.canShowFolded.length > 0;
+    }
 }
 
 ChatHub.register();

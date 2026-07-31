@@ -52,8 +52,8 @@ export class ResUsers extends ImStatusMixin {
         return getOuterHtml(divElement);
     }
 
-    _computeMonitorPresence() {
-        return super._computeMonitorPresence() && !this.is_public;
+    get monitorPresence() {
+        return super.monitorPresence && !this.is_public;
     }
 }
 

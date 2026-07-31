@@ -1,6 +1,13 @@
-import { computed, effect, immediateEffect, markup, shallowEqual, toRaw, untrack } from "@odoo/owl";
 import {
-    IS_DELETED_SYM,
+    computed,
+    effect,
+    immediateEffect,
+    markRaw,
+    markup,
+    shallowEqual,
+    untrack,
+} from "@odoo/owl";
+import {
     OR_SYM,
     STORE_SYM,
     isCommandList,
@@ -9,7 +16,7 @@ import {
     isRecord,
     isRelation,
     modelRegistry,
-    technicalKeysOnRecords,
+    untrackFunctions,
 } from "./misc";
 import { serializeDate, serializeDateTime } from "@web/core/l10n/dates";
 
@@ -25,6 +32,25 @@ import { serializeDate, serializeDateTime } from "@web/core/l10n/dates";
 
 const Markup = markup().constructor;
 
+/**
+ * Main class for all records in the store.
+ *
+ * Fields are declared as class fields (`name = fields.X()`) or in setup()
+ * (the only way in patches: never add fields on the prototype). Both go
+ * through the record proxy: the base constructor returns it, so the
+ * class-field initializers and setup() run with `this` being the proxy and
+ * their declarations are intercepted (@see RecordInternal.proxySet).
+ *
+ * setup() should be overridden in subclasses to add custom logic; it runs
+ * after all the class-field initializers (@see Record.new, which drives the
+ * whole record creation).
+ *
+ * Never define a constructor: the bootstrap arguments must reach the base
+ * constructor through the implicit ones (@see makeStore), and a
+ * constructor body would run between the field declarations and setup().
+ *
+ * Getters are cached with OWL computed: only reactive changes invalidate them.
+ */
 export class Record {
     /** @type {import("./model_internal").ModelInternal} */
     static _;
@@ -32,21 +58,17 @@ export class Record {
     _;
     static id = "id";
     /** @type {import("@web/env").OdooEnv} */
-    static env;
-    /** @type {import("@web/env").OdooEnv} */
     env;
+    /** @type {Object<string, typeof Record>} on the store record only (@see constructor) */
+    Models;
     /** @type {Object<string, Record>} */
     static records;
     /** @type {import("models").Store} */
     static store;
     /** @type {string} */
     static _name;
-    /** @param {() => any} fn */
-    static MAKE_UPDATE(fn) {
-        return this.store.MAKE_UPDATE(...arguments);
-    }
     static get(data) {
-        const Model = toRaw(this);
+        const Model = this;
         return this.records[Model.localId(data)];
     }
     /**
@@ -62,7 +84,7 @@ export class Record {
         if (!record || field_names.some((fieldName) => record[fieldName] === undefined)) {
             await this.store.fetchStoreData(this.getName(), { id });
             record = this.get(id);
-            if (!record?.exists()) {
+            if (!record) {
                 return;
             }
         }
@@ -80,7 +102,7 @@ export class Record {
         }
     }
     static localId(data) {
-        const Model = toRaw(this);
+        const Model = this;
         let idStr;
         if (Model.singleton) {
             return Model.getName();
@@ -93,7 +115,7 @@ export class Record {
         return `${Model.getName()},${idStr}`;
     }
     static _localId(expr, data, { brackets = false } = {}) {
-        const Model = toRaw(this);
+        const Model = this;
         if (!Array.isArray(expr)) {
             if (Model._.fields.get(expr)) {
                 if (Model._.fieldsMany.get(expr)) {
@@ -131,7 +153,7 @@ export class Record {
         return res;
     }
     static _retrieveIdFromData(data) {
-        const Model = toRaw(this);
+        const Model = this;
         if (Model.singleton || Model.id === undefined) {
             return {};
         }
@@ -169,54 +191,64 @@ export class Record {
         return res;
     }
     /**
-     * This method is almost equivalent to constructor, except that it properly
-     * setups all model concepts.
+     * Creates a record: bootstrap constructor, class-field and setup()
+     * declarations, ids, store registrations, release of the held onChanges.
      *
      * @returns {Record}
      */
-    static new(data, ids) {
-        const Model = toRaw(this);
-        const store = Model._rawStore;
-        return store.MAKE_UPDATE(function RecordNew() {
-            const recordProxy = new Model();
-            const record = toRaw(recordProxy)._raw;
-            Object.assign(record._, { localId: Model.localId(ids) });
-            for (const name of Model._.fields.keys()) {
-                record._.prepareField(record, name, recordProxy);
+    static new(ids) {
+        const Model = this;
+        return Model.store.MAKE_UPDATE(function RecordNew() {
+            const record = new Model();
+            // setup()'s field declarations are intercepted by proxySet like
+            // the class fields, so fields can also be declared dynamically on
+            // a live record. Called here and not in a constructor: it must
+            // run after ALL the class-field initializers, and only the
+            // most-derived constructor body runs later than them.
+            record.setup();
+            // resolve the relational ids now: making this localId reads the
+            // target records' localIds, and a relational id is only known to
+            // be one once setup() registered the fields (deferred from
+            // preinsert, which runs before this model's fields exist).
+            if (!Model.singleton) {
+                for (const name in ids) {
+                    if (
+                        ids[name] &&
+                        !isRecord(ids[name]) &&
+                        !isCommandList(ids[name]) &&
+                        isRelation(Model, name)
+                    ) {
+                        ids[name] = Model.store[Model._.fieldsTargetModel.get(name)].preinsert(
+                            ids[name]
+                        );
+                    }
+                }
             }
-            Object.assign(recordProxy, { ...ids });
-            Model.records[record.localId] = recordProxy;
-            if (record.Model.getName() === "Store") {
-                Object.assign(record, {
-                    env: Model._rawStore.env,
-                    recordByLocalId: Model._rawStore.recordByLocalId,
-                });
-            }
-            // compute inherits fields in priority, as other fields might depend on them
-            for (const fieldName of Model._.inheritsFields) {
-                record._.compute?.(record, fieldName);
-            }
-            Model._rawStore.recordByLocalId.set(record.localId, recordProxy);
-            for (const fieldName of record.Model._.fields.keys()) {
-                record._.requestCompute?.(record, fieldName);
-                record._.requestSort?.(record, fieldName);
-            }
+            // localId is resolved now, after the ids' target records exist;
+            // before the ids are applied, as adding a relation reads this
+            // record's localId.
+            const localId = Model.localId(ids);
+            record._.localId = localId;
+            Object.assign(record, { ...ids });
+            Model.records[localId] = record;
+            Model.store.recordByLocalId.set(localId, record);
+            // releases the held onChange registrations (@see
+            // RecordInternal.constructing): after the registrations above, so
+            // what they read resolves the record
             record._.constructing.set(false);
-            return recordProxy;
+            return record;
         });
     }
     /** @returns {Record|Record[]} */
     static insert(data, options = {}) {
-        const ModelFullProxy = this;
-        const Model = toRaw(ModelFullProxy);
-        const store = Model._rawStore;
-        return store.MAKE_UPDATE(function RecordInsert() {
+        const Model = this;
+        return Model.store.MAKE_UPDATE(function RecordInsert() {
             const isMulti = Array.isArray(data);
             if (!isMulti) {
                 data = [data];
             }
             const res = data.map(function RecordInsertMap(d) {
-                return Model._insert.call(ModelFullProxy, d, options);
+                return Model._insert(d, options);
             });
             if (!isMulti) {
                 return res[0];
@@ -226,17 +258,14 @@ export class Record {
     }
     /** @returns {Record} */
     static _insert(data) {
-        const ModelFullProxy = this;
-        const Model = toRaw(ModelFullProxy);
-        const recordFullProxy = Model.preinsert.call(ModelFullProxy, data);
-        const record = toRaw(recordFullProxy)._raw;
-        record.update.call(record._proxy, data);
-        return recordFullProxy;
+        const Model = this;
+        const record = Model.preinsert(data);
+        record.update(data);
+        return record;
     }
     /** @returns {Record} */
     static preinsert(data) {
-        const ModelFullProxy = this;
-        const Model = toRaw(ModelFullProxy);
+        const Model = this;
         const ids = Model._retrieveIdFromData(data);
         if (!Model.singleton) {
             for (const name in ids) {
@@ -246,24 +275,43 @@ export class Record {
                     !isCommandList(ids[name]) &&
                     isRelation(Model, name)
                 ) {
-                    // preinsert that record in relational field,
-                    // as it is required to make current local id
-                    ids[name] = Model._rawStore[Model._.fieldsTargetModel.get(name)].preinsert(
+                    ids[name] = Model.store[Model._.fieldsTargetModel.get(name)].preinsert(
                         ids[name]
                     );
                 }
             }
         }
-        return Model.get.call(ModelFullProxy, data) ?? Model.new(data, ids);
+        return Model.get(ids) ?? Model.new(ids);
     }
 
-    /** @returns {import("models").Store} */
-    get store() {
-        return toRaw(this)._raw.Model._rawStore._proxy;
+    /**
+     * Bootstraps the record and returns its proxy, which therefore becomes
+     * `this` of every subclass field initializer and constructor body that
+     * runs after it: class-field declarations (`name = fields.X()`) are
+     * intercepted by proxySet exactly like setup() declarations. Model
+     * classes must never define a constructor (@see class description).
+     * Record.new constructs the per-store Model subclass (@see makeStore), so
+     * `new.target` is the Model; without one (the bootstrap store constructs
+     * the model class directly) the instance stays a plain object.
+     */
+    constructor() {
+        const rawRecord = this;
+        markRaw(rawRecord); // record reactivity is done through field signals
+        const Model = new.target;
+        if (!Model._) {
+            // not a Model made by makeStore (its `_` marks it): the
+            // bootstrap store constructs the model class directly
+            return;
+        }
+        rawRecord.Model = Model;
+        // the store record shares the bootstrap store's internal (they are the
+        // same store, @see makeStore); every other record gets its own
+        rawRecord._ = rawRecord[STORE_SYM] ? Model.store._ : new Model._.RecordInternal();
+        return rawRecord._.setupRecord(rawRecord);
     }
-    /** @returns {import("models").Store} */
-    get _rawStore() {
-        return toRaw(this)._raw.Model._rawStore;
+
+    get store() {
+        return this.Model.store;
     }
     /**
      * Technical attribute, contains the Model entry in the store.
@@ -282,20 +330,18 @@ export class Record {
     Model;
     /** @type {string} */
     get localId() {
-        return toRaw(this)._.localId;
+        return this._.localId;
     }
-    /** @type {this} */
-    _raw;
-    /** @type {this} */
-    _proxyInternal;
-    /** @type {this} */
-    _proxy;
-
     setup() {}
 
     update(data) {
-        const record = toRaw(this)._raw;
-        const store = record._rawStore;
+        const record = this;
+        if (data === undefined) {
+            // insert without data (e.g. a singleton): nothing to apply; the
+            // single-id branch below would write a junk undefined id
+            return;
+        }
+        const store = record.store;
         return store.MAKE_UPDATE(function recordUpdate() {
             if (typeof data === "object" && data !== null) {
                 store._.updateFields(record, data);
@@ -312,37 +358,36 @@ export class Record {
     }
 
     delete() {
-        const record = toRaw(this)._raw;
+        const record = this;
         if (!record.exists()) {
             return;
         }
-        const store = record._rawStore;
+        const store = record.store;
         return store.MAKE_UPDATE(function recordDelete() {
             // delete records inheriting the current record before deleting the current record
             for (const fieldName of record.Model._.inheritsInverseFields) {
                 if (record.Model._.fieldsMany.get(fieldName)) {
-                    const dependentRecordListProxy = record._proxyInternal[fieldName];
-                    for (const dependentRecordProxy of dependentRecordListProxy) {
-                        store._.ADD_QUEUE("delete", toRaw(dependentRecordProxy)._raw);
+                    for (const dependentRecord of record[fieldName]) {
+                        store._.RD_QUEUE.set(dependentRecord, true);
                     }
                 } else {
-                    const dependentRecordProxy = record._proxyInternal[fieldName];
-                    if (dependentRecordProxy) {
-                        store._.ADD_QUEUE("delete", toRaw(dependentRecordProxy)._raw);
+                    const dependentRecord = record[fieldName];
+                    if (dependentRecord) {
+                        store._.RD_QUEUE.set(dependentRecord, true);
                     }
                 }
             }
-            store._.ADD_QUEUE("delete", record);
+            store._.RD_QUEUE.set(record, true);
         });
     }
 
     exists() {
-        return !this[IS_DELETED_SYM];
+        return this._.existsSignal();
     }
 
     /** @param {Record} record */
     eq(record) {
-        return toRaw(this)._raw === toRaw(record)?._raw;
+        return this === record;
     }
 
     /** @param {Record} record */
@@ -355,7 +400,7 @@ export class Record {
         if (!collection) {
             return false;
         }
-        return collection.some((record) => toRaw(record)._raw.eq(this));
+        return collection.some((record) => record.eq(this));
     }
 
     /** @param {Record[]|RecordList} collection */
@@ -365,13 +410,14 @@ export class Record {
 
     /**
      * Observe changes: dependencies function + callback receiving the dep
-     * values, auto-disposed on record deletion or in-between tests. Both
-     * functions are bound to the record proxy. Tracking is exactly what
-     * `dependencies` reads while it runs: read `.length`/iterate in it if list
-     * content matters. Its values are compared with `shallowEqual`, so the
-     * callback only runs when one of them changes, even a derived one. The
-     * callback may return a cleanup function, invoked before the next callback
-     * and on dispose.
+     * values, auto-disposed when the record starts being deleted (@see
+     * _disposeOnChanges: a runner must not observe or write half-removed
+     * state while the relations are cleared). Both functions are bound to the
+     * record proxy. Tracking is exactly what `dependencies` reads while it
+     * runs: read `.length`/iterate in it if list content matters. Its values
+     * are compared with `shallowEqual`, so the callback only runs when one of
+     * them changes, even a derived one. The callback may return a cleanup
+     * function, invoked before the next callback and on dispose.
      *
      * @template {any[]} T
      * @param {(this: this) => T} dependencies
@@ -383,10 +429,6 @@ export class Record {
      */
     onChange(dependencies, callback, { immediate = false, initialRun = true } = {}) {
         const record = this;
-        if (!record._) {
-            // the dummy record collecting the field declarations has no internals
-            return;
-        }
         const deps = computed(dependencies.bind(record), { equals: shallowEqual });
         const boundCallback = callback.bind(record);
         let firstRun = true;
@@ -394,7 +436,11 @@ export class Record {
         record._registerDisposeFn(
             immediateEffect(function onChangeAfterConstructing() {
                 if (untrack(() => record._.constructing())) {
-                    // deps and initial run wait for a complete record
+                    // hold a registration made while the record is being
+                    // created: the deps and the initial run must observe the
+                    // complete record (ids assigned, inherits applied).
+                    // Subscribe only while held: the release run reads
+                    // nothing, dropping the subscription.
                     void record._.constructing();
                     return;
                 }
@@ -412,6 +458,10 @@ export class Record {
                             cleanup?.();
                             const result = boundCallback(...values);
                             cleanup = typeof result === "function" ? result : undefined;
+                            // a callback writing its own dependency leaves the
+                            // memo on the value it read: re-read it, so putting
+                            // that value back later still counts as a change
+                            deps();
                         });
                     })
                 );
@@ -421,6 +471,73 @@ export class Record {
                     cleanup = undefined;
                 });
             })
+        );
+    }
+
+    /**
+     * Keep the field assigned from `compute` (an immediate onChange writing the
+     * computed value). Prefer a plain getter for a derived value: it is lazy
+     * and memoized. Assigning is only for a value that must be STORED: it is
+     * also written by other flows, or the field carries an inverse to maintain.
+     *
+     * @param {string} fieldName
+     * @param {(this: this) => any} compute returns the value to assign; for a
+     *  Many relation, the records array (compared element-wise)
+     */
+    assignComputed(fieldName, compute) {
+        const record = this;
+        const many = isMany(this.Model, fieldName);
+        // memoized with a shallow equals: the assignment must not repeat when
+        // the computed value is unchanged (a Many compute returns a fresh
+        // array each run)
+        const value = computed(() => compute.call(record), {
+            equals: many ? shallowEqual : undefined,
+        });
+        this.onChange(
+            function assignDependencies() {
+                return [value()];
+            },
+            function assignValue(val) {
+                this[fieldName] = val;
+            },
+            { immediate: true }
+        );
+    }
+
+    /**
+     * Observe a relation's membership: the callback receives the records
+     * added to and removed from it since the previous run (on the initial
+     * run every current record is `added`; it is not called when nothing
+     * changed). The dependency returns the relation (One or Many); the diff
+     * is kept here so callers do not re-implement it.
+     *
+     * @param {(this: this) => import("./record_list").RecordList|Record|undefined} dependency
+     * @param {(this: this, changes: { added: Record[], removed: Record[] }) => void} callback
+     */
+    onRelationChange(dependency, callback) {
+        const record = this;
+        function relationMembers() {
+            const value = dependency.call(record);
+            const records = isRecord(value) ? [value] : [...(value ?? [])];
+            return records.filter(Boolean);
+        }
+        let previous = [];
+        this.onChange(
+            relationMembers,
+            function relationDiff(...records) {
+                const added = records.filter((r) => !previous.includes(r));
+                const removed = previous.filter((r) => !records.includes(r));
+                previous = records;
+                if (!added.length && !removed.length) {
+                    return;
+                }
+                callback.call(record, { added, removed });
+                // the callback may alter the relation itself, without the
+                // effect firing again (it is already running): re-read so the
+                // next diff compares against the actual membership
+                previous = untrack(relationMembers);
+            },
+            { immediate: true }
         );
     }
 
@@ -442,10 +559,6 @@ export class Record {
         }
         this._toData(ongoing, prefix);
         return ongoing.storeData;
-    }
-
-    _cleanupData(data) {
-        technicalKeysOnRecords.forEach((field) => delete data[field]);
     }
 
     /** @param {Function} disposeFn */
@@ -481,35 +594,21 @@ export class Record {
         }
         ongoing.seenRecords.add(this.localId);
 
-        const recordProxy = this;
-        const record = toRaw(recordProxy)._raw;
+        const record = this;
         const Model = record.Model;
-        const data = { ...recordProxy };
+        const data = {};
         for (const name of Model._.fields.keys()) {
-            if (Model._.fieldsCompute.has(name)) {
-                delete data[name];
-                continue;
-            }
             const fullFieldName = prefix ? `${prefix}.${name}` : name;
             if (isMany(Model, name)) {
-                data[name] = record._proxyInternal[name].map((recordProxy) => {
-                    const record = toRaw(recordProxy)._raw;
-                    return record._toDataRelationalRecord.call(
-                        record._proxyInternal,
-                        ongoing,
-                        fullFieldName
-                    );
-                });
-            } else if (isOne(Model, name)) {
-                const otherRecord = toRaw(record._proxyInternal[name])?._raw;
-                data[name] = otherRecord?._toDataRelationalRecord.call(
-                    otherRecord._proxyInternal,
-                    ongoing,
-                    fullFieldName
+                data[name] = record[name].map((otherRecord) =>
+                    otherRecord._toDataRelationalRecord(ongoing, fullFieldName)
                 );
+            } else if (isOne(Model, name)) {
+                const otherRecord = record[name];
+                data[name] = otherRecord?._toDataRelationalRecord(ongoing, fullFieldName);
             } else {
                 // fields.Attr()
-                const value = recordProxy[name];
+                const value = record[name];
                 if (Model._.fieldsType.get(name) === "datetime" && value) {
                     data[name] = serializeDateTime(value);
                 } else if (Model._.fieldsType.get(name) === "date" && value) {
@@ -522,8 +621,7 @@ export class Record {
             }
         }
 
-        this._cleanupData(data);
-        const modelName = record.Model.getName();
+        const modelName = Model.getName();
         ongoing.storeData[modelName] ||= [];
         ongoing.storeData[modelName].push(data);
     }
@@ -546,4 +644,5 @@ export class Record {
         return data;
     }
 }
-Record.register();
+untrackFunctions(Record, ["insert", "new"]);
+untrackFunctions(Record.prototype, ["delete", "update"]);

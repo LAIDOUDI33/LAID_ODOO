@@ -1,5 +1,8 @@
 import { fields, Record } from "@mail/model/export";
 import { assignDefined } from "@mail/utils/common/misc";
+
+import { computed } from "@odoo/owl";
+
 import { generatePdfThumbnail } from "@web/core/utils/pdfjs";
 
 import { FileModelMixin } from "@web/core/file_viewer/file_model";
@@ -9,11 +12,11 @@ import { imageUrl, url } from "@web/core/utils/urls";
 
 export class Attachment extends FileModelMixin(Record) {
     static _name = "ir.attachment";
-    static new() {
-        /** @type {import("models").Attachment} */
-        const attachment = super.new(...arguments);
-        attachment.onChange(
-            () => [attachment.extension, attachment.name],
+
+    setup() {
+        super.setup();
+        this.onChange(
+            () => [this.extension, this.name],
             function onChangeName(extension, name) {
                 if (!extension && name) {
                     this.extension = name.split(".").pop();
@@ -21,7 +24,26 @@ export class Attachment extends FileModelMixin(Record) {
             },
             { immediate: true }
         );
-        return attachment;
+        // memoized: generating and uploading a thumbnail must not repeat
+        // while the many reads below keep collapsing to the same boolean
+        const shouldSetThumbnail = computed(() =>
+            Boolean(
+                (this.isPdf || this.isVideo) &&
+                    this.has_thumbnail === false &&
+                    (this.ownership_token ||
+                        // If related to a record, must have write access to it
+                        ((!this.thread || this.thread.hasWriteAccess) &&
+                            this.store.self_user?.share === false))
+            )
+        );
+        this.onChange(
+            () => [shouldSetThumbnail()],
+            function onChangeShouldSetThumbnail(shouldSetThumbnail) {
+                if (shouldSetThumbnail) {
+                    this.setThumbnail();
+                }
+            }
+        );
     }
 
     composer = fields.One("Composer", { inverse: "attachments" });
@@ -39,20 +61,8 @@ export class Attachment extends FileModelMixin(Record) {
     /** @type {string} */
     ownership_token;
     create_date = fields.Datetime();
-    has_thumbnail = fields.Attr(undefined, {
-        onUpdate() {
-            if (
-                (this.isPdf || this.isVideo) &&
-                !this.has_thumbnail &&
-                (this.ownership_token ||
-                    // If related to a record, must have write access to it
-                    ((!this.thread || this.thread.hasWriteAccess) &&
-                        this.store.self_user?.share === false))
-            ) {
-                this.setThumbnail();
-            }
-        },
-    });
+    /** @type {boolean} */
+    has_thumbnail = undefined;
     get thumbnailUrl() {
         const params = assignDefined(
             {},

@@ -16,7 +16,6 @@ export class HrEmployee extends Record {
     first_contract_date;
     /** @type {string} */
     hr_icon_display;
-    /** @type {string} */
     job_title;
     /** @type {string} */
     name;
@@ -28,7 +27,7 @@ export class HrEmployee extends Record {
     /** @type {string} */
     work_email;
     work_location_id = fields.One("hr.work.location");
-    /** @type {string} */
+    /** @type {string|undefined} */
     work_location_type;
     /** @type {string} */
     work_phone;

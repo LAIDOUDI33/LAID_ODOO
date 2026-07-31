@@ -20,7 +20,10 @@ export const messagingMenuHelpers = {
         const ResUsers = env["res.users"];
         switch (tab_id) {
             case "bookmark":
-                return [["bookmarked_partner_ids", "=", env.user?.partner_id]];
+                // the python domain is ("bookmarked_partner_ids", "=", partner_id): the ORM
+                // resolves "=" on a x2many as "contains", but the JS Domain matcher compares
+                // strictly, so mirror it with "in"
+                return [["bookmarked_partner_ids", "in", [env.user?.partner_id]]];
             case "notification":
                 return [
                     ["notification_ids.res_partner_id", "=", env.user?.partner_id],

@@ -1,4 +1,4 @@
-import { fields, Record } from "@mail/model/export";
+import { Record, fields, syncWithLocalStorage } from "@mail/model/export";
 import { compareDatetime } from "@mail/utils/common/misc";
 
 import { _t } from "@web/core/l10n/translation";
@@ -42,11 +42,18 @@ export class MessagingMenuTab extends Record {
     actions = [];
     /** @type {?string} */
     activeIcon;
-    counter = fields.Attr(0, {
-        compute() {
-            return this._computeCounter();
-        },
-    });
+    get counter() {
+        // The counter reflects the default filter (when any), so only count loaded
+        // messages matching it. `init_counter_ids` is scoped to that domain.
+        const defaultFilter = this.defaultFilter;
+        const countableMessages = defaultFilter?.includesMessage
+            ? this.messages.filter((m) => defaultFilter.includesMessage(m))
+            : this.messages;
+        const unloadedUnreadCount = this.init_counter_ids.filter(
+            (id) => !this.store["mail.message"].get(id)
+        ).length;
+        return countableMessages.length + unloadedUnreadCount + this.extraCounter;
+    }
 
     /**
      * Determines if a message should be included in this tab. Centralizes membership
@@ -69,17 +76,15 @@ export class MessagingMenuTab extends Record {
      */
     emptyState = { title: _t("Nothing here yet.") };
     /** Additional counter not tracked server-side (e.g. failures, push permission request). */
-    extraCounter = fields.Attr(0, {
-        compute() {
-            if (!this.eq(this.store.messagingMenu?.odooBotNotificationsTab)) {
-                return 0;
-            }
-            return (
-                (this.store.showPushPermissionRequest ? 1 : 0) +
-                this.store.failures.reduce((acc, failure) => acc + failure.notifications.length, 0)
-            );
-        },
-    });
+    get extraCounter() {
+        if (!this.eq(this.store.messagingMenu?.odooBotNotificationsTab)) {
+            return 0;
+        }
+        return (
+            (this.store.showPushPermissionRequest ? 1 : 0) +
+            this.store.failures.reduce((acc, failure) => acc + failure.notifications.length, 0)
+        );
+    }
     /**
      * Filters shown as buttons next to the search bar. Selecting a filter narrows the
      * displayed records (client-side via `includesMessage`/`includesChannel`). Its
@@ -92,7 +97,7 @@ export class MessagingMenuTab extends Record {
      */
     filters = [];
     /** Hide the tab from the devtools if really bothered. */
-    hidden = fields.Attr(false, { localStorage: true, eager: true });
+    hidden = syncWithLocalStorage(this, false);
     hideWhenZeroCounter = false;
     /**
      * Whether this tab contains items that need the user's attention (unread messages,
@@ -115,56 +120,20 @@ export class MessagingMenuTab extends Record {
      *
      * @type {Object<string, "new"|"idle"|"loading"|"loaded">}
      */
-    loadStatusByFilterId = {};
+    loadStatusByFilterId = fields.Attr({}, { reactiveContent: true });
     /** IDs of already loaded records, used to exclude them from `loadMore` requests. */
-    loadMoreExcludeIds = fields.Attr([], {
-        compute() {
-            return this._computeLoadMoreExcludeIds();
-        },
-    });
-    messagingMenuAsTab = fields.One("MessagingMenu", {
-        inverse: "allTabs",
-        compute() {
-            return this.store.messagingMenu;
-        },
-        eager: true,
-    });
-    messagingMenuAsVisibleTabs = fields.One("MessagingMenu", {
-        inverse: "visibleTabs",
-        compute() {
-            if (!this.isShown) {
-                return;
-            }
-            return this.store.messagingMenu;
-        },
-        eager: true,
-    });
-    messages = fields.Many("mail.message", {
-        inverse: "messagingMenuTabsAsMessages",
-        sort(m1, m2) {
-            return compareDatetime(m2.create_date, m1.create_date) || m2.id - m1.id;
-        },
-    });
+    get loadMoreExcludeIds() {
+        return this.messages.map((m) => m.id);
+    }
+    messages = fields.Many("mail.message", { inverse: "messagingMenuTabsAsMessages" });
+    get sortedMessages() {
+        return [...this.messages].sort(
+            (m1, m2) => compareDatetime(m2.create_date, m1.create_date) || m2.id - m1.id
+        );
+    }
     /** @type {"mail.message"|"discuss.channel"} */
     recordType;
     sequence = 0;
-
-    _computeCounter() {
-        // The counter reflects the default filter (when any), so only count loaded
-        // messages matching it. `init_counter_ids` is scoped to that domain.
-        const defaultFilter = this.defaultFilter;
-        const countableMessages = defaultFilter?.includesMessage
-            ? this.messages.filter((m) => defaultFilter.includesMessage(m))
-            : this.messages;
-        const unloadedUnreadCount = this.init_counter_ids.filter(
-            (id) => !this.store["mail.message"].get(id)
-        ).length;
-        return countableMessages.length + unloadedUnreadCount + this.extraCounter;
-    }
-
-    _computeLoadMoreExcludeIds() {
-        return this.messages.map((m) => m.id);
-    }
 
     get isShown() {
         return !this.hidden && (!this.hideWhenZeroCounter || this.counter > 0);

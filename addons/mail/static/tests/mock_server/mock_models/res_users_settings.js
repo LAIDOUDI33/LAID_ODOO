@@ -65,6 +65,7 @@ export class ResUsersSettings extends webModels.ResUsersSettings {
         this.set_res_users_settings(ids, { channel_notifications: custom_notifications });
     }
 
+    /** Simulates `_store_settings_fields` on `res.users.settings`. */
     _store_settings_fields(res) {
         res.extend(["channel_notifications"]);
         res.many("volume_settings_ids", "_store_volume_fields");

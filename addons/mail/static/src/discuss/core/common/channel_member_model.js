@@ -23,22 +23,92 @@ export class ChannelMember extends Record {
     custom_notifications;
     /** @type {number} */
     id;
+    setup() {
+        super.setup();
+        // a member belongs to its channel: unlinked from it, it is deleted
+        this.onRelationChange(
+            () => this.channel_id,
+            ({ removed }) => {
+                if (removed.length && !this.channel_id) {
+                    this.delete();
+                }
+            }
+        );
+        this.onChange(
+            () => [this.message_unread_counter],
+            function onChangeMessageUnreadCounter(message_unread_counter) {
+                if (
+                    message_unread_counter === 0 ||
+                    !this.channel_id?.isDisplayed ||
+                    this.channel_id?.scrollTop !== "bottom" ||
+                    this.channel_id.markedAsUnread ||
+                    !this.channel_id.isFocused
+                ) {
+                    this.message_unread_counter_ui = message_unread_counter;
+                }
+            },
+            { immediate: true }
+        );
+        this.onChange(
+            () => [this.new_message_separator],
+            function onChangeNewMessageSeparator(new_message_separator) {
+                if (!this.channel_id?.isDisplayed) {
+                    this.new_message_separator_ui = new_message_separator;
+                }
+            },
+            { immediate: true }
+        );
+        this.onChange(
+            () => [this.isTyping],
+            function onChangeIsTyping(isTyping) {
+                browser.clearTimeout(this.typingTimeoutId);
+                if (isTyping) {
+                    this.registerTypingTimeout();
+                }
+            },
+            { immediate: true }
+        );
+        this.onChange(
+            () => [this.is_typing_dt],
+            function onChangeIsTypingDt(is_typing_dt) {
+                browser.clearTimeout(this.typingTimeoutId);
+                if (
+                    !is_typing_dt ||
+                    DateTime.now().diff(is_typing_dt).milliseconds > Store.OTHER_LONG_TYPING
+                ) {
+                    this.isTyping = false;
+                }
+                if (this.isTyping) {
+                    this.registerTypingTimeout();
+                }
+            },
+            { immediate: true }
+        );
+        this.onRelationChange(
+            () => this.channelAsTyping,
+            ({ removed }) => {
+                if (removed.length) {
+                    browser.clearTimeout(this.typingTimeoutId);
+                }
+            }
+        );
+        this.assignComputed("channelAsSelf", function computeChannelAsSelf() {
+            return this.isSelf ? this.channel_id : undefined;
+        });
+        this.assignComputed("channelAsTyping", function computeChannelAsTyping() {
+            return this.isTyping ? this.channel_id : undefined;
+        });
+    }
     /** @type {boolean} */
     is_favorite;
-    is_pinned = fields.Attr(undefined, {
-        compute() {
-            return (
-                !this.unpin_dt ||
+    get is_pinned() {
+        return Boolean(
+            !this.unpin_dt ||
                 (this.last_interest_dt && this.last_interest_dt >= this.unpin_dt) ||
                 (this.channel_id?.last_interest_dt &&
                     this.channel_id?.last_interest_dt >= this.unpin_dt)
-            );
-        },
-        /** @this {import("models").ChannelMember} */
-        onUpdate() {
-            this.channel_id?.onPinStateUpdated();
-        },
-    });
+        );
+    }
     last_interest_dt = fields.Datetime();
     last_seen_dt = fields.Datetime();
     guest_id = fields.One("mail.guest");
@@ -51,70 +121,23 @@ export class ChannelMember extends Record {
      * @type {false|"owner"|"admin"}
      */
     channel_role;
-    channelAsSelf = fields.One("discuss.channel", {
-        /** @this {import("models").ChannelMember} */
-        compute() {
-            if (this.isSelf) {
-                return this.channel_id;
-            }
-        },
-    });
+    channelAsSelf = fields.One("discuss.channel", { inverse: "self_member_id" });
     seen_message_id = fields.One("mail.message");
     hideUnreadBanner = false;
-    message_unread_counter = fields.Attr(0, {
-        /** @this {import("models").ChannelMember} */
-        onUpdate() {
-            if (
-                this.message_unread_counter === 0 ||
-                !this.channel_id?.isDisplayed ||
-                this.channel_id?.scrollTop !== "bottom" ||
-                this.channel_id.markedAsUnread ||
-                !this.channel_id.isFocused
-            ) {
-                this.message_unread_counter_ui = this.message_unread_counter;
-            }
-        },
-    });
+    message_unread_counter = 0;
     message_unread_counter_ui = 0;
     message_unread_counter_bus_id = 0;
     mute_until_dt = fields.Datetime();
-    new_message_separator = fields.Attr(null, {
-        /** @this {import("models").ChannelMember} */
-        onUpdate() {
-            if (!this.channel_id?.isDisplayed) {
-                this.new_message_separator_ui = this.new_message_separator;
-            }
-        },
-    });
+    new_message_separator = null;
     new_message_separator_ui = null;
-    isTyping = fields.Attr(false, {
-        onUpdate() {
-            browser.clearTimeout(this.typingTimeoutId);
-            if (this.isTyping) {
-                this.registerTypingTimeout();
-            }
-        },
-    });
+    isTyping = false;
     get isTypingUi() {
         if (this.channel_id.self_member_id?.mute_until_dt) {
             return false;
         }
         return this.isTyping;
     }
-    is_typing_dt = fields.Datetime({
-        onUpdate() {
-            browser.clearTimeout(this.typingTimeoutId);
-            if (
-                !this.is_typing_dt ||
-                DateTime.now().diff(this.is_typing_dt).milliseconds > Store.OTHER_LONG_TYPING
-            ) {
-                this.isTyping = false;
-            }
-            if (this.isTyping) {
-                this.registerTypingTimeout();
-            }
-        },
-    });
+    is_typing_dt = fields.Datetime();
     /** To be patched in test, to detect when this timeout is registered. */
     registerTypingTimeout() {
         this.typingTimeoutId = browser.setTimeout(
@@ -122,15 +145,7 @@ export class ChannelMember extends Record {
             this.typingTimeoutDuration
         );
     }
-    channelAsTyping = fields.One("discuss.channel", {
-        compute() {
-            return this.isTyping ? this.channel_id : undefined;
-        },
-        eager: true,
-        onDelete() {
-            browser.clearTimeout(this.typingTimeoutId);
-        },
-    });
+    channelAsTyping = fields.One("discuss.channel", { inverse: "typingMembers" });
     /** @type {number} */
     typingTimeoutId;
     unpin_dt = fields.Datetime();

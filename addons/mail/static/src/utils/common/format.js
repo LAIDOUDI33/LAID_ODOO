@@ -490,15 +490,16 @@ export function trimEmptyBlocksAround(content) {
 }
 
 /**
- * Converts an html string to inline representation.
+ * Converts an html document to its inline representation, in place.
  * - Links and mentions are preserved
  * - For the rest: text content of nodes
+ * `doc` is consumed and returned: the caller owns it (pass a clone of a
+ * shared parse, @see Message.bodyFragment).
  *
- * @param {string|ReturnType<markup>} htmlString
- * @returns {ReturnType<markup>}
+ * @param {Document} doc
+ * @returns {Document}
  */
-export function htmlToHtmlInline(htmlString) {
-    const doc = createDocumentFragmentFromContent(htmlString || "");
+export function htmlToHtmlInline(doc) {
     const body = doc.body;
     const previewBody = body.ownerDocument.createElement("body");
 
@@ -567,8 +568,8 @@ export function htmlToHtmlInline(htmlString) {
     };
 
     appendInlinePreviewChildren(previewBody, [...body.childNodes]);
-
-    return htmlTrim(getInnerHtml(previewBody)) ?? "";
+    body.replaceWith(previewBody);
+    return doc;
 }
 
 /**
@@ -627,17 +628,19 @@ export const EMOJI_REGEX = new RegExp(
 );
 
 /**
- * Wrap emojis present in the given text with a title and return a safe HTML
- * string.
+ * Wrap emojis present in `doc` with a title and return the resulting safe
+ * HTML string (undecorated while the emoji data is not loaded). `doc` is
+ * modified in place: the caller owns it, so pass a clone of a shared parse
+ * (@see Message.bodyFragment) or a fresh
+ * `createDocumentFragmentFromContent()` (which keeps plain strings escaped).
  *
- * @param {string|ReturnType<markup>} content
+ * @param {Document} doc
  * @returns {ReturnType<markup>}
  */
-export function decorateEmojis(content) {
-    if (!emojiLoader.loaded || !content) {
-        return content;
+export function decorateEmojis(doc) {
+    if (!emojiLoader.loaded) {
+        return getInnerHtml(doc.body);
     }
-    const doc = createDocumentFragmentFromContent(content);
     const nodes = doc.evaluate(
         ".//text()",
         doc.body,

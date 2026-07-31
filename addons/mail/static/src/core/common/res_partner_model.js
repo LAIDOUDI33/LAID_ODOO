@@ -28,20 +28,7 @@ export class ResPartner extends Record {
     /** @type {number} */
     id;
     /** @type {import("./im_status_mixin").ImStatus} */
-    imStatusUI = fields.Attr(undefined, {
-        compute() {
-            const userStatuses = this.user_ids.map((u) => u.imStatusUI);
-            if (userStatuses.includes("online") || this.isBot) {
-                return "online";
-            } else if (userStatuses.includes("away")) {
-                return "away";
-            } else if (userStatuses.includes("busy")) {
-                return "busy";
-            } else if (userStatuses.includes("offline")) {
-                return "offline";
-            }
-        },
-    });
+    imStatusUI;
     /** @type {boolean | undefined} */
     is_company;
     /** @type {boolean} */
@@ -61,12 +48,34 @@ export class ResPartner extends Record {
     phone;
     /** @type {string} */
     tz;
-    /** @type {luxon.DateTime} */
-    offline_since = fields.Datetime(undefined, {
-        compute: () => DateTime.max(this.user_ids.map((u) => u.offline_since)),
-    });
+    get offline_since() {
+        const dts = this.user_ids.map((u) => u.offline_since).filter((dt) => dt);
+        return dts.length ? DateTime.max(...dts) : undefined;
+    }
     user_ids = fields.Many("res.users", { inverse: "partner_id" });
     write_date = fields.Datetime();
+
+    setup() {
+        super.setup(...arguments);
+        this.onChange(
+            () => {
+                const userStatuses = this.user_ids.map((u) => u.imStatusUI);
+                if (userStatuses.includes("online") || this.isBot) {
+                    return ["online"];
+                } else if (userStatuses.includes("away")) {
+                    return ["away"];
+                } else if (userStatuses.includes("busy")) {
+                    return ["busy"];
+                } else if (userStatuses.includes("offline")) {
+                    return ["offline"];
+                }
+                return [undefined];
+            },
+            function onChangeImStatusUI(imStatusUI) {
+                this.imStatusUI = imStatusUI;
+            }
+        );
+    }
 
     get avatarUrl() {
         const accessTokenParam = {};

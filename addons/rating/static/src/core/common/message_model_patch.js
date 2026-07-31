@@ -9,8 +9,8 @@ patch(Message.prototype, {
         this.rating_id = fields.One("rating.rating");
     },
 
-    computeIsEmpty() {
-        return super.computeIsEmpty() && !this.rating_id && !this.rating_value;
+    get isEmpty() {
+        return super.isEmpty && !this.rating_id && !this.rating_value;
     },
 
     get removeParams() {

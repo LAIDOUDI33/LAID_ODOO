@@ -30,7 +30,6 @@ declare module "models" {
         updateCallFocusStack: (session: RtcSession) => void;
         useCameraByDefault: null;
         videoCount: number;
-        videoCountNotSelf: number;
         visibleCards: import("@mail/discuss/call/common/call").CardData[];
     }
     export interface MailGuest {
@@ -43,10 +42,8 @@ declare module "models" {
         getVolume: (rtcSession: RtcSession) => number;
     }
     export interface Store {
-        _hasFullscreenUrl: boolean;
-        _hasFullscreenUrlOnUpdate: () => void;
-        _shareUrl: undefined|unknown;
-        allActiveRtcSessions: RtcSession[];
+        hasFullscreenUrl: boolean;
+        hasFullscreenUrlOnUpdate: (hasFullscreenUrl: boolean) => void;
         "discuss.channel.rtc.session": StaticMailRecord<RtcSession, typeof RtcSessionClass>;
         fullscreenChannel: DiscussChannel;
         meetingViewOpened: boolean;

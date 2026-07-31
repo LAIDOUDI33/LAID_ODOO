@@ -17,7 +17,9 @@ class TestDiscussFullPerformance(HttpCase, MailCommon):
     # Queries for _query_count_init_store (in order):
     #   1: search res_partner (odooot ref exists)
     #   1: search res_groups (internalUserGroupId ref exists)
-    #   4: settings:
+    #   5: settings (the record is passed to the store, not read from the
+    #      computed res_users_settings_id: res.users is a mail.thread, so the
+    #      compute would run through tracking for the whole prefetch set):
     #       - search res_users_settings (_find_or_create_for_user)
     #       - fetch res_users_settings (_store_settings_fields)
     #       - search res_lang_res_users_settings_rel (livechat_lang_ids)

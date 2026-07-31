@@ -1,4 +1,4 @@
-import { Store as BaseStore, fields, makeStore } from "@mail/model/export";
+import { Store as BaseStore, fields, makeStore, syncWithLocalStorage } from "@mail/model/export";
 import {
     attClassObjectToString,
     generateEmojisOnHtml,
@@ -45,21 +45,17 @@ export class Store extends BaseStore {
     get self() {
         return this.self_user?.partner_id || this.self_guest;
     }
-    /** @type {boolean} */
-    hasCannedResponses;
-    hasGifPickerFeature = false;
     initialized = false;
     /**
      * Indicates whether the current user is using the application through the
      * public page.
      */
     inPublicPage = false;
+    isOdooWhiteTheme = false;
     odoobot = fields.One("res.partner");
-    useMobileView = fields.Attr(undefined, {
-        compute() {
-            return this.store.env.services.ui.isSmall || isMobileOS();
-        },
-    });
+    get useMobileView() {
+        return this.store.env.services.ui.isSmall || isMobileOS();
+    }
     /** @type {number|undefined} id of the mail.action_discuss action */
     action_discuss_id;
     /** @type {number} */
@@ -67,17 +63,20 @@ export class Store extends BaseStore {
     mt_comment = fields.One("mail.message.subtype");
     mt_note = fields.One("mail.message.subtype");
     /** @type {boolean} */
+    hasCannedResponses;
+    /** @type {boolean} */
+    hasGifPickerFeature;
+    /** @type {boolean} */
     hasMessageTranslationFeature;
     hasLinkPreviewFeature = true;
     // messaging menu
     menu = { counter: 0 };
-    chatHub = fields.One("ChatHub", { compute: () => ({}) });
-    failures = fields.Many("Failure", {
-        /**
-         * @param {import("models").Failure} f1
-         * @param {import("models").Failure} f2
-         */
-        sort: (f1, f2) => {
+    get chatHub() {
+        return this.ChatHub.insert({});
+    }
+    failures = fields.Many("Failure");
+    get sortedFailures() {
+        return [...this.failures].sort((f1, f2) => {
             if (f1.lastMessage?.id && !f2.lastMessage?.id) {
                 return -1;
             }
@@ -85,13 +84,15 @@ export class Store extends BaseStore {
                 return 1;
             }
             return f2.lastMessage?.id - f1.lastMessage?.id || f2.id - f1.id;
-        },
-    });
+        });
+    }
     /** local settings of the current device (not stored server side) */
-    settings = fields.One("Settings", { compute: () => ({}) });
+    get settings() {
+        return this.Settings.insert({});
+    }
 
     /** @type {[[string, any, import("models").DataResponse]]} */
-    fetchParams = [];
+    fetchParams = fields.Attr([], { reactiveContent: true });
     fetchSilent = true;
 
     cannedReponses = this.makeCachedFetchData("mail.canned.response");
@@ -113,7 +114,7 @@ export class Store extends BaseStore {
         },
     ];
 
-    isNotificationPermissionDismissed = fields.Attr(false, { localStorage: true });
+    isNotificationPermissionDismissed = syncWithLocalStorage(this, false);
 
     messagePostMutex = new Mutex();
 
@@ -281,7 +282,7 @@ export class Store extends BaseStore {
         return r;
     }
 
-    _fetchStoreDataDebounced() {
+    _flushFetchStoreData() {
         const fetchParams = this.fetchParams;
         this._fetchStoreDataRpc(
             fetchParams.map(([name, params, dataRequest]) => {
@@ -440,7 +441,7 @@ export class Store extends BaseStore {
     setup() {
         super.setup();
         this._fetchStoreDataDebounced = debounce(
-            this._fetchStoreDataDebounced,
+            this._flushFetchStoreData,
             Store.FETCH_DATA_DEBOUNCE_DELAY
         );
     }

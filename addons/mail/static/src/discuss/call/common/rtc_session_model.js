@@ -1,5 +1,7 @@
 import { fields, Record } from "@mail/model/export";
 
+import { immediateEffect, untrack } from "@odoo/owl";
+
 /**
  * @typedef {object} ServerSessionInfo
  * @property {boolean} [is_camera_on]
@@ -46,16 +48,80 @@ export class RtcSession extends Record {
             promiseWithResolvers.resolve();
             this.awaitedRecords.delete(id);
         }, 120_000);
-        promiseWithResolvers.promise.then(() => clearTimeout(timeout));
+        // resolve when the record shows up in the reactive records map
+        const localId = this.localId(id);
+        const stop = immediateEffect(() => {
+            const record = this.records[localId];
+            if (record) {
+                untrack(() => {
+                    promiseWithResolvers.resolve(record);
+                    this.awaitedRecords.delete(id);
+                });
+            }
+        });
+        promiseWithResolvers.promise.then(() => {
+            clearTimeout(timeout);
+            stop();
+        });
         return promiseWithResolvers.promise;
     }
 
-    /** @returns {import("models").RtcSession} */
-    static new() {
-        const record = super.new(...arguments);
-        this.awaitedRecords.get(record.id)?.resolve(record);
-        this.awaitedRecords.delete(record.id);
-        return record;
+    setup() {
+        super.setup();
+        // a session belongs to its channel member: unlinked from it, it is deleted
+        this.onRelationChange(
+            () => this.channel_member_id,
+            ({ removed }) => {
+                if (removed.length && !this.channel_member_id) {
+                    this.delete();
+                }
+            }
+        );
+        this.onChange(
+            () => [this.isVideoStreaming],
+            function onChangeIsVideoStreaming(isVideoStreaming) {
+                if (
+                    isVideoStreaming &&
+                    this.channel?.channel_type === "chat" &&
+                    this.store.rtc.selfSession?.in(this.channel.rtc_session_ids)
+                ) {
+                    this.channel.focusAvailableVideo();
+                }
+            },
+            { immediate: true }
+        );
+        this.onChange(
+            () => [this.is_screen_sharing_on],
+            function onChangeIsScreenSharingOn(is_screen_sharing_on) {
+                if (
+                    this.eq(this.channel?.activeRtcSession) &&
+                    this.mainVideoStreamType === "screen" &&
+                    !is_screen_sharing_on
+                ) {
+                    this.channel.activeRtcSession = undefined;
+                }
+            },
+            { immediate: true }
+        );
+        this.onChange(
+            () => [this.isLocallyMuted],
+            function onChangeIsLocallyMuted(isLocallyMuted) {
+                if (this.audioElement) {
+                    this.audioElement.muted = isLocallyMuted || this.store.rtc.selfSession?.is_deaf;
+                }
+            },
+            { immediate: true }
+        );
+        this.onChange(
+            () => [this.isTalking],
+            function onChangeIsTalking(isTalking) {
+                if (isTalking && !this.isMute) {
+                    this.talkingTime = this.store.nextTalkingTime++;
+                }
+                this.channel?.updateCallFocusStack(this);
+            },
+            { immediate: true }
+        );
     }
 
     delete() {
@@ -69,33 +135,19 @@ export class RtcSession extends Record {
 
     // Server data
     channel_member_id = fields.One("discuss.channel.member", { inverse: "rtcSession" });
-    partner_id = fields.One("res.partner", {
-        compute() {
-            return this.channel_member_id?.partner_id;
-        },
-    });
-    guest_id = fields.One("mail.guest", {
-        compute() {
-            return this.channel_member_id?.guest_id;
-        },
-    });
+    get partner_id() {
+        return this.channel_member_id?.partner_id;
+    }
+    get guest_id() {
+        return this.channel_member_id?.guest_id;
+    }
     get persona() {
         return this.partner_id || this.guest_id;
     }
     /** @type {boolean} */
     is_camera_on;
     /** @type {boolean} */
-    is_screen_sharing_on = fields.Attr(undefined, {
-        onUpdate() {
-            if (
-                this.eq(this.channel?.activeRtcSession) &&
-                this.mainVideoStreamType === "screen" &&
-                !this.is_screen_sharing_on
-            ) {
-                this.channel.activeRtcSession = undefined;
-            }
-        },
-    });
+    is_screen_sharing_on;
     /** @type {number} */
     id;
     /** @type {boolean} */
@@ -103,15 +155,7 @@ export class RtcSession extends Record {
     /** @type {boolean} */
     is_muted;
     // Client data
-    isLocallyMuted = fields.Attr(false, {
-        /** @this {import("models").RtcSession} */
-        onUpdate() {
-            if (this.audioElement) {
-                this.audioElement.muted =
-                    this.isLocallyMuted || this.store.rtc.selfSession?.is_deaf;
-            }
-        },
-    });
+    isLocallyMuted = false;
     /** @type {HTMLAudioElement} */
     audioElement;
     /** @type {MediaStream} */
@@ -122,50 +166,25 @@ export class RtcSession extends Record {
     videoError;
     /** @type {number} value between 0 and 1 that represents volume in % */
     talkingVolume = 0;
-    isTalking = fields.Attr(false, {
-        /** @this {import("models").RtcSession} */
-        onUpdate() {
-            if (this.isTalking && !this.isMute) {
-                this.talkingTime = this.store.nextTalkingTime++;
-            }
-            this.channel?.updateCallFocusStack(this);
-        },
-    });
-    isActuallyTalking = fields.Attr(false, {
-        /** @this {import("models").RtcSession} */
-        compute() {
-            return this.isTalking && !this.isMute;
-        },
-    });
-    isVideoStreaming = fields.Attr(false, {
-        /** @this {import("models").RtcSession} */
-        compute() {
-            return this.is_screen_sharing_on || this.is_camera_on;
-        },
-        /** @this {import("models").RtcSession} */
-        onUpdate() {
-            if (
-                this.isVideoStreaming &&
-                this.channel?.channel_type === "chat" &&
-                this.store.rtc.selfSession?.in(this.channel.rtc_session_ids)
-            ) {
-                this.channel.focusAvailableVideo();
-            }
-        },
-    });
-    shortStatus = fields.Attr(undefined, {
-        compute() {
-            if (this.is_screen_sharing_on) {
-                return "live";
-            }
-            if (this.is_deaf) {
-                return "deafen";
-            }
-            if (this.isMute) {
-                return "mute";
-            }
-        },
-    });
+    isTalking = false;
+    get isActuallyTalking() {
+        return this.isTalking && !this.isMute;
+    }
+    get isVideoStreaming() {
+        return this.is_screen_sharing_on || this.is_camera_on;
+    }
+    get shortStatus() {
+        if (this.is_screen_sharing_on) {
+            return "live";
+        }
+        if (this.is_deaf) {
+            return "deafen";
+        }
+        if (this.isMute) {
+            return "mute";
+        }
+        return undefined;
+    }
     talkingTime = 0;
     localVolume;
     /** @type {RTCPeerConnection} */

@@ -23,7 +23,9 @@ export class PinnedMessagesPanel extends Component {
         });
         useOnChange(
             () => [this.props.channel],
-            (channel) => channel.fetchPinnedMessages()
+            (channel) => {
+                channel.fetchPinnedMessages();
+            }
         );
     }
 

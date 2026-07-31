@@ -1,11 +1,10 @@
-import { effect } from "@odoo/owl";
-
 import { AWAY_DELAY } from "@mail/core/common/im_status_service";
 import { fields } from "@mail/model/misc";
 import { Record } from "@mail/model/record";
 
+import { computed } from "@odoo/owl";
+
 import { debounce } from "@web/core/utils/timing";
-import { effectWithCleanup } from "@mail/utils/common/misc";
 
 /** @typedef {'offline' | 'bot' | 'online' | 'away' | undefined} ImStatus */
 
@@ -19,94 +18,93 @@ const { DateTime } = luxon;
 export class ImStatusMixin extends Record {
     static IM_STATUS_DEBOUNCE_DELAY = 1500;
 
-    static new() {
-        /** @type {ImStatusMixin} */
-        const record = super.new(...arguments);
-        const setImStatusDebounced = debounce(
-            (status) => (record.imStatusUI = status),
-            ImStatusMixin.IM_STATUS_DEBOUNCE_DELAY
-        );
-        record.setImStatusDebounced = setImStatusDebounced;
-        record.cancelSetImStatusDebounced = setImStatusDebounced.cancel;
-        record._registerDisposeFn(
-            effect(() => {
-                const store = record.store;
-                const presenceService = record.store.env.services.presence;
-                const statusService = record.store.env.services.im_status;
-                if (record.notEq(store.self)) {
+    setup() {
+        super.setup();
+        this.onChange(
+            () => [this.presence_status, this.eq(this.store.self)],
+            function onChangePresenceStatus(presence_status, isSelf) {
+                if (!isSelf) {
                     return;
                 }
+                const presenceService = this.store.env.services.presence;
                 const isOnline = presenceService.getInactivityPeriod() < AWAY_DELAY;
-                if (
-                    (record.presence_status === "away" && isOnline) ||
-                    record.presence_status === "offline"
-                ) {
-                    statusService.updateBusPresence();
+                if ((presence_status === "away" && isOnline) || presence_status === "offline") {
+                    this.store.env.services.im_status.updateBusPresence();
                 }
-            })
+            }
         );
-        record._registerDisposeFn(
-            effectWithCleanup(() => {
-                const busService = record.store.env.services.bus_service;
-                const presenceChannel = record.monitorPresence && record.presenceChannel;
+        // memoized: a repeat with the same channel would delete and re-add
+        // it, forcing a websocket resubscription
+        const presenceChannel = computed(() => this.monitorPresence && this.presenceChannel);
+        this.onChange(
+            () => [presenceChannel(), this.store.env.services.bus_service],
+            function onChangePresenceChannel(presenceChannel, busService) {
                 if (presenceChannel) {
                     busService.addChannel(presenceChannel);
                     return () => busService.deleteChannel(presenceChannel);
                 }
-            })
-        );
-        return record;
-    }
-    /** @type {(status) => void} */
-    setImStatusDebounced;
-    /** @type {() => void} */
-    cancelSetImStatusDebounced;
-    /** @type {ImStatus} */
-    im_status = fields.Attr(undefined, {
-        onUpdate() {
-            // Flickering occurs during im_status correction when switching from
-            // away/offline to online. If we don't know the status, or if the status is
-            // already "online", flickering cannot occur, so it's better to update the
-            // field immediately.
-            if (this.imStatusUI === undefined || this.im_status === "online") {
-                this.forceImStatus(this.im_status);
-            } else {
-                this.setImStatusDebounced(this.im_status);
             }
-        },
-    });
+        );
+        this.onChange(
+            () => [this.im_status],
+            function onChangeImStatus(imStatus) {
+                // Flickering occurs during im_status correction when switching from
+                // away/offline to online. If we don't know the status, or if the status is
+                // already "online", flickering cannot occur, so it's better to update the
+                // field immediately.
+                if (this.imStatusUI === undefined || imStatus === "online") {
+                    this.forceImStatus(imStatus);
+                } else {
+                    this.setImStatusDebounced(imStatus);
+                }
+            },
+            { immediate: true }
+        );
+        this.onChange(
+            () => [this.imStatusUI === "offline"],
+            function onChangeImStatusUI(isOffline) {
+                this.offline_since = isOffline ? DateTime.now() : null;
+            },
+            { immediate: true }
+        );
+    }
+    /**
+     * Debounced write of `imStatusUI` (auto-memoized: one stable debounced
+     * function per record).
+     *
+     * @type {(status) => void}
+     */
+    get setImStatusDebounced() {
+        return debounce(
+            (status) => (this.imStatusUI = status),
+            ImStatusMixin.IM_STATUS_DEBOUNCE_DELAY
+        );
+    }
+    get cancelSetImStatusDebounced() {
+        return this.setImStatusDebounced.cancel;
+    }
+    /** @type {ImStatus} */
+    im_status = undefined;
     /**
      * Debounced im_status, to avoid flickering. Should be used whenever the im_status has
      * an impact on the UI.
      * @type {ImStatus}
      */
-    imStatusUI = fields.Attr(undefined, {
-        onUpdate() {
-            this.offline_since = this.imStatusUI === "offline" ? DateTime.now() : null;
-        },
-    });
+    imStatusUI = undefined;
     /** @type {string|undefined} */
     im_status_access_token;
-    monitorPresence = fields.Attr(false, {
-        compute() {
-            return this._computeMonitorPresence();
-        },
-    });
+    get monitorPresence() {
+        return this.store.env.services.bus_service.isActive && this.id > 0;
+    }
     offline_since = fields.Datetime();
     /** @type {ImStatus} */
     presence_status;
-    presenceChannel = fields.Attr(undefined, {
-        compute() {
-            const channel = `odoo-presence-${this.Model.getName()}_${this.id}`;
-            if (this.im_status_access_token) {
-                return channel + `-${this.im_status_access_token}`;
-            }
-            return channel;
-        },
-    });
-
-    _computeMonitorPresence() {
-        return this.store.env.services.bus_service.isActive && this.id > 0;
+    get presenceChannel() {
+        const channel = `odoo-presence-${this.Model.getName()}_${this.id}`;
+        if (this.im_status_access_token) {
+            return channel + `-${this.im_status_access_token}`;
+        }
+        return channel;
     }
 
     forceImStatus(status) {

@@ -17,7 +17,7 @@ export class MessagingMenu extends Component {
 
     isIosPwa = isIOS() && isDisplayStandalone();
     filteredMessages = computed(() => {
-        const messages = this.activeTab().messages;
+        const messages = this.activeTab().sortedMessages;
         if (!this.state().selectedFilter?.includesMessage) {
             return messages;
         }

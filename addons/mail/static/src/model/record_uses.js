@@ -10,7 +10,7 @@ export class RecordUses {
     data = new Map();
     /** @param {RecordList} list */
     add(list) {
-        const localId = list._.owner.localId;
+        const localId = list._.owner._.localId;
         let use = this.data.get(localId);
         if (!use) {
             use = new Map();
@@ -21,7 +21,7 @@ export class RecordUses {
     }
     /** @param {RecordList} list */
     delete(list) {
-        const use = this.data.get(list._.owner.localId);
+        const use = this.data.get(list._.owner._.localId);
         if (!use) {
             return;
         }

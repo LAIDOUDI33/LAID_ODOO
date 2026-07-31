@@ -1,28 +1,28 @@
 import { fields, Record } from "@mail/model/export";
-import { effectWithCleanup } from "@mail/utils/common/misc";
 
 export class DiscussCategory extends Record {
     static _name = "discuss.category";
 
-    static new() {
-        /** @type {import("models").DiscussCategory} */
-        const category = super.new(...arguments);
-        category._registerDisposeFn(
-            effectWithCleanup(() => {
-                const busChannel = category.busChannel;
-                const busService = category.store.env.services.bus_service;
+    setup() {
+        super.setup();
+        this.onChange(
+            () => [this.busChannel, this.store.env.services.bus_service],
+            function onChangeBusChannel(busChannel, busService) {
                 if (busService && busChannel) {
                     busService.addChannel(busChannel);
                     return () => busService.deleteChannel(busChannel);
                 }
-            })
+            }
         );
-        return category;
     }
 
     /** @type {string} */
     bus_channel_access_token;
     get busChannel() {
+        if (!this.id) {
+            // the observer starts during setup(), before the id is assigned
+            return undefined;
+        }
         const channel = `discuss.category_${this.id}`;
         return this.bus_channel_access_token
             ? `${channel}_${this.bus_channel_access_token}`

@@ -11,7 +11,7 @@ const messagingMenuPatch = {
     setup() {
         super.setup(...arguments);
         this.filteredChannels = computed(() => {
-            const channels = this.state().activeTab.channels;
+            const channels = this.state().activeTab?.sortedChannels ?? [];
             if (!this.state().selectedFilter?.includesChannel) {
                 return channels;
             }
@@ -25,7 +25,7 @@ const messagingMenuPatch = {
         });
         this.channelSearch = useSearch({
             fetch: (searchTerm) =>
-                this.state().activeTab.loadMore({
+                this.state().activeTab?.loadMore({
                     filter: this.state().selectedFilter,
                     searchTerm,
                 }),
@@ -36,7 +36,8 @@ const messagingMenuPatch = {
             deps: () => [this.filteredChannels()],
         });
         useEffect(() => {
-            if (this.state().activeTab.recordType === "discuss.channel") {
+            // no active tab on a public page: nothing to search through
+            if (this.state().activeTab?.recordType === "discuss.channel") {
                 this.channelSearch.searchTerm = this.searchTerm();
             }
         });
