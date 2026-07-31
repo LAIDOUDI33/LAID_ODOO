@@ -113,16 +113,18 @@ export class AttachmentUploadService {
         return "/mail/attachment/upload";
     }
 
-    async unlink(attachment) {
-        if (this.uploadingAttachmentIds.has(attachment.id)) {
-            const resolveUpload = this.resolveUploadByAttachmentId.get(attachment.id);
-            const abort = this.abortByAttachmentId.get(attachment.id);
-            this._cleanupUploading(attachment.id);
+    /** @param {import("models").Attachment[]} attachments */
+    async unlink(attachments) {
+        const uploading = attachments.filter(({ id }) => this.uploadingAttachmentIds.has(id));
+        for (const { id } of uploading) {
+            const resolveUpload = this.resolveUploadByAttachmentId.get(id);
+            const abort = this.abortByAttachmentId.get(id);
+            this._cleanupUploading(id);
             resolveUpload();
             abort();
-            return;
         }
-        await attachment.remove();
+        const stored = attachments.filter((attachment) => !uploading.includes(attachment));
+        await this.store["ir.attachment"].removeMany(stored);
     }
 
     async upload(thread, composer, file, options) {

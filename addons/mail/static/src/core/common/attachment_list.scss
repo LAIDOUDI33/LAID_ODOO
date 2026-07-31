@@ -24,6 +24,15 @@ $o-mail-attachment-height: 10em;
     height: 1.4em;
 }
 
+.o-mail-Attachment-duplicateCounter {
+    // above .o-mail-Attachment-hover, which covers the whole attachment
+    z-index: 3;
+}
+
+.o-mail-Attachment-duplicateList {
+    max-width: 25em;
+}
+
 .o-mail-Attachment-hover {
     background: $gray-100;
     z-index: 2;

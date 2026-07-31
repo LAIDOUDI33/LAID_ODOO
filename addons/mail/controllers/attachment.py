@@ -95,18 +95,38 @@ class AttachmentController(ThreadController):
         return request.make_json_response(res)
 
     @mail_route("/mail/attachment/delete", methods=["POST"], type="jsonrpc", auth="public")
-    def mail_attachment_delete(self, attachment_id, access_token=None):
-        attachment = request.env["ir.attachment"].browse(int(attachment_id)).exists()
-        if not attachment or not attachment._has_attachments_ownership([access_token]):
-            request.env.user._bus_send("ir.attachment/delete", {"id": attachment_id})
+    def mail_attachment_delete(self, access_token_by_attachment_id):
+        """ Delete the given attachments at once, so that removing several of
+            them, such as the copies of a same file, takes a single query.
+
+            :param dict access_token_by_attachment_id: ownership token of each
+                attachment to delete, keyed by attachment id. A token may be
+                None to rely on the access rights only.
+        """
+        access_token_by_attachment_id = {
+            int(attachment_id): access_token
+            for attachment_id, access_token in access_token_by_attachment_id.items()
+        }
+        attachments = request.env["ir.attachment"].browse(access_token_by_attachment_id.keys()).exists()
+        is_allowed = len(attachments) == len(access_token_by_attachment_id) and (
+            attachments._has_attachments_ownership(
+                [access_token_by_attachment_id[attachment.id] for attachment in attachments]
+            )
+        )
+        if not is_allowed:
+            for attachment_id in access_token_by_attachment_id:
+                request.env.user._bus_send("ir.attachment/delete", {"id": attachment_id})
             raise NotFound()
-        message = request.env["mail.message"].sudo().search(
-            [("attachment_ids", "in", attachment.ids)], limit=1)
-        if message:
+        messages = request.env["mail.message"].sudo().search([("attachment_ids", "in", attachments.ids)])
+        attachments_by_message = {message: attachments & message.attachment_ids for message in messages}
+        orphans = attachments - messages.attachment_ids
+        for message, message_attachments in attachments_by_message.items():
             thread = request.env[message.model].browse(message.res_id)
             thread._message_update_content(message, body=message.body)  # marks the message edited
+            # sudo: ir.attachment: access is validated with _has_attachments_ownership
+            message_attachments.sudo()._delete_and_notify(message)
         # sudo: ir.attachment: access is validated with _has_attachments_ownership
-        attachment.sudo()._delete_and_notify(message)
+        orphans.sudo()._delete_and_notify()
 
     @mail_route(['/mail/attachment/zip'], methods=["POST"], type="http", auth="public")
     def mail_attachment_get_zip(self, file_ids, zip_name, **kw):

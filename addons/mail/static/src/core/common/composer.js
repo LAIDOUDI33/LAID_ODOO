@@ -559,13 +559,17 @@ export class Composer extends Component {
         );
     }
 
-    /** @param {import("models").Attachment} attachment */
-    async unlinkAttachment(attachment) {
-        if (this.message && attachment.in(this.message.attachment_ids)) {
+    /** @param {import("models").Attachment[]} attachments */
+    async unlinkAttachments(attachments) {
+        const posted = this.message
+            ? attachments.filter((attachment) => attachment.in(this.message.attachment_ids))
+            : [];
+        for (const attachment of posted) {
             this.composer().attachments.delete(attachment);
-            return;
         }
-        await this.attachmentUploader.unlink(attachment);
+        await this.attachmentUploader.unlink(
+            attachments.filter((attachment) => !posted.includes(attachment))
+        );
     }
 
     get hasSuggestions() {

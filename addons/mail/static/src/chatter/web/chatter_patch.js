@@ -499,8 +499,8 @@ const chatterPatch = {
         this.state.showScheduledMessages = !this.state.showScheduledMessages;
     },
 
-    async unlinkAttachment(attachment) {
-        await this.attachmentUploader.unlink(attachment);
+    async unlinkAttachments(attachments) {
+        await this.attachmentUploader.unlink(attachments);
         if (this.hasParentReloadOnAttachmentsChanged) {
             this.reloadParentView();
         }

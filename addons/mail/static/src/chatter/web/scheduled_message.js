@@ -65,8 +65,9 @@ export class ScheduledMessage extends Component {
         this.props.scheduledMessage.store.handleClickOnLink(ev, this.props.scheduledMessage.thread);
     }
 
-    async onClickAttachmentUnlink(attachment) {
-        attachment.remove();
+    /** @param {import("models").Attachment[]} attachments */
+    async onClickAttachmentUnlink(attachments) {
+        await this.store["ir.attachment"].removeMany(attachments);
     }
 
     onClickAuthor(ev) {
