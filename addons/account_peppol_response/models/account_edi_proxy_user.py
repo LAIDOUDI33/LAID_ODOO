@@ -14,11 +14,19 @@ _logger = logging.getLogger(__name__)
 class AccountEdiProxyClientUser(models.Model):
     _inherit = 'account_edi_proxy_client.user'
 
-    def _peppol_send_response(self, reference_moves, status, clarifications=None):
+    def _peppol_get_new_response_vals(self, record, message, status):
+        return {
+            'peppol_message_uuid': message['message_uuid'],
+            'response_code': status,
+            'peppol_state': 'processing',
+            'move_id': record.id,
+        }
+
+    def _peppol_send_response(self, reference_records, status, clarifications=None):
         self.ensure_one()
         clarifications = clarifications or []
-        reference_moves = reference_moves.filtered(lambda rm: rm.peppol_message_uuid and rm.peppol_can_send_response)
-        if not reference_moves:
+        reference_records = reference_records.filtered(lambda rr: rr.peppol_message_uuid and rr.peppol_can_send_response)
+        if not reference_records:
             return
 
         assert status in {'AB', 'AP', 'RE'}
@@ -32,7 +40,7 @@ class AccountEdiProxyClientUser(models.Model):
             response = self._call_peppol_proxy(
                 endpoint=self._get_peppol_proxy_endpoint('1/send_response'),
                 params={
-                    'reference_uuids': reference_moves.mapped('peppol_message_uuid'),
+                    'reference_uuids': reference_records.mapped('peppol_message_uuid'),
                     'status': status,
                     'clarifications': clarifications,
                 },
@@ -44,23 +52,19 @@ class AccountEdiProxyClientUser(models.Model):
                 status=status,
                 error=str(e),
             )
-            reference_moves._message_log_batch(
-                bodies={move.id: log_message for move in reference_moves},
+            reference_records._message_log_batch(
+                bodies={record.id: log_message for record in reference_records},
             )
         else:
-            self.env['account.peppol.response'].create([{
-                    'peppol_message_uuid': message['message_uuid'],
-                    'response_code': status,
-                    'peppol_state': 'processing',
-                    'move_id': move.id,
-                }
-                for message, move in zip(response.get('messages'), reference_moves)
+            self.env['account.peppol.response'].create([
+                self._peppol_get_new_response_vals(record, message)
+                for message, record in zip(response.get('messages'), reference_records)
             ])
             log_message = self.env._(
                 "A Peppol response was sent to the Peppol Access Point declaring you %(status)s this document.",
                 status=self.env._('received') if status == 'AB' else self.env._('accepted') if status == 'AP' else self.env._('rejected'),
             )
-            reference_moves._message_log_batch(bodies={move.id: log_message for move in reference_moves})
+            reference_records._message_log_batch(bodies={record.id: log_message for record in reference_records})
 
     @api.model
     def _peppol_extract_response_info(self, document):
@@ -191,8 +195,8 @@ class AccountEdiProxyClientUser(models.Model):
                     peppol_response.peppol_state = 'not_serviced'
                 else:
                     peppol_response.peppol_state = 'error'
-                    peppol_response.move_id._message_log(
-                        body=self.env._("Peppol business response error: %s", content['error'].get('data', {}).get('message') or content['error']['message']),
+                    peppol_response._log_message(
+                        message=self.env._("Peppol business response error: %s", content['error'].get('data', {}).get('message') or content['error']['message']),
                     )
                 processed_message_uuids.append(uuid)
                 continue

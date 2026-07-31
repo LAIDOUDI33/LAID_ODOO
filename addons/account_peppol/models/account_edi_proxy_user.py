@@ -257,7 +257,7 @@ class AccountEdiProxyClientUser(models.Model):
                 params={'message_uuids': message_uuids},
             )
 
-            processed_uuids, moves = edi_user._peppol_process_new_messages(all_messages)
+            processed_uuids, partners = edi_user._peppol_process_new_messages(all_messages)
 
             if not tools.config['test_enable']:
                 self.env.cr.commit()
@@ -266,7 +266,7 @@ class AccountEdiProxyClientUser(models.Model):
                     endpoint=edi_user._get_peppol_proxy_endpoint('1/ack'),
                     params={'message_uuids': processed_uuids},
                 )
-                edi_user._peppol_post_process_new_messages(moves)
+                edi_user._peppol_post_process_new_messages(partners)
 
         if need_retrigger:
             self.env.ref('account_peppol.ir_cron_peppol_get_new_documents')._trigger()
@@ -282,7 +282,7 @@ class AccountEdiProxyClientUser(models.Model):
     def _peppol_process_new_messages(self, messages):
         self.ensure_one()
         processed_uuids = []
-        moves = self.env['account.move']
+        partners = self.env['res.partner']
         for uuid, content in messages.items():
             fileextension, mimetype = self._peppol_get_filetype(content)
             filename = content["filename"] or 'attachment'  # default to attachment, which should not usually happen
@@ -294,16 +294,15 @@ class AccountEdiProxyClientUser(models.Model):
                     "mimetype": mimetype,
                 }
             )
-            if move := self._peppol_import_invoice(attachment, None, content['state'], uuid):
+            if imported_record := self._peppol_import_invoice(attachment, None, content['state'], uuid):
                 # Only acknowledge when we saved the document somewhere
                 processed_uuids.append(uuid)
-                if not isinstance(move, bool):
-                    moves += move
-        return processed_uuids, moves
+                partners += imported_record.partner_id
+        return processed_uuids, partners
 
-    def _peppol_post_process_new_messages(self, moves):
+    def _peppol_post_process_new_messages(self, partners):
         self.ensure_one()
-        for partner in moves.partner_id.filtered(lambda partner: partner.peppol_verification_state in ('not_verified', False)):
+        for partner in partners.filtered(lambda partner: partner.peppol_verification_state in ('not_verified', False)):
             partner.button_account_peppol_check_partner_endpoint()
 
     def _peppol_get_message_status(self):

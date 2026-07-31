@@ -327,10 +327,25 @@ class AccountEdiProxyClientUser(models.Model):
             )
         return super()._peppol_get_message_status_update_body(move, content)
 
-    def _pdp_send_response(self, reference_moves, status, additional_info=None):
+    def _pdp_get_new_response_vals(self, record, message, status, issue_time, additional_info):
+        return {
+            'peppol_message_uuid': message['message_uuid'],
+            'response_code': status,
+            'peppol_state': 'processing',
+            'move_id': record.id,
+            'pdp_status_info': "\n\n".join([
+                # We only put the note since we have all other info
+                self._format_status_info({'note': additional_info.get(record.peppol_message_uuid, {}).get('note')})
+            ]),
+            'pdp_payment_info': additional_info.get(record.peppol_message_uuid, {}).get('payments'),
+            'pdp_issue_date': issue_time,
+            'pdp_flow_number': '2',
+        }
+
+    def _pdp_send_response(self, reference_records, status, additional_info=None):
         self.ensure_one()
-        reference_moves = reference_moves.filtered(lambda rm: rm.pdp_can_send_response)
-        if not reference_moves:
+        reference_records = reference_records.filtered(lambda rm: rm.pdp_can_send_response)
+        if not reference_records:
             return
         additional_info = additional_info or {}
 
@@ -341,12 +356,12 @@ class AccountEdiProxyClientUser(models.Model):
         try:
             issue_time = fields.Datetime.now()
             issue_time_string = fields.Datetime.to_string(issue_time)
-            for move in reference_moves:
-                additional_info.setdefault(move.peppol_message_uuid, {})['issue_datetime'] = issue_time_string
+            for record in reference_records:
+                additional_info.setdefault(record.peppol_message_uuid, {})['issue_datetime'] = issue_time_string
             response = self._call_peppol_proxy(
                 "/api/pdp/1/send_response",
                 params={
-                    'reference_uuids': reference_moves.mapped('peppol_message_uuid'),
+                    'reference_uuids': reference_records.mapped('peppol_message_uuid'),
                     'status': PEPPOL_TO_PDP_STATUS.get(status) or status,
                     'additional_info': additional_info,
                     'lifecycle': True,
@@ -359,8 +374,8 @@ class AccountEdiProxyClientUser(models.Model):
                 status=status_string,
                 error=str(e),
             )
-            reference_moves._message_log_batch(
-                bodies={move.id: log_message for move in reference_moves},
+            reference_records._message_log_batch(
+                bodies={move.id: log_message for move in reference_records},
             )
             return
 
@@ -371,31 +386,19 @@ class AccountEdiProxyClientUser(models.Model):
                 status=status_string,
                 error=response['error']['message'],
             )
-            reference_moves._message_log_batch(
-                bodies={move.id: log_message for move in reference_moves},
+            reference_records._message_log_batch(
+                bodies={move.id: log_message for move in reference_records},
             )
             return
         self.env['account.peppol.response'].create([
-            {
-                'peppol_message_uuid': message['message_uuid'],
-                'response_code': status,
-                'peppol_state': 'processing',
-                'move_id': move.id,
-                'pdp_status_info': "\n\n".join([
-                    # We only put the note since we have all other info
-                    self._format_status_info({'note': additional_info.get(move.peppol_message_uuid, {}).get('note')})
-                ]),
-                'pdp_payment_info': additional_info.get(move.peppol_message_uuid, {}).get('payments'),
-                'pdp_issue_date': issue_time,
-                'pdp_flow_number': '2',
-            }
-            for message, move in zip(response.get('messages'), reference_moves)
+            self._pdp_get_new_response_vals(record, message, status, issue_time, additional_info)
+            for message, record in zip(response.get('messages'), reference_records)
         ])
         log_message = self.env._(
             "A French e-invoicing response with Response Code '%(status)s' was sent to the Approved Platform.",
             status=status_string,
         )
-        reference_moves._message_log_batch(bodies={move.id: log_message for move in reference_moves})
+        reference_records._message_log_batch(bodies={move.id: log_message for move in reference_records})
 
     def _peppol_process_new_messages(self, messages):
         self.ensure_one()
