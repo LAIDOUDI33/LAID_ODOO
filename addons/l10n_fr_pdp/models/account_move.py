@@ -68,7 +68,7 @@ class AccountMove(models.Model):
     pdp_uses_pdp = fields.Boolean(compute='_compute_pdp_uses_pdp')
     l10n_fr_pdp_sent_in_flow_ids = fields.Many2many(
         comodel_name='l10n.fr.pdp.reports.flow',
-        string="Sent in PDP Flows",
+        string="Sent in E-Reporting Flows",
         relation='sent_account_move__pdp_flow',
         column1='move_id',
         column2='flow_id',
@@ -76,7 +76,7 @@ class AccountMove(models.Model):
     )
     l10n_fr_pdp_last_flow_id = fields.Many2one(
         comodel_name='l10n.fr.pdp.reports.flow',
-        string="Last PDP Flow",
+        string="Last E-Reporting Flow",
         compute='_compute_l10n_fr_pdp_last_flow_id',
         store=True,
         copy=False,
@@ -648,7 +648,7 @@ class AccountMove(models.Model):
         """Prevent resetting to draft when invoice already sent to PDP."""
         if not self.env.context.get('l10n_fr_pdp_bypass_draft_check') and self.l10n_fr_pdp_sent_in_flow_ids:
             raise UserError(self.env._(
-                "You cannot reset an invoice to draft if it was already sent to PDP. "
+                "You cannot reset an invoice to draft if it was already included in an e-report. "
                 "Create a credit note and issue a new invoice instead or cancel this invoice."
             ))
         return super()._check_draftable()

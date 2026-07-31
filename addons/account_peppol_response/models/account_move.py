@@ -70,7 +70,7 @@ class AccountMove(models.Model):
     def action_open_peppol_reponses(self):
         return {
             'type': 'ir.actions.act_window',
-            'name': self.env._("Peppol Responses"),
+            'name': self.env._("E-Invoicing Responses"),
             'view_mode': 'list',
             'res_model': 'account.peppol.response',
             'domain': [('id', 'in', self.peppol_response_ids.ids)],

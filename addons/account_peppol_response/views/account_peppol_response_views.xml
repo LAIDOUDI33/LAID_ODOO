@@ -4,7 +4,7 @@
         <field name="name">account.peppol.response.view.form</field>
         <field name="model">account.peppol.response</field>
         <field name="arch" type="xml">
-            <form string="Peppol Response">
+            <form string="E-Invoicing Response">
                 <field name="peppol_message_uuid"/>
                 <field name="response_code"/>
                 <field name="peppol_state"/>
@@ -17,7 +17,7 @@
         <field name="name">account.peppol.response.view.list</field>
         <field name="model">account.peppol.response</field>
         <field name="arch" type="xml">
-            <list string="Peppol Responses">
+            <list string="E-Invoicing Responses">
                 <field name="peppol_message_uuid"/>
                 <field name="response_code"/>
                 <field name="peppol_state"/>
