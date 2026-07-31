@@ -460,6 +460,7 @@ class AccountEdiProxyClientUser(models.Model):
             'peppol_phone_number': self.company_id.account_peppol_phone_number,
             'peppol_contact_email': self.company_id.account_peppol_contact_email,
             'peppol_migration_key': self.company_id.sudo().account_peppol_migration_key,
+            'supported_identifiers': list(self.company_id._peppol_supported_document_types()),
         }
 
     @api.model
