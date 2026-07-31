@@ -33,7 +33,7 @@ import {
     lastLeaf,
 } from "../utils/dom_traversal";
 import { FONT_SIZE_CLASSES, TEXT_STYLE_CLASSES } from "../utils/formatting";
-import { childNodeIndex, nodeSize, leftPos } from "../utils/position";
+import { childNodeIndex, nodeSize, leftPos, rightPos } from "../utils/position";
 import { callbacksForCursorUpdate } from "@html_editor/utils/selection";
 import {
     baseContainerGlobalSelector,
@@ -79,12 +79,12 @@ const enterSelectionPoint = ({ anchorNode: node, anchorOffset: offset }, marker)
  */
 
 /**
- * @typedef {((insertedNodes: Node[]) => void)[]} on_inserted_handlers
  * @typedef {((el: HTMLElement) => void)[]} on_will_set_tag_handlers
  * @typedef {((nodesToInsert: Node[]) => container)[]} on_will_insert_handlers
  *
  * @typedef {((fragment: DocumentFragment) => DocumentFragment)[]} fragment_to_insert_processors
  * @typedef {((element: HTMLElement, isFirst: boolean) => Element)[]} edge_block_to_unwrap_processors
+ * @typedef {((insertedNodes: Node[]) => void)[]} inserted_content_processors
  *
  * @typedef {((parent: HTMLElement, blockToInsert: HTMLElement) => boolean | void)[]} is_parent_compatible_for_insertion_predicates
  * @typedef {((blockToInsert: HTMLElement, referenceBlock: HTMLElement) => boolean | void)[]} should_unwrap_edge_block_to_insert_predicates
@@ -164,11 +164,15 @@ export class DomPlugin extends Plugin {
      *
      * @param {HTMLElement} element - block element
      * @param {Cursors} [cursors]
+     * @returns {Map<Node, Node|null>} a map of the nodes handled to their
+     *                                 resulting block, themselves if nothing
+     *                                 was done, or null if they were removed.
      */
     wrapInlinesInBlocks(
         element,
         { baseContainerNodeName = "P", cursors = { update: () => {} } } = {}
     ) {
+        const nodesToResults = new Map();
         // Helpers to manipulate preserving selection.
         const wrapInBlock = (node, cursors) => {
             const nextSibling = node.nextSibling;
@@ -184,6 +188,7 @@ export class DomPlugin extends Plugin {
             cursors.update(callbacksForCursorUpdate.append(block, node));
             cursors.update(callbacksForCursorUpdate.before(node, block));
             nextSibling ? nextSibling.before(block) : parent.append(block);
+            nodesToResults.set(node, block);
             return block;
         };
         const appendToCurrentBlock = (currentBlock, node, cursors) => {
@@ -201,11 +206,13 @@ export class DomPlugin extends Plugin {
             }
             cursors.update(callbacksForCursorUpdate.append(currentBlock, node));
             currentBlock.append(node);
+            nodesToResults.set(node, currentBlock);
             return currentBlock;
         };
         const removeNode = (node, cursors) => {
             cursors.update(callbacksForCursorUpdate.remove(node));
             node.remove();
+            nodesToResults.set(node, null);
         };
 
         const children = childNodes(element);
@@ -216,6 +223,7 @@ export class DomPlugin extends Plugin {
         for (const node of children) {
             if (isBlock(node)) {
                 shouldBreakLine = true;
+                nodesToResults.set(node, node);
             } else if (
                 !visibleNodes.has(node) &&
                 (this.checkPredicates("is_node_removable_predicates", node) ?? true)
@@ -237,6 +245,7 @@ export class DomPlugin extends Plugin {
                 currentBlock = appendToCurrentBlock(currentBlock, node, cursors);
             }
         }
+        return nodesToResults;
     }
 
     /**
@@ -261,9 +270,10 @@ export class DomPlugin extends Plugin {
         this.trigger("on_will_insert_handlers", nodes);
 
         // Initialize.
-        const insertedContent = [];
-        let [didUnwrapPreviousBlock, isFirst] = [false, true];
+        let insertedContent = [];
+        let [didUnwrapPreviousBlock, wasPreviousBlock, isFirst] = [false, false, true];
         const [last, isOnly] = [nodes.at(-1), nodes.length === 1];
+        const originalNodes = [...nodes];
         const isUnsplittable = this.dependencies.split.isUnsplittable.bind(this);
 
         // An empty text node may be needed to mark the position of insertion.
@@ -275,21 +285,22 @@ export class DomPlugin extends Plugin {
         // Insert the nodes.
         while (nodes.length) {
             let node = nodes.shift();
+            const isOriginalNode = originalNodes.includes(node);
             const refLeaf = firstLeaf(ref);
 
             // A. Unwrap the first or last node to insert if needed.
             // -----------------------------------------------------
 
-            let didUnwrapBlock;
+            let wasBlock = isBlock(node);
+            let didUnwrap = false;
             // Inline edges have no wrapper to remove.
-            if (isBlock(node)) {
-                didUnwrapBlock = false;
+            if (wasBlock) {
                 const isEdge = isFirst || node === last;
                 if (isEdge && this.shouldUnwrapEdgeBlock([node, ...nodes], refLeaf, isOnly)) {
                     this.processThrough("edge_block_to_unwrap_processors", node, isFirst);
                     nodes.unshift(...childNodes(node)); // unwrap
                     node = nodes.shift();
-                    didUnwrapBlock = true;
+                    didUnwrap = true;
                 }
             }
 
@@ -300,7 +311,8 @@ export class DomPlugin extends Plugin {
             if (!this.canInsertBefore(node, ref) && isUnsplittable(ref.parentElement)) {
                 if (!isUnsplittable(node)) {
                     makeContentsInline(node);
-                    didUnwrapBlock = isBlock(node);
+                    wasBlock = isBlock(node);
+                    didUnwrap = true;
                     nodes.unshift(...childNodes(node)); // unwrap
                 }
                 if (nodes.length) {
@@ -320,18 +332,44 @@ export class DomPlugin extends Plugin {
             // D. Deal with consecutive unwrapped blocks.
             // ------------------------------------------
 
-            // If two adjacent edge blocks were unwrapped, their wrappers no
-            // longer separate their contents. Split between them.
-            // eg, `p(a[]d) + p(b)p(c) = p(ab)p(c[]d)`
-            if (didUnwrapBlock && didUnwrapPreviousBlock) {
+            // If unwrapping a node caused us to lose a visual line break
+            // between it and its former sibling, split between them.
+            // eg, `li(a[]d) + p(b)p(c) = li(ab)li(c[]d) ≠ li(abc[]d)`
+            // eg, `li(a[]d) + "b"p(c) = li(ab)li(c[]) ≠ li(abc[])
+            let didLoseLineBreak = false;
+            if (wasBlock && !isFirst) {
+                didLoseLineBreak = didUnwrap && (didUnwrapPreviousBlock || !wasPreviousBlock);
+            } else if (!isFirst) {
+                didLoseLineBreak = didUnwrapPreviousBlock && isOriginalNode;
+            }
+            if (didLoseLineBreak) {
                 if (!node.nextSibling) {
                     node.after(marker);
                 }
                 ref = node.nextSibling;
                 const [targetNode, targetOffset] = leftPos(node);
-                this.dependencies.split.splitBlockNode({ targetNode, targetOffset });
+                const [before, after] = this.dependencies.split.splitBlockNode({
+                    targetNode,
+                    targetOffset,
+                });
+                if (!node.isConnected && after) {
+                    const [anchorNode, anchorOffset] = rightPos(before);
+                    after.remove();
+                    ref = enterSelectionPoint({ anchorNode, anchorOffset }, marker);
+                } else if (this.isAtBlockEdge(node, "end")) {
+                    insertedContent.pop();
+                    if (node.previousSibling?.nodeName === "BR") {
+                        // We inserted a BR instead of splitting.
+                        insertedContent.push(node.previousSibling, node);
+                    } else {
+                        insertedContent.push(after || closestBlock(node));
+                    }
+                }
             }
-            didUnwrapPreviousBlock = didUnwrapBlock ?? didUnwrapPreviousBlock;
+            didUnwrapPreviousBlock = wasBlock ? didUnwrap : didUnwrapPreviousBlock;
+            if (isOriginalNode) {
+                wasPreviousBlock = wasBlock;
+            }
 
             // E. Clean up: remove the reference if needed.
             // --------------------------------------------
@@ -353,7 +391,7 @@ export class DomPlugin extends Plugin {
         }
         marker.remove();
 
-        this.trigger("on_inserted_handlers", insertedContent);
+        insertedContent = this.processThrough("inserted_content_processors", insertedContent);
 
         // 3. Move the selection after the insertion.
         // ==========================================
