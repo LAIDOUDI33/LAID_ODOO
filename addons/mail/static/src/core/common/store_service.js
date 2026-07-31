@@ -621,8 +621,14 @@ export class Store extends BaseStore {
             "partner_cc_emails",
             "role_ids",
         ]) {
-            if (Object.prototype.hasOwnProperty.call(postData, field) && !postData[field].length) {
-                delete postData[field];
+            if (Object.prototype.hasOwnProperty.call(postData, field)) {
+                if (
+                    Array.isArray(postData[field])
+                        ? !postData[field].length
+                        : !Object.keys(postData[field]).length
+                ) {
+                    delete postData[field];
+                }
             }
         }
         const params = {
