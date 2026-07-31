@@ -662,14 +662,14 @@ class TestUi(TestPointOfSaleHttpCommon):
                 (0, 0, {
                     "base": "standard_price",
                     "product_id": product_1.id,
-                    "compute_price": "percentage",
-                    "percent_price": 50,
+                    "compute_price": "formula",
+                    "price_discount": 50,
                 }),
                 (0, 0, {
                     "base": "standard_price",
                     "product_id": product_2.id,
-                    "compute_price": "percentage",
-                    "percent_price": 50,
+                    "compute_price": "formula",
+                    "price_discount": 50,
                 })
             ]
         })

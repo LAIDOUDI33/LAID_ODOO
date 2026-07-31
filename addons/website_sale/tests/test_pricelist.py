@@ -61,9 +61,9 @@ class TestWebsitePriceList(WebsiteSaleCommon):
             "sequence": 2,
             "item_ids": [
                 Command.create({
-                    "compute_price": "percentage",
+                    "compute_price": "formula",
                     "base": "list_price",
-                    "percent_price": 10,
+                    "price_discount": 10,
                 })
             ],
         })
@@ -226,8 +226,8 @@ class TestWebsitePriceList(WebsiteSaleCommon):
                     "applied_on": "1_product",
                     "product_tmpl_id": product.product_tmpl_id.id,
                     "min_quantity": 500,
-                    "compute_price": "percentage",
-                    "percent_price": 63,
+                    "compute_price": "formula",
+                    "price_discount": 63,
                 }),
             ]
         })
@@ -239,8 +239,8 @@ class TestWebsitePriceList(WebsiteSaleCommon):
                     "product_tmpl_id": product.product_tmpl_id.id,
                     "base": "pricelist",
                     "base_pricelist_id": self.pricelist.id,
-                    "compute_price": "percentage",
-                    "percent_price": 25,
+                    "compute_price": "formula",
+                    "price_discount": 25,
                 })
             ],
         })
@@ -315,8 +315,8 @@ class TestWebsitePriceList(WebsiteSaleCommon):
             "item_ids": [
                 Command.create({
                     "base": "standard_price",
-                    "compute_price": "percentage",
-                    "percent_price": 10,
+                    "compute_price": "formula",
+                    "price_discount": 10,
                 })
             ],
         })
@@ -391,8 +391,8 @@ class TestWebsitePriceList(WebsiteSaleCommon):
         self.pricelist.write({
             "item_ids": [
                 Command.create({
-                    "percent_price": 20,
-                    "compute_price": "percentage",
+                    "price_discount": 20,
+                    "compute_price": "formula",
                     "product_tmpl_id": product_tmpl.id,
                 })
             ]
@@ -458,9 +458,9 @@ class TestWebsitePriceList(WebsiteSaleCommon):
             "name": "Benelux 2",
             "item_ids": [
                 Command.create({
-                    "compute_price": "percentage",
+                    "compute_price": "formula",
                     "base": "list_price",
-                    "percent_price": 20,
+                    "price_discount": 20,
                 })
             ],
         })

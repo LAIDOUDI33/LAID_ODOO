@@ -229,7 +229,7 @@ class TestCheckoutFlow(WebsiteSaleCommon, PaymentCommon, HttpCase):
         self.cart._set_delivery_method(self.free_delivery)
 
         self.pricelist.item_ids = [
-            Command.create({"percent_price": 50, "compute_price": "percentage"})
+            Command.create({"price_discount": 50, "compute_price": "formula"})
         ]
 
         response = self.make_jsonrpc_request(

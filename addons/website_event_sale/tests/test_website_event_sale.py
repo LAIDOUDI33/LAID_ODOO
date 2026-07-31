@@ -91,8 +91,8 @@ class TestWebsiteEventSale(HttpCaseWithUserPortal, TestWebsiteEventSaleCommon):
         self.pricelist.write({
                     'item_ids': [(5, 0, 0), (0, 0, {
                         'applied_on': '3_global',
-                        'compute_price': 'percentage',
-                        'percent_price': 100,
+                        'compute_price': 'formula',
+                        'price_discount': 100,
                     })],
                     'name': 'Full discount',
         })

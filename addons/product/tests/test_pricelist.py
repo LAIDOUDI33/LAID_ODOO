@@ -276,24 +276,35 @@ class TestPricelist(ProductVariantsCommon):
         with Form(partner) as partner_form:
             self.assertEqual(partner_form.property_product_pricelist, self.sale_pricelist_id)
 
-    def test_pricelist_change_to_formula_and_back(self):
-        pricelist_2 = self.env['product.pricelist'].create({
+    def _create_pricelist_based_rule(self):
+        return self.env['product.pricelist'].create({
             'name': 'Sale pricelist 2',
             'item_ids': [
                 Command.create({
-                    'compute_price': 'percentage',
-                    'percent_price': 20,
+                    'compute_price': 'formula',
+                    'price_discount': 20,
                     'base': 'pricelist',
                     'base_pricelist_id': self.sale_pricelist_id.id,
                     'applied_on': '3_global',
                 }),
             ],
         })
+
+    def test_pricelist_change_to_fixed_and_back(self):
+        pricelist_2 = self._create_pricelist_based_rule()
         with Form(pricelist_2.item_ids) as item_form:
+            item_form.compute_price = 'fixed'
             item_form.compute_price = 'formula'
-            item_form.compute_price = 'percentage'
-            item_form.percent_price = 20
+            item_form.price_discount = 20
         self.assertFalse(pricelist_2.item_ids.base_pricelist_id.id)
+
+    def test_pricelist_change_between_discount_and_surcharge(self):
+        """The base pricelist is kept when switching between the two methods using it."""
+        pricelist_2 = self._create_pricelist_based_rule()
+        with Form(pricelist_2.item_ids) as item_form:
+            item_form.compute_price = 'markup'
+            item_form.price_markup = 20
+        self.assertEqual(pricelist_2.item_ids.base_pricelist_id, self.sale_pricelist_id)
 
     def test_sync_parent_pricelist(self):
         """Check that adding a parent to a partner updates the partner's pricelist."""
