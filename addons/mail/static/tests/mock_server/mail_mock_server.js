@@ -149,12 +149,15 @@ async function mail_attachment_delete(request) {
     /** @type {import("mock_models").ResPartner} */
     const ResPartner = this.env["res.partner"];
 
-    const { attachment_id } = await parseRequestParams(request);
+    const { access_token_by_attachment_id } = await parseRequestParams(request);
+    const attachmentIds = Object.keys(access_token_by_attachment_id).map(Number);
     const [partner] = ResPartner.read(this.env.user.partner_id);
-    BusBus._sendone(partner, "ir.attachment/delete", {
-        id: attachment_id,
-    });
-    return IrAttachment.unlink([attachment_id]);
+    for (const attachmentId of attachmentIds) {
+        BusBus._sendone(partner, "ir.attachment/delete", {
+            id: attachmentId,
+        });
+    }
+    return IrAttachment.unlink(attachmentIds);
 }
 
 registerRoute("/discuss/channel/attachments", load_attachments);

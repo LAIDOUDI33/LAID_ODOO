@@ -438,8 +438,9 @@ export class Message extends Component {
         return true;
     }
 
-    onClickAttachmentUnlink(attachment) {
-        return attachment.remove();
+    /** @param {import("models").Attachment[]} attachments */
+    onClickAttachmentUnlink(attachments) {
+        return this.store["ir.attachment"].removeMany(attachments);
     }
 
     /**

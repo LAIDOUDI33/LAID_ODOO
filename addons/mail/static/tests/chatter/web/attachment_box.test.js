@@ -4,13 +4,14 @@ import {
     contains,
     defineMailModels,
     inputFiles,
+    onRpcBefore,
     openFormView,
     patchUiSize,
     scroll,
     start,
     startServer,
 } from "@mail/../tests/mail_test_helpers";
-import { describe, test } from "@odoo/hoot";
+import { describe, expect, test } from "@odoo/hoot";
 import { onRpc, pagerNext, pagerPrevious } from "@web/../tests/web_test_helpers";
 
 describe.current.tags("desktop");
@@ -182,6 +183,120 @@ test("attachment box should order attachments from newest to oldest", async () =
     await contains(".o-mail-AttachmentContainer:eq(0):has(:text('C.txt'))");
     await contains(".o-mail-AttachmentContainer:eq(1):has(:text('B.txt'))");
     await contains(".o-mail-AttachmentContainer:eq(2):has(:text('A.txt'))");
+});
+
+test("attachment box groups copies of the same file under a counter", async () => {
+    const pyEnv = await startServer();
+    const partnerId = pyEnv["res.partner"].create({});
+    const resData = { mimetype: "image/png", res_id: partnerId, res_model: "res.partner" };
+    pyEnv["ir.attachment"].create([
+        { checksum: "sign", create_date: "2026-07-25 10:00:00", name: "signature.png", ...resData },
+        { checksum: "sign", create_date: "2026-07-26 10:00:00", name: "signature.png", ...resData },
+        { checksum: "sign", create_date: "2026-07-27 10:00:00", name: "signature.png", ...resData },
+        { checksum: "deal", create_date: "2026-07-28 10:00:00", name: "contract.png", ...resData },
+    ]);
+    await start();
+    await openFormView("res.partner", partnerId, {
+        arch: `
+            <form>
+                <sheet></sheet>
+                <chatter open_attachments="True"/>
+            </form>`,
+    });
+    await contains(".o-mail-AttachmentContainer", { count: 2 });
+    await contains(".o-mail-AttachmentContainer[aria-label='contract.png']");
+    await contains(".o-mail-AttachmentContainer[aria-label='signature.png']");
+    await contains(".o-mail-Attachment-duplicateCounter", { count: 1 });
+    await click(
+        ".o-mail-AttachmentContainer[aria-label='signature.png'] .o-mail-Attachment-duplicateCounter",
+        { text: "3" }
+    );
+    await contains(".o-mail-Attachment-duplicate", { count: 3 });
+    await contains(".o-mail-Attachment-duplicate:eq(0):text('signature.png – 07/27/2026')");
+    await contains(".o-mail-Attachment-duplicate:eq(1):text('signature.png – 07/26/2026')");
+    await contains(".o-mail-Attachment-duplicate:eq(2):text('signature.png – 07/25/2026')");
+});
+
+test("a group of copies keeps the place of its oldest copy", async () => {
+    const pyEnv = await startServer();
+    const partnerId = pyEnv["res.partner"].create({});
+    const resData = { mimetype: "text/plain", res_id: partnerId, res_model: "res.partner" };
+    pyEnv["ir.attachment"].create([
+        { checksum: "sign", create_date: "2026-07-25 10:00:00", name: "signature.txt", ...resData },
+        { checksum: "deal", create_date: "2026-07-26 10:00:00", name: "contract.txt", ...resData },
+        { checksum: "sign", create_date: "2026-07-27 10:00:00", name: "signature.txt", ...resData },
+    ]);
+    await start();
+    await openFormView("res.partner", partnerId, {
+        arch: `
+            <form>
+                <sheet></sheet>
+                <chatter open_attachments="True"/>
+            </form>`,
+    });
+    await contains(".o-mail-AttachmentContainer", { count: 2 });
+    await contains(".o-mail-AttachmentContainer:eq(0):has(:text('contract.txt'))");
+    await contains(".o-mail-AttachmentContainer:eq(1):has(:text('signature.txt'))");
+    await contains(".o-mail-Attachment-duplicateCounter:text('2')");
+});
+
+test("removing a copy from the dropdown keeps the other copies", async () => {
+    const pyEnv = await startServer();
+    const partnerId = pyEnv["res.partner"].create({});
+    const resData = { mimetype: "image/png", res_id: partnerId, res_model: "res.partner" };
+    pyEnv["ir.attachment"].create([
+        { checksum: "sign", create_date: "2026-07-25 10:00:00", name: "signature.png", ...resData },
+        { checksum: "sign", create_date: "2026-07-26 10:00:00", name: "signature.png", ...resData },
+        { checksum: "sign", create_date: "2026-07-27 10:00:00", name: "signature.png", ...resData },
+    ]);
+    await start();
+    await openFormView("res.partner", partnerId, {
+        arch: `
+            <form>
+                <sheet></sheet>
+                <chatter open_attachments="True"/>
+            </form>`,
+    });
+    await click(".o-mail-Attachment-duplicateCounter", { text: "3" });
+    await click(".o-mail-Attachment-duplicate:eq(0) [title='Remove']");
+    await contains(
+        ".modal-body:text('Are you sure you want to delete \"signature.png\"? This action cannot be undone.')"
+    );
+    await click(".modal-footer .btn-primary");
+    await contains(".o-mail-AttachmentContainer[aria-label='signature.png']");
+    await contains(".o-mail-Attachment-duplicateCounter:text('2')");
+    await contains(".o-mail-Chatter [aria-label='Attach files']:text('2')");
+});
+
+test("removing a group of copies asks confirmation and removes all of them at once", async () => {
+    const pyEnv = await startServer();
+    const partnerId = pyEnv["res.partner"].create({});
+    const resData = { mimetype: "image/png", res_id: partnerId, res_model: "res.partner" };
+    pyEnv["ir.attachment"].create([
+        { checksum: "sign", create_date: "2026-07-25 10:00:00", name: "signature.png", ...resData },
+        { checksum: "sign", create_date: "2026-07-26 10:00:00", name: "signature.png", ...resData },
+        { checksum: "deal", create_date: "2026-07-28 10:00:00", name: "contract.png", ...resData },
+    ]);
+    onRpcBefore("/mail/attachment/delete", ({ access_token_by_attachment_id }) =>
+        expect.step(`delete ${Object.keys(access_token_by_attachment_id).length}`)
+    );
+    await start();
+    await openFormView("res.partner", partnerId, {
+        arch: `
+            <form>
+                <sheet></sheet>
+                <chatter open_attachments="True"/>
+            </form>`,
+    });
+    await click(".o-mail-AttachmentContainer[aria-label='signature.png'] [title='Remove']");
+    await contains(
+        ".modal-body:text('Are you sure you want to delete the 2 copies of \"signature.png\"? This action cannot be undone.')"
+    );
+    await click(".modal-footer .btn-primary");
+    await contains(".o-mail-AttachmentContainer", { count: 1 });
+    await contains(".o-mail-AttachmentContainer[aria-label='contract.png']");
+    // both copies are removed by a single query
+    await expect.waitForSteps(["delete 2"]);
 });
 
 test("attachment box auto-closed on switch to record wih no attachments", async () => {

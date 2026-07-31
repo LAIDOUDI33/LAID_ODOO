@@ -10,6 +10,7 @@ import { Dropdown } from "@web/core/dropdown/dropdown";
 import { useDropdownState } from "@web/core/dropdown/dropdown_hooks";
 import { DropdownItem } from "@web/core/dropdown/dropdown_item";
 import { useFileViewer } from "@web/core/file_viewer/file_viewer_hook";
+import { formatDate } from "@web/core/l10n/dates";
 import { _t } from "@web/core/l10n/translation";
 import { useService } from "@web/core/utils/hooks";
 import { url } from "@web/core/utils/urls";
@@ -36,11 +37,12 @@ class Actions extends Component {
 }
 
 export class AttachmentList extends Component {
-    static components = { Actions, Gif };
+    static components = { Actions, Dropdown, Gif };
     static template = "mail.AttachmentList";
 
-    // make this available for class evaluation in the template
+    // make these available for class evaluation in the template
     attClassObjectToString = attClassObjectToString;
+    formatDate = formatDate;
     rootRef = signal.ref();
 
     setup() {
@@ -48,14 +50,49 @@ export class AttachmentList extends Component {
         this.store = useService("mail.store");
         this.props = props({
             attachments: t.array(t.instanceOf(this.store["ir.attachment"].Class)),
+            groupDuplicates: t.boolean().optional(false),
             messageSearch: t.instanceOf(MessageSearchState).optional(),
-            unlinkAttachment: t.function([t.instanceOf(this.store["ir.attachment"].Class)]),
+            unlinkAttachments: t.function([
+                t.array(t.instanceOf(this.store["ir.attachment"].Class)),
+            ]),
         });
         this.ui = useService("ui");
         this.dialog = useService("dialog");
         this.fileViewer = useFileViewer(this.rootRef);
         this.actionsMenuState = useDropdownState();
         this.isMobileOS = isMobileOS();
+    }
+
+    /**
+     * Attachments to display, each of them standing for every attachment
+     * sharing its content. Duplicates are only grouped when the
+     * `groupDuplicates` prop is set, e.g. in the chatter attachment box where
+     * a signature image repeated on every message would otherwise bury the
+     * relevant files.
+     *
+     * @type {{ attachment: import("models").Attachment, duplicates: import("models").Attachment[] }[]}
+     */
+    get attachmentGroups() {
+        const keyOf = (attachment) =>
+            this.props.groupDuplicates && attachment.checksum
+                ? `checksum-${attachment.checksum}`
+                : `id-${attachment.id}`;
+        const duplicatesByKey = new Map();
+        for (const attachment of this.props.attachments) {
+            const key = keyOf(attachment);
+            if (!duplicatesByKey.has(key)) {
+                duplicatesByKey.set(key, []);
+            }
+            duplicatesByKey.get(key).push(attachment);
+        }
+        const groups = [];
+        for (const attachment of this.props.attachments) {
+            const duplicates = duplicatesByKey.get(keyOf(attachment));
+            if (attachment.eq(duplicates.at(-1))) {
+                groups.push({ attachment, duplicates });
+            }
+        }
+        return groups;
     }
 
     /**
@@ -92,47 +129,57 @@ export class AttachmentList extends Component {
     }
 
     /**
-     * @param {import("models").Attachment} attachment
+     * @param {import("models").Attachment[]} attachments every attachment the
+     *  clicked one stands for, itself alone most of the time
      */
-    onClickUnlink(attachment) {
+    onClickUnlink(attachments) {
         if (this.env.inComposer) {
-            this.props.unlinkAttachment(attachment);
+            this.props.unlinkAttachments(attachments);
             return true;
         }
-        if (this.hasUnlinkConfirmation(attachment)) {
-            return new Promise((resolve) => {
-                this.dialog.add(ConfirmationDialog, {
-                    title: _t("Delete Attachment"),
-                    body: _t(
-                        'Are you sure you want to delete "%s"?\nThis action cannot be undone.',
-                        attachment.name
-                    ),
-                    confirmLabel: _t("Delete Attachment"),
-                    cancel: () => resolve(false),
-                    confirm: () => {
-                        this.onConfirmUnlink(attachment);
-                        resolve(true);
-                    },
-                });
+        if (!attachments.some((attachment) => this.hasUnlinkConfirmation(attachment))) {
+            this.onConfirmUnlink(attachments);
+            return true;
+        }
+        const areCopies = attachments.length > 1;
+        return new Promise((resolve) => {
+            this.dialog.add(ConfirmationDialog, {
+                title: areCopies ? _t("Delete Attachments") : _t("Delete Attachment"),
+                body: areCopies
+                    ? _t(
+                          'Are you sure you want to delete the %(count)s copies of "%(name)s"?\nThis action cannot be undone.',
+                          { count: attachments.length, name: attachments[0].name }
+                      )
+                    : _t(
+                          'Are you sure you want to delete "%s"?\nThis action cannot be undone.',
+                          attachments[0].name
+                      ),
+                confirmLabel: areCopies ? _t("Delete Attachments") : _t("Delete Attachment"),
+                cancel: () => resolve(false),
+                confirm: () => {
+                    this.onConfirmUnlink(attachments);
+                    resolve(true);
+                },
             });
-        } else {
-            this.onConfirmUnlink(attachment);
-            return true;
-        }
-    }
-
-    onClickAttachment(attachment) {
-        this.fileViewer.open(attachment, this.props.attachments, {
-            onUnlink: this.onClickUnlink.bind(this),
-            canUnlink: (file) => this.showDelete(file),
         });
     }
 
     /**
      * @param {import("models").Attachment} attachment
      */
-    async onConfirmUnlink(attachment) {
-        await this.props.unlinkAttachment(attachment);
+    onClickAttachment(attachment) {
+        const attachments = this.attachmentGroups.map((group) => group.attachment);
+        this.fileViewer.open(attachment, attachments, {
+            onUnlink: (file) => this.onClickUnlink([file]),
+            canUnlink: (file) => this.showDelete(file),
+        });
+    }
+
+    /**
+     * @param {import("models").Attachment[]} attachments
+     */
+    async onConfirmUnlink(attachments) {
+        await this.props.unlinkAttachments(attachments);
     }
 
     onImageLoaded() {
@@ -147,14 +194,14 @@ export class AttachmentList extends Component {
         return this.env.inChatWindow && !this.env.alignedRight;
     }
 
-    getActions(attachment) {
+    getActions(attachment, duplicates = [attachment]) {
         const res = [];
         if (this.showDelete(attachment)) {
             res.push({
                 label: _t("Remove"),
                 icon: "delete",
                 icon_class: "oi-filled",
-                onSelect: () => this.onClickUnlink(attachment),
+                onSelect: () => this.onClickUnlink(duplicates),
             });
         }
         if (this.canDownload(attachment)) {

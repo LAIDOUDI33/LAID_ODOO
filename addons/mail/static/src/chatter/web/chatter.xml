@@ -79,7 +79,8 @@
                     <div class="d-flex flex-column">
                         <AttachmentList
                             attachments="this.attachments"
-                            unlinkAttachment.bind="this.unlinkAttachment"
+                            groupDuplicates="true"
+                            unlinkAttachments.bind="this.unlinkAttachments"
                         />
                         <FileUploader multiUpload="true" fileUploadClass="'o-mail-Chatter-fileUploader'" onUploaded="this.onUploaded({ thread: this.state.thread })" onClick="(ev) => this.onClickAttachFile(ev)" t-key="this.state.thread.localId">
                             <t t-set-slot="toggler">

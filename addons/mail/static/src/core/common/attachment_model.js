@@ -137,17 +137,31 @@ export class Attachment extends FileModelMixin(Record) {
     }
 
     /**
+     * Delete the given attachments on the server as well as removing them
+     * globally, in a single query.
+     *
+     * @param {import("models").Attachment[]} attachments
+     */
+    static async removeMany(attachments) {
+        const stored = attachments.filter(({ id }) => id > 0);
+        if (stored.length) {
+            await rpc("/mail/attachment/delete", {
+                access_token_by_attachment_id: Object.fromEntries(
+                    stored.map(({ id, ownership_token }) => [id, ownership_token ?? null])
+                ),
+            });
+        }
+        for (const attachment of attachments) {
+            attachment.delete();
+        }
+    }
+
+    /**
      * Delete the given attachment on the server as well as removing it
      * globally.
      */
     async remove() {
-        if (this.id > 0) {
-            await rpc(
-                "/mail/attachment/delete",
-                assignDefined({ attachment_id: this.id }, { access_token: this.ownership_token })
-            );
-        }
-        this.delete();
+        await this.Model.removeMany([this]);
     }
 
     get previewName() {
