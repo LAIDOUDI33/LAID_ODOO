@@ -32,12 +32,22 @@ msgstr ""
 
 #. module: l10n_cn
 #: model_terms:ir.ui.view,arch_db:l10n_cn.report_voucher_document
+msgid "<span>Amount in Currency</span>"
+msgstr ""
+
+#. module: l10n_cn
+#: model_terms:ir.ui.view,arch_db:l10n_cn.report_voucher_document
 msgid "<span>Balance</span>"
 msgstr ""
 
 #. module: l10n_cn
 #: model_terms:ir.ui.view,arch_db:l10n_cn.report_voucher_document
 msgid "<span>Credit</span>"
+msgstr ""
+
+#. module: l10n_cn
+#: model_terms:ir.ui.view,arch_db:l10n_cn.report_voucher_document
+msgid "<span>Currency</span>"
 msgstr ""
 
 #. module: l10n_cn

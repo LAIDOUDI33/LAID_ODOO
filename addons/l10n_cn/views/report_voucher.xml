@@ -44,11 +44,13 @@
                         </div>
                     </div>
 
-                    <table class="table table-borderless o_main_table" name="entry_line_table">
+                    <table class="table table-bordered o_main_table" name="entry_line_table">
                         <thead>
                             <tr>
                                 <th name="th_description" class="text-center"><span>Balance</span></th>
                                 <th name="th_account" class="text-center"><span>Account</span></th>
+                                <th name="th_currency" class="text-center"><span>Currency</span></th>
+                                <th name="th_amount_currency" class="text-center"><span>Amount in Currency</span></th>
                                 <th name="th_debit" class="text-center"><span>Debit</span></th>
                                 <th name="th_credit" class="text-center"><span>Credit</span></th>
                             </tr>
@@ -68,6 +70,12 @@
                                         <td name="account">
                                             <span t-field="line.account_id.display_name" t-options="{'widget': 'text'}"/>
                                         </td>
+                                        <td name="currency">
+                                            <span t-field="line.currency_id.name" t-options="{'widget': 'text'}"/>
+                                        </td>
+                                        <td name="amount_currency">
+                                            <span t-if="line.amount_currency != 0" t-field="line.amount_currency"/>
+                                        </td>
                                         <td name="debit">
                                             <span t-if="line.debit != 0" t-field="line.debit"/>
                                         </td>
@@ -77,8 +85,8 @@
                                     </t>
                                 </tr>
                             </t>
-                            <t>
-                                <td name="total" colspan="2">
+                            <tr>
+                                <td name="total" colspan="4">
                                     <span>Total:</span>
                                     <span t-out="o._convert_to_amount_in_word(total_debit)" />
                                 </td>
@@ -88,7 +96,7 @@
                                 <td name="total_credit">
                                     <span t-out="total_credit" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
                                 </td>
-                            </t>
+                            </tr>
                         </tbody>
                     </table>
 

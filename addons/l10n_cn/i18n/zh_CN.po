@@ -23,7 +23,7 @@ msgstr ""
 #. module: l10n_cn
 #: model:ir.actions.report,print_report_name:l10n_cn.account_voucher_cn
 msgid "'Voucher_%s' % (object.name)"
-msgstr "'结算单_%s' % (object.name)"
+msgstr "'记账凭证_%s' % (object.name)"
 
 #. module: l10n_cn
 #: model_terms:ir.ui.view,arch_db:l10n_cn.report_voucher_document
@@ -37,6 +37,11 @@ msgstr "<span>记账凭证</span>"
 
 #. module: l10n_cn
 #: model_terms:ir.ui.view,arch_db:l10n_cn.report_voucher_document
+msgid "<span>Amount in Currency</span>"
+msgstr "<span>原币金额</span>"
+
+#. module: l10n_cn
+#: model_terms:ir.ui.view,arch_db:l10n_cn.report_voucher_document
 msgid "<span>Balance</span>"
 msgstr "<span>摘要</span>"
 
@@ -44,6 +49,11 @@ msgstr "<span>摘要</span>"
 #: model_terms:ir.ui.view,arch_db:l10n_cn.report_voucher_document
 msgid "<span>Credit</span>"
 msgstr "<span>贷方</span>"
+
+#. module: l10n_cn
+#: model_terms:ir.ui.view,arch_db:l10n_cn.report_voucher_document
+msgid "<span>Currency</span>"
+msgstr "<span>币别</span>"
 
 #. module: l10n_cn
 #: model_terms:ir.ui.view,arch_db:l10n_cn.report_voucher_document
@@ -151,4 +161,4 @@ msgstr "请输入正确的发票号码。"
 #. module: l10n_cn
 #: model:ir.actions.report,name:l10n_cn.account_voucher_cn
 msgid "Voucher"
-msgstr "凭证"
+msgstr "记账凭证"
