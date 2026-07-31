@@ -1155,16 +1155,29 @@ class TestLeaveRequests(TestHrHolidaysCommon):
             leave.with_user(self.user_employee_id)._action_user_cancel('Cancel leave')
             self.assertFalse(leave.meeting_id.active)
 
+    def test_mandatory_supporting_document(self):
+        with freeze_time('2025-11-21'):
+            with self.assertRaises(ValidationError):
+                self.env['hr.leave'].with_user(self.user_employee_id).create({
+                    'name': 'Leave without doc',
+                    'employee_id': self.employee_emp_id,
+                    'holiday_status_id': self.holidays_support_document.id,
+                    'request_date_from': '2025-11-28',
+                    'request_date_to': '2025-11-28',
+                    'supported_attachment_ids': [(6, 0, [])],
+                })
+
     def test_create_support_document_in_the_past(self):
         with freeze_time('2022-10-19'):
-            self.env['hr.leave'].with_user(self.user_employee_id).create({
-                'name': 'Holiday Request',
-                'employee_id': self.employee_emp_id,
-                'holiday_status_id': self.holidays_support_document.id,
-                'request_date_from': '2022-10-17',
-                'request_date_to': '2022-10-17',
-                'supported_attachment_ids': [(6, 0, [])],  # Sent by webclient
-            })
+            with self.assertRaises(ValidationError):
+                self.env['hr.leave'].with_user(self.user_employee_id).create({
+                    'name': 'Holiday Request',
+                    'employee_id': self.employee_emp_id,
+                    'holiday_status_id': self.holidays_support_document.id,
+                    'request_date_from': '2022-10-17',
+                    'request_date_to': '2022-10-17',
+                    'supported_attachment_ids': [(6, 0, [])],  # Sent by webclient
+                })
 
     def test_create_supported_attachments_link_attachment_ids(self):
         with freeze_time('2025-10-21'):
