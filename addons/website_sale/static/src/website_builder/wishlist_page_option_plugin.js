@@ -11,6 +11,10 @@ export class WishlistPageOptionPlugin extends Plugin {
             WishlistMobileColumnsAction,
             WishlistSetGapAction,
         },
+        dirty_trackers: {
+            selector: ".o_wishlist_table",
+            dirtyClass: "o_dirty_product_design_list",
+        },
         product_design_list_to_save: {
             selector: ".o_wishlist_table",
             getData(el) {

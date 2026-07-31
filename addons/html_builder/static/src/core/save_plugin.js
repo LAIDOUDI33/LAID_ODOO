@@ -27,6 +27,12 @@ import { EDITOR_MUTATION_TYPES } from "@html_editor/core/dom_observer_plugin";
  * @typedef {((cleanedEls: HTMLElement[]) => Promise<boolean>)[]} save_elements_overrides
  *
  * @typedef {(() => HTMLElement[] | NodeList)[]} dirty_els_providers
+ *
+ * @typedef {{ selector: CSSSelector, dirtyClass: string }[]} dirty_trackers
+ * A mutation marks the closest ancestor matching `selector` with `dirtyClass`. Declare one to be
+ * notified of changes to an element that cannot be saved as view arch, and pair it with
+ * `on_ready_to_save_document_handlers` to persist it another way. Declaring a tracker does not make
+ * the element savable: only `.o_savable` / `o_dirty` feeds the arch saving pipeline.
  */
 
 export class SavePlugin extends Plugin {
@@ -46,6 +52,7 @@ export class SavePlugin extends Plugin {
             // }
         ],
         dirty_els_providers: () => this.editable.querySelectorAll(".o_dirty"),
+        dirty_trackers: { selector: ".o_savable", dirtyClass: "o_dirty" },
         // Do not change the sequence of this resource, it must stay the first
         // one to avoid marking dirty when not needed during the drag and drop.
         on_prepare_drag_handlers: withSequence(0, this.ignoreDirty.bind(this)),
@@ -65,6 +72,7 @@ export class SavePlugin extends Plugin {
 
     setup() {
         this.canObserve = false;
+        this.dirtyTrackers = this.getResource("dirty_trackers");
     }
 
     groupElements(toGroupEls) {
@@ -169,15 +177,17 @@ export class SavePlugin extends Plugin {
             if (!targetEl) {
                 continue;
             }
-            const savableEl = targetEl.closest(".o_savable");
-            if (
-                !savableEl ||
-                savableEl.classList.contains("o_dirty") ||
-                savableEl.hasAttribute("data-oe-readonly")
-            ) {
-                continue;
+            for (const { selector, dirtyClass } of this.dirtyTrackers) {
+                const dirtyEl = targetEl.closest(selector);
+                if (
+                    !dirtyEl ||
+                    dirtyEl.classList.contains(dirtyClass) ||
+                    dirtyEl.hasAttribute("data-oe-readonly")
+                ) {
+                    continue;
+                }
+                dirtyEl.classList.add(dirtyClass);
             }
-            savableEl.classList.add("o_dirty");
         }
     }
 
