@@ -28,8 +28,9 @@ export class RatingPopupComposer extends Interaction {
             "user_id": user.userId,
             "reloadRatingPopupComposer": this.onReloadRatingPopupComposer.bind(this),
         }, options, {});
-        this.env.bus.addEventListener("reload_rating_popup_composer", (ev) =>
-            this.onReloadRatingPopupComposer(ev.detail)
+        this.addBusListener(
+            "reload_rating_popup_composer",
+            (ev) => this.onReloadRatingPopupComposer(ev.detail)
         );
     }
 

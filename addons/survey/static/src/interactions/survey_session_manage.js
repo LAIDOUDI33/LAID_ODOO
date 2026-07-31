@@ -140,7 +140,7 @@ export class SurveySessionManage extends Interaction {
             const chartPromise = new Promise(function (resolve) {
                 resolveChartPromise = resolve;
             });
-            this.env.bus.addEventListener("SURVEY:CHART_INTERACTION_STARTED", resolveChartPromise);
+            this.addBusListener("SURVEY:CHART_INTERACTION_STARTED", resolveChartPromise);
             await chartPromise;
         }
     }

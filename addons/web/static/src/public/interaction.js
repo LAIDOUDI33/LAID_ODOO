@@ -384,6 +384,19 @@ export class Interaction {
     }
 
     /**
+     * Adds a bus listener that will be automatically cleaned up when the
+     * interaction is destroyed.
+     *
+     * @param {string} eventName
+     * @param {Function} listener
+     * @param {import("@odoo/owl").EventBus} [bus=this.env.bus]
+     */
+    addBusListener(eventName, listener, bus = this.env.bus) {
+        bus.addEventListener(eventName, listener);
+        this.registerCleanup(() => bus.removeEventListener(eventName, listener));
+    }
+
+    /**
      * Inserts and activate an element at a specific location (default position:
      * "beforeend").
      * The inserted element will be removed when the interaction is destroyed.
