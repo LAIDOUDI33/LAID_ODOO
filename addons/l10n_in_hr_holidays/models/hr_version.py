@@ -24,10 +24,7 @@ class HrVersion(models.Model):
         if not in_versions:
             return result
 
-        start_dt = date_start
-        end_dt = date_stop
-
-        exceptional_days = self.env['hr.leave']._get_exceptional_holidays(start_dt, end_dt)
+        exceptional_days = self.env['hr.leave']._get_exceptional_holidays(date_start, date_stop)
         if not exceptional_days:
             return result
 
@@ -46,32 +43,32 @@ class HrVersion(models.Model):
                     for i in range((hour_end - hour_start).days + 1)
                 )
                 if holiday.working_start_date and holiday.working_end_date:
+                    comp_start = holiday.working_start_date.date()
+                    comp_end = holiday.working_end_date.date()
                     compensatory_dates.update(
-                        holiday.working_start_date + timedelta(days=i)
-                        for i in range(
-                            (holiday.working_end_date - holiday.working_start_date).days + 1
-                        )
+                        comp_start + timedelta(days=i)
+                        for i in range((comp_end - comp_start).days + 1)
                     )
 
-            version_dates = {
-                d
-                for d in exceptional_dates
-                if start_dt.date() <= d <= end_dt.date()
+            version_exceptinal_dates = {
+                exceptinal_date
+                for exceptinal_date in exceptional_dates
+                if date_start.date() <= exceptinal_date <= date_stop.date()
             }
 
             version_compensatory_dates = {
-                d
-                for d in compensatory_dates
-                if start_dt.date() <= d <= end_dt.date()
+                compensatory_date
+                for compensatory_date in compensatory_dates
+                if date_start.date() <= compensatory_date <= date_stop.date()
             }
-            if not version_dates and not version_compensatory_dates:
+            if not version_exceptinal_dates and not version_compensatory_dates:
                 continue
 
             approved_leaves = self.env["hr.leave"].sudo().search([
                 ("employee_id", "=", version.employee_id.id),
                 ("state", "=", "validate"),
-                ("date_from", "<=", end_dt),
-                ("date_to", ">=", start_dt),
+                ("date_from", "<=", date_stop),
+                ("date_to", ">=", date_start),
             ])
 
             leave_type_by_date = {}
@@ -79,12 +76,12 @@ class HrVersion(models.Model):
                 leave_start_date = leave.date_from.replace(tzinfo=UTC).astimezone(tz).date()
                 leave_end_date = leave.date_to.replace(tzinfo=UTC).astimezone(tz).date()
 
-                for d in version_dates:
+                for d in version_exceptinal_dates:
                     if leave_start_date <= d <= leave_end_date:
                         leave_type_by_date[d] = leave.work_entry_type_id
 
             leave_dates = set(leave_type_by_date.keys())
-            attendance_dates = version_dates - leave_dates
+            attendance_dates = version_exceptinal_dates - leave_dates
 
             result = [
                 vals
@@ -92,7 +89,7 @@ class HrVersion(models.Model):
                 if not (
                     vals["employee_id"] == version.employee_id
                     and (
-                        vals["date_start"].replace(tzinfo=UTC).astimezone(tz).date() in version_dates
+                        vals["date_start"].replace(tzinfo=UTC).astimezone(tz).date() in version_exceptinal_dates
                         or
                         (
                             vals["date_start"].replace(tzinfo=UTC).astimezone(tz).date() in version_compensatory_dates

@@ -78,9 +78,11 @@ class HrEmployees(models.Model):
             )
 
             if holiday.working_start_date and holiday.working_end_date:
-                comp_days = (holiday.working_end_date - holiday.working_start_date).days + 1
+                comp_start = holiday.working_start_date.date()
+                comp_end = holiday.working_end_date.date()
+                comp_days = (comp_end - comp_start).days + 1
                 compensatory_dates.update(
-                    (holiday.working_start_date + timedelta(days=i)).isoformat()
+                    (comp_start + timedelta(days=i)).isoformat()
                     for i in range(comp_days)
                 )
 
