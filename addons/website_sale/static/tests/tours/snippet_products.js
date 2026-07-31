@@ -7,7 +7,11 @@ import {
 } from '@website/js/tours/tour_utils';
 import { goToCart } from '@website_sale/js/tours/tour_utils';
 
-const productsSnippet = { id: "s_dynamic_snippet_products", name: "Products", groupName: "Catalog" };
+const productsSnippet = {
+    name: "Products Carousel",
+    id: "s_dynamic_snippet_products_carousal",
+    groupName: "Catalog",
+};
 
 registerWebsitePreviewTour(
     'website_sale.snippet_products',
@@ -36,7 +40,7 @@ registerWebsitePreviewTour(
     () => [
         ...insertSnippet(productsSnippet),
         ...clickOnSnippet(productsSnippet),
-        ...changeOptionInPopover("Products", "Filter", "Recently Viewed"),
+        ...changeOptionInPopover(productsSnippet.name, "Filter", "Recently Viewed"),
         ...clickOnSave(),
         {
             content: 'make delete icon appear',
