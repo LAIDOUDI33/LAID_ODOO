@@ -91,6 +91,24 @@ test("basic rendering", async () => {
     await contains("[name='picture-in-picture']");
 });
 
+test("show the recording indicator while recording", async () => {
+    const pyEnv = await startServer();
+    const channelId = pyEnv["discuss.channel"].create({ name: "General" });
+    await start();
+    const rtc = getService("discuss.rtc");
+    await openDiscuss(channelId);
+    await click("[title='Start Call']");
+    rtc.recordingState = {
+        recording: true,
+        audio: true,
+        transcription: false,
+        video: false,
+    };
+    await contains(".o-discuss-CallRecordingIndicator");
+    await hover(".o-discuss-CallRecordingIndicator");
+    await contains(".o-discuss-CallRecordingIndicator button:text('Stop recording')");
+});
+
 test("mobile UI", async () => {
     const pyEnv = await startServer();
     const channelId = pyEnv["discuss.channel"].create({ name: "General" });
