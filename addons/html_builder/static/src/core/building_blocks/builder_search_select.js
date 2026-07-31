@@ -1,10 +1,11 @@
 import { Component, onWillDestroy, proxy, signal, t, useProps } from "@odoo/owl";
 import {
     querySelectorAll,
+    useActionInfo,
     useBuilderComponent,
     useClickableBuilderComponent,
     useDependencyDefinition,
-    useActionInfo,
+    useLtrRtlHandler,
 } from "../utils";
 import { BuilderComponent } from "./builder_component";
 import { _t } from "@web/core/l10n/translation";
@@ -62,7 +63,6 @@ export class BuilderSearchSelect extends Component {
     static components = { BuilderComponent, SelectMenu };
 
     setup() {
-        super.setup();
         useBuilderComponent();
         this.menuRef = signal.ref();
         const { removeListeners, onOpened, onClosed } = useSelectMenuHandler(this.menuRef, {
@@ -79,17 +79,24 @@ export class BuilderSearchSelect extends Component {
         delete this.info.actionId;
 
         this.getAction = this.env.editor.shared.builderActions.getAction;
+        const { addLtrRtlMappedItem, updateLtrRtlMappedItem, removeLtrRtlMappedItem } =
+            useLtrRtlHandler();
+        this.addLtrRtlMappedItem = addLtrRtlMappedItem;
+        this.updateLtrRtlMappedItem = updateLtrRtlMappedItem;
+        this.removeLtrRtlMappedItem = removeLtrRtlMappedItem;
+
+        // Initialize the select items main config.
+        this.defaultChoices = this.props.choices;
+        this.defaultGroups = this.props.groups;
+        this.updateChoices(this.setupChoices.bind(this), { updateDefaults: true });
+        this.updateChoices(this.adaptLtrRtlChoices.bind(this), { updateDefaults: true });
         // Choices are built so that each item can act as a builder component
         // and manage its own actions and operations.
-        this.defaultChoices = this.buildChoices(this.props.choices);
-        this.defaultGroups = this.props.groups.map((group) => ({
-            ...group,
-            choices: this.buildChoices(group.choices),
-        }));
-
-        this.updateChoices();
-        useBus(this.env.editorBus, "DOM_UPDATED", this.updateChoices);
-
+        this.updateChoices(this.buildClickableChoices.bind(this), { updateDefaults: true });
+        this.updateChoices(this.updateEditingElements.bind(this), { updateSelection: true });
+        useBus(this.env.editorBus, "DOM_UPDATED", () =>
+            this.updateChoices(this.updateEditingElements.bind(this), { updateSelection: true })
+        );
         // Handle dependencies for select items.
         [...this.selectedChoices]
             .filter((opt) => opt.id)
@@ -98,10 +105,15 @@ export class BuilderSearchSelect extends Component {
                     isActive: () => opt.value === this.currentlySelected,
                 });
             });
-        onWillDestroy(() => removeListeners?.());
+        onWillDestroy(() => {
+            removeListeners?.();
+            this.updateChoices(this.removeLtrRtlChoices.bind(this), { updateDefaults: true });
+        });
     }
-    buildChoices(choices) {
+    setupChoices(choices) {
         return choices.map((choice) => {
+            choice.attrs = choice.attrs || {};
+            choice.value = choice.value || `${this.index++}`;
             // Action props set on the select are applied to all items.
             // This is done for compoenents using the shared `env.weContext`
             // added by `useBuilderComponent()`.
@@ -111,6 +123,26 @@ export class BuilderSearchSelect extends Component {
                 ...Object.fromEntries(Object.entries(this.info).filter(([, value]) => value)),
                 ...choice.props,
             };
+            choice.itemPropsState = proxy({
+                ...choice.props,
+                title: choice.attrs.title,
+                label: choice.label,
+            });
+            choice.ltrRtlConfig = {
+                ltrRtlMapping: choice.props.ltrRtlMapping,
+                isLabelLinkedToContent: choice.props.isLabelLinkedToContent,
+                getItemState: () => choice.itemPropsState,
+                langDir: this.env.langDir,
+            };
+            if (choice.props.ltrRtlMapping) {
+                this.addLtrRtlMappedItem(choice.ltrRtlConfig);
+            }
+
+            return choice;
+        });
+    }
+    buildClickableChoices(choices) {
+        return choices.map((choice) => {
             // Select items need to have an env to get the builder component
             // behaviour (see: `useBuilderComponent()`) which is by default
             // the one from the select.
@@ -120,48 +152,88 @@ export class BuilderSearchSelect extends Component {
             const clickableChoice = useClickableBuilderComponent(choice);
             return {
                 ...choice,
-                value: choice.value || `${this.index++}`,
                 ...clickableChoice,
             };
         });
     }
-    updateChoices() {
-        const updateEditingElements = (choices) =>
-            choices
-                .map((choice) => {
-                    // Update target elements to support `applyTo` for the
-                    // select component items.
-                    const oldEnv = this.env;
-                    const applyTo = choice.props.applyTo;
-                    if (!applyTo) {
-                        // No item-level `applyTo`: use the same target as
-                        // the select, even if it defines its own `applyTo`.
-                        choice.env = oldEnv;
-                        return choice;
-                    }
-                    const editingElements = applyTo
-                        ? querySelectorAll(oldEnv.getEditingElements(), applyTo)
-                        : oldEnv.getEditingElements();
-                    choice.env = {
-                        ...oldEnv,
-                        getEditingElements: () => editingElements,
-                        getEditingElement: () => editingElements[0],
-                    };
+    updateEditingElements(choices) {
+        return choices
+            .map((choice) => {
+                // Update target elements to support `applyTo` for the
+                // select component items.
+                const oldEnv = this.env;
+                const applyTo = choice.props.applyTo;
+                if (!applyTo) {
+                    // No item-level `applyTo`: use the same target as
+                    // the select, even if it defines its own `applyTo`.
+                    choice.env = oldEnv;
                     return choice;
-                })
-                .filter((choice) => choice.env.getEditingElement());
-
-        this.state.choices = updateEditingElements(this.defaultChoices);
-        this.state.groups = this.defaultGroups.map((group) => ({
+                }
+                const editingElements = applyTo
+                    ? querySelectorAll(oldEnv.getEditingElements(), applyTo)
+                    : oldEnv.getEditingElements();
+                choice.env = {
+                    ...oldEnv,
+                    getEditingElements: () => editingElements,
+                    getEditingElement: () => editingElements[0],
+                };
+                return choice;
+            })
+            .filter((choice) => choice.env.getEditingElement());
+    }
+    adaptLtrRtlChoices(choices) {
+        return choices.map((choice) => {
+            if (choice.props.ltrRtlMapping) {
+                const defaultPropsState = {
+                    ...choice.props,
+                    title: choice.attrs.title,
+                    label: choice.label,
+                };
+                this.updateLtrRtlMappedItem(choice.ltrRtlConfig);
+                // Update the select item values.
+                choice.props = {
+                    ...choice.props,
+                    ...choice.itemPropsState,
+                };
+                choice.attrs.title = choice.itemPropsState.title;
+                choice.label = choice.itemPropsState.label;
+                // Reset `itemPropsState` to ensure subsequent item
+                // adaptations use the original props state rather
+                // than the updated one.
+                choice.itemPropsState = defaultPropsState;
+            }
+            return choice;
+        });
+    }
+    removeLtrRtlChoices(choices) {
+        return choices.map((choice) => {
+            if (choice.props.ltrRtlMapping) {
+                this.removeLtrRtlMappedItem(choice.ltrRtlConfig);
+            }
+            return choice;
+        });
+    }
+    updateChoices(callback, { updateDefaults = false, updateSelection = false } = {}) {
+        const newChoices = callback(this.defaultChoices);
+        const newGroups = this.defaultGroups.map((group) => ({
             ...group,
-            choices: updateEditingElements(group.choices),
+            choices: callback(group.choices),
         }));
-        this.selectedChoices = [
-            ...this.state.choices,
-            ...this.state.groups.flatMap((g) => g.choices || []),
-        ];
-        this.currentlySelected = this.getSelectedValue();
-        this.state.selected = this.currentlySelected;
+        if (updateDefaults) {
+            this.defaultChoices = newChoices;
+            this.defaultGroups = newGroups;
+        } else {
+            this.state.choices = newChoices;
+            this.state.groups = newGroups;
+        }
+        if (updateSelection) {
+            this.selectedChoices = [
+                ...this.state.choices,
+                ...this.state.groups.flatMap((g) => g.choices || []),
+            ];
+            this.currentlySelected = this.getSelectedValue();
+            this.state.selected = this.currentlySelected;
+        }
     }
     getSelection(value) {
         return this.selectedChoices.find((choice) => choice.value === value);

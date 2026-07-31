@@ -4,10 +4,10 @@ import {
     setupHTMLBuilder,
 } from "@html_builder/../tests/helpers";
 import { BuilderAction } from "@html_builder/core/builder_action";
-import { expect, test, describe, before } from "@odoo/hoot";
+import { expect, test, describe, before, getFixture } from "@odoo/hoot";
 import { animationFrame, click, press, waitForNone, queryAllTexts } from "@odoo/hoot-dom";
 import { xml } from "@odoo/owl";
-import { contains } from "@web/../tests/web_test_helpers";
+import { contains, onRpc } from "@web/../tests/web_test_helpers";
 
 describe.current.tags("desktop");
 
@@ -574,5 +574,89 @@ describe("LTR - RTL compatibility", () => {
         await contains(".popover [data-choice-index='1']").click();
         expect(":iframe .test-options-target").toHaveClass("class_1");
         expect(":iframe .test-options-target").not.toHaveClass("class_0");
+    });
+
+    test("Iframe and Builder RTL", async () => {
+        onRpc("/web/webclient/translations", () => ({
+            hash: "aaa",
+            lang: "ar-001",
+            lang_parameters: {
+                direction: "rtl",
+                grouping: "[3,0]",
+                date_format: "%m/%d/%Y",
+                time_format: "%H:%M:%S",
+            },
+            modules: {},
+        }));
+        getFixture().style.setProperty("direction", "rtl");
+
+        await setupHTMLBuilder(`<div class="test-options-target">Content...</div>`, {
+            iframeLangDir: "rtl",
+        });
+        await contains(":iframe .test-options-target").click();
+        await click(".we-bg-options-container .dropdown");
+        await animationFrame();
+        expect(".popover [data-choice-index='0']").toHaveAttribute("title", "Right");
+        expect(".popover [data-choice-index='1']").toHaveAttribute("title", "Left");
+
+        await contains(".popover [data-choice-index='0']").click();
+        expect(":iframe .test-options-target").toHaveClass("class_0");
+        expect(":iframe .test-options-target").not.toHaveClass("class_1");
+        await click(".we-bg-options-container .dropdown");
+        await animationFrame();
+        await contains(".popover [data-choice-index='1']").click();
+        expect(":iframe .test-options-target").toHaveClass("class_1");
+        expect(":iframe .test-options-target").not.toHaveClass("class_0");
+    });
+
+    test("Iframe LTR and Builder RTL", async () => {
+        onRpc("/web/webclient/translations", () => ({
+            hash: "aaa",
+            lang: "ar-001",
+            lang_parameters: {
+                direction: "rtl",
+                grouping: "[3,0]",
+                date_format: "%m/%d/%Y",
+                time_format: "%H:%M:%S",
+            },
+            modules: {},
+        }));
+        getFixture().style.setProperty("direction", "rtl");
+
+        await setupHTMLBuilder(`<div class="test-options-target">Content...</div>`);
+        await contains(":iframe .test-options-target").click();
+        await click(".we-bg-options-container .dropdown");
+        await animationFrame();
+        expect(".popover [data-choice-index='0']").toHaveAttribute("title", "Right");
+        expect(".popover [data-choice-index='1']").toHaveAttribute("title", "Left");
+
+        await contains(".popover [data-choice-index='0']").click();
+        expect(":iframe .test-options-target").toHaveClass("class_1");
+        expect(":iframe .test-options-target").not.toHaveClass("class_0");
+        await click(".we-bg-options-container .dropdown");
+        await animationFrame();
+        await contains(".popover [data-choice-index='1']").click();
+        expect(":iframe .test-options-target").toHaveClass("class_0");
+        expect(":iframe .test-options-target").not.toHaveClass("class_1");
+    });
+
+    test("Iframe RTL and Builder LTR", async () => {
+        await setupHTMLBuilder(`<div class="test-options-target">Content...</div>`, {
+            iframeLangDir: "rtl",
+        });
+        await contains(":iframe .test-options-target").click();
+        await click(".we-bg-options-container .dropdown");
+        await animationFrame();
+        expect(".popover [data-choice-index='0']").toHaveAttribute("title", "Left");
+        expect(".popover [data-choice-index='1']").toHaveAttribute("title", "Right");
+
+        await contains(".popover [data-choice-index='0']").click();
+        expect(":iframe .test-options-target").toHaveClass("class_1");
+        expect(":iframe .test-options-target").not.toHaveClass("class_0");
+        await click(".we-bg-options-container .dropdown");
+        await animationFrame();
+        await contains(".popover [data-choice-index='1']").click();
+        expect(":iframe .test-options-target").toHaveClass("class_0");
+        expect(":iframe .test-options-target").not.toHaveClass("class_1");
     });
 });

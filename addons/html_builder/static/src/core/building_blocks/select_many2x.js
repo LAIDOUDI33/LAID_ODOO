@@ -44,7 +44,6 @@ export class SelectMany2X extends Component {
     static components = { SelectMenu, SelectMany2XCreate };
 
     setup() {
-        super.setup();
         this.orm = useService("orm");
         this.cachedModel = useCachedModel();
         this.prevSelectedIds = undefined;

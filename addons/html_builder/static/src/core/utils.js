@@ -240,37 +240,8 @@ export function useGetItemValue() {
     };
 }
 
-export function useSelectableComponent(id, { onItemChange } = {}) {
-    useBuilderComponent();
-    const selectableItems = [];
+export function useLtrRtlHandler() {
     const ltrRtlMappedItems = new Map();
-    const refreshCurrentItemDebounced = useDebounced(refreshCurrentItem, 0, { immediate: true });
-    const env = useEnv();
-
-    const state = proxy({
-        currentSelectedItem: null,
-    });
-
-    function refreshCurrentItem() {
-        if (env.editor.isDestroyed || env.editor.shared.history.getIsPreviewing()) {
-            return;
-        }
-        let currentItem;
-        let itemPriority = 0;
-        for (const selectableItem of selectableItems) {
-            if (selectableItem.isApplied() && selectableItem.priority >= itemPriority) {
-                currentItem = selectableItem;
-                itemPriority = selectableItem.priority;
-            }
-        }
-        if (currentItem && currentItem !== toRaw(state.currentSelectedItem)) {
-            state.currentSelectedItem = currentItem;
-            env.dependencyManager.triggerDependencyUpdated();
-        }
-        if (currentItem) {
-            onItemChange?.(currentItem);
-        }
-    }
 
     onMounted(() => {
         for (const [ltrRtlMapping, mappedItems] of ltrRtlMappedItems.entries()) {
@@ -336,6 +307,65 @@ export function useSelectableComponent(id, { onItemChange } = {}) {
         }
     }
 
+    return {
+        addLtrRtlMappedItem: (item) => {
+            if (!ltrRtlMappedItems.has(item.ltrRtlMapping)) {
+                ltrRtlMappedItems.set(item.ltrRtlMapping, [item]);
+            } else {
+                ltrRtlMappedItems.get(item.ltrRtlMapping).push(item);
+            }
+        },
+        removeLtrRtlMappedItem: (item) => {
+            const mappedItems = ltrRtlMappedItems.get(item.ltrRtlMapping);
+            if (!mappedItems) {
+                return;
+            }
+            if (mappedItems.length === 1) {
+                ltrRtlMappedItems.delete(item.ltrRtlMapping);
+                return;
+            }
+            const index = mappedItems.indexOf(item);
+            if (index !== -1) {
+                mappedItems.splice(index, 1);
+            }
+        },
+        updateLtrRtlMappedItem: handleLtrRtl,
+    };
+}
+
+export function useSelectableComponent(id, { onItemChange } = {}) {
+    useBuilderComponent();
+    const selectableItems = [];
+    const refreshCurrentItemDebounced = useDebounced(refreshCurrentItem, 0, { immediate: true });
+    const env = useEnv();
+
+    const state = proxy({
+        currentSelectedItem: null,
+    });
+
+    const { addLtrRtlMappedItem, removeLtrRtlMappedItem, updateLtrRtlMappedItem } = useLtrRtlHandler();
+
+    function refreshCurrentItem() {
+        if (env.editor.isDestroyed || env.editor.shared.history.getIsPreviewing()) {
+            return;
+        }
+        let currentItem;
+        let itemPriority = 0;
+        for (const selectableItem of selectableItems) {
+            if (selectableItem.isApplied() && selectableItem.priority >= itemPriority) {
+                currentItem = selectableItem;
+                itemPriority = selectableItem.priority;
+            }
+        }
+        if (currentItem && currentItem !== toRaw(state.currentSelectedItem)) {
+            state.currentSelectedItem = currentItem;
+            env.dependencyManager.triggerDependencyUpdated();
+        }
+        if (currentItem) {
+            onItemChange?.(currentItem);
+        }
+    }
+
     if (id) {
         useDependencyDefinition(id, {
             type: "select",
@@ -367,28 +397,9 @@ export function useSelectableComponent(id, { onItemChange } = {}) {
             items: selectableItems,
             refreshCurrentItem: () => refreshCurrentItem(),
             getSelectableState: () => state,
-            addLtrRtlMappedItem: (item) => {
-                if (!ltrRtlMappedItems.has(item.ltrRtlMapping)) {
-                    ltrRtlMappedItems.set(item.ltrRtlMapping, [item]);
-                } else {
-                    ltrRtlMappedItems.get(item.ltrRtlMapping).push(item);
-                }
-            },
-            removeLtrRtlMappedItem: (item) => {
-                const mappedItems = ltrRtlMappedItems.get(item.ltrRtlMapping);
-                if (!mappedItems) {
-                    return;
-                }
-                if (mappedItems.length === 1) {
-                    ltrRtlMappedItems.delete(item.ltrRtlMapping);
-                    return;
-                }
-                const index = mappedItems.indexOf(item);
-                if (index !== -1) {
-                    mappedItems.splice(index, 1);
-                }
-            },
-            updateLtrRtlMappedItem: handleLtrRtl,
+            addLtrRtlMappedItem,
+            removeLtrRtlMappedItem,
+            updateLtrRtlMappedItem,
         },
     });
 }

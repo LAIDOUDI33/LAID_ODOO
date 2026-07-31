@@ -1433,13 +1433,13 @@ test("Changing field type removes data-fill-with attribute", async () => {
 
     // Change the field type to custom field.
     await contains(":iframe input[type='text'][data-fill-with='commercial_company_name']").click();
-    await contains(".hb-row[data-label='Type'] button.o-hb-select-toggle").click();
+    await contains(".options-container [data-label='Type'] button").click();
     await contains(".o_popover [data-action-value='email']").click();
     expect(":iframe input[type='email']").not.toHaveAttribute("data-fill-with");
 
     // Change the field type to existing field.
     await contains(":iframe input[type='tel'][data-fill-with='phone']").click();
-    await contains(".hb-row[data-label='Type'] button.o-hb-select-toggle").click();
+    await contains(".options-container [data-label='Type'] button").click();
     await contains(".o_popover [data-action-value='cc']").click();
     expect(":iframe input[name='cc']").not.toHaveAttribute("data-fill-with");
 });
