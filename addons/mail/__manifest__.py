@@ -94,6 +94,7 @@ For more specific needs, you may also assign custom-defined actions
         'views/res_config_settings_views.xml',
         'data/mail_templates_chatter.xml',
         'data/ir_config_parameter_data.xml',
+        'data/ir_asset_data.xml',
         'data/res_partner_data.xml',
         'data/mail_message_subtype_data.xml',
         'data/mail_templates_email_layouts.xml',
