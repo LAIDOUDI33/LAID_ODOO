@@ -113,7 +113,6 @@ export class DynamicSnippetProducts extends DynamicSnippetCarousel {
         const dataset = this.el.dataset;
         return Object.assign(super.getQWebRenderOptions(...arguments), {
             gridColumns: parseInt(dataset.gridColumns) || 4,
-            gridGap: dataset.gridGap || "1rem",
             mobileColumns: parseInt(dataset.mobileColumns) || 2,
         });
     }

@@ -50,7 +50,7 @@
 
     .s_dynamic_snippet_grid_container {
         display: grid;
-        gap: var(--ds-grid-gap, 1rem);
+        gap: var(--o-wsale-products-grid-gap, 16px);
 
         grid-template-columns: repeat(
             attr(data-grid-columns number),

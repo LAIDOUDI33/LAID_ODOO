@@ -6,7 +6,6 @@
             class="s_dynamic_snippet_grid_container py-3"
             t-att-data-grid-columns="gridColumns"
             t-att-data-mobile-columns="mobileColumns"
-            t-att-style="'--ds-grid-gap: ' + gridGap"
         >
             <t t-foreach="data" t-as="record" t-key="record_index">
                 <t t-out="record"/>
