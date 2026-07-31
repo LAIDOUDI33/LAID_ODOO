@@ -2,6 +2,7 @@ import { Plugin } from "@html_editor/plugin";
 import { closestBlock, isBlock } from "@html_editor/utils/blocks";
 import {
     allowsParagraphRelatedElements,
+    isContentEditable,
     isEmpty,
     isNotEditableNode,
     isPhrasingContent,
@@ -37,17 +38,35 @@ export class SelectionPlaceholderPlugin extends Plugin {
                 return true;
             }
         },
+<<<<<<< 89cf65958246c424bd4e6305a421de59da4aa1b1
         is_selection_blocker_predicates: (blocker) => {
             if (isNotEditableNode(blocker)) {
                 return isBlock(blocker);
+||||||| bbafbbd8950ec7123ab652851ede5479484eee26
+        selection_blocker_predicates: (blocker) => {
+            if (isNotEditableNode(blocker)) {
+                return isBlock(blocker);
+=======
+        selection_blocker_predicates: (blocker) => {
+            if (
+                (blocker.nodeType === Node.ELEMENT_NODE &&
+                    blocker.hasAttribute(PLACEHOLDER_ATTRIBUTE)) ||
+                !isBlock(blocker)
+            ) {
+                return false;
+            } else if (isNotEditableNode(blocker)) {
+                return true;
+>>>>>>> ea09195cbc6c2546bbdd3c8c3a4b283fd759d29c
             }
         },
         can_contain_selection_placeholder_predicates: (container) => {
             if (
-                container.getAttribute("contenteditable") === "true" &&
-                !isPhrasingContent(container) &&
-                allowsParagraphRelatedElements(container)
+                !isContentEditable(container) ||
+                isPhrasingContent(container) ||
+                !allowsParagraphRelatedElements(container)
             ) {
+                return false;
+            } else if (container.getAttribute("contenteditable") === "true") {
                 return true;
             }
         },
