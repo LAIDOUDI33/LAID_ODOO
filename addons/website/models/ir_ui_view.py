@@ -5,6 +5,8 @@ import logging
 import uuid
 import werkzeug
 
+from lxml import etree
+
 from odoo import api, fields, models
 from odoo import tools
 from odoo.addons.website.tools import add_form_signature
@@ -435,6 +437,40 @@ class View(models.Model):
                 return False
         return True
 
+    @api.model
+    def _read_template(self, view_id):
+        if self.env.context.get('inherit_branding_restricted_user'):
+            # Restricted editors only get branding (= frontend editability)
+            # on the views they will be allowed to save, so that the save
+            # check and the branding decision cannot diverge. The branding
+            # has to be removed before it is distributed, while every branded
+            # node still carries the id of the view it comes from.
+            arch_tree = self.browse(view_id)._get_combined_arch()
+            self._remove_forbidden_branding(arch_tree)
+            self.distribute_branding(arch_tree)
+            return etree.tostring(arch_tree, encoding='unicode')
+        return super()._read_template(view_id)
+
+    def _remove_forbidden_branding(self, arch_tree):
+        """ Strip the branding of the views the current user is not allowed
+        to modify, leaving them read-only in the frontend editor. """
+        website = self.env['website'].browse(self.env.context.get('website_id'))
+        can_modify = {}
+        for node in arch_tree.iter(etree.Element):
+            if node.get('data-oe-model') != 'ir.ui.view':
+                continue
+            view_id = int(node.get('data-oe-id'))
+            if view_id not in can_modify:
+                try:
+                    # Check permissions as the current user.
+                    website._check_user_can_modify(self.browse(view_id).sudo(False))
+                    can_modify[view_id] = True
+                except AccessError:
+                    can_modify[view_id] = False
+            if not can_modify[view_id]:
+                for attr in ('data-oe-model', 'data-oe-id', 'data-oe-field', 'data-oe-xpath'):
+                    node.attrib.pop(attr, None)
+
     def _render_template(self, template, values=None):
         """ Render the template. If website is enabled on request, then extend rendering context with website values. """
         view = self._get(template).sudo()
@@ -455,7 +491,7 @@ class View(models.Model):
             return super(View, self).get_default_lang_code()
 
     def _read_template_keys(self):
-        return super(View, self)._read_template_keys() + ['website_id']
+        return super()._read_template_keys() + ['website_id', 'inherit_branding_restricted_user']
 
     @api.model
     def _save_oe_structure_hook(self):
