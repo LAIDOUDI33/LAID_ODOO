@@ -64,6 +64,10 @@ export function defineWebsiteModels({ includeMailModels = true } = {}) {
     defineModels([Website, IrUiView]);
     onRpc("/website/get_current_website_id", () => 1);
     onRpc("/website/theme_customize_data_get", () => []);
+    onRpc("/website/search_scopes", () => [
+        { searchType: "all", label: "Everything", url: "/website/search" },
+        { searchType: "pages", label: "Pages", url: "/pages" },
+    ]);
     onRpc("website", "web_search_read", () => ({
         length: 1,
         records: [
