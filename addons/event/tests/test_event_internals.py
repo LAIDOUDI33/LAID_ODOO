@@ -1018,3 +1018,85 @@ class TestEventTypeData(TestEventInternalsCommon):
         event_type.write({'has_seats_limitation': False})
         self.assertFalse(event_type.has_seats_limitation)
         self.assertEqual(event_type.seats_max, 0)
+
+
+@tagged('event_event', 'post_install', '-at_install')
+class TestEventTicketTranslations(EventCase):
+
+    @users('user_eventmanager')
+    def test_event_configuration_ticket_translations_from_type(self):
+        """ Ensure ticket translations are copied from Event Type on Event creation """
+        self.env['res.lang'].sudo()._activate_lang('nl_NL')
+
+        event_type = self.env['event.type'].create({
+            'name': 'Event Type',
+            'event_type_ticket_ids': [Command.create({
+                'name': 'VIP Ticket',
+                'seats_max': 10,
+            })],
+        })
+        event_type_ticket_nl = event_type.event_type_ticket_ids.with_context(lang='nl_NL')
+        event_type_ticket_nl.name = 'VIP Kaartje'
+
+        event = self.env['event.event'].with_context(lang='nl_NL').create({
+            'name': 'Event Update Type',
+            'event_type_id': event_type.id,
+            'date_begin': FieldsDatetime.to_string(datetime.today() + timedelta(days=1)),
+            'date_end': FieldsDatetime.to_string(datetime.today() + timedelta(days=15)),
+        })
+
+        event_ticket = event.event_ticket_ids[0]
+        self.assertEqual(event_ticket.with_context(lang='en_US').name, 'VIP Ticket')
+        self.assertEqual(event_ticket.with_context(lang='nl_NL').name, 'VIP Kaartje')
+
+    @users('user_eventmanager')
+    def test_event_configuration_ticket_translations_from_type_onchange(self):
+        """ Ensure ticket translations are copied when assigning a template on a form """
+        self.env['res.lang'].sudo()._activate_lang('nl_NL')
+
+        event_type = self.env['event.type'].create({
+            'name': 'Event Type',
+            'event_type_ticket_ids': [Command.create({
+                'name': 'VIP Ticket',
+                'seats_max': 10,
+            })],
+        })
+        event_type.event_type_ticket_ids.with_context(lang='nl_NL').name = 'VIP Kaartje'
+
+        event = self.env['event.event'].create({
+            'name': 'Event',
+            'date_begin': FieldsDatetime.to_string(datetime.today() + timedelta(days=1)),
+            'date_end': FieldsDatetime.to_string(datetime.today() + timedelta(days=15)),
+        })
+        event_form = Form(event.with_context(lang='nl_NL'))
+        event_form.event_type_id = event_type
+        event = event_form.save()
+
+        event_ticket = event.event_ticket_ids[0]
+        self.assertEqual(event_ticket.with_context(lang='en_US').name, 'VIP Ticket')
+        self.assertEqual(event_ticket.with_context(lang='nl_NL').name, 'VIP Kaartje')
+
+    @users('user_eventmanager')
+    def test_event_configuration_ticket_translations_from_type_new_event_form(self):
+        """ Ensure ticket translations are copied when creating an event from a form """
+        self.env['res.lang'].sudo()._activate_lang('nl_NL')
+
+        event_type = self.env['event.type'].create({
+            'name': 'Event Type',
+            'event_type_ticket_ids': [Command.create({
+                'name': 'VIP Ticket',
+                'seats_max': 10,
+            })],
+        })
+        event_type.event_type_ticket_ids.with_context(lang='nl_NL').name = 'VIP Kaartje'
+
+        event_form = Form(self.env['event.event'].with_context(lang='nl_NL'))
+        event_form.name = 'Event'
+        event_form.date_begin = FieldsDatetime.to_string(datetime.today() + timedelta(days=1))
+        event_form.date_end = FieldsDatetime.to_string(datetime.today() + timedelta(days=15))
+        event_form.event_type_id = event_type
+        event = event_form.save()
+
+        event_ticket = event.event_ticket_ids[0]
+        self.assertEqual(event_ticket.with_context(lang='en_US').name, 'VIP Ticket')
+        self.assertEqual(event_ticket.with_context(lang='nl_NL').name, 'VIP Kaartje')
