@@ -1450,6 +1450,7 @@ class SaleOrder(models.Model):
             "name": self.env._("Discount"),
             "type": "ir.actions.act_window",
             "res_model": "sale.order.discount",
+            "views": [(False, "form")],
             "view_mode": "form",
             "target": "new",
         }
@@ -1784,10 +1785,10 @@ class SaleOrder(models.Model):
 
         txs_to_be_linked = self.sudo().transaction_ids.filtered(
             lambda tx: (
-                tx.state in ('pending', 'authorized')
+                tx.state in ("pending", "authorized")
                 or (
-                    tx.state == 'done'
-                    and tx.payment_id.move_id.state == 'posted'
+                    tx.state == "done"
+                    and tx.payment_id.move_id.state == "posted"
                     and not tx.payment_id.is_reconciled
                 )
             )

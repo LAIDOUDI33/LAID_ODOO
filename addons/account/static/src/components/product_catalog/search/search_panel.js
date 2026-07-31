@@ -2,10 +2,10 @@ import { onWillStart, proxy } from '@odoo/owl';
 import { getActiveHotkey } from '@web/core/hotkeys/hotkey_service';
 import { rpc } from '@web/core/network/rpc';
 import { useBus } from '@web/core/utils/hooks';
-import { SearchPanel } from '@web/search/search_panel/search_panel';
+import { ProductCatalogSearchPanel } from "@product/product_catalog/product_catalog_search_panel";
 
 
-export class AccountProductCatalogSearchPanel extends SearchPanel {
+export class AccountProductCatalogSearchPanel extends ProductCatalogSearchPanel {
     static template = 'account.ProductCatalogSearchPanel';
 
     setup() {
