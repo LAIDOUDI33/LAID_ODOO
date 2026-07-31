@@ -914,18 +914,25 @@ class AccountMoveLine(models.Model):
         user on the UI with draft moves and the dynamic lines are synchronized only when saving the record.
         """
         AccountTax = self.env['account.tax']
-        for line in self:
-            # TODO remove the need of cogs lines to have a price_subtotal/price_total
-            if line.display_type not in ('product', 'cogs', 'non_deductible_product', 'non_deductible_product_total') or not line.move_id:
-                line.price_total = line.price_subtotal = False
-                continue
+        relevant_types = ('product', 'cogs', 'non_deductible_product', 'non_deductible_product_total')
+        lines_to_compute = self.filtered(lambda line: line.display_type in relevant_types and line.move_id)
+        (self - lines_to_compute).price_total = (self - lines_to_compute).price_subtotal = False
 
-            company = line.company_id or self.env.company
-            base_line = line.move_id._prepare_product_base_line_for_taxes_computation(line)
-            AccountTax._add_tax_details_in_base_line(base_line, company)
-            AccountTax._round_base_lines_tax_details([base_line], company)
-            line.price_subtotal = base_line['tax_details']['total_excluded_currency']
-            line.price_total = base_line['tax_details']['total_included_currency']
+        for move in lines_to_compute.move_id:
+            company = move.company_id or self.env.company
+            move_lines = move.line_ids if move.id else move.invoice_line_ids
+            siblings = move_lines.filtered(lambda line: line.display_type in relevant_types)
+            base_lines = [move._prepare_product_base_line_for_taxes_computation(line) for line in siblings]
+            AccountTax._add_tax_details_in_base_lines(base_lines, company)
+            AccountTax._round_base_lines_tax_details(base_lines, company)
+            for line, base_line in zip(siblings, base_lines):
+                if line in lines_to_compute:
+                    tax_details = base_line['tax_details']
+                    price_subtotal = tax_details['total_excluded_currency'] + tax_details['delta_total_excluded_currency']
+                    line.price_subtotal = price_subtotal
+                    line.price_total = price_subtotal + sum(
+                        tax_data['tax_amount_currency'] for tax_data in tax_details['taxes_data']
+                    )
 
     @api.depends('product_id', 'product_uom_id')
     def _compute_price_unit(self):
