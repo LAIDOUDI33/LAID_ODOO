@@ -355,17 +355,6 @@ class SaleOrder(models.Model):
             "website_sale.require_billing_details_for_services", True
         )
 
-    def _get_remaining_minimum_qty(self, product):
-        """Compute the remaining minimum quantity to order for a product.
-
-        :param product: the product to check.
-        :return: the remaining minimum quantity to order for the product
-        """
-        minimum_qty = product.minimum_qty
-        cart_quantity_base = self._get_cart_qty(product.id)
-
-        return minimum_qty - cart_quantity_base
-
     def _update_address(self, partner_id, fnames=None):
         if not fnames:
             return
@@ -587,6 +576,21 @@ class SaleOrder(models.Model):
     def _verify_updated_quantity(self, order_line, product_id, new_qty, uom_id, **_kwargs):  # noqa: ARG002, PLR6301
         self.ensure_one()
         product = self.env["product.product"].browse(product_id)
+
+        if product.minimum_qty:
+            uom = self.env["uom.uom"].browse(uom_id)
+            product_uom = product.uom_id
+
+            old_qty = order_line.product_uom_qty if order_line else 0
+            old_qty_in_product_uom = uom._compute_quantity(old_qty, product_uom)
+            remaining_min_qty = self._get_remaining_minimum_qty(
+                product, exclude_qty=old_qty_in_product_uom
+            )
+            if remaining_min_qty:
+                min_qty = product_uom._compute_quantity(remaining_min_qty, uom, round=False)
+                min_qty = float_round(min_qty, precision_digits=0, rounding_method="UP")
+                new_qty = max(new_qty, min_qty)
+
         if product.is_storable and not product.allow_out_of_stock_order:
             uom = self.env["uom.uom"].browse(uom_id)
             product_uom = product.uom_id
@@ -597,6 +601,23 @@ class SaleOrder(models.Model):
             product_qty_in_cart = product_uom._compute_quantity(product_qty_in_cart, uom)
             available_qty = product_uom._compute_quantity(available_qty, uom, round=False)
             available_qty = float_round(available_qty, precision_digits=0, rounding_method="DOWN")
+
+            if product.minimum_qty:
+                min_qty = float_round(
+                    product_uom._compute_quantity(product.minimum_qty, uom, round=False),
+                    precision_digits=0,
+                    rounding_method="UP",
+                )
+                if available_qty < min_qty:
+                    if order_line:
+                        warning = order_line._get_shop_warning_stock(min_qty, available_qty)
+                    else:
+                        warning = self.env._(
+                            "%(product_name)s was not added to your cart because it is"
+                            " unavailable.",
+                            product_name=product.display_name,
+                        )
+                    return 0, warning
 
             old_qty = order_line.product_uom_qty if order_line else 0
             added_qty = new_qty - old_qty
@@ -638,9 +659,7 @@ class SaleOrder(models.Model):
 
         if quantity <= 0:
             # Remove zero or negative lines
-            product = order_line.product_id
             order_line.unlink()
-            self._ensure_minimum_qty_after_removal(product)
             return self.env["sale.order.line"]
 
         # Update existing line
@@ -679,28 +698,6 @@ class SaleOrder(models.Model):
             order_line._check_validity()
 
         return order_line
-
-    def _ensure_minimum_qty_after_removal(self, product):
-        """Re-enforce the minimum quantity for product after one of its cart lines was removed.
-
-        :param product.product product: the product whose line was just removed.
-        """
-        self.ensure_one()
-        remaining_lines = self.order_line.filtered(lambda sol: sol.product_id == product)
-        if not remaining_lines:
-            return
-
-        remaining_min_qty = self._get_remaining_minimum_qty(product)
-        if remaining_min_qty <= 0:
-            return
-
-        target_line = min(
-            remaining_lines, key=lambda sol: sol.product_uom_id._compute_quantity(1, product.uom_id)
-        )
-        added_qty = product.uom_id._compute_quantity(remaining_min_qty, target_line.product_uom_id)
-        target_line.product_uom_qty += int(
-            float_round(added_qty, precision_digits=0, rounding_method="UP")
-        )
 
     def _prepare_order_line_update_values(self, order_line, quantity, **_kwargs):
         self.ensure_one()
@@ -1420,6 +1417,16 @@ class SaleOrder(models.Model):
 
     def _get_free_qty(self, product):
         return self.website_id._get_product_available_qty(product)
+
+    def _get_remaining_minimum_qty(self, product, exclude_qty=0.0):
+        """Compute the remaining minimum quantity to order for a product.
+
+        :param product: the product to check.
+        :param float exclude_qty: quantity, in the product's uom, to exclude from the current
+            cart quantity (e.g. the quantity of the line being updated).
+        :return: the remaining minimum quantity to order for the product
+        """
+        return max(product.minimum_qty - self._get_cart_qty(product.id) + exclude_qty, 0)
 
     def _all_product_available(self):
         """Whether all the products are available on the current website."""

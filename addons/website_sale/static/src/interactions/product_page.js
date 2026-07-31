@@ -410,11 +410,11 @@ export class ProductPage extends Interaction {
      * @param {Object} combination
      */
     _updateMinimumQuantity(parent, combination) {
-        const minQtyInput = parent.querySelector('input[name="add_qty"]');
-        const minimumQty = Math.max(1, combination.minimum_qty);
-        minQtyInput.dataset.min = minimumQty;
-        if (minQtyInput.value < minimumQty) {
-            minQtyInput.value = minimumQty;
+        const addQtyInput = parent.querySelector('input[name="add_qty"]');
+        const minimumQty = combination.minimum_qty || 1;
+        addQtyInput.dataset.min = minimumQty;
+        if (addQtyInput.value < minimumQty) {
+            addQtyInput.value = minimumQty;
         }
     }
 
@@ -821,7 +821,13 @@ export class ProductPage extends Interaction {
                     addQtyInput.value = addQtyInput.dataset.max;
                 }
             }
-            if (combination.free_qty < 1 && !combination.prevent_sale) {
+            combination.minimum_qty_unreachable = (
+                'minimum_qty' in combination && combination.free_qty < combination.minimum_qty
+            );
+            if (
+                (combination.free_qty < 1 || combination.minimum_qty_unreachable)
+                && !combination.prevent_sale
+            ) {
                 ctaWrapper.classList.replace('d-flex', 'd-none');
                 ctaWrapper.classList.add('out_of_stock');
             }
