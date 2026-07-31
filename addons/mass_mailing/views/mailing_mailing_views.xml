@@ -75,7 +75,6 @@
                 <form string="Mailing" class="o_mass_mailing_mailing_form">
                     <header>
                         <button name="action_use_template" type="object" class="oe_highlight" string="Use this" invisible="not is_template or not body_arch"/>
-                        <button name="action_duplicate" type="object" class="btn-secondary" string="Duplicate" data-hotkey="d" invisible="not is_template or not body_arch"/>
                         <button name="action_launch" type="object" class="oe_highlight" string="Send"
                             invisible="is_template or state in ('in_queue', 'sending', 'done')" data-hotkey="q"
                             confirm="Once you send these emails, they'll be making a grand entrance in all the inboxes, creating quite the buzz!"
@@ -85,7 +84,7 @@
                             invisible="is_template or state in ('in_queue', 'sending', 'done')" data-hotkey="v"/>
                         <button name="action_retry_failed" type="object" invisible="is_template or state != 'done' or failed == 0" string="Retry" data-hotkey="y"/>
                         <button name="action_duplicate" type="object" class="btn-secondary" string="Duplicate"
-                            data-hotkey="d" invisible="is_template or state != 'done'"/>
+                            data-hotkey="d" invisible="not is_template and state != 'done'"/>
                         <button name="action_preview" type="object" class="btn-secondary" string="Preview" data-hotkey="k" invisible="is_template or not body_html or is_body_empty or state == 'done'"/>
                         <button name="action_test" type="object" class="btn-secondary" string="Test" data-hotkey="t" invisible="is_template or not body_html or is_body_empty or state == 'done'"/>
                         <button name="action_cancel" type="object" invisible="is_template or state != 'in_queue'" class="btn-secondary" string="Cancel" data-hotkey="x"/>
@@ -280,7 +279,7 @@
                                             options="{'dynamic_placeholder': true, 'dynamic_placeholder_model_reference_field': 'mailing_model_real'}"
                                             readonly="state in ('sending', 'done')"
                                             widget="mailing_char_emojis" placeholder="This text will appear in inboxes, next to the subject"/>
-                                        <field name="email_from" readonly="state in ('sending', 'done')"/>
+                                        <field name="email_from" readonly="state in ('sending', 'done')" required="not is_template"/>
                                         <label for="reply_to"/>
                                         <div name="reply_to_details">
                                             <field name="reply_to_mode" widget="radio"
@@ -586,8 +585,7 @@
                             <field name="color" widget="kanban_color_picker"/>
                         </t>
                         <t t-name="card">
-                            <field name="body_arch" widget="mailing_template_kanban_card"
-                                options="{'inline_field': 'body_html', 'dynamic_placeholder': true}" readonly="1"/>
+                            <field name="body_arch" widget="mailing_template_kanban_card" readonly="1"/>
                             <div class="o_mailing_template_info">
                                 <div class="o_kanban_title my-1 text-truncate fs-3 fw-bold">
                                     <field name="subject"/>
@@ -628,7 +626,7 @@
                 <p class="o_view_nocontent_smiling_face">
                 No Templates Yet
                 </p><p>
-                Use the Save as Template under the <i class="fa fa-fw fa-cog"></i> button to save mailings to your Template Library.
+                Click <i class="fa fa-fw fa-cog"></i> and select <b>Save as Template</b> to save your mailings, or create a new template from scratch here.
                 </p>
             </field>
         </record>

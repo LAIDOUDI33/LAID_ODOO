@@ -135,7 +135,7 @@
                 <attribute name="invisible">mailing_type != 'mail'</attribute>
             </xpath>
             <xpath expr="//field[@name='reply_to']" position="attributes">
-                <attribute name="required">mailing_type == 'mail'</attribute>
+                <attribute name="required">not is_template and mailing_type == 'mail'</attribute>
             </xpath>
             <xpath expr="//div[@name='reply_to_details']" position="attributes">
                 <attribute name="invisible">mailing_type != 'mail'</attribute>

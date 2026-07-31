@@ -236,7 +236,7 @@ class MailingMailing(models.Model):
         'The A/B Testing Percentage needs to be between 0 and 100%',
     )
     _email_from = models.Constraint(
-        "CHECK(email_from IS NOT NULL OR mailing_type != 'mail')",
+        "CHECK(is_template = true OR email_from IS NOT NULL OR mailing_type != 'mail')",
         "email from is required for mailing"
     )
 
@@ -847,14 +847,17 @@ class MailingMailing(models.Model):
 
     def action_use_template(self):
         self.ensure_one()
-        if mass_mailing_copy := self.copy(default={"is_template": False}):
-            return {
-                'type': 'ir.actions.act_window',
-                'view_mode': 'form',
-                'res_model': 'mailing.mailing',
-                'res_id': mass_mailing_copy.id,
-                'context': {**self.env.context, 'default_is_template': 0},
-            }
+        return {
+            'type': 'ir.actions.act_window',
+            'view_mode': 'form',
+            'res_model': 'mailing.mailing',
+            'context': {
+                **self.env.context,
+                'default_is_template': 0, 'default_subject': self.subject,
+                'default_mailing_model_id': self.mailing_model_id.id, 'default_body_arch': self.body_arch,
+                'default_body_html': self.body_html, 'default_user_id': self.user_id.id
+            },
+        }
 
     # ------------------------------------------------------
     # A/B Test

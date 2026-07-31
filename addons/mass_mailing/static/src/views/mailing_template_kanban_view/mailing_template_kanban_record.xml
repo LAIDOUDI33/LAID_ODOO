@@ -2,7 +2,7 @@
 <templates xml:space="preserve">
     <t t-name="mass_mailing.KanbanMenu" t-inherit="web.KanbanMenu">
         <xpath expr="//div[hasclass('o_dropdown_kanban')]" position="attributes">
-            <attribute name="style" add="top: 380px !important;" separator=" "/>
+            <attribute name="style" add="top: 380px !important; visibility: visible;" separator=" "/>
         </xpath>
     </t>
 
