@@ -14,9 +14,9 @@ class TestRevoke(ProxyCommon):
         return self.env['oauth.client'].search([('client_id', '=', client_id)])
 
     def _seed_remote_client(self):
-        return self.env['oauth.proxy.remote.client'].create({
-            'db_url': FAKE_DB_URL, 'odoo_client_id': 'odoo-client-abc', 'odoo_client_secret': 'odoo-secret',
-        })
+        return self.env['oauth.proxy.remote.client']._register_remote_client(
+            db_url=FAKE_DB_URL, odoo_client_id='odoo-client-abc', odoo_client_secret='odoo-secret',
+        )
 
     def _seed_token(self, access_token, remote_client, client_record, refresh_token):
         self.env['oauth.proxy.token']._store(access_token, refresh_token, remote_client, client_record)

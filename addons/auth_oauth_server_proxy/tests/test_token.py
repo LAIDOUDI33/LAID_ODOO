@@ -1,6 +1,7 @@
 from unittest.mock import patch
 
 from odoo.tests import tagged
+from odoo.tools import SQL
 
 from .common import CLIENT_REDIRECT_URI, FAKE_DB_URL, REAL_CODE, ProxyCommon, _FakeResponse
 
@@ -16,9 +17,9 @@ class TestToken(ProxyCommon):
         return self.env['oauth.client'].search([('client_id', '=', client_id)])
 
     def _seed_remote_client(self, db_url=FAKE_DB_URL):
-        return self.env['oauth.proxy.remote.client'].create({
-            'db_url': db_url, 'odoo_client_id': 'odoo-client-abc', 'odoo_client_secret': 'odoo-secret',
-        })
+        return self.env['oauth.proxy.remote.client']._register_remote_client(
+            db_url=db_url, odoo_client_id='odoo-client-abc', odoo_client_secret='odoo-secret',
+        )
 
     def _seed_code(self, code, remote_client, client_record, redirect_uri=CLIENT_REDIRECT_URI):
         self.env['oauth.proxy.authorization.code']._store(code, remote_client, client_record, redirect_uri=redirect_uri)
@@ -70,14 +71,22 @@ class TestToken(ProxyCommon):
         self.assertEqual(len(token_row), 1)
         self.assertEqual(token_row.remote_client_id.db_url, FAKE_DB_URL)
         self.assertEqual(token_row.client_id, inbound_client)
-        self.assertNotEqual(token_row.access_token_hash, 'odoo-raw-apikey')  # never stored in plaintext
+        # access_token_hash isn't an ORM field (kept out of the ORM on purpose, see
+        # oauth.proxy.token's _auto=False): read it back with raw SQL to assert it's never
+        # stored in plaintext.
+        self.env.cr.execute(SQL(
+            "SELECT access_token_hash FROM %(table)s WHERE id = %(id)s",
+            table=SQL.identifier(token_row._table), id=token_row.id,
+        ))
+        [access_token_hash] = self.env.cr.fetchone()
+        self.assertNotEqual(access_token_hash, 'odoo-raw-apikey')
 
         found_row = self.env['oauth.proxy.token']._find_by_access_token('odoo-raw-apikey', inbound_client)
         self.assertEqual(found_row.remote_client_id.db_url, FAKE_DB_URL)
         self.assertTrue(self.env['oauth.proxy.token']._find_by_refresh_token('odoo-raw-refresh', inbound_client))
 
         # The code itself must be single-use: it can no longer be found once redeemed.
-        self.assertFalse(self.env['oauth.proxy.authorization.code']._find(REAL_CODE, inbound_client))
+        self.assertFalse(self.env['oauth.proxy.authorization.code']._find(REAL_CODE, inbound_client, CLIENT_REDIRECT_URI))
 
     @patch('odoo.addons.auth_oauth_server_proxy.controllers.oauth_server_controller.requests.post')
     def test_code_routes_to_the_database_it_was_issued_by(self, mock_post):
@@ -108,7 +117,7 @@ class TestToken(ProxyCommon):
         })
         self.assertEqual(response.status_code, 400)
         # The code must still be usable with the redirect_uri it was actually issued to.
-        self.assertTrue(self.env['oauth.proxy.authorization.code']._find(REAL_CODE, inbound_client))
+        self.assertTrue(self.env['oauth.proxy.authorization.code']._find(REAL_CODE, inbound_client, CLIENT_REDIRECT_URI))
 
     def test_malformed_code_is_rejected(self):
         response = self.url_open('/oauth/token', data={

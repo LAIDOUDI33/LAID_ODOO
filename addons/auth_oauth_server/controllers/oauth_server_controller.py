@@ -8,7 +8,7 @@ from odoo.addons.auth_oauth_server_base.controllers.oauth_server_controller_base
 from odoo.addons.auth_oauth_server_base.utils.oauth_utils import oauth_base_url
 
 from odoo.addons.auth_oauth_server.utils.oauth_utils import get_resource
-from odoo.addons.auth_oauth_server_base.types.types import ClientRegistrationResult, ClientType, TokenGrantResult
+from odoo.addons.auth_oauth_server_base.types.types import TokenGrantResult
 from odoo.http import request
 
 
@@ -25,9 +25,8 @@ class OauthServerController(OauthServerControllerBase):
     # Client Registration
     # ------------------------------------------------------
 
-    def _register_client(self, resource_name: str, client_name: str, redirect_uris: list[str], client_type: ClientType) -> ClientRegistrationResult:
+    def _check_resource(self, resource_name: str) -> None:
         get_resource(self.env, resource_name)
-        return request.env['oauth.client']._register_client(resource_name, client_name, redirect_uris, client_type)
 
     # ------------------------------------------------------
     # Authorization Code Generation
@@ -58,8 +57,7 @@ class OauthServerController(OauthServerControllerBase):
 
     @http.route('/oauth/authorize/submit_consent', type='http', auth='public', methods=['POST'])
     def submit_consent(self, **params):
-        client = request.env['oauth.client'].sudo().search([('client_id', '=', params.get('client_id'))], limit=1)
-        self._validate_authorize_request(client, params)
+        client = self._resolve_client_for_authorize(params)
         resource = get_resource(self.env, client.resource_name)
         resource._check_user_access(request.env.user)
 
@@ -103,6 +101,5 @@ class OauthServerController(OauthServerControllerBase):
     def _handle_revoke_request(self, client, token: str) -> None:
         oauth_token = request.env['oauth.token'].sudo()
         token_record = oauth_token._find_by_access_token(token, client) or oauth_token._find_by_refresh_token(token, client)
-        if not token_record:
-            return
-        token_record._revoke()
+        if token_record:
+            token_record._revoke()

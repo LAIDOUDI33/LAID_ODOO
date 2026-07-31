@@ -75,7 +75,12 @@ class OauthServerControllerBase(http.Controller):
         return ['none', 'client_secret_basic', 'client_secret_post']
 
     def _register_client(self, resource_name: str, client_name: str, redirect_uris: list[str], client_type: ClientType) -> ClientRegistrationResult:
-        """Register the client under the resource whose name is `resource_name`."""
+        """Register the client under the resource whose name is `resource_name`. Raises ValidationError if the registration request is invalid."""
+        self._check_resource(resource_name)
+        return request.env['oauth.client']._register_client(resource_name, client_name, redirect_uris, client_type)
+
+    def _check_resource(self, resource_name: str) -> None:
+        """Raise if `resource_name` isn't valid for this deployment."""
         raise NotImplementedError
 
     def _build_dcr_response(self, result: ClientRegistrationResult, client_name: str, redirect_uris: list[str], auth_method: AuthMethod) -> dict:
@@ -97,10 +102,15 @@ class OauthServerControllerBase(http.Controller):
 
     @http.route('/oauth/authorize', type='http', auth='public', methods=['GET'])
     def authorize(self, **params):
-        # sudo => Regsitered clients should be able to call this endpoint to generate an authorization code
-        client = request.env['oauth.client'].sudo().search([('client_id', '=', params.get('client_id'))], limit=1)
-        self._validate_authorize_request(client, params)
+        client = self._resolve_client_for_authorize(params)
         return self._handle_authorize_request(client, params)
+
+    def _resolve_client_for_authorize(self, params: dict):
+        """Resolve and validate the client for an /authorize request or its POST-back
+        (e.g. submitting consent, or - for a proxy - submitting a target db_url)."""
+        client = self._find_client_by_id(params.get('client_id'))
+        self._validate_authorize_request(client, params)
+        return client
 
     def _validate_authorize_request(self, client, params: dict) -> None:
         if not client:
@@ -140,11 +150,11 @@ class OauthServerControllerBase(http.Controller):
         return request.make_json_response(result)
 
     def _redeem_authorization_code(self, client, params: dict) -> TokenGrantResult:
-        """Redeem an authorization_code for an OAuth token on behalf of the already-authenticated `client`."""
+        """Redeem an authorization_code for an access token on behalf of the already-authenticated `client`."""
         raise NotImplementedError
 
     def _redeem_refresh_token(self, client, params: dict) -> TokenGrantResult:
-        """Redeem a refresh_token for a new OAuth token and revoke the old OAuth token,
+        """Redeem a refresh_token for a new access token and revoke the old access token,
         on behalf of the already-authenticated `client`."""
         raise NotImplementedError
 
@@ -179,20 +189,22 @@ class OauthServerControllerBase(http.Controller):
         Raises AccessDenied if the client is unknown or if a confidential client's secret
         doesn't check out.
         """
-        client_id = params.get('client_id')
         auth_header = request.httprequest.authorization
-        if not client_id and auth_header:
-            client_id = auth_header.username
-        if not client_id:
-            raise AccessDenied("Missing client_id")
-        client = request.env['oauth.client'].sudo().search([('client_id', '=', client_id)], limit=1)
+        client_id = params.get('client_id') or (auth_header.username if auth_header else None)
+        client = self._find_client_by_id(client_id)
         if not client:
             raise AccessDenied("Unknown client_id")
+
         if client.client_type == 'confidential':
             secret = params.get('client_secret') or (auth_header.password if auth_header else None)
             if not client._verify_client_secret(secret):
                 raise AccessDenied("Invalid client credentials")
         return client
+
+    def _find_client_by_id(self, client_id):
+        """Look up a registered client by its public client_id, or an empty recordset if unknown."""
+        # sudo => Registered clients should be able to call these endpoints to identify themselves
+        return request.env['oauth.client'].sudo().search([('client_id', '=', client_id)], limit=1)
 
     def _raise_oauth_error(self, error: str, description: str | None = None, status: int = 400) -> None:
         body = {'error': error}

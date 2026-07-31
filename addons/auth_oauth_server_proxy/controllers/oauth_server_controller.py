@@ -9,21 +9,11 @@ from odoo.exceptions import AccessDenied
 from odoo.addons.auth_oauth_server_base.controllers.oauth_server_controller_base import (
     NO_FRAME_HEADERS, OauthServerControllerBase,
 )
-from odoo.addons.auth_oauth_server_base.types.types import ClientRegistrationResult, ClientType, TokenGrantResult
+from odoo.addons.auth_oauth_server_base.types.types import TokenGrantResult
 from odoo.addons.auth_oauth_server_base.utils.oauth_utils import _generate_secret, oauth_base_url
 
 
 class OauthServerProxyController(OauthServerControllerBase):
-
-    # ------------------------------------------------------
-    # Client Registration
-    # ------------------------------------------------------
-
-    def _register_client(self, resource_name: str, client_name: str, redirect_uris: list[str], client_type: ClientType) -> ClientRegistrationResult:
-        """The oauth proxy is a pure relay: it accepts registration under any resource name and only finds out whether
-        that resource actually exists when it forwards the first real request to the target database."""
-        self._check_resource(resource_name)
-        return request.env['oauth.client']._register_client(resource_name, client_name, redirect_uris, client_type)
 
     # ------------------------------------------------------
     # Authorization Code Generation
@@ -37,9 +27,7 @@ class OauthServerProxyController(OauthServerControllerBase):
 
     @http.route('/oauth/authorize/submit_db_url', type='http', auth='public', methods=['POST'])
     def submit_db_url(self, **params):
-        # sudo => oauth clients should be able to call this endpoint to generate an authorization code
-        client = request.env['oauth.client'].sudo().search([('client_id', '=', params['client_id'])], limit=1)
-        self._validate_authorize_request(client, params)
+        client = self._resolve_client_for_authorize(params)
         self._check_resource(client.resource_name)
 
         parsed_url = urlsplit(params['db_url'].strip().rstrip('/'))
@@ -97,11 +85,9 @@ class OauthServerProxyController(OauthServerControllerBase):
             ) from e
 
         body = response.json()
-        return request.env['oauth.proxy.remote.client'].sudo().create({
-            'db_url': db_url,
-            'odoo_client_id': body['client_id'],
-            'odoo_client_secret': body['client_secret'],
-        })
+        return request.env['oauth.proxy.remote.client'].sudo()._register_remote_client(
+            db_url=db_url, odoo_client_id=body['client_id'], odoo_client_secret=body['client_secret'],
+        )
 
     @http.route('/oauth/authorize/callback', type='http', auth='public', methods=['GET'])
     def authorize_callback(self, **params):
@@ -157,7 +143,7 @@ class OauthServerProxyController(OauthServerControllerBase):
             'redirect_uri': self._callback_url(),
             'code_verifier': params['code_verifier'],
             'client_id': remote_client.odoo_client_id,
-            'client_secret': remote_client.odoo_client_secret,
+            'client_secret': remote_client._get_client_secret(),
         }
         return self._relay_token_request(client, remote_client, upstream_params)
 
@@ -175,7 +161,7 @@ class OauthServerProxyController(OauthServerControllerBase):
             'grant_type': 'refresh_token',
             'refresh_token': refresh_token,
             'client_id': remote_client.odoo_client_id,
-            'client_secret': remote_client.odoo_client_secret,
+            'client_secret': remote_client._get_client_secret(),
         }
         return self._relay_token_request(client, remote_client, upstream_params)
 
@@ -204,7 +190,7 @@ class OauthServerProxyController(OauthServerControllerBase):
         upstream_params = {
             'token': token,
             'client_id': remote_client.odoo_client_id,
-            'client_secret': remote_client.odoo_client_secret,
+            'client_secret': remote_client._get_client_secret(),
         }
         try:
             response = requests.post(f'{remote_client.db_url}/oauth/revoke', data=upstream_params, timeout=10)
@@ -220,8 +206,7 @@ class OauthServerProxyController(OauthServerControllerBase):
     # ------------------------------------------------------
 
     def _check_resource(self, resource_name: str) -> None:
-        """Hook for a concrete deployment to reject resource names it doesn't front.
-        This generic proxy has no resource catalog of its own, so by default any
-        resource name is accepted; a bridge module fronting one specific protected
-        resource (e.g. ai_mcp_oauth_server_proxy) should override this to reject
-        anything else, raising NotFound."""
+        """This generic proxy has no resource catalog of its own, so any resource name is
+        accepted; a bridge module fronting one specific protected resource (e.g.
+        ai_mcp_oauth_server_proxy) should override this to reject anything else, raising NotFound."""
+        return None
