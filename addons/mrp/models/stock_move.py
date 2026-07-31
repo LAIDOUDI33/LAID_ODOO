@@ -16,11 +16,7 @@ class StockMove(models.Model):
             production_id = self.env['mrp.production'].browse(self.env.context.get('default_raw_material_production_id') or self.env.context.get('default_production_id'))
 
             if production_id.state not in ('draft', 'cancel') and 'state' not in defaults:
-                if production_id.state != 'done':
-                    defaults['state'] = 'draft'
-                else:
-                    defaults['state'] = 'done'
-                    defaults['additional'] = True
+                defaults['state'] = 'draft'
                 defaults['product_uom_qty'] = 0.0
             elif production_id.state == 'draft':
                 defaults['reference_ids'] = production_id.reference_ids.ids
@@ -254,8 +250,11 @@ class StockMove(models.Model):
                     values['location_dest_id'] = mo.production_location_id.id
                     if not values.get('location_id'):
                         values['location_id'] = mo.location_src_id.id
-                    if mo.state in ['progress', 'to_close'] and mo.qty_producing > 0:
+                    if mo.state in ('progress', 'to_close', 'done') and mo.qty_producing > 0:
                         values['picked'] = True
+                    if mo.state == 'done':
+                        values['state'] = 'done'
+                        values['date'] = mo.date_finished
                     continue
                 # produced products + byproducts
                 values['location_id'] = mo.production_location_id.id
@@ -555,8 +554,6 @@ class StockMove(models.Model):
 
     def _prepare_move_line_vals(self, quantity=None, reserved_quant=None):
         vals = super()._prepare_move_line_vals(quantity, reserved_quant)
-        if self.raw_material_production_id:
-            vals['production_id'] = self.raw_material_production_id.id
         if self.production_id.product_tracking == 'lot' and self.product_id == self.production_id.product_id and self.production_id.lot_producing_ids:
             vals['lot_id'] = self.production_id.lot_producing_ids.ids[0]
         return vals
