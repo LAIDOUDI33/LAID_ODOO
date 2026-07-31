@@ -2,11 +2,12 @@
 
 import pprint
 import socket
-from urllib.parse import quote_plus, urlparse
+from urllib.parse import quote_plus, urlsplit
 
 from odoo import http
 from odoo.http import request
 
+from odoo.addons.payment.controllers.payment_status import PaymentStatus
 from odoo.addons.payment.logging import get_payment_logger
 from odoo.addons.payment_payfast import const
 
@@ -35,9 +36,18 @@ class PayfastController(http.Controller):
     def payfast_cancel_from_checkout(self, **data):
         """Handle the customer's redirection back to Odoo after cancelling the payment.
 
+        Note: Payfast sends no identifying data at all on this route (no `m_payment_id`), and
+        never follows up with an ITN for a payment that was never attempted; the transaction
+        being monitored in the customer's session is used instead. A synthetic `CANCELLED`
+        payload is recorded like any other payment data, going through the same guarded
+        (asynchronous) `_apply_updates` path as a real ITN would.
+
         :param dict data: The un-trusted data forwarded by Payfast as query params.
         """
         _logger.info("Handling cancellation from Payfast with data:\n%s", pprint.pformat(data))
+        tx_sudo = PaymentStatus()._get_monitored_transaction()
+        if tx_sudo and tx_sudo.provider_code == "payfast":
+            tx_sudo._record({"payment_status": "CANCELLED"})
         return request.redirect("/payment/status")
 
     @http.route(_notify_url, type="http", auth="public", methods=["POST"], csrf=False)
@@ -136,7 +146,7 @@ class PayfastController(http.Controller):
         :return: Whether the referrer is a valid Payfast host.
         :rtype: bool
         """
-        referer_host = urlparse(request.httprequest.headers.get("Referer", "")).hostname
+        referer_host = urlsplit(request.httprequest.headers.get("Referer", "")).hostname
         if not referer_host:
             return False
 
@@ -173,4 +183,6 @@ class PayfastController(http.Controller):
         :return: The url-encoded parameter string.
         :rtype: str
         """
-        return "&".join(f"{key}={quote_plus(str(value))}" for key, value in data.items())
+        return "&".join(
+            f"{key}={quote_plus(str(value))}" for key, value in data.items() if key != "signature"
+        )
