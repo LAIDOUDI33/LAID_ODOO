@@ -79,14 +79,16 @@ class ResUsers(models.Model):
 
     def _sync_google_calendars(self, calendar_service: GoogleCalendarService):
         # Google -> Odoo
+        new_calendars = False
         google_calendar_values = self._sync_calendars_request(calendar_service)
         if google_calendar_values:
-            self.calendar_ids.with_user(self)._sync_calendars_google2odoo(google_calendar_values)
+            new_calendars = self.calendar_ids.with_user(self)._sync_calendars_google2odoo(google_calendar_values)
 
         # Odoo -> Google
         # Local calendars, which have not yet been synchronized with Google or need to be updated
         calendars_to_sync = self.calendar_ids.filtered(lambda c: c.google_sync_enabled and (c.need_sync or (not c.google_id and not c.is_primary)))
         calendars_to_sync.with_user(self)._sync_calendars_odoo2google(calendar_service)
+        return new_calendars
 
     def _sync_google_events(self, calendar_service: GoogleCalendarService):
         self.ensure_one()

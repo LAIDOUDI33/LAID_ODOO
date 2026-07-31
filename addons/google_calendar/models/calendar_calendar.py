@@ -117,6 +117,8 @@ class CalendarCalendar(models.Model):
 
             odoo_record.sudo().with_context(dont_notify=True).write(dict(odoo_record._odoo_values(calendar), need_sync=False))
 
+        return bool(new)
+
     def _sync_calendars_odoo2google(self, calendar_service):
         if not self or self.env.user._get_google_sync_status() != "sync_active":
             return

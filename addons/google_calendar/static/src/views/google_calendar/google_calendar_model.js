@@ -2,6 +2,7 @@ import { proxy } from "@odoo/owl";
 import { AttendeeCalendarModel } from "@calendar/views/attendee_calendar/attendee_calendar_model";
 import { rpc } from "@web/core/network/rpc";
 import { patch } from "@web/core/utils/patch";
+import { _t } from "@web/core/l10n/translation";
 
 patch(AttendeeCalendarModel.prototype, {
     setup(params) {
@@ -76,6 +77,18 @@ patch(AttendeeCalendarModel.prototype, {
             await this.keepLast.add(super.updateData(data));
             this.data = data;
             this.notify();
+        }
+        if (result.new_calendars) {
+            this.notification.add(
+                {
+                    type: "info",
+                    title: _t("New Google calendars detected"),
+                    buttons: [{
+                        name: _t("Choose which ones to import"),
+                        onClick: () => this.action.doAction('calendar.action_calendar_calendar'),
+                    }],
+                },
+            );
         }
         return result;
     },

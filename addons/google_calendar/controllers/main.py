@@ -48,7 +48,7 @@ class GoogleCalendarController(CalendarController):
                 }
             # If App authorized, and user access accepted, We launch the synchronization
             try:
-                request.env.user.sudo()._sync_google_calendars(GoogleCal)
+                new_calendars = request.env.user.sudo()._sync_google_calendars(GoogleCal)
                 # Commit calendar changes so that the @after_commit calls to the Google API are performed before
                 # continuing with event sync.
                 request.env.cr.commit()
@@ -66,6 +66,7 @@ class GoogleCalendarController(CalendarController):
                 }
             return {
                 "status": "need_refresh" if need_refresh else "no_new_event_from_google",
+                "new_calendars": bool(new_calendars),
                 "url": ''
             }
 
