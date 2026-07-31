@@ -2171,13 +2171,11 @@ class TestUi(TestPointOfSaleHttpCommon):
         })
         self.main_pos_config.pricelist_id.write({
             'item_ids': [Command.create({
-                'display_applied_on': '1_product',
                 'product_tmpl_id': product.product_tmpl_id.id,
                 'compute_price': 'fixed',
                 'fixed_price': 10.0,
                 'min_quantity': 3,
             }), Command.create({
-                'display_applied_on': '1_product',
                 'product_tmpl_id': product.product_tmpl_id.id,
                 'compute_price': 'fixed',
                 'fixed_price': 20.0,

@@ -60,15 +60,6 @@ class ProductPricelistItem(models.Model):
         required=True,
         help="Pricelist Item applicable on selected option")
 
-    display_applied_on = fields.Selection(
-        selection=[
-            ('1_product', "Product"),
-            ('2_product_category', "Category"),
-        ],
-        default='1_product',
-        required=True,
-        help="Pricelist Item applicable on selected option")
-
     # Product Related Fields
     categ_id = fields.Many2one(
         string="Category",
@@ -114,11 +105,15 @@ class ProductPricelistItem(models.Model):
         selection=[
             ('percentage', "Discount"),
             ('formula', "Formula"),
+            ('markup', "Surcharge"),
             ('fixed', "Fixed Price"),
         ],
         help="Use the discount rules and activate the discount settings"
              " in order to show discount to customer.",
-        index=True, default='fixed', required=True)
+        index=True,
+        default='fixed',
+        required=True
+    )
 
     fixed_price = fields.Float(string="Fixed Price", min_display_digits='Product Price')
     percent_price = fields.Float(
@@ -128,8 +123,8 @@ class ProductPricelistItem(models.Model):
     price_discount = fields.Float(
         string="Price Discount",
         default=0,
-        digits=(16, 2),
-        help="You can apply a mark-up by setting a negative discount.")
+        digits=(16, 2)
+    )
     price_round = fields.Float(
         string="Price Rounding",
         min_display_digits='Product Price',
@@ -142,12 +137,12 @@ class ProductPricelistItem(models.Model):
         help="Specify the fixed amount to add or subtract (if negative) to the amount calculated with the discount.")
 
     price_markup = fields.Float(
-        string="Markup",
+        string="Surcharge",
         digits=(16, 2),
         compute='_compute_price_markup',
         inverse='_inverse_price_markup',
-        store=True,
-        help="You can apply a mark-up on the cost")
+        store=True
+    )
 
     price_min_margin = fields.Float(
         string="Min. Price Margin",
@@ -202,8 +197,6 @@ class ProductPricelistItem(models.Model):
                 item.name = item.product_tmpl_id.display_name
             elif item.product_id and item.applied_on == '0_product_variant':
                 item.name = item.product_id.display_name
-            elif item.display_applied_on == '2_product_category':
-                item.name = item.env._("All Categories")
             else:
                 item.name = item.env._("All Products")
 
@@ -287,30 +280,22 @@ class ProductPricelistItem(models.Model):
         'base', 'compute_price', 'price_discount', 'price_markup', 'price_round', 'price_surcharge',
     )
     def _compute_rule_tip(self):
-        base_selection_vals = dict(self._fields['base']._description_selection(self.env))
         self.rule_tip = False
         for item in self:
-            if item.compute_price != 'formula' or not item.base:
+            if item.compute_price not in ('formula', 'markup') or not item.base:
                 continue
             base_amount = 100
-            discount = item.price_discount if item.base != 'standard_price' else -item.price_markup
+            discount = -item.price_markup if item.compute_price == 'markup' else item.price_discount
             discount_factor = (100 - discount) / 100
             discounted_price = base_amount * discount_factor
             if item.price_round:
                 discounted_price = float_round(discounted_price, precision_rounding=item.price_round)
-            surcharge = format_amount(item.env, item.price_surcharge, item.currency_id)
-            discount_type, discount = self._get_displayed_discount(item)
 
             item.rule_tip = item.env._(
-                "%(base)s with a %(discount)s %% %(discount_type)s and %(surcharge)s extra fee\n"
-                "Example: %(amount)s * %(discount_charge)s + %(price_surcharge)s → %(total_amount)s",
-                base=base_selection_vals[item.base],
-                discount=discount,
-                discount_type=discount_type,
-                surcharge=surcharge,
-                amount=format_amount(item.env, 100, item.currency_id),
+                "%(amount)s * %(discount_charge)s + %(price_surcharge)s = %(total_amount)s",
+                amount=format_amount(item.env, base_amount, item.currency_id),
                 discount_charge=discount_factor,
-                price_surcharge=surcharge,
+                price_surcharge=format_amount(item.env, item.price_surcharge, item.currency_id),
                 total_amount=format_amount(
                     item.env, discounted_price + item.price_surcharge, item.currency_id),
             )
@@ -319,8 +304,8 @@ class ProductPricelistItem(models.Model):
         return int(percentage) if percentage == int(percentage) else percentage
 
     def _get_displayed_discount(self, item):
-        if item.base == 'standard_price':
-            return self.env._("markup"), self._get_integer(item.price_markup)
+        if item.compute_price == 'markup':
+            return self.env._("surcharge"), self._get_integer(item.price_markup)
         return self.env._("discount"), self._get_integer(item.price_discount)
 
     #=== CONSTRAINT METHODS ===#
@@ -392,14 +377,6 @@ class ProductPricelistItem(models.Model):
 
     #=== ONCHANGE METHODS ===#
 
-    @api.onchange('base')
-    def _onchange_base(self):
-        for item in self:
-            item.update({
-                'price_discount': 0.0,
-                'price_markup': 0.0,
-            })
-
     @api.onchange('base_pricelist_id')
     def _onchange_base_pricelist_id(self):
         for item in self:
@@ -413,34 +390,15 @@ class ProductPricelistItem(models.Model):
             self.fixed_price = 0.0
         if self.compute_price != 'percentage':
             self.percent_price = 0.0
-        if self.compute_price != 'formula':
+        if self.compute_price not in ('formula', 'markup'):
             self.update({
                 'base': 'list_price',
-                'price_discount': 0.0,
                 'price_surcharge': 0.0,
-                'price_markup': 0.0,
                 'price_round': 0.0,
                 'price_min_margin': 0.0,
                 'price_max_margin': 0.0,
             })
-
-    @api.onchange('display_applied_on')
-    def _onchange_display_applied_on(self):
-        for item in self:
-            if not (item.product_tmpl_id or item.categ_id):
-                item.update({'applied_on': '3_global'})
-            elif item.display_applied_on == '1_product':
-                item.update({
-                    'applied_on': '1_product',
-                    'categ_id': None,
-                })
-            elif item.display_applied_on == '2_product_category':
-                item.update({
-                    'product_id': None,
-                    'product_tmpl_id': None,
-                    'applied_on': '2_product_category',
-                    'product_uom_name': None,
-                })
+        self.price_discount = 0.0
 
     @api.onchange('product_id')
     def _onchange_product_id(self):
@@ -455,10 +413,17 @@ class ProductPricelistItem(models.Model):
 
     @api.onchange('product_tmpl_id')
     def _onchange_product_tmpl_id(self):
-        has_tmpl_id = self.filtered('product_tmpl_id')
-        for item in has_tmpl_id:
+        for item in self:
             if item.product_id and item.product_id.product_tmpl_id != item.product_tmpl_id:
-                item.product_id = None
+                item.product_id = False
+            if item.product_tmpl_id:
+                item.categ_id = False
+
+    @api.onchange('categ_id')
+    def _onchange_categ_id(self):
+        for item in self.filtered('categ_id'):
+            item.product_id = False
+            item.product_tmpl_id = False
 
     @api.onchange('product_id', 'product_tmpl_id', 'categ_id')
     def _onchange_rule_content(self):
@@ -468,9 +433,7 @@ class ProductPricelistItem(models.Model):
                 lambda r: bool(r.product_id) and bool(r.product_tmpl_id)
             )
             template_rules = (self-variants_rules).filtered('product_tmpl_id')
-            category_rules = self.filtered(
-                lambda cat: bool(cat.categ_id) and cat.categ_id.name != 'All'
-            )
+            category_rules = self.filtered('categ_id')
             variants_rules.update({'applied_on': '0_product_variant'})
             template_rules.update({'applied_on': '1_product'})
             category_rules.update({'applied_on': '2_product_category'})
@@ -621,10 +584,9 @@ class ProductPricelistItem(models.Model):
         base_price = self._compute_base_price(product, quantity, uom, **kwargs)
         if self.compute_price == 'percentage':
             price = (base_price - (base_price * (self.percent_price / 100))) or 0.0
-        elif self.compute_price == 'formula':
+        elif self.compute_price in ('formula', 'markup'):
             product_uom = product.uom_id
-            discount = self.price_discount if self.base != 'standard_price' else -self.price_markup
-            price = base_price - (base_price * (discount / 100))
+            price = base_price - (base_price * (self.price_discount / 100))
             if self.price_round:
                 price = float_round(price, precision_rounding=self.price_round)
 
