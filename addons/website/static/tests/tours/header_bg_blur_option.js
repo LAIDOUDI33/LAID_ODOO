@@ -1,5 +1,6 @@
 import { registry } from "@web/core/registry";
 import {
+    changeOptionInPopover,
     clickOnEditAndWaitEditMode,
     clickOnSave,
     selectHeader,
@@ -8,14 +9,15 @@ import {
 
 const headerBlurRangeSelector =
     "[data-container-title='Header'] [data-label='Blur'] input[type='range']";
+const headerTemplateBackgroundColorPickerSelector =
+    "[data-container-title='Header'] [data-label='Background'] .o_we_color_preview";
 
 function setHeaderBackgroundHex(hexColor) {
     return [
         selectHeader(),
         {
             content: "Open the header background color picker",
-            trigger:
-                "div[data-container-title='Header'] [data-label='Background'] .o_we_color_preview",
+            trigger: headerTemplateBackgroundColorPickerSelector,
             run: "click",
         },
         {
@@ -46,7 +48,7 @@ function checkHeaderBlurValue(expectedValue) {
                     return parseFloat(blurValue) === expectedValue;
                 },
                 {
-                    message: `Expected --o-bg-blur to be ${expectedValue}.}`,
+                    message: `Expected --o-bg-blur to be ${expectedValue}.`,
                 }
             );
         },
@@ -59,7 +61,7 @@ registry.category("web_tour.tours").add("header_bg_blur_option", {
         selectHeader(),
         {
             content: "Check that the blur option is hidden for opaque backgrounds",
-            trigger: `:not(${headerBlurRangeSelector})`,
+            trigger: `body:not(:has(${headerBlurRangeSelector}))`,
         },
 
         ...setHeaderBackgroundHex("#00000080"),
@@ -84,14 +86,19 @@ registry.category("web_tour.tours").add("header_bg_blur_option", {
         ...setHeaderBackgroundHex("#000000"),
         {
             content: "Check that the blur option is hidden again",
-            trigger: `:not(${headerBlurRangeSelector})`,
+            trigger: `body:not(:has(${headerBlurRangeSelector}))`,
         },
-        checkHeaderBlurValue(0),
+        {
+            content: "Click on the 'undo' button.",
+            trigger: ".o-snippets-top-actions button[data-icon='undo']",
+            run: "click",
+        },
+        // Check that the blue value restored to the previous one.
+        checkHeaderBlurValue(5),
         selectHeader(),
         {
             content: "Open the header background color picker",
-            trigger:
-                "div[data-container-title='Header'] [data-label='Background'] .o_we_color_preview",
+            trigger: headerTemplateBackgroundColorPickerSelector,
             run: "click",
         },
         {
@@ -115,6 +122,70 @@ registry.category("web_tour.tours").add("header_bg_blur_option", {
         },
         {
             content: "Check that the blur option appears for transparent gradients",
+            trigger: headerBlurRangeSelector,
+        },
+        {
+            content: "Activate mobile preview",
+            trigger: ".o-snippets-top-actions button[data-action='mobile']",
+            run: "click",
+        },
+        {
+            content: "Check that the mobile preview is active",
+            trigger: ".o-snippets-top-actions button[data-action='mobile'].active",
+        },
+        {
+            content: `Check that the blur is present in the mobile preview`,
+            trigger: ":iframe #wrapwrap > header nav.o_header_mobile",
+            async run({ waitUntil }) {
+                await waitUntil(
+                    () => !!getComputedStyle(this.anchor).getPropertyValue("backdrop-filter"),
+                    {
+                        message: `Backdrop filter should've been applied.`,
+                    }
+                );
+            },
+        },
+        {
+            content: "Open the sidebar",
+            trigger: ":iframe header button[data-bs-target='#top_menu_collapse_mobile']",
+            run: "click",
+        },
+        {
+            content: `Check that the blur is present on the sidebar`,
+            trigger: ":iframe #wrapwrap > header.o_top_menu_collapse_shown .o_navbar_mobile",
+            async run({ waitUntil }) {
+                await waitUntil(
+                    () => !!getComputedStyle(this.anchor).getPropertyValue("backdrop-filter"),
+                    {
+                        message: `Backdrop filter should've been applied.`,
+                    }
+                );
+            },
+        },
+    ],
+});
+
+registry.category("web_tour.tours").add("header_over_the_content_bg_blur_option", {
+    steps: () => [
+        waitForEditMode,
+        selectHeader(),
+        ...changeOptionInPopover("Header", "Header Position", "Over the content"),
+        {
+            content: "Wait for the operation to finish",
+            trigger: ".o_website_preview :iframe:not(:has(.o_loading_screen))",
+        },
+        {
+            content: "Check that the header is over the content",
+            trigger: ":iframe #wrapwrap.o_header_overlay",
+        },
+        ...setHeaderBackgroundHex("#000000"),
+        {
+            content: "Check that the blur option is hidden for an opaque background",
+            trigger: `body:not(:has(${headerBlurRangeSelector}))`,
+        },
+        ...setHeaderBackgroundHex("#00000080"),
+        {
+            content: "Check that the blur option appears for a transparent background",
             trigger: headerBlurRangeSelector,
         },
     ],

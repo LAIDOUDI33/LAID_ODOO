@@ -1,34 +1,20 @@
 import { BaseOptionComponent } from "@html_builder/core/base_option_component";
 import { registry } from "@web/core/registry";
 import { convertCSSColorToRgba } from "@web/core/utils/colors";
-import { getCSSVariableValue, getHtmlStyle } from "@html_editor/utils/formatting";
 import { useDomState } from "@html_builder/core/utils";
-
-export class HeaderBgBlurOption extends BaseOptionComponent {
-    static template = "website.HeaderBgBlurOption";
-
-    static props = {
-        ...BaseOptionComponent.props,
-        level: { type: Number },
-    };
-
-    setup() {
-        super.setup();
-        this.blurState = useDomState(() => ({
-            show: isHeaderBgBlurAvailable(getHtmlStyle(this.document)),
-        }));
-    }
-}
+import { getCSSVariableValue } from "@html_editor/utils/formatting";
 
 export class HeaderTemplateOption extends BaseOptionComponent {
     static id = "header_template_option";
     static template = "website.HeaderTemplateOption";
     static dependencies = ["headerOption"];
-    static components = { HeaderBgBlurOption };
 
     setup() {
         super.setup();
         this.headerTemplates = this.dependencies.headerOption.getHeaderTemplates();
+        this.domState = useDomState((editingElement) => ({
+            isBlurAvailable: isHeaderBgBlurAvailable(editingElement),
+        }));
     }
 
     hasSomeOptions(opts) {
@@ -57,23 +43,35 @@ export class HeaderTemplateChoice extends BaseOptionComponent {
  * A background blur is only visible when the header background is at least
  * partially transparent.
  *
- * @param {CSSStyleDeclaration} htmlStyle
- * @param {Object<string, string>} [styleOverrides]
+ * @param {HTMLElement} editingElement
  * @returns {boolean}
  */
-export function isHeaderBgBlurAvailable(htmlStyle, styleOverrides = {}) {
+export function isHeaderBgBlurAvailable(editingElement) {
+    const headerNavEl = editingElement.querySelector("nav");
+    if (!headerNavEl) {
+        return;
+    }
+    const navStyle = getComputedStyle(headerNavEl);
+    // We can have color set directly as "menu-custom" or it can be coming from
+    // the theme color, e.g. o_cc_1. We can't just rely on the background color
+    // as when the header is "Over the content", interaction makes the header
+    // transparent when it's not scrolled.
     const bgColor =
-        "menu-custom" in styleOverrides
-            ? styleOverrides["menu-custom"]
-            : getCSSVariableValue("menu-custom", htmlStyle);
-    const bgColorOpacity = convertCSSColorToRgba(bgColor).opacity;
-    if (bgColorOpacity >= 0 && bgColorOpacity < 100) {
+        getCSSVariableValue("menu-custom", navStyle) ||
+        navStyle.getPropertyValue("background-color");
+    let bgGradient =
+        getCSSVariableValue("menu-gradient", navStyle) ||
+        navStyle.getPropertyValue("background-image");
+    bgGradient = bgGradient === "none" ? "" : bgGradient;
+    // Should be available if no color is defined (fully transparent).
+    if (!bgColor && !bgGradient) {
         return true;
     }
-    const bgGradient =
-        "menu-gradient" in styleOverrides
-            ? styleOverrides["menu-gradient"]
-            : getCSSVariableValue("menu-gradient", htmlStyle);
+
+    const bgColorOpacity = convertCSSColorToRgba(bgColor).opacity;
+    if (bgColorOpacity < 100 && !bgGradient) {
+        return true;
+    }
     const hasRgbaOpacity = /rgba/i.test(bgGradient);
 
     // Check if there is at least one hex color with opacity.
