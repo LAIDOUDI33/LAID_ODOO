@@ -192,7 +192,7 @@ class TestPortalAddresses(BaseCommon, HttpCase):
         csrf_token = self.csrf_token()
         address_values = {
             **self.default_address_values,
-            "ma_ice": "001561191000066",
+            "MA_ICE": "001561191000066",
             "csrf_token": csrf_token,
             "partner_id": self.account_a.partner_id.id,
         }
@@ -203,8 +203,8 @@ class TestPortalAddresses(BaseCommon, HttpCase):
             [{**self.default_address_values, "additional_identifiers": {"MA_ICE": "001561191000066"}}],
         )
         # Should not be able to update commercial fields on child address if already set
-        res = self._submit_address_values({**address_values, "ma_ice": "001561191000055"})
-        self.assertIn("ma_ice", res["invalid_fields"])
+        res = self._submit_address_values({**address_values, "MA_ICE": "001561191000055"})
+        self.assertIn("MA_ICE", res["invalid_fields"])
 
     def test_company_name_update(self):
         self.authenticate(self.portal_user.login, self.portal_user.login)

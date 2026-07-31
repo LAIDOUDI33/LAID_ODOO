@@ -22,7 +22,11 @@ from stdnum.se import orgnr as se_en
 from stdnum.sg import uen as sg_en
 
 from odoo.tools.translate import LazyTranslate
-from odoo.tools.partner_identifier_validation import nl_kvk_validate, nl_oin_validate, th_branch_code_validate
+from odoo.tools.partner_identifier_validation import (
+    nl_kvk_validate,
+    nl_oin_validate,
+    th_branch_code_validate,
+)
 
 from odoo.addons.base.models.res_country import (
     FR_AND_OVERSEAS_TERRITORIES,
@@ -44,6 +48,10 @@ GLN_SHARED_VALS = {
     'placeholder': '9780471117094',
     'validation_function': ean.validate,
 }
+
+TIN_CATEGORIES = ['TIN', 'VAT', 'GST']
+INDIVIDUAL_CATEGORIES = ['CN']  # natural persons
+COMPANY_CATEGORIES = [*TIN_CATEGORIES, 'EN']  # legal entities (tax + enterprise numbers)
 
 TIN_METADATA = {
     'AD_VAT': {  # NRT
@@ -969,6 +977,28 @@ ADDITIONAL_IDENTIFIERS_METADATA = {
         'countries': ['UZ'],
     },
     # Keep international identifiers at the end of the dict
+    'GS1': {
+        'sequence': 200,
+        'scheme': '0209',
+        'label': _lt('GS1 identification keys'),
+        'help': _lt('GS1 identification keys for supply chain management.'),
+        'countries': False,
+    },
+    'IBAN': {
+        # EDI specific don't mix up with account_number
+        'sequence': 200,
+        'scheme': '9918',
+        'label': _lt('IBAN'),
+        'help': _lt('International Bank Account Number, used as an EDI identifier.'),
+        'countries': False,
+    },
+    'PASSPORT': {
+        'sequence': 95,
+        'label': _lt('Passport'),
+        'help': _lt('Passport number.'),
+        'category': 'CN',
+        'countries': ['AR', 'PE', 'CO', 'UY', 'EC'],
+    },
     'DUNS': {
         'sequence': 100,
         'scheme': '0060',

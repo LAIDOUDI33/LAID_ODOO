@@ -1,14 +1,51 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details
 from odoo import fields, models, api
 
+from odoo.addons.l10n_pe.tools.partner_identifiers import (
+    PE_ADDITIONAL_IDENTIFIERS_METADATA,
+    PE_FOREIGN_SUNAT_CODE,
+    PE_IDENTIFIER_TO_SUNAT_CODE,
+)
+
 
 class ResPartner(models.Model):
     _inherit = 'res.partner'
+
+    @api.model
+    def _get_all_additional_identifiers_metadata(self):
+        return {**super()._get_all_additional_identifiers_metadata(), **PE_ADDITIONAL_IDENTIFIERS_METADATA}
 
     l10n_pe_district = fields.Many2one(
         'l10n_pe.res.city.district', string='District',
         help='Districts are part of a province or city.')
     l10n_pe_district_name = fields.Char(string='District name', related='l10n_pe_district.name')
+    l10n_pe_sunat_code = fields.Char(
+        string='PE Identification Type Code',
+        compute='_compute_l10n_pe_sunat_code',
+        store=True,
+        readonly=True,
+        help='SUNAT identification type code (catálogo 06) derived from the partner identifiers.',
+    )
+
+    @api.depends(
+        'vat', 'country_id', 'additional_identifiers',
+        'commercial_partner_id.vat', 'commercial_partner_id.country_id',
+        'commercial_partner_id.additional_identifiers',
+    )
+    def _compute_l10n_pe_sunat_code(self):
+        """ Resolve the SUNAT identification type code (catálogo 06) from the
+        partner's preferred legal entity identifier. """
+        for partner in self:
+            vals = partner._get_preferred_legal_entity_identifier_vals()
+            key = vals.get('key')
+            if key in PE_IDENTIFIER_TO_SUNAT_CODE:
+                partner.l10n_pe_sunat_code = PE_IDENTIFIER_TO_SUNAT_CODE[key]
+            elif vals.get('category') in ('TIN', 'VAT', 'GST'):
+                partner.l10n_pe_sunat_code = '0'
+            elif key:
+                partner.l10n_pe_sunat_code = PE_FOREIGN_SUNAT_CODE
+            else:
+                partner.l10n_pe_sunat_code = '0'
 
     @api.onchange('l10n_pe_district')
     def _onchange_l10n_pe_district(self):

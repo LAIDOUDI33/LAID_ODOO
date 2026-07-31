@@ -13,6 +13,7 @@ from . import test_account_account
 from . import test_account_tax
 from . import test_account_to_check
 from . import test_partner_identifiers
+from . import test_address_additional_identifiers
 from . import test_account_analytic
 from . import test_account_payment
 from . import test_account_payment_method_line
@@ -71,3 +72,4 @@ from . import test_account_bill_deductibility
 from . import test_dict_to_xml
 from . import test_account_move_import_template
 from . import test_account_move_tax_mode
+from . import test_portal_additional_identifiers

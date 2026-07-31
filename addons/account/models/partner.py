@@ -11,7 +11,10 @@ from odoo import _, api, fields, models
 from odoo.exceptions import UserError, ValidationError
 from odoo.fields import Domain
 from odoo.tools import SQL, unique
-from odoo.tools.partner_identifiers import is_identifier_void
+from odoo.tools.partner_identifiers import (
+    get_tin_metadata_of_country,
+    is_identifier_void,
+)
 
 from odoo.addons.account.models.account_move import BYPASS_LOCK_CHECK
 from odoo.addons.base_vat.models.res_partner import _ref_vat
@@ -646,6 +649,27 @@ class ResPartner(models.Model):
     def _inverse_global_location_number(self):
         for partner in self:
             partner._set_additional_identifier('EAN_GLN', partner.global_location_number)
+
+    @api.constrains('additional_identifiers', 'vat')
+    def _check_identifier_combination(self):
+        """A partner cannot combine an individual identifier (citizen number) with a company
+        identifier (tax or enterprise number)."""
+        for partner in self:
+            identifiers = partner.additional_identifiers or {}
+            individual = next((key for key in identifiers if partner._is_individual_identifier(key)), None)
+            if not individual:
+                continue
+            company = next((key for key in identifiers if partner._is_company_identifier(key)), None)
+            if not company and partner.vat and not is_identifier_void(partner.vat):
+                # The country tax number stored on `vat` is itself a company identifier.
+                company = get_tin_metadata_of_country(partner.country_code).get('key', 'TIN')
+            if company:
+                raise ValidationError(_(
+                    "A partner cannot have both an individual identifier (%(individual)s) and a"
+                    " company identifier (%(company)s).",
+                    individual=str(partner._get_identifier_label(individual) or individual),
+                    company=str(partner._get_identifier_label(company) or company),
+                ))
 
     def _compute_bank_count(self):
         bank_data = self.env['res.partner.bank']._read_group([('partner_id', 'in', self.ids)], ['partner_id'], ['__count'])

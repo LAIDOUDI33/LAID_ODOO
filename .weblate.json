@@ -2614,12 +2614,6 @@
                 "language_regex": "^(ru)$"
             },
             {
-                "name": "l10n_latam_base",
-                "filemask": "addons/l10n_latam_base/i18n/*.po",
-                "new_base": "addons/l10n_latam_base/i18n/l10n_latam_base.pot",
-                "language_regex": "^(es_419|pt_BR)$"
-            },
-            {
                 "name": "l10n_latam_check",
                 "filemask": "addons/l10n_latam_check/i18n/*.po",
                 "new_base": "addons/l10n_latam_check/i18n/l10n_latam_check.pot",
