@@ -1,7 +1,7 @@
 import { getBaseContainerSelector } from "@html_editor/utils/base_container";
 import { getIframeAdjustedBoundingRect, isEmpty, isTableCell } from "@html_editor/utils/dom_info";
 import { closestElement } from "@html_editor/utils/dom_traversal";
-import { getRowIndex, getSelectedCellsMergeInfo } from "@html_editor/utils/table";
+import { getRowIndex } from "@html_editor/utils/table";
 import { Component, onMounted, onWillUnmount, props, signal, t, useListener } from "@odoo/owl";
 import { Dropdown } from "@web/core/dropdown/dropdown";
 import { DropdownItem } from "@web/core/dropdown/dropdown_item";
@@ -25,8 +25,6 @@ export class TableMenu extends Component {
         resetRowHeight: t.function().optional(),
         resetColumnWidth: t.function().optional(),
         clearColumnContent: t.function(),
-        mergeSelectedCells: t.function(),
-        unmergeSelectedCell: t.function(),
         clearRowContent: t.function(),
         toggleAlternatingRows: t.function(),
         buildTableGrid: t.function(),
@@ -227,11 +225,6 @@ export class TableMenu extends Component {
 
     colItems() {
         const ltr = this.props.direction === "ltr";
-        const { canMerge, canUnmerge, cells, spanType } = getSelectedCellsMergeInfo(
-            this.editableDocument,
-            this.tableGrid,
-            this.props.target
-        );
         return [
             !this.isFirst && {
                 name: "move_left",
@@ -272,44 +265,42 @@ export class TableMenu extends Component {
                 action: this.props.removeColumn.bind(this),
             },
             this.props.resetColumnWidth &&
-               
                 this.hasCustomColumnWidth && {
-                        name: "reset_column_size",
-                        icon: "table_chart",
-                        text: _t("Reset column size"),
-                        action: (target) => {
-                            const cell = closestElement(target, isTableCell);
-                            const table = closestElement(cell, "table");
-                            const colgroup = table.querySelector("colgroup");
-                            if (!colgroup) {
-                                return;
-                            }
-                            const colIndex = this.tableGrid[0].indexOf(cell);
-                            const targetCols = [...colgroup.children].slice(
-                                colIndex,
-                                colIndex + cell.colSpan
-                            );
-                            const layoutContainer = closestElement(cell, "table");
-                            targetCols.forEach((col) => {
-                                this.props.resetColumnWidth(col, {
-                                    layoutContainer,
-                                    hasProxyElements: true,
-                                });
+                    name: "reset_column_size",
+                    icon: "table_chart",
+                    text: _t("Reset column size"),
+                    action: (target) => {
+                        const cell = closestElement(target, isTableCell);
+                        const table = closestElement(cell, "table");
+                        const colgroup = table.querySelector("colgroup");
+                        if (!colgroup) {
+                            return;
+                        }
+                        const colIndex = this.tableGrid[0].indexOf(cell);
+                        const targetCols = [...colgroup.children].slice(
+                            colIndex,
+                            colIndex + cell.colSpan
+                        );
+                        const layoutContainer = closestElement(cell, "table");
+                        targetCols.forEach((col) => {
+                            this.props.resetColumnWidth(col, {
+                                layoutContainer,
+                                hasProxyElements: true,
                             });
-                        },
+                        });
                     },
+                },
             this.props.resetSize &&
-               
                 this.hasCustomTableSize && {
-                        name: "reset_table_size",
-                        icon: "table_chart",
-                        text: _t("Reset table size"),
-                        action: (target) =>
-                            this.props.resetSize(closestElement(target, "table"), {
-                                proxyElementSelector: "colgroup",
-                                heightElementsSelector: "tr",
-                            }),
-                    },
+                    name: "reset_table_size",
+                    icon: "table_chart",
+                    text: _t("Reset table size"),
+                    action: (target) =>
+                        this.props.resetSize(closestElement(target, "table"), {
+                            proxyElementSelector: "colgroup",
+                            heightElementsSelector: "tr",
+                        }),
+                },
             this.hasContent && {
                 name: "clear_content",
                 icon: "cancel",
@@ -317,31 +308,12 @@ export class TableMenu extends Component {
                 text: _t("Clear content"),
                 action: this.props.clearColumnContent.bind(this),
             },
-            cells.length > 1 && {
-                name: "merge_cell",
-                icon: "close_fullscreen",
-                text: _t("Merge Cells"),
-                disable: !canMerge,
-                tooltip: _t("Only rows or cells selection can be merged"),
-                action: () => this.props.mergeSelectedCells(cells, spanType),
-            },
-            canUnmerge && {
-                name: "unmerge_cell",
-                icon: "close_fullscreen",
-                text: _t("Unmerge Cells"),
-                action: this.props.unmergeSelectedCell.bind(this),
-            },
         ].filter(Boolean);
     }
 
     rowItems() {
         const table = closestElement(this.props.target, "table");
         const hasAlternatingRowClass = table.classList.contains("o_alternating_rows");
-        const { canMerge, canUnmerge, cells, spanType } = getSelectedCellsMergeInfo(
-            this.editableDocument,
-            this.tableGrid,
-            this.props.target
-        );
         return [
             this.isFirst &&
                 !this.isTableHeader && {
@@ -403,49 +375,33 @@ export class TableMenu extends Component {
                 action: (target) => this.props.removeRow(target.parentElement),
             },
             this.props.resetRowHeight &&
-               
                 this.hasCustomRowHeight && {
-                        name: "reset_row_size",
-                        icon: "table_chart",
-                        text: _t("Reset row size"),
-                        action: (target) =>
-                            this.props.resetRowHeight(closestElement(target, "tr"), {
-                                layoutContainer: closestElement(target, "table"),
-                                elementsSelector: "tr",
-                            }),
-                    },
+                    name: "reset_row_size",
+                    icon: "table_chart",
+                    text: _t("Reset row size"),
+                    action: (target) =>
+                        this.props.resetRowHeight(closestElement(target, "tr"), {
+                            layoutContainer: closestElement(target, "table"),
+                            elementsSelector: "tr",
+                        }),
+                },
             this.props.resetSize &&
-               
                 this.hasCustomTableSize && {
-                        name: "reset_table_size",
-                        icon: "table_chart",
-                        text: _t("Reset table size"),
-                        action: (target) =>
-                            this.props.resetSize(closestElement(target, "table"), {
-                                proxyElementSelector: "colgroup",
-                                heightElementsSelector: "tr",
-                            }),
-                    },
+                    name: "reset_table_size",
+                    icon: "table_chart",
+                    text: _t("Reset table size"),
+                    action: (target) =>
+                        this.props.resetSize(closestElement(target, "table"), {
+                            proxyElementSelector: "colgroup",
+                            heightElementsSelector: "tr",
+                        }),
+                },
             this.hasContent && {
                 name: "clear_content",
                 icon: "cancel",
                 icon_class: "oi-filled",
                 text: _t("Clear content"),
                 action: (target) => this.props.clearRowContent(target.parentElement),
-            },
-            cells.length > 1 && {
-                name: "merge_cell",
-                icon: "close_fullscreen",
-                text: _t("Merge Cells"),
-                disable: !canMerge,
-                tooltip: _t("Only rows or cells selection can be merged"),
-                action: () => this.props.mergeSelectedCells(cells, spanType),
-            },
-            canUnmerge && {
-                name: "unmerge_cell",
-                icon: "close_fullscreen",
-                text: _t("Unmerge Cells"),
-                action: this.props.unmergeSelectedCell.bind(this),
             },
         ].filter(Boolean);
     }

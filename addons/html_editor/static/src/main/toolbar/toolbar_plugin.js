@@ -99,6 +99,8 @@ export const DELAY_TOOLBAR_OPEN = 300;
 const MIN_SIZE_FOR_COMPACT = 7;
 /** Special namespace that prevents the toolbar from opening */
 export const DISABLED_NAMESPACE = "disabled";
+/** Toolbar namespaces that allow expanding to the full toolbar */
+const EXPANDABLE_NAMESPACES = ["compact", "table"];
 
 /**
  * @typedef { Object } ToolbarShared
@@ -177,7 +179,7 @@ export class ToolbarPlugin extends Plugin {
             },
         },
         toolbar_groups: [
-            withSequence(100, { id: "expand_toolbar", namespaces: ["compact"] }),
+            withSequence(100, { id: "expand_toolbar", namespaces: EXPANDABLE_NAMESPACES }),
             withSequence(30, { id: "layout" }),
         ],
         toolbar_items: {
@@ -438,7 +440,7 @@ export class ToolbarPlugin extends Plugin {
             return;
         }
 
-        if (currentNamespace === "compact" && this.isToolbarExpanded) {
+        if (EXPANDABLE_NAMESPACES.includes(currentNamespace) && this.isToolbarExpanded) {
             currentNamespace = "expanded";
         }
 
