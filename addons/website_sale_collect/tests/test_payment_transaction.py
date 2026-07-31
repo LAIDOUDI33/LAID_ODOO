@@ -8,7 +8,9 @@ from odoo.addons.website_sale_collect.tests.common import ClickAndCollectCommon
 
 @tagged("post_install", "-at_install")
 class TestOnSitePaymentTransaction(HttpCase, ClickAndCollectCommon):
-    _test_user_groups = None  # FIXME list needed groups
+    _test_user_groups = None
+
+    _test_user_name = 'Test Sales & Product Manager'
 
     def test_choosing_on_site_payment_confirms_order(self):
         order = self._create_so(carrier_id=self.carrier.id, state="draft")

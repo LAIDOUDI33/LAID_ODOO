@@ -21,7 +21,7 @@ class TestWebsiteSaleCartAbandonedCommon(TransactionCaseWithUserPortal):
                 email_got_sent = True
 
         with patch.object(MailTemplate, "send_mail", check_send_mail_called):
-            self.env["website"]._send_abandoned_cart_email()
+            self.env["website"].sudo()._send_abandoned_cart_email()
         return email_got_sent
 
 
