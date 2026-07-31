@@ -151,12 +151,6 @@ class StripeController(http.Controller):
             _logger.exception("Unable to process the payment data; skipping to acknowledge")
         return request.make_json_response("")
 
-    @http.route("/payment/stripe/client_secret", type="jsonrpc", auth="public", csrf=False)
-    def stripe_get_client_secret(self, provider_id):
-        provider = request.env["payment.provider"].sudo().browse(provider_id)
-        intent = provider._stripe_create_acss_setup_intent()
-        return {"client_secret": intent["client_secret"] if intent else False}
-
     @staticmethod
     def _include_payment_intent_in_payment_data(payment_intent, payment_data):
         payment_data.update({

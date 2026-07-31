@@ -117,9 +117,7 @@ class PaymentTransaction(models.Model):
         :rtype: dict
         """
         ppm_code = self.payment_method_id.primary_payment_method_id.code
-
-        if self.payment_method_code == "acss_direct_debit":
-            ppm_code = self.payment_method_code
+        payment_method_type = ppm_code or self.payment_method_code
         payment_intent_payload = {
             "amount": payment_utils.to_minor_currency_units(
                 self.amount,
@@ -129,7 +127,9 @@ class PaymentTransaction(models.Model):
             "currency": self.currency_id.name.lower(),
             "description": self.reference,
             "capture_method": "manual" if self.provider_id.capture_manually else "automatic",
-            "payment_method_types[]": const.PAYMENT_METHODS_MAPPING.get(ppm_code, ppm_code),
+            "payment_method_types[]": const.PAYMENT_METHODS_MAPPING.get(
+                payment_method_type, payment_method_type
+            ),
             "expand[]": "payment_method",
             **stripe_utils.include_shipping_address(self),
         }

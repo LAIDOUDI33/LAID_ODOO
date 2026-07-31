@@ -5,7 +5,6 @@ import { _t } from '@web/core/l10n/translation';
 import { patch } from '@web/core/utils/patch';
 
 import { PaymentForm } from '@payment/interactions/payment_form';
-import { rpc } from '@web/core/network/rpc';
 
 patch(PaymentForm.prototype, {
 
@@ -60,6 +59,12 @@ patch(PaymentForm.prototype, {
             new StripeOptions()._prepareStripeOptions(stripeInlineForm.dataset),
         );
 
+        const clientSecret = this.stripeInlineFormValues["client_secret"];
+        if (clientSecret) {
+            this._initiatePaymentElement(paymentOptionId, {clientSecret: clientSecret});
+            return;
+        }
+
         // Instantiate the elements.
         let elementsOptions =  {
             appearance: { theme: 'stripe' },
@@ -81,42 +86,14 @@ patch(PaymentForm.prototype, {
             elementsOptions.mode = 'setup';
             elementsOptions.setupFutureUsage = 'off_session';
         }
-        if (paymentMethodCode === 'acss_direct_debit') {
-            const { client_secret } = await rpc(
-                '/payment/stripe/client_secret',
-                {
-                    provider_id: providerId,
-                },
-            );
-            if (!client_secret) {
-                throw new Error(_t("Failed to initialize ACSS Direct Debit."));
-            }
-            this.stripeElements[paymentOptionId] = this.stripeJS.elements({
-                clientSecret: client_secret,
-            });
-        } else {
-            this.stripeElements[paymentOptionId] =
-                this.stripeJS.elements(elementsOptions);
-        }
 
-        // Instantiate the payment element.
-        const paymentElementOptions = {
-            defaultValues: {
-                billingDetails: this.stripeInlineFormValues['billing_details'],
-            },
-        };
-        const paymentElement = this.stripeElements[paymentOptionId].create(
-            'payment', paymentElementOptions
-        );
-        paymentElement.on('loaderror', response => {
-            this._displayErrorDialog(_t("Cannot display the payment form"), response.error.message);
-        });
-        paymentElement.mount(stripeInlineForm);
+        this.stripeElements[paymentOptionId] = this.stripeJS.elements(elementsOptions);
+        this._initiatePaymentElement(paymentOptionId, elementsOptions);
 
         const tokenizationCheckbox = inlineForm.querySelector(
             'input[name="o_payment_tokenize_checkbox"]'
         );
-        if (tokenizationCheckbox && paymentMethodCode !== "acss_direct_debit") {
+        if (tokenizationCheckbox) {
             // Display tokenization-specific inputs when the tokenization checkbox is checked.
             this.stripeElements[paymentOptionId].update({
                 setupFutureUsage: tokenizationCheckbox.checked ? 'off_session' : null,
@@ -127,6 +104,24 @@ patch(PaymentForm.prototype, {
                 });
             });
         }
+    },
+
+    _initiatePaymentElement(paymentOptionId, elementsOptions) {
+        const paymentElementOptions = {
+            defaultValues: {
+                billingDetails: this.stripeInlineFormValues["billing_details"],
+            },
+        };
+        this.stripeElements[paymentOptionId] = this.stripeJS.elements(elementsOptions);
+
+        // Instantiate the payment element.
+        const paymentElement = this.stripeElements[paymentOptionId].create(
+            'payment', paymentElementOptions
+        );
+        paymentElement.on('loaderror', response => {
+            this._displayErrorDialog(_t("Cannot display the payment form"), response.error.message);
+        });
+        paymentElement.mount(stripeInlineForm);
     },
 
     // #=== PAYMENT FLOW ===#
