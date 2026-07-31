@@ -439,6 +439,8 @@ class AccountMove(models.Model):
         edi_doc = self._l10n_cn_baiwang_get_or_create_red_form_document()
         if edi_doc.state == 'red_form_pending':
             raise UserError(self.env._("A Red Form request is already pending for this Credit Note."))
+        if edi_doc.state == 'red_form_confirmed':
+            raise UserError(self.env._("A Red Form has already been confirmed for this Credit Note."))
         edi_doc.write({'state': 'draft', 'error_message': False})
         red_form_data = self._l10n_cn_baiwang_prepare_red_form_data(original_move)
         try:

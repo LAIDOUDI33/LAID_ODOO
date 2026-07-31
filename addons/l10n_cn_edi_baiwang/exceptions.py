@@ -20,11 +20,21 @@ RETRYABLE_CODES = {'99', '410', '411', '416', '606'}
 
 
 def get_baiwang_error_message(env, _error_reference, error_data):
-    code = str((error_data or {}).get('code') or '')
-    provider_message = (error_data or {}).get('message') or env._('Unexpected Baiwang error.')
+    error_data = error_data if isinstance(error_data, dict) else {}
+    code = str(error_data.get('code') or '')
+    provider_message = error_data.get('message') or env._('Unexpected Baiwang error.')
     mapped = BAIWANG_ERROR_CODE_MESSAGES.get(code)
     if mapped:
-        return env._('%s (Baiwang [%s]: %s)') % (env._(mapped), code, provider_message)
+        return env._(
+            '%(mapped_message)s (Baiwang [%(code)s]: %(provider_message)s)',
+            mapped_message=env._(mapped),
+            code=code,
+            provider_message=provider_message,
+        )
     if code:
-        return env._('Baiwang error [%s]: %s') % (code, provider_message)
+        return env._(
+            'Baiwang error [%(code)s]: %(provider_message)s',
+            code=code,
+            provider_message=provider_message,
+        )
     return provider_message
