@@ -33,7 +33,7 @@ class AccountMove(models.Model):
                 move.peppol_message_uuid
                 and move.move_type in ('in_invoice', 'in_refund')
                 and not move.peppol_response_ids.filtered(
-                    lambda r: r.peppol_state == 'not_serviced' or (r.peppol_state != 'error' and r.response_code in ('AP', 'RE'))
+                    lambda r: r.peppol_state == 'not_serviced' or (r.peppol_state != 'error' and r.response_code in ('AP', 'RE')),
                 )
                 and move.partner_id.peppol_response_support
             )
