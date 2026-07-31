@@ -2271,6 +2271,26 @@ class SaleOrder(models.Model):
         self.ensure_one()
         return self.sudo().transaction_ids._get_last()
 
+    def _get_portal_payment_status(self):
+        """Return the payment status to display on the customer portal.
+
+        With split payments, the status can no longer be inferred from the last transaction only;
+        it is derived from the aggregated transaction amounts.
+
+        :return: 'paid', 'pending', 'authorized', or False if no status should be displayed.
+        :rtype: str|bool
+        """
+        self.ensure_one()
+        transactions = self.with_context(active_test=False).sudo().transaction_ids
+        if self._is_paid():
+            if any(tx.state == "authorized" for tx in transactions):
+                return "authorized"
+            return "paid"
+        if self._is_paid_or_in_payment():
+            if any(tx.state == "pending" for tx in transactions):
+                return "pending"
+        return False
+
     def _get_order_lines_to_report(self):
         down_payment_lines = self.order_line.filtered(
             lambda line: (

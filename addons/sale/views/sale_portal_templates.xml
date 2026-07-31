@@ -564,11 +564,10 @@
         <div id="content">
             <div id="informations" class="row">
                 <span id="transaction_info">
-                    <div t-if="sale_order.get_portal_last_transaction() and not invoices and sale_order.state in ('sent', 'sale') and portal_confirmation == 'pay' and not success and not error"
+                    <t t-set="last_tx" t-value="sale_order.get_portal_last_transaction()"/>
+                    <div t-if="last_tx and not invoices and sale_order.state in ('sent', 'sale') and portal_confirmation == 'pay'"
                         t-att-data-order-id="sale_order.id">
-                        <t t-if="sale_order.transaction_ids">
-                            <t t-call="payment.state_header" tx="sale_order.get_portal_last_transaction()"/>
-                    </t>
+                        <t t-call="payment.state_header" tx="last_tx"/>
                     </div>
                 </span>
                 <!-- Information -->
