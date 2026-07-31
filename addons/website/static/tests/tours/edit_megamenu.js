@@ -324,6 +324,9 @@ registry.category("web_tour.tours").add("edit_megamenu_visibility", {
             trigger: ".modal:not(.o_inactive_modal) .modal-footer .btn-primary:contains(save)",
             run: "click",
         },
+        {
+            trigger: "body:not(:has(.options-container-header))",
+        },
         selectHeader(),
 
         ...changeOptionInPopover("Header", "Template", "Hamburger Menu"),
