@@ -23,7 +23,7 @@ class TestHrContractCalendarCommon(common.TransactionCase):
             },
         ])
         cls.env.user.company_id = cls.company_A
-        cls.calendar_35h, cls.calendar_28h, cls.calendar_35h_night, cls.sunday_morning_calendar, cls.sunday_afternoon_calendar = cls.env['resource.calendar'].create([
+        cls.calendar_35h, cls.calendar_28h, cls.calendar_35h_night, cls.sunday_morning_calendar, cls.sunday_afternoon_calendar, cls.calendar_fully_flexible = cls.env['resource.calendar'].create([
             {
                 'name': '35h calendar',
                 'hours_per_day': 7.0,
@@ -74,6 +74,11 @@ class TestHrContractCalendarCommon(common.TransactionCase):
                 "attendance_ids": [
                     (0, 0, {"dayofweek": "6", "hour_from": 8, "hour_to": 17}),
                 ],
+            },
+            {
+                'name': 'Fully Flexible Calendar',
+                'calendar_type': 'variable',
+                'attendance_ids': [],
             },
         ])
         cls.partnerA, cls.partnerB, cls.partnerC, cls.partnerD, cls.partnerE,\
@@ -174,7 +179,7 @@ class TestHrContractCalendarCommon(common.TransactionCase):
             {
                 'name': 'Partner F - Fully Flexible',
                 'tz': "Europe/Brussels",
-                'resource_calendar_id': False,
+                'resource_calendar_id': cls.calendar_fully_flexible.id,
                 'work_contact_id': cls.partnerF.id,
                 'company_id': cls.company_A.id,
                 'date_version': datetime(2023, 12, 1),

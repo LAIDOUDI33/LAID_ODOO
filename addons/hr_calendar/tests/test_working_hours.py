@@ -434,9 +434,14 @@ class TestWorkingHoursWithVersion(TestHrContractCalendarCommon):
 
     def test_flexible_employee_is_available_in_the_middle_of_a_day(self):
         self.env.user.company_id = self.company_A
-        self.contractD.resource_calendar_id = False
-        self.contractD.hours_per_week = 56
-        self.contractD.hours_per_day = 8
+        calendar_flexible = self.env['resource.calendar'].create({
+            'name': 'Flexible Calendar',
+            'calendar_type': 'variable',
+            'attendance_ids': [],
+            'hours_per_week': 56,
+            'hours_per_day': 8,
+        })
+        self.contractD.resource_calendar_id = calendar_flexible
 
         work_hours = self.env["res.partner"].get_working_hours_for_all_attendees(
             [self.partnerD.id],
@@ -460,9 +465,14 @@ class TestWorkingHoursWithVersion(TestHrContractCalendarCommon):
 
     def test_flexible_employee_is_available_in_the_middle_of_day_after_contract_start(self):
         self.env.user.company_id = self.company_A
-        self.contractD.resource_calendar_id = False
-        self.contractD.hours_per_week = 56
-        self.contractD.hours_per_day = 8
+        calendar_flexible = self.env['resource.calendar'].create({
+            'name': 'Flexible Calendar',
+            'calendar_type': 'variable',
+            'attendance_ids': [],
+            'hours_per_week': 56,
+            'hours_per_day': 8,
+        })
+        self.contractD.resource_calendar_id = calendar_flexible
         self.contractD.contract_date_start = datetime(2023, 12, 28)
 
         work_hours = self.env["res.partner"].get_working_hours_for_all_attendees(
@@ -484,9 +494,14 @@ class TestWorkingHoursWithVersion(TestHrContractCalendarCommon):
 
     def test_flexible_employee_is_always_available_until_contract_end(self):
         self.env.user.company_id = self.company_A
-        self.contractD.resource_calendar_id = False
-        self.contractD.hours_per_week = 56
-        self.contractD.hours_per_day = 8
+        calendar_flexible = self.env['resource.calendar'].create({
+            'name': 'Flexible Calendar',
+            'calendar_type': 'variable',
+            'attendance_ids': [],
+            'hours_per_week': 56,
+            'hours_per_day': 8,
+        })
+        self.contractD.resource_calendar_id = calendar_flexible
         self.contractD.contract_date_end = datetime(2023, 12, 28)
 
         work_hours = self.env["res.partner"].get_working_hours_for_all_attendees(
@@ -508,9 +523,12 @@ class TestWorkingHoursWithVersion(TestHrContractCalendarCommon):
 
     def test_fully_flexible_employee_is_always_available(self):
         self.env.user.company_id = self.company_A
-        self.contractD.resource_calendar_id = False
-        self.contractD.hours_per_week = False
-        self.contractD.hours_per_day = False
+        calendar_fully_flexible = self.env['resource.calendar'].create({
+            'name': 'Fully Flexible Calendar',
+            'calendar_type': 'variable',
+            'attendance_ids': [],
+        })
+        self.contractD.resource_calendar_id = calendar_fully_flexible
 
         work_hours = self.env["res.partner"].get_working_hours_for_all_attendees(
             [self.partnerD.id],
@@ -534,9 +552,12 @@ class TestWorkingHoursWithVersion(TestHrContractCalendarCommon):
 
     def test_fully_flexible_employee_is_always_available_after_contract_start(self):
         self.env.user.company_id = self.company_A
-        self.contractD.resource_calendar_id = False
-        self.contractD.hours_per_week = False
-        self.contractD.hours_per_day = False
+        calendar_fully_flexible = self.env['resource.calendar'].create({
+            'name': 'Fully Flexible Calendar',
+            'calendar_type': 'variable',
+            'attendance_ids': [],
+        })
+        self.contractD.resource_calendar_id = calendar_fully_flexible
         self.contractD.contract_date_start = datetime(2023, 12, 28)
 
         work_hours = self.env["res.partner"].get_working_hours_for_all_attendees(
@@ -558,9 +579,12 @@ class TestWorkingHoursWithVersion(TestHrContractCalendarCommon):
 
     def test_fully_flexible_employee_is_always_available_until_contract_end(self):
         self.env.user.company_id = self.company_A
-        self.contractD.resource_calendar_id = False
-        self.contractD.hours_per_week = False
-        self.contractD.hours_per_day = False
+        calendar_fully_flexible = self.env['resource.calendar'].create({
+            'name': 'Fully Flexible Calendar',
+            'calendar_type': 'variable',
+            'attendance_ids': [],
+        })
+        self.contractD.resource_calendar_id = calendar_fully_flexible
         self.contractD.contract_date_end = datetime(2023, 12, 28)
 
         work_hours = self.env["res.partner"].get_working_hours_for_all_attendees(

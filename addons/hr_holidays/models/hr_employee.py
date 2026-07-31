@@ -178,7 +178,7 @@ class HrEmployee(models.Model):
         # get from the resource calendar
         for lookahead_day in lookahead_days:
             for calendar, employees in remaining.grouped(
-                lambda e: e.resource_calendar_id or e.company_id.resource_calendar_id
+                lambda e: e.version_id._get_calendar_or_company_fallback()
             ).items():
                 resources_per_tz = employees._get_resources_per_tz(min_dt)
                 work_intervals = calendar._work_intervals_batch(
@@ -779,9 +779,7 @@ class HrEmployee(models.Model):
             duration_based_attendances = calendar.attendance_ids.filtered('duration_based')._filter_by_date(target_date)
             if version.is_flexible or duration_based_attendances or count_non_working_days:
                 # Quick calculation to center flexible hours around 12PM midday
-                if version.is_flexible:
-                    hours_day = version.hours_per_day
-                elif count_non_working_days:
+                if version.is_flexible or count_non_working_days:
                     hours_day = calendar.hours_per_day
                 else:
                     hours_day = sum(duration_based_attendances.mapped('duration_hours'))

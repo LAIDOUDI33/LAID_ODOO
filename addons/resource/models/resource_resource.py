@@ -386,9 +386,8 @@ class ResourceResource(models.Model):
                     cap = resource.hours_per_week or full_time_required_hours
                     resource_hours_per_week[resource.id][year_week] = min(cap, day_working_hours + resource_hours_per_week[resource.id][year_week])
         for calendar, resources in calendar_resources.items():
-            domain = [('calendar_id', '=', False)] if not calendar else None
             resources_per_tz = resources._get_resources_per_tz()
-            leave_intervals = (calendar or self.env['resource.calendar'])._leave_intervals_batch(min_start_date, max_end_date, resources_per_tz, domain)
+            leave_intervals = (calendar or self.env['resource.calendar'])._leave_intervals_batch(min_start_date, max_end_date, resources_per_tz, [])
             for resource_id, leaves in leave_intervals.items():
                 if not resource_id:
                     continue

@@ -475,10 +475,6 @@ class HrVersion(models.Model):
                 continue
             version = vals['version_id']
             calendar = version.resource_calendar_id
-            if not calendar and not version.hours_per_week and not version.hours_per_day:
-                vals['date'] = date_start.astimezone(tz).date()
-                vals['duration'] = 0.0
-                continue
             employee = version.employee_id
             mapped_periods[date_start, date_stop][calendar] |= employee
 
@@ -495,12 +491,10 @@ class HrVersion(models.Model):
                 date_stop = vals['date_stop']
                 version = vals['version_id']
                 calendar = version.resource_calendar_id
-                hours_per_week = version.hours_per_week
-                hours_per_day = version.hours_per_day
                 employee = version.employee_id
                 tz = _get_tz(version)
                 vals['date'] = date_start.astimezone(tz).date()
-                vals['duration'] = mapped_version_data[date_start, date_stop][calendar][employee.id]['hours'] if calendar or hours_per_week or hours_per_day else 0.0
+                vals['duration'] = mapped_version_data[date_start, date_stop][calendar][employee.id]['hours']
             vals.pop('date_start', False)
             vals.pop('date_stop', False)
 

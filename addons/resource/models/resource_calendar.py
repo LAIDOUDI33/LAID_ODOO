@@ -10,7 +10,7 @@ from dateutil.relativedelta import relativedelta
 from dateutil.rrule import DAILY, rrule
 
 from odoo import api, fields, models
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
 from odoo.fields import Command, Domain
 from odoo.tools import float_compare
 from odoo.tools.date_utils import float_to_time, localized, to_timezone
@@ -187,6 +187,16 @@ class ResourceCalendar(models.Model):
             aggregates=['__count']))
         for calendar in self:
             calendar.work_resources_count = resources_per_calendar.get(calendar, 0)
+
+    @api.constrains('hours_per_week', 'hours_per_day')
+    def _verify_hours(self):
+        for calendar in self:
+            if calendar.calendar_type != 'variable':
+                continue
+            if calendar.hours_per_week < 0 or calendar.hours_per_week > 168:
+                raise ValidationError(self.env._("Hours per week must be between 0 and 168."))
+            if calendar.hours_per_day < 0 or calendar.hours_per_day > 24:
+                raise ValidationError(self.env._("Average hours per day must be between 0 and 24."))
 
     @api.depends('hours_per_week', 'full_time_required_hours')
     def _compute_is_fulltime(self):
