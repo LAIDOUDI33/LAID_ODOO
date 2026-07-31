@@ -77,7 +77,7 @@ class ResourceCalendar(models.Model):
         help='Work time rate versus full time working schedule, should be between 0 and 100 %.')
     calendar_type = fields.Selection([
         ('fixed', 'Fixed'),
-        ('variable', 'Variable')],
+        ('variable', 'Flexible')],
         string='Calendar Type', default='fixed', required=True)
 
     def _get_attendances_to_unlink(self, next_calendar_type=None):
