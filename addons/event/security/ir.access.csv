@@ -1,4 +1,14 @@
 id,name,model_id,group_id/id,operation,domain
+event_event_rule_portal,Event Portal: Read access to events with own registrations,event.event,base.group_portal,r,"[
+                '|',
+                    ('registration_ids.partner_id', 'in', [user.partner_id.id]),
+                    ('registration_ids.email', '=', user.email),
+            ]"
+event_registration_rule_portal,Registration Portal: Read access to own registrations,event.registration,base.group_portal,r,"[
+                '|',
+                    ('partner_id', 'in', [user.partner_id.id]),
+                    ('email', '=', user.email),
+            ]"
 access_event_type_registration,event.type.registration,event.type,event.group_event_registration_desk,r,
 access_event_type_manager,event.type.manager,event.type,event.group_event_manager,crud,
 access_event_type_ticket_registration,event.type.ticket.registration,event.type.ticket,event.group_event_registration_desk,r,
