@@ -32,6 +32,9 @@
             }
         }
 
+    }
+
+    &:where(:not(.o_dynamic_snippet_carousel)) {
         @include media-breakpoint-up(lg) {
             &:where(:not(.o_carousel_multi_items)) > :where(:not(.container-fluid)) {
                 .s_dynamic_snippet_title_aside + .s_dynamic_snippet_content {
