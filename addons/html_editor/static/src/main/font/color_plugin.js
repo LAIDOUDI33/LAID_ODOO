@@ -35,7 +35,7 @@ import { withSequence } from "@html_editor/utils/resource";
 
 const RGBA_OPACITY = 0.6;
 const HEX_OPACITY = "99";
-const COLOR_COMBINATION_CLASSES = [1, 2, 3, 4, 5].map((i) => `o_cc${i}`);
+export const COLOR_COMBINATION_CLASSES = [1, 2, 3, 4, 5].map((i) => `o_cc${i}`);
 const COLOR_COMBINATION_SELECTOR = COLOR_COMBINATION_CLASSES.map((c) => `.${c}`).join(", ");
 
 /**
