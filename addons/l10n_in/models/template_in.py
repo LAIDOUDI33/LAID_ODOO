@@ -11,6 +11,15 @@ class AccountChartTemplate(models.AbstractModel):
             'code_digits': '6',
         }
 
+    @template('in_sch3')
+    def _get_in_sch3_template_data(self):
+        return {
+            'name': self.env._('Schedule 3'),
+            'parent': 'in',
+            'code_digits': '8',
+            'sequence': 2,
+        }
+
     @template('in', 'res.company')
     def _get_in_res_company(self):
         return {
