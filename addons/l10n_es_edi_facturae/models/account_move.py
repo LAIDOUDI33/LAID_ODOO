@@ -184,7 +184,7 @@ class AccountMove(models.Model):
         self.ensure_one()
         return not self.invoice_pdf_report_id \
             and not self.l10n_es_edi_facturae_xml_id \
-            and not self.l10n_es_is_simplified \
+            and self.l10n_es_invoice_type not in ('F2', 'R5') \
             and self.is_invoice(include_receipts=True) \
             and self.country_code == 'ES' \
             and self.company_id.sudo().l10n_es_edi_facturae_certificate_ids  # We only enable Facturae if a certificate is valid or has been valid (which will raise an error)
@@ -445,7 +445,7 @@ class AccountMove(models.Model):
         invoice_values = {
             'invoice_record': self,
             'invoice_currency': inv_curr,
-            'InvoiceDocumentType': 'FA' if self.l10n_es_is_simplified else 'FC',
+            'InvoiceDocumentType': 'FA' if self.l10n_es_invoice_type in ('F2', 'R5') else 'FC',
             'InvoiceClass': 'OR' if self.is_refund() else 'OO',
             'Corrective': self._l10n_es_edi_facturae_get_corrective_data(),
             'InvoiceIssueData': {
@@ -819,7 +819,7 @@ class AccountMove(models.Model):
         return logs
 
     def _search_tax_for_import(self, company, amount, is_fixed, is_withheld, is_purchase, price_included):
-        taxes = self.env['account.tax'].search([
+        taxes = self.env['account.tax'].with_context(active_test=False).search([
             ('company_id', '=', company.id),
             ('amount', '=', -1.0 * amount if is_withheld else amount),
             ('amount_type', '=', 'fixed' if is_fixed else 'percent'),

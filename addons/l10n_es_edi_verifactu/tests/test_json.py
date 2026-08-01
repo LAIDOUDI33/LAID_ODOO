@@ -120,11 +120,13 @@ class TestL10nEsEdiVerifactuJson(TestL10nEsEdiVerifactuCommon):
                 'move_ids': [Command.set((invoice.id,))],
                 'date': '2019-02-10',
                 'journal_id': invoice.journal_id.id,
-                'l10n_es_edi_verifactu_refund_reason': 'R1',
             }
         ).reverse_moves()
         credit_note = invoice.reversal_move_ids
         credit_note.invoice_date = '2019-02-11'
+        # R1 isn't auto-derivable (only R4/R5 are, based on is_simplified); set it explicitly on
+        # the move itself, same as a user would after the wizard creates it with the R4 default.
+        credit_note.l10n_es_invoice_type = 'R1'
         credit_note.action_post()
 
         with self._mock_last_document(None):
@@ -162,7 +164,7 @@ class TestL10nEsEdiVerifactuJson(TestL10nEsEdiVerifactuCommon):
                 'date': '2019-02-10',
                 'journal_id': invoice.journal_id.id,
                 # By default:
-                # 'l10n_es_edi_verifactu_refund_reason': 'R1',
+                # 'l10n_es_invoice_type': 'R4',
             }
         ).reverse_moves(is_modify=True)
 
