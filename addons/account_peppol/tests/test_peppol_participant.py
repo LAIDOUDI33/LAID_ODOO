@@ -10,7 +10,7 @@ from odoo.addons.account_peppol.tests.common import PeppolConnectorCommon
 
 
 @freeze_time('2023-01-01')
-@tagged('-at_install', 'post_install')
+@tagged('-at_install', 'post_install', 'pep')
 class TestPeppolParticipant(PeppolConnectorCommon):
 
     @classmethod
