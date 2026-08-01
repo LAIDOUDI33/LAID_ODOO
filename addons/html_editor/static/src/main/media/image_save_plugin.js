@@ -148,6 +148,7 @@ export class ImageSavePlugin extends Plugin {
         }
         if (attachment.mimetype === "image/webp") {
             el.classList.add("o_modified_image_to_save");
+            el.dataset.attachmentId = attachment.id;
             el.dataset.originalId = attachment.id;
             el.dataset.mimetype = attachment.mimetype;
             el.dataset.fileName = attachment.name;
