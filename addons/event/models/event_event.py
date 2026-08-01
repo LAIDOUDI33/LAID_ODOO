@@ -594,6 +594,14 @@ class EventEvent(models.Model):
                 ]
             event.event_ticket_ids = command
 
+    def _sync_event_ticket_translations_from_type(self):
+        """ Copy ticket translations from the event template after tickets are stored. """
+        for event in self.filtered('event_type_id'):
+            template_tickets = event.event_type_id.event_type_ticket_ids
+            event_tickets = event.event_ticket_ids.filtered(lambda ticket: not ticket.registration_ids)
+            for template_ticket, event_ticket in zip(template_tickets, event_tickets):
+                template_ticket.copy_translations(event_ticket)
+
     @api.depends('event_type_id')
     def _compute_note(self):
         for event in self:
@@ -645,6 +653,7 @@ class EventEvent(models.Model):
         for res in events:
             if res.organizer_id:
                 res.message_subscribe([res.organizer_id.id])
+        events.filtered('event_type_id')._sync_event_ticket_translations_from_type()
         self.env.flush_all()
         return events
 
@@ -655,6 +664,8 @@ class EventEvent(models.Model):
         res = super(EventEvent, self).write(vals)
         if vals.get('organizer_id'):
             self.message_subscribe([vals['organizer_id']])
+        if 'event_type_id' in vals:
+            self.filtered('event_type_id')._sync_event_ticket_translations_from_type()
         return res
 
     @api.depends('event_registrations_sold_out', 'seats_limited', 'seats_max', 'seats_available')
