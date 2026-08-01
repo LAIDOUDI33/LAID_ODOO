@@ -103,29 +103,31 @@
                         icon="fa-clock-o"
                         type="object"
                         groups="hr_attendance.group_hr_attendance_officer"
-                        help="Regenerate overtimes for this ruleset"/>
+                        help="Regenerate overtimes for this ruleset"
+                        invisible="not context.get('can_edit')"/>
                 </header>
                 <sheet>
                     <div class="oe_title">
                         <label for="name" string="Ruleset Name"/>
-                        <h1><field name="name" placeholder="e.g. Legal Rules"/></h1>
+                        <h1><field name="name" placeholder="e.g. Legal Rules" readonly="not context.get('can_edit')"/></h1>
                     </div>
                     <group>
                         <group>
-                            <field name="rate_combination_mode"/>
+                            <field name="rate_combination_mode" readonly="not context.get('can_edit')"/>
                         </group>
                         <group>
-                            <field name="country_id" options="{'no_create': True, 'no_open': True}" groups="base.group_multi_company"/>
+                            <field name="country_id" options="{'no_create': True, 'no_open': True}" readonly="not context.get('can_edit')" groups="base.group_multi_company"/>
                         </group>
                     </group>
                     <group colspan="4">
                         <field 
                             name="description" colspan="4"
+                            readonly="not context.get('can_edit')"
                             placeholder="Provide a description or sources for this ruleset."/>
                     </group>
                     <notebook colspan="4">
                         <page name="overtime_rules" string="Overtime Rules">
-                            <field name="rule_ids" readonly="not id">
+                            <field name="rule_ids" readonly="not id or not context.get('can_edit')">
                                 <list>
                                     <field name="sequence" widget="handle"/>
                                     <field name="name"/>
@@ -184,6 +186,14 @@
         <field name="view_mode">list,form</field>
     </record>
 
-    <menuitem id="menu_hr_attendance_overtime_rulesets" name="Overtime Rulesets" parent="hr_attendance.menu_hr_attendance_configuration" sequence="300" action="hr_attendance_overtime_ruleset_action" groups="hr_attendance.group_hr_attendance_manager"/>
+    <record id="action_open_overtime_rulesets" model="ir.actions.server">
+        <field name="name">Open Overtime Rulesets</field>
+        <field name="model_id" ref="model_hr_attendance_overtime_ruleset"/>
+        <field name="state">code</field>
+        <field name="code">
+action = env['hr.attendance.overtime.ruleset']._action_open_overtime_rulesets()
+        </field>
+    </record>
 
+    <menuitem id="menu_hr_attendance_overtime_rulesets" name="Overtime Rulesets" parent="hr_attendance.menu_hr_attendance_configuration" sequence="300" action="action_open_overtime_rulesets" groups="hr_attendance.group_hr_attendance_manager"/>
 </odoo>
