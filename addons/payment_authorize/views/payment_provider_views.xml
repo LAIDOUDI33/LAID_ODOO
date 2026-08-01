@@ -6,6 +6,7 @@
         <field name="model">payment.provider</field>
         <field name="inherit_id" ref="payment.payment_provider_form"/>
         <field name="arch" type="xml">
+<<<<<<< 74f25815498831afb4f46636f238d14152bb0eba
             <group name="provider_credentials" position="inside">
                 <field
                     string="API Login ID"
@@ -40,7 +41,52 @@
                         name="action_update_merchant_details"
                         class="oe_link"
                         icon="fa-refresh"
+||||||| 6197b59e67809567837f1fca5495d088e826fab8
+            <group name="provider_credentials" position='inside'>
+                <group invisible="code != 'authorize'">
+                    <field name="authorize_login" required="code == 'authorize' and state != 'disabled'"/>
+                    <field name="authorize_transaction_key" password="True" required="code == 'authorize' and state != 'disabled'"/>
+                    <field name="authorize_signature_key" password="True" required="code == 'authorize' and state != 'disabled'"/>
+                    <label for="authorize_client_key"/>
+                    <div class="o_row" col="2">
+                        <field name="authorize_client_key"/>
+                        <button
+                            string="Generate Client Key"
+                            type="object"
+                            name="action_update_merchant_details"
+                            invisible="state == 'disabled'"
+                            class="oe_link"
+                            icon="fa-refresh"
+                        />
+                    </div>
+                    <label
+                        for="authorize_webhook_id"
+                        invisible="not (authorize_login and authorize_transaction_key and authorize_signature_key)"
+=======
+            <group name="provider_credentials" position='inside'>
+                <group invisible="code != 'authorize'">
+                    <field name="authorize_login" required="code == 'authorize' and state != 'disabled'"/>
+                    <field name="authorize_transaction_key" password="True" required="code == 'authorize' and state != 'disabled'"/>
+                    <field name="authorize_signature_key" password="True" required="code == 'authorize' and state != 'disabled'"/>
+                    <label for="authorize_client_key"/>
+                    <div class="o_row" col="2">
+                        <field name="authorize_client_key"/>
+                        <button
+                            string="Generate Client Key"
+                            type="object"
+                            name="action_update_merchant_details"
+                            invisible="state == 'disabled'"
+                            class="oe_link"
+                            icon="fa-refresh"
+                        />
+                    </div>
+                    <label
+                        for="authorize_webhook_id"
+                        groups="base.group_system"
+                        invisible="not (authorize_login and authorize_transaction_key and authorize_signature_key)"
+>>>>>>> c1ce6d1319989cb5f65e643ac0dde6977937d43f
                     />
+<<<<<<< 74f25815498831afb4f46636f238d14152bb0eba
                 </div>
                 <label
                     for="authorize_webhook_id"
@@ -66,6 +112,54 @@
                         class="btn-secondary"
                     />
                 </div>
+||||||| 6197b59e67809567837f1fca5495d088e826fab8
+                    <div
+                        class="o_row"
+                        invisible="not (authorize_login and authorize_transaction_key and authorize_signature_key)"
+                    >
+                        <field string="Webhook ID" name="authorize_webhook_id"/>
+                        <button
+                            string="Generate Your Webhook"
+                            name="action_authorize_create_webhook"
+                            type="object"
+                            class="btn-primary"
+                            invisible="authorize_webhook_id or state == 'disabled'"
+                        />
+                        <button
+                            string="Re-generate Your Webhook"
+                            name="action_authorize_create_webhook"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="not authorize_webhook_id or state == 'disabled'"
+                        />
+                    </div>
+                    <widget colspan="2" name="documentation_link" path="/applications/finance/payment_providers/authorize.html" label="How to get paid with Authorize.Net"/>
+                </group>
+=======
+                    <div
+                        class="o_row"
+                        groups="base.group_system"
+                        invisible="not (authorize_login and authorize_transaction_key and authorize_signature_key)"
+                    >
+                        <field string="Webhook ID" name="authorize_webhook_id"/>
+                        <button
+                            string="Generate Your Webhook"
+                            name="action_authorize_create_webhook"
+                            type="object"
+                            class="btn-primary"
+                            invisible="authorize_webhook_id or state == 'disabled'"
+                        />
+                        <button
+                            string="Re-generate Your Webhook"
+                            name="action_authorize_create_webhook"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="not authorize_webhook_id or state == 'disabled'"
+                        />
+                    </div>
+                    <widget colspan="2" name="documentation_link" path="/applications/finance/payment_providers/authorize.html" label="How to get paid with Authorize.Net"/>
+                </group>
+>>>>>>> c1ce6d1319989cb5f65e643ac0dde6977937d43f
             </group>
             <div name="available_currencies" position="inside">
                 <button

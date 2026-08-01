@@ -6,6 +6,7 @@
         <field name="model">payment.provider</field>
         <field name="inherit_id" ref="payment.payment_provider_form"/>
         <field name="arch" type="xml">
+<<<<<<< 74f25815498831afb4f46636f238d14152bb0eba
             <header position="inside">
                 <div invisible="not razorpay_is_oauth_supported">
                     <button
@@ -30,9 +31,17 @@
                     invisible="not razorpay_account_id and not (razorpay_key_id and razorpay_key_secret)"
                     class="text-muted mb-2"
                 >
+||||||| 6197b59e67809567837f1fca5495d088e826fab8
+            <group name="provider_credentials" position="before">
+                <div class="text-muted mb-2" invisible="not razorpay_account_id and not (razorpay_key_id and razorpay_key_secret)">
+=======
+            <group name="provider_credentials" position="before">
+                <div class="text-muted mb-2" groups="base.group_system" invisible="not razorpay_account_id and not (razorpay_key_id and razorpay_key_secret)">
+>>>>>>> c1ce6d1319989cb5f65e643ac0dde6977937d43f
                     This provider is linked with your Razorpay account.
                 </div>
             </group>
+<<<<<<< 74f25815498831afb4f46636f238d14152bb0eba
             <group name="provider_credentials" position="inside">
                 <field name="razorpay_account_id"
                     string="Account ID"
@@ -59,19 +68,135 @@
                         name="razorpay_webhook_secret"
                         readonly="razorpay_is_oauth_supported"
                         widget="password"
+||||||| 6197b59e67809567837f1fca5495d088e826fab8
+            <sheet position="before">
+                <header invisible="not razorpay_is_oauth_supported">
+                    <button
+                        name="action_start_onboarding"
+                        string="Connect"
+                        type="object"
+                        class="btn-primary"
+                        invisible="razorpay_account_id"
+=======
+            <sheet position="before">
+                <header invisible="not razorpay_is_oauth_supported">
+                    <button
+                        name="action_start_onboarding"
+                        string="Connect"
+                        type="object"
+                        class="btn-primary"
+                        groups="base.group_system"
+                        invisible="razorpay_account_id"
+>>>>>>> c1ce6d1319989cb5f65e643ac0dde6977937d43f
                     />
                     <button
                         string="Generate your webhook"
                         type="object"
+<<<<<<< 74f25815498831afb4f46636f238d14152bb0eba
                         name="action_razorpay_create_webhook"
                         invisible="not razorpay_account_id or razorpay_webhook_secret"
                         class="btn-primary ms-2"
+||||||| 6197b59e67809567837f1fca5495d088e826fab8
+                        class="btn-secondary"
+                        invisible="not razorpay_account_id"
+=======
+                        class="btn-secondary"
+                        groups="base.group_system"
+                        invisible="not razorpay_account_id"
+>>>>>>> c1ce6d1319989cb5f65e643ac0dde6977937d43f
                     />
+<<<<<<< 74f25815498831afb4f46636f238d14152bb0eba
                 </div>
+||||||| 6197b59e67809567837f1fca5495d088e826fab8
+                </header>
+            </sheet>
+            <group name="provider_credentials" position='inside'>
+                <group
+                    name="razorpay_credentials"
+                    invisible="code != 'razorpay'"
+                >
+                    <field name="razorpay_account_id"
+                        string="Account ID"
+                        invisible="not razorpay_is_oauth_supported"
+                        readonly="True"
+                    />
+                    <field
+                        name="razorpay_key_id"
+                        string="Key Id"
+                        invisible="razorpay_is_oauth_supported and (not razorpay_key_id or not razorpay_key_secret)"
+                    />
+                    <field
+                        name="razorpay_key_secret"
+                        string="Key Secret"
+                        password="True"
+                        invisible="razorpay_is_oauth_supported and (not razorpay_key_id or not razorpay_key_secret)"
+                    />
+                    <label for="razorpay_webhook_secret"/>
+                    <div class="o_row">
+                        <field
+                            name="razorpay_webhook_secret"
+                            string="Webhook Secret"
+                            password="True"
+                            readonly="razorpay_is_oauth_supported"
+                        />
+                        <button
+                            string="Generate your webhook"
+                            type="object"
+                            name="action_razorpay_create_webhook"
+                            class="btn-primary ms-2"
+                            invisible="not razorpay_account_id or razorpay_webhook_secret"
+                        />
+                    </div>
+                </group>
+=======
+                </header>
+            </sheet>
+            <group name="provider_credentials" position='inside'>
+                <group
+                    name="razorpay_credentials"
+                    invisible="code != 'razorpay'"
+                >
+                    <field name="razorpay_account_id"
+                        string="Account ID"
+                        invisible="not razorpay_is_oauth_supported"
+                        readonly="True"
+                    />
+                    <field
+                        name="razorpay_key_id"
+                        string="Key Id"
+                        invisible="razorpay_is_oauth_supported and (not razorpay_key_id or not razorpay_key_secret)"
+                        groups="base.group_system"
+                    />
+                    <field
+                        name="razorpay_key_secret"
+                        string="Key Secret"
+                        password="True"
+                        invisible="razorpay_is_oauth_supported and (not razorpay_key_id or not razorpay_key_secret)"
+                    />
+                    <label for="razorpay_webhook_secret"/>
+                    <div class="o_row">
+                        <field
+                            name="razorpay_webhook_secret"
+                            string="Webhook Secret"
+                            password="True"
+                            readonly="razorpay_is_oauth_supported"
+                        />
+                        <button
+                            string="Generate your webhook"
+                            type="object"
+                            name="action_razorpay_create_webhook"
+                            class="btn-primary ms-2"
+                            groups="base.group_system"
+                            invisible="not razorpay_account_id or razorpay_webhook_secret"
+                        />
+                    </div>
+                </group>
+>>>>>>> c1ce6d1319989cb5f65e643ac0dde6977937d43f
             </group>
             <group name="provider_credentials" position="after">
                 <div
                     role="alert"
+                    groups="base.group_system"
                     invisible="code != 'razorpay' or not razorpay_key_id or razorpay_account_id or not razorpay_is_oauth_supported"
                     class="alert alert-warning"
                 >

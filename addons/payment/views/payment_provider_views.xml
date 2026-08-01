@@ -211,6 +211,7 @@
                                 <group>
                                     <field name="minimum_amount"/>
                                     <field name="maximum_amount"/>
+<<<<<<< 74f25815498831afb4f46636f238d14152bb0eba
                                     <label for="available_currency_ids"/>
                                     <!-- Use a div to allow placing a button next to the field in
                                     overrides. -->
@@ -221,6 +222,23 @@
                                             placeholder="All Currencies"
                                             options="{'no_create': True}"
                                         />
+||||||| 6197b59e67809567837f1fca5495d088e826fab8
+                                    <label for="available_currency_ids"/>
+                                    <!-- Use `o_row` to allow placing a button next to the field in overrides. -->
+                                    <div name="available_currencies" class="o_row">
+                                        <field name="available_currency_ids"
+                                               widget="many2many_tags"
+                                               placeholder="Select currencies. Leave empty not to restrict any."
+                                               options="{'no_create': True}"/>
+=======
+                                    <label for="available_currency_ids" groups="base.group_system"/>
+                                    <!-- Use `o_row` to allow placing a button next to the field in overrides. -->
+                                    <div name="available_currencies" class="o_row" groups="base.group_system">
+                                        <field name="available_currency_ids"
+                                               widget="many2many_tags"
+                                               placeholder="Select currencies. Leave empty not to restrict any."
+                                               options="{'no_create': True}"/>
+>>>>>>> c1ce6d1319989cb5f65e643ac0dde6977937d43f
                                     </div>
                                     <field
                                         name="available_country_ids"

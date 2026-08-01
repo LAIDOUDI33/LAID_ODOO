@@ -43,12 +43,28 @@
                     invisible="code != 'mercado_pago' or not mercado_pago_access_token"
                 >
                     <field
+<<<<<<< 74f25815498831afb4f46636f238d14152bb0eba
                         string="Access Token"
                         name="mercado_pago_access_token"
                         invisible="code != 'mercado_pago'"
                         readonly="True"
                         widget="password"
+||||||| 6197b59e67809567837f1fca5495d088e826fab8
+                        string="Account Country"
+                        name="mercado_pago_account_country_id"
+                        required="code == 'mercado_pago' and state != 'disabled'"
+                        readonly="mercado_pago_access_token and mercado_pago_account_country_id"
+                        options="{'no_create': True}"
+=======
+                        string="Account Country"
+                        name="mercado_pago_account_country_id"
+                        required="code == 'mercado_pago' and state != 'disabled'"
+                        readonly="mercado_pago_access_token and mercado_pago_account_country_id"
+                        options="{'no_create': True}"
+                        groups="base.group_system"
+>>>>>>> c1ce6d1319989cb5f65e643ac0dde6977937d43f
                     />
+<<<<<<< 74f25815498831afb4f46636f238d14152bb0eba
                     <button
                         string="Disconnect Your Mercado Pago Account"
                         type="object"
@@ -56,8 +72,63 @@
                         confirm="Are you sure you want to disconnect?"
                         invisible="code != 'mercado_pago' or not (mercado_pago_access_token and mercado_pago_public_key) "
                         class="btn-secondary ms-2"
+||||||| 6197b59e67809567837f1fca5495d088e826fab8
+                    <label
+                        for="mercado_pago_access_token"
+                        invisible="not mercado_pago_access_token"
+=======
+                    <label
+                        for="mercado_pago_access_token"
+                        invisible="not mercado_pago_access_token"
+                        groups="base.group_system"
+>>>>>>> c1ce6d1319989cb5f65e643ac0dde6977937d43f
                     />
+<<<<<<< 74f25815498831afb4f46636f238d14152bb0eba
                 </div>
+||||||| 6197b59e67809567837f1fca5495d088e826fab8
+                    <div
+                        class="o_row"
+                        invisible="not mercado_pago_access_token"
+                    >
+                        <field
+                            string="Access Token"
+                            name="mercado_pago_access_token"
+                            readonly="True"
+                            password="True"
+                        />
+                        <button
+                            string="Disconnect Your Mercado Pago Account"
+                            type="object"
+                            name="action_reset_credentials"
+                            confirm="Are you sure you want to disconnect?"
+                            invisible="not (mercado_pago_access_token and mercado_pago_public_key)"
+                            class="btn-secondary ms-2"
+                        />
+                    </div>
+                </group>
+=======
+                    <div
+                        class="o_row"
+                        invisible="not mercado_pago_access_token"
+                        groups="base.group_system"
+                    >
+                        <field
+                            string="Access Token"
+                            name="mercado_pago_access_token"
+                            readonly="True"
+                            password="True"
+                        />
+                        <button
+                            string="Disconnect Your Mercado Pago Account"
+                            type="object"
+                            name="action_reset_credentials"
+                            confirm="Are you sure you want to disconnect?"
+                            invisible="not (mercado_pago_access_token and mercado_pago_public_key)"
+                            class="btn-secondary ms-2"
+                        />
+                    </div>
+                </group>
+>>>>>>> c1ce6d1319989cb5f65e643ac0dde6977937d43f
             </group>
             <group name="provider_config" position="before">
                 <div
@@ -65,6 +136,7 @@
                         code != 'mercado_pago'
                         or (mercado_pago_access_token and mercado_pago_public_key)
                     "
+                    groups="base.group_system"
                 >
                     <div
                         class="alert alert-warning mt-2"

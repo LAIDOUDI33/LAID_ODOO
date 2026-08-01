@@ -8,18 +8,65 @@
         <field name="arch" type="xml">
             <header position="inside">
                 <div
+<<<<<<< 74f25815498831afb4f46636f238d14152bb0eba
                     invisible="context.get('stripe_onboarding', False) or (code != 'stripe' or stripe_secret_key or stripe_publishable_key)"
                 >
                     <div name="stripe_onboarding_group">
                         <button
                             string="Connect"
+||||||| 6197b59e67809567837f1fca5495d088e826fab8
+                     name="stripe_onboarding_group"
+                     invisible="context.get('stripe_onboarding', False) or (code != 'stripe' or stripe_secret_key or stripe_publishable_key)">
+                    <button string="Connect Stripe"
+=======
+                     name="stripe_onboarding_group"
+                     groups="base.group_system"
+                     invisible="context.get('stripe_onboarding', False) or (code != 'stripe' or stripe_secret_key or stripe_publishable_key)">
+                    <button string="Connect Stripe"
+>>>>>>> c1ce6d1319989cb5f65e643ac0dde6977937d43f
                             type="object"
                             name="action_start_onboarding"
                             invisible="is_live"
                             class="btn-primary"
                             colspan="2"
+<<<<<<< 74f25815498831afb4f46636f238d14152bb0eba
                         />
+||||||| 6197b59e67809567837f1fca5495d088e826fab8
+                            invisible="state == 'enabled'"/>
+                </div>
+            </group>
+            <group name="provider_credentials" position="inside">
+                <group invisible="code != 'stripe'" name="stripe_credentials">
+                    <field name="stripe_publishable_key" required="code == 'stripe' and state != 'disabled'"/>
+                    <field name="stripe_secret_key" required="code == 'stripe' and state != 'disabled'" password="True"/>
+                    <label for="stripe_webhook_secret"/>
+                    <div class="o_row" col="2">
+                        <field name="stripe_webhook_secret" password="True"/>
+                        <button string="Generate your webhook"
+                                type="object"
+                                name="action_stripe_create_webhook"
+                                class="btn-primary"
+                                invisible="stripe_webhook_secret or not stripe_secret_key"/>
+=======
+                            invisible="state == 'enabled'"/>
+                </div>
+            </group>
+            <group name="provider_credentials" position="inside">
+                <group invisible="code != 'stripe'" name="stripe_credentials">
+                    <field name="stripe_publishable_key" required="code == 'stripe' and state != 'disabled'"/>
+                    <field name="stripe_secret_key" required="code == 'stripe' and state != 'disabled'" password="True"/>
+                    <label for="stripe_webhook_secret"/>
+                    <div class="o_row" col="2">
+                        <field name="stripe_webhook_secret" password="True"/>
+                        <button string="Generate your webhook"
+                                type="object"
+                                name="action_stripe_create_webhook"
+                                class="btn-primary"
+                                groups="base.group_system"
+                                invisible="stripe_webhook_secret or not stripe_secret_key"/>
+>>>>>>> c1ce6d1319989cb5f65e643ac0dde6977937d43f
                     </div>
+<<<<<<< 74f25815498831afb4f46636f238d14152bb0eba
                 </div>
             </header>
             <group name="provider_credentials" position="inside">
@@ -55,6 +102,18 @@
                         role="button"
                         class="btn btn-link"
                     >
+||||||| 6197b59e67809567837f1fca5495d088e826fab8
+                </group>
+                <div name="stripe_keys_link"
+                     invisible="not context.get('stripe_onboarding', False) or (code != 'stripe' or stripe_secret_key and stripe_publishable_key)">
+                    <a class="btn btn-link" role="button" href="https://dashboard.stripe.com/account/apikeys" target="_blank">
+=======
+                </group>
+                <div name="stripe_keys_link"
+                     groups="base.group_system"
+                     invisible="not context.get('stripe_onboarding', False) or (code != 'stripe' or stripe_secret_key and stripe_publishable_key)">
+                    <a class="btn btn-link" role="button" href="https://dashboard.stripe.com/account/apikeys" target="_blank">
+>>>>>>> c1ce6d1319989cb5f65e643ac0dde6977937d43f
                         Get your Secret and Publishable keys
                     </a>
                 </div>
