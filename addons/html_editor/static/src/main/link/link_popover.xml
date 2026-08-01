@@ -32,6 +32,18 @@
                                         </div>
                                     </t>
                                 </t>
+                                <div class="py-1 gap-2">
+                                    <label for="o_we_description_link">
+                                        Aria Description
+                                    </label>
+                                    <input
+                                        id="o_we_description_link"
+                                        class="o_we_description_link border-dark-subtle form-control form-control-sm"
+                                        t-model.proxy="this.state.description"
+                                        title="Description"
+                                        placeholder="Add a description if the label is not self-explanatory."
+                                        t-on-input="this.onChange"/>
+                                </div>
                             </div>
                         </div>
                     </t>
