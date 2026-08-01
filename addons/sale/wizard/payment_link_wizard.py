@@ -28,15 +28,17 @@ class PaymentLinkWizard(models.TransientModel):
         sale_wizards = self.env["payment.link.wizard"]
         for wizard in self.filtered(lambda w: w.res_model == "sale.order"):
             sale_order = wizard.env["sale.order"].browse(wizard.res_id)
-            if sale_order.state in ("draft", "sent") and wizard.amount < wizard.prepayment_amount:
-                wizard.warning_message = wizard.env._(
-                    "The amount must be greater than the prepayment amount."
-                )
-                sale_wizards |= wizard  # Prevent the super call from clearing the warning message.
             if sale_order.is_expired:
                 wizard.warning_message = wizard.env._("The sale order has expired.")
                 sale_wizards |= wizard
         super(PaymentLinkWizard, self - sale_wizards)._compute_warning_message()
+
+    def _compute_link(self):
+        super()._compute_link()
+
+        for wizard in self.filtered(lambda w: w.res_model == "sale.order"):
+            sale_order = self.env["sale.order"].browse(wizard.res_id)
+            sale_order._update_prepayment_amount(wizard.amount)
 
     def _prepare_url(self, base_url, related_document):
         """Override of `payment` to use the portal page URL of sales orders."""

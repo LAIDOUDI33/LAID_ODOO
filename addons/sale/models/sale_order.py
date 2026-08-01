@@ -1303,8 +1303,8 @@ class SaleOrder(models.Model):
     @api.onchange("pricelist_id")
     def _onchange_pricelist_id_recompute_prices(self):
         # DO NOT ADD the `pricelist_id` as dependency to the order lines compute methods as it
-        # would trigger unwanted recomputations as the orm recomputes all depending fields regardless
-        # of whether the field was effectively modified.
+        # would trigger unwanted recomputations as the orm recomputes all depending fields
+        # regardless of whether the field was effectively modified.
         if self.order_line:
             self._recompute_prices()
 
@@ -1784,10 +1784,10 @@ class SaleOrder(models.Model):
 
         txs_to_be_linked = self.sudo().transaction_ids.filtered(
             lambda tx: (
-                tx.state in ('pending', 'authorized')
+                tx.state in ("pending", "authorized")
                 or (
-                    tx.state == 'done'
-                    and tx.payment_id.move_id.state == 'posted'
+                    tx.state == "done"
+                    and tx.payment_id.move_id.state == "posted"
                     and not tx.payment_id.is_reconciled
                 )
             )
@@ -2282,7 +2282,7 @@ class SaleOrder(models.Model):
         self.ensure_one()
 
         prepayment_amount = self._get_prepayment_required_amount()
-        remaining_balance = self.amount_total - self.amount_paid
+        remaining_balance = max(self.amount_total - self.amount_paid, 0.0)
         if self.state in ("draft", "sent") and self.prepayment_percent > 0:
             suggested_amount = prepayment_amount  # Suggest the amount needed to confirm the quote.
         else:  # The order is confirmed or doesn't require payment.
@@ -2291,10 +2291,16 @@ class SaleOrder(models.Model):
             "currency_id": self.currency_id.id,
             "partner_id": self.partner_invoice_id.id,
             "amount": suggested_amount,
-            "amount_max": remaining_balance,
             "amount_paid": self.amount_paid,
             "prepayment_amount": prepayment_amount,
         }
+
+    def _update_prepayment_amount(self, amount):
+        """Update the required prepayment amount."""
+        self.ensure_one()
+
+        if self.state in ("draft", "sent") and amount > 0 and amount <= self.amount_total:
+            self.prepayment_amount = amount
 
     # EDI #
 
@@ -2346,12 +2352,10 @@ class SaleOrder(models.Model):
         """Determine whether a sale order has to be paid.
 
         A sale order has to be paid when:
-        - its state is 'draft' or `sent`;
-        - it's not expired;
+        - its state is 'draft' or 'sent';
+        - it is not expired;
         - the prepayment percent is strictly positive;
-        - the last transaction's state isn't `done`;
         - the total amount is strictly positive.
-        - confirmation amount is not reached
 
         Note: self.ensure_one()
 
@@ -2364,7 +2368,6 @@ class SaleOrder(models.Model):
             and not self.is_expired
             and self.prepayment_percent > 0
             and self.amount_total > 0
-            and not self._is_confirmation_amount_reached()
         )
 
     def _get_portal_return_action(self):
@@ -2548,11 +2551,9 @@ class SaleOrder(models.Model):
         }
 
     def _get_prepayment_required_amount(self):
-        """Return the minimum amount needed to automatically confirm the quotation.
+        """Return the default prepayment amount.
 
-        Note: self.ensure_one()
-
-        :return: The minimum amount needed to automatically confirm the quotation.
+        :return: The default prepayment amount.
         :rtype: float
         """
         self.ensure_one()
@@ -2560,20 +2561,6 @@ class SaleOrder(models.Model):
         if self.prepayment_percent == 0:
             return 0
         return self.currency_id.round(self.amount_total * self.prepayment_percent)
-
-    def _is_confirmation_amount_reached(self):
-        """Return whether `self.amount_paid` is higher than the prepayment required amount.
-
-        Note: self.ensure_one()
-
-        :return: Whether `self.amount_paid` is higher than the prepayment required amount.
-        :rtype: bool
-        """
-        self.ensure_one()
-        amount_comparison = self.currency_id.compare_amounts(
-            self._get_prepayment_required_amount(), self.amount_paid
-        )
-        return amount_comparison <= 0
 
     def _generate_downpayment_invoices(self):
         """Generate invoices as down payments for sale order.
