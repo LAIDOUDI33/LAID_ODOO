@@ -70,18 +70,18 @@ class TestSelfOrderCombo(SelfOrderCommonTest):
 
     def test_combo_price_no_free_items(self):
         """
-        Regression test: when all combo sub-combos are upsell (qty_free=0), remaining_total
+        Regression test: when all combo sub-combos are upsell (included_qty=0), remaining_total
         (= parent list price) must be distributed proportionally to the extra lines,
         not silently dropped.
         """
         self.pos_config.with_user(self.pos_user).open_ui()
         self.pos_config.current_session_id.set_opening_control(0, "")
 
-        # Upsell combo: qty_free=0 (no free items), all selections are charged as extras
+        # Upsell combo: included_qty=0 (no free items), all selections are charged as extras
         no_free_combo = self.env['product.combo'].create({
             'name': 'No Free Combo',
             'is_upsell': True,
-            'qty_free': 0,
+            'included_qty': 0,
             'qty_max': 1,
             'combo_item_ids': [
                 Command.create({'product_id': self.cola.id, 'extra_price': 0}),
@@ -136,13 +136,13 @@ class TestSelfOrderCombo(SelfOrderCommonTest):
         order.recompute_prices()
 
         # base_price of the combo = min lst_price among items = min(cola.lst_price, fanta.lst_price) = 2.2
-        # With is_upsell=True (qty_free=0), remaining_total = parent lst_price = 10.0 must flow into the child.
+        # With is_upsell=True (included_qty=0), remaining_total = parent lst_price = 10.0 must flow into the child.
         # price_unit = base_price + proportional_share_of_parent_price
         # = base_price + round(base_price * 10.0 / (base_price * 1)) = base_price + 10.0
         expected_price = no_free_combo.base_price + combo_product.lst_price
         self.assertAlmostEqual(
             child_line.price_unit, expected_price, places=2,
-            msg="When qty_free=0, remaining_total must be proportionally distributed to extra lines",
+            msg="When included_qty=0, remaining_total must be proportionally distributed to extra lines",
         )
 
     def test_combo_price_free_items_multi_qty(self):
@@ -157,7 +157,7 @@ class TestSelfOrderCombo(SelfOrderCommonTest):
 
         free_combo = self.env['product.combo'].create({
             'name': 'Free Combo',
-            'qty_free': 1,
+            'included_qty': 1,
             'qty_max': 1,
             'combo_item_ids': [
                 Command.create({'product_id': self.cola.id, 'extra_price': 0}),
@@ -419,17 +419,15 @@ class TestSelfOrderCombo(SelfOrderCommonTest):
     def test_self_combo_extra_price_selection_and_confirmation(self):
         """
         Test extra price display in combo selection and confirmation.
-        - Combo with qty_free=0: All items show "+ €X" price badge
-        - Combo with qty_free>0: Free items have no extra badge, paid items show "Extra: €X"
+        - Combo with included_qty=0: All items show "+ €X" price badge
+        - Combo with included_qty>0: Free items have no extra badge, paid items show "Extra: €X"
         - Confirmation page displays extra prices correctly
         """
 
         setup_product_combo_items(self)
-        self.desks_combo.is_upsell = True
-        self.desks_combo.qty_free = 0
-        self.desks_combo.qty_max = 3
+        self.desks_combo.write({'is_upsell': True, 'included_qty': 0, 'qty_max': 3})
 
-        self.desk_accessories_combo.qty_free = 1
+        self.desk_accessories_combo.included_qty = 1
         self.desk_accessories_combo.qty_max = 3
 
         self.pos_config.write({
@@ -456,7 +454,7 @@ class TestSelfOrderCombo(SelfOrderCommonTest):
 
         combo = self.env['product.combo'].create({
             'name': 'Combo',
-            'qty_free': 2,
+            'included_qty': 2,
             'qty_max': 4,
             'combo_item_ids': [
                 Command.create({'product_id': self.cola.id, 'extra_price': 0}),

@@ -456,7 +456,7 @@ class SaleOrder(models.Model):
             self._verify_cart_after_update()
 
         return {
-            "added_qty": quantity,
+            "added_qty": quantity * kwargs.get('selected_combo_item_qty', 1),
             "line_id": order_line.id,
             "quantity": quantity,
             "warning": warning,
@@ -645,19 +645,24 @@ class SaleOrder(models.Model):
                 # of the combo item with the least available quantity.
                 combo_quantity = quantity
                 for item_line in combo_item_lines:
-                    if quantity != item_line.product_uom_qty:
+                    target_child_qty = quantity * item_line.selected_combo_item_qty
+                    if target_child_qty != item_line.product_uom_qty:
                         combo_item_quantity, _warning = self._verify_updated_quantity(
                             item_line,
                             item_line.product_id.id,
-                            quantity,
+                            target_child_qty,
                             uom_id=item_line.product_uom_id.id,
                             **kwargs,
                         )
-                        combo_quantity = min(combo_quantity, combo_item_quantity)
+                        max_possible_combos = int(
+                            combo_item_quantity // item_line.selected_combo_item_qty
+                        )
+                        combo_quantity = min(combo_quantity, max_possible_combos)
                 for item_line in combo_item_lines:
-                    if combo_quantity != item_line.product_uom_qty:
+                    final_child_qty = combo_quantity * item_line.selected_combo_item_qty
+                    if final_child_qty != item_line.product_uom_qty:
                         self.with_context(skip_cart_verification=True)._cart_update_line_quantity(
-                            line_id=item_line.id, quantity=combo_quantity
+                            line_id=item_line.id, quantity=final_child_qty
                         )
                 update_values["product_uom_qty"] = combo_quantity
 
@@ -701,6 +706,7 @@ class SaleOrder(models.Model):
         no_variant_attribute_value_ids=None,
         product_custom_attribute_values=None,
         combo_item_id=None,
+        selected_combo_item_qty=1.0,
         donation_amount=None,
         **_kwargs,
     ):
@@ -734,11 +740,12 @@ class SaleOrder(models.Model):
 
         values = {
             "product_id": product.id,
-            "product_uom_qty": quantity,
+            "product_uom_qty": quantity * selected_combo_item_qty,
             "product_uom_id": uom_id or product.uom_id.id,
             "order_id": self.id,
             "linked_line_id": linked_line_id,
             "combo_item_id": combo_item_id,
+            "selected_combo_item_qty": selected_combo_item_qty,
         }
         # Set price_unit with the user-selected donation amount
         if product._is_donation() and donation_amount is not None:

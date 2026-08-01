@@ -1154,11 +1154,11 @@ class TestUi(TestPointOfSaleHttpCommon):
         """ Test the max free quantity of a product combo."""
         setup_product_combo_items(self)
         self.office_combo.combo_ids[0].write({
-            'qty_free': 2,
+            'included_qty': 2,
             'qty_max': 2,
         })
         self.office_combo.combo_ids[1].write({
-            'qty_free': 2,
+            'included_qty': 2,
             'qty_max': 5,
         })
         self.combo_product_2.active = False
@@ -1675,7 +1675,7 @@ class TestUi(TestPointOfSaleHttpCommon):
     def test_combo_refund_different_qty(self):
         setup_product_combo_items(self)
         self.desks_combo.write({
-            'qty_free': 2,
+            'included_qty': 2,
             'qty_max': 2,
         })
         self.main_pos_config.with_user(self.pos_user).open_ui()
@@ -3564,7 +3564,7 @@ class TestUi(TestPointOfSaleHttpCommon):
             {
                 "name": "Third Combo",
                 "is_upsell": True,
-                "qty_free": 0,
+                "included_qty": 0,
                 "combo_item_ids": [
                     Command.create({
                         "product_id": combo_product_6.id,
@@ -3786,7 +3786,7 @@ class TestUi(TestPointOfSaleHttpCommon):
         for combo_item in self.office_combo.combo_ids:
             combo_item.write({
                 'is_upsell': True,
-                'qty_free': 0,
+                'included_qty': 0,
                 'qty_max': 5,
             })
         self.main_pos_config.with_user(self.pos_user).open_ui()
