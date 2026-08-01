@@ -1,4 +1,8 @@
 import logging
+import copy
+import calendar
+from datetime import date
+from dateutil.relativedelta import relativedelta
 import re
 
 from contextlib import contextmanager
@@ -67,6 +71,14 @@ class AccountMove(models.Model):
     l10n_in_warning = fields.Json(compute="_compute_l10n_in_warning")
     l10n_in_is_gst_registered_enabled = fields.Boolean(related='company_id.l10n_in_is_gst_registered')
     l10n_in_tds_deduction = fields.Selection(related='commercial_partner_id.l10n_in_pan_entity_id.tds_deduction', string="TDS Deduction")
+
+    # self - invoice related fields
+    l10n_in_is_self_invoice = fields.Boolean(
+        string="Is Self Invoice applicable",
+        compute='_compute_l10n_in_is_self_invoice',
+        compute_sql='_compute_sql_l10n_in_is_self_invoice',
+        compute_sudo=False,
+    )
 
     # withholding related fields
     l10n_in_is_withholding = fields.Boolean(
@@ -346,6 +358,44 @@ class AccountMove(models.Model):
             else:
                 move.l10n_in_withholding_line_ids = False
 
+    @api.depends('state')
+    def _compute_l10n_in_is_self_invoice(self):
+        for move in self:
+            move.l10n_in_is_self_invoice = (
+                move.state == 'posted'
+                and move.journal_id.is_self_billing
+                and any(
+                    line.l10n_in_gstr_section == 'purchase_b2c_rcm'
+                    for line in move.invoice_line_ids
+                )
+            )
+
+    def _compute_sql_l10n_in_is_self_invoice(self, table):
+        """
+        SQL equivalent of '_compute_l10n_in_is_self_invoice' for use in domains.
+
+        This implementation intentionally omits the move state condition so that
+        self-invoice records can be matched regardless of their state.
+        """
+        return SQL(
+            """(
+                EXISTS (
+                    SELECT 1
+                    FROM account_move_line
+                    WHERE move_id = %s
+                      AND l10n_in_gstr_section = 'purchase_b2c_rcm'
+                )
+                AND EXISTS (
+                    SELECT 1
+                    FROM account_journal
+                    WHERE id = %s
+                      AND is_self_billing = TRUE
+                )
+            )""",
+            table.id,
+            table.journal_id,
+        )
+
     def _compute_l10n_in_total_withholding_amount(self):
         for move in self:
             if self.env.company.l10n_in_tds_feature:
@@ -356,6 +406,94 @@ class AccountMove(models.Model):
                 )
             else:
                 move.l10n_in_total_withholding_amount = 0.0
+
+    def _l10n_in_get_invoice_totals_for_self_invoice(self):
+        """
+        Returns a customized tax_totals dictionary for the PDF report.
+        For Self Invoices (Reverse Charge), the net tax is 0. This method injects
+        the positive side of the tax and adjusts the Total so it prints
+        correctly on the PDF, without affecting the actual accounting move.
+        """
+        self.ensure_one()
+
+        if not self.tax_totals or not self.l10n_in_is_self_invoice:
+            return self.tax_totals
+
+        tax_totals = copy.deepcopy(self.tax_totals)
+        rc_tax_currency_to_add = 0.0
+        rc_tax_balance_to_add = 0.0
+
+        lines_group_by_tax_group_id = self.line_ids.grouped(lambda line: line.tax_group_id.id)
+
+        for subtotal in tax_totals.get('subtotals', []):
+            for tax_group in subtotal.get('tax_groups', []):
+                tax_lines = lines_group_by_tax_group_id[tax_group['id']]
+
+                if any(tax.l10n_in_reverse_charge for tax in tax_lines.tax_line_id):
+                    # Because it's Reverse Charge, there is a Debit (+100) and Credit (-100).
+                    # We sum only the positive amounts to get the gross tax value to display.
+                    positive_tax_currency = sum(line.amount_currency for line in tax_lines if line.amount_currency > 0)
+                    positive_tax_balance = sum(line.balance for line in tax_lines if line.balance > 0)
+
+                    tax_group['tax_amount_currency'] = positive_tax_currency
+                    tax_group['tax_amount'] = positive_tax_balance
+
+                    rc_tax_currency_to_add += positive_tax_currency
+                    rc_tax_balance_to_add += positive_tax_balance
+
+        tax_totals['total_amount_currency'] += rc_tax_currency_to_add
+        tax_totals['total_amount'] += rc_tax_balance_to_add
+
+        return tax_totals
+
+    def _get_starting_sequence(self):
+        self.ensure_one()
+        # Override the default starting sequence to keep self-invoice numbers
+        # within the 16-character limit required for GSTR Summary submission.
+        # Format: SELF/25-26/0000
+        # This mimic account.move's _get_starting_sequence's initial part.
+        if self.journal_id.is_self_billing:
+            move_date = self.date or self.invoice_date or fields.Date.context_today(self)
+            year_part = "%04d" % move_date.year
+
+            last_day = int(self.company_id.fiscalyear_last_day)
+            last_month = int(self.company_id.fiscalyear_last_month)
+            is_staggered_year = last_month != 12 or last_day != 31
+
+            if is_staggered_year:
+                max_last_day = calendar.monthrange(move_date.year, last_month)[1]
+                last_day = min(last_day, max_last_day)
+                if move_date > date(move_date.year, last_month, last_day):
+                    year_part = "%s-%s" % (move_date.strftime('%y'), (move_date + relativedelta(years=1)).strftime('%y'))
+                else:
+                    year_part = "%s-%s" % ((move_date + relativedelta(years=-1)).strftime('%y'), move_date.strftime('%y'))
+
+            return f"{self.journal_id.code}/{year_part}/0000"
+
+        return super()._get_starting_sequence()
+
+    def _get_last_sequence_domain(self, relaxed=False):
+        where_string, param = super()._get_last_sequence_domain(relaxed)
+
+        if self.journal_id.is_self_billing:
+            where_string = where_string.replace(" AND commercial_partner_id = %(partner_id)s ", "")
+            where_string = where_string.replace(" AND false ", "")
+            param.pop('partner_id', None)  # Remove unused SQL parameter
+
+        return where_string, param
+
+    def action_l10n_in_print_self_invoice(self):
+        self.ensure_one()
+
+        report = self.env.ref("l10n_in.action_pdf_self_invoice")
+        content, _ = report._render_qweb_pdf(report.id, res_ids=self.ids)
+
+        self.message_post(
+            body=self.env._("Self Invoice has been generated and printed."),
+            attachments=[(f"{self.name}.pdf", content)],
+        )
+
+        return report.report_action(self)
 
     def action_l10n_in_withholding_entries(self):
         self.ensure_one()
@@ -572,6 +710,16 @@ class AccountMove(models.Model):
         self.ensure_one()
         base_lines, _tax_lines = self._get_rounded_base_and_tax_lines()
         display_uom = self.env.user.has_group('uom.group_uom')
+        if self.l10n_in_is_self_invoice:
+            for base_line in base_lines:
+                taxes_data = base_line.get('tax_details', {}).get('taxes_data', [])
+
+                for tax_data in taxes_data:
+                    # Keep only the positive side of RC taxes
+                    if tax_data['is_reverse_charge']:
+                        tax_data['tax_amount_currency'] = 0.0
+                        tax_data['tax_amount'] = 0.0
+
         return self.env['account.tax']._l10n_in_get_hsn_summary_table(base_lines, display_uom)
 
     def _l10n_in_get_bill_from_irn(self, irn):
