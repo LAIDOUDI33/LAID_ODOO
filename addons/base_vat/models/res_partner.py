@@ -12,7 +12,7 @@ from stdnum.util import clean
 from odoo import _, api, models, fields, tools, modules
 from odoo.exceptions import ValidationError, UserError
 from odoo.tools import LazyTranslate, hash_sign
-from odoo.tools.business_data import split_vat
+from odoo.tools.business_data import split_vat, is_vat_void
 
 from odoo.addons.base.models.res_partner import EU_EXTRA_VAT_CODES
 
@@ -109,7 +109,7 @@ class ResPartner(models.Model):
         if not country or not vat:
             return vat, False
         if 1 <= len(vat) <= 2:
-            if self._is_vat_void(vat) or not validation:
+            if is_vat_void(vat) or not validation:
                 return vat, False
             if validation == 'setnull':
                 return '', False

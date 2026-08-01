@@ -56,7 +56,7 @@ class ResPartner(models.Model):
     def _compute_is_company(self):
         "True if partner is considered a company in Argentina, based on Identification Type and CUIT prefix."
         l10n_ar_partners = self.filtered(
-            lambda p: not p._is_vat_void(p.vat)
+            lambda p: not p._is_vat_void()
                 and p.l10n_latam_identification_type_id.l10n_ar_afip_code
                 and p.country_code == 'AR'
         )
