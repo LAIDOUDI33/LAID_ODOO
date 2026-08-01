@@ -173,8 +173,12 @@
             <field name="qty_delivered">10</field>
         </record>
 
-        <function model="sale.order" name="action_confirm" eval="[[ref('sale_order_construction_material')]]"/>
-        <function model="sale.order" name="action_confirm" eval="[[ref('sale_order_construction')]]"/>
+        <function model="sale.order" name="action_confirm">
+            <value model="sale.order" search="[('id', '=', ref('sale_project.sale_order_construction_material')), ('state', 'in', ['draft', 'sent'])]"/>
+        </function>
+        <function model="sale.order" name="action_confirm">
+            <value model="sale.order" search="[('id', '=', ref('sale_project.sale_order_construction')), ('state', 'in', ['draft', 'sent'])]"/>
+        </function>
 
         <!-- Set users and state to task -->
         <function model="project.task" name="write">
