@@ -97,6 +97,11 @@ class AccountMoveLine(models.Model):
             for categ, ref in tag_refs.items()
         }
 
+    def _get_transaction_type(self, move):
+        self.ensure_one()
+        state = move.company_id.state_id if move.is_sale_document() else move.commercial_partner_id.state_id
+        return 'intra_state' if move.l10n_in_state_id == state else 'inter_state'
+
     def _get_l10n_in_gstr_section(self, tax_tags_dict):
 
         def tags_have_categ(line_tax_tags, categories):
@@ -108,10 +113,6 @@ class AccountMoveLine(models.Model):
         def is_move_bill(move):
             return move.is_outbound() and not move.debit_origin_id
 
-        def get_transaction_type(move):
-            state = move.company_id.state_id if move.is_sale_document() else move.commercial_partner_id.state_id
-            return 'intra_state' if move.l10n_in_state_id == state else 'inter_state'
-
         def is_reverse_charge_tax(line):
             return any(tax.l10n_in_reverse_charge for tax in line.tax_ids | line.tax_line_id)
 
@@ -121,7 +122,7 @@ class AccountMoveLine(models.Model):
         def get_sales_section(line):
             move = line.move_id
             gst_treatment = move.l10n_in_gst_treatment
-            transaction_type = get_transaction_type(move)
+            transaction_type = self._get_transaction_type(move)
             line_tags = line.tax_tag_ids.ids
             is_inv = is_invoice(move)
             amt_limit = 100000 if not line.invoice_date or line.invoice_date >= date(2024, 11, 1) else 250000
@@ -138,6 +139,9 @@ class AccountMoveLine(models.Model):
                     return 'sale_exempt'
                 elif any(tax.l10n_in_tax_type == 'non_gst' for tax in line.tax_ids):
                     return 'sale_non_gst_supplies'
+
+            if move.company_id.l10n_in_gst_registration_type == 'composition':
+                return
 
             # B2CS: Unregistered or Consumer sales with gst tags
             if gst_treatment in ('unregistered', 'consumer') and not is_reverse_charge_tax(line):
@@ -242,7 +246,7 @@ class AccountMoveLine(models.Model):
                     return 'purchase_non_gst_supplies'
 
             # Composition scheme purchases without gst taxes
-            if gst_treatment == 'composition' and not line.tax_ids and not line.tax_line_id and get_transaction_type(move) == 'intra_state':
+            if gst_treatment == 'composition' and not line.tax_ids and not line.tax_line_id and self._get_transaction_type(move) == 'intra_state':
                 return 'purchase_composition_supplies'
 
             # If no relevant tags are found, or the tags do not match any category, mark as out of scope
