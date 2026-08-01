@@ -618,7 +618,7 @@ class TestTranslation(TransactionCase):
         self.env.ref('base.lang_zh_CN').active = False
 
         category = self.customers
-        translations = category._fields['name']._get_stored_translations(category)
+        translations = category._get_stored_translations('name')
         self.assertDictEqual(
             translations,
             {
@@ -630,7 +630,7 @@ class TestTranslation(TransactionCase):
         )
 
         category_copy = self.customers.with_context(lang='fr_FR').copy()
-        translations = category_copy._fields['name']._get_stored_translations(category_copy)
+        translations = category_copy._get_stored_translations('name')
 
         self.assertDictEqual(
             translations,
@@ -723,7 +723,6 @@ class TestTranslation(TransactionCase):
         ])
         industries[0].with_context(lang='nl_NL').name = 'Industry1_NL'
         industries[1].with_context(lang='nl_NL').name = None
-        field = industries._fields['name']
 
         industries.invalidate_recordset()
         self.assertEqual(
@@ -734,14 +733,14 @@ class TestTranslation(TransactionCase):
         with self.assertQueryCount(0):
             # None value in cache means no translation and should not trigger a query
             self.assertEqual(
-                field._get_stored_translations(industries[1]),
+                industries[1]._get_stored_translations('name'),
                 None
             )
 
         with self.assertQueryCount(1):
             # prefetch all translaitons for all industries
             self.assertEqual(
-                field._get_stored_translations(industries[0]),
+                industries[0]._get_stored_translations('name'),
                 {
                     'en_US': 'Industry1',
                     'nl_NL': 'Industry1_NL',
@@ -751,7 +750,7 @@ class TestTranslation(TransactionCase):
         with self.assertQueryCount(0):
             # no extra query is needed since all translaitons are cached
             self.assertEqual(
-                field._get_stored_translations(industries[2]),
+                industries[2]._get_stored_translations('name'),
                 {
                     'en_US': 'Industry3',
                 }

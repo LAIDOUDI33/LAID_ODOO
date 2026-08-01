@@ -963,12 +963,7 @@ def mark_as_copy(field_name: str) -> Callable[[BaseModel], Any]:
         env = record.env
         assert not callable(field.translate)
         if field.translate:
-            field_ = field
-            record_ = record
-            while not field_.store and field_.related:
-                record_ = record_.mapped(field_.related.rsplit('.', 1)[0])[:1]
-                field_ = field_.related_field
-            translations = field_._get_stored_translations(record_)
+            translations = record._get_stored_translations(field_name)
             if not translations:
                 return False
             return adapt_translated_field_value(

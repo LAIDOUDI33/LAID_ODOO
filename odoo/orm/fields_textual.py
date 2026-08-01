@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import collections.abc
-import itertools
 import typing
 from difflib import unified_diff
 from hashlib import sha256
@@ -14,13 +13,12 @@ from psycopg2.extras import Json as PsycopgJson
 from odoo.exceptions import AccessError, UserError, ValidationError
 from odoo.logging import COLOR_PATTERN, DEFAULT, GREEN, RED
 from odoo.tools import SQL, config, html_normalize, html_sanitize, html2plaintext, is_html_empty, plaintext2html, sql
-from odoo.tools.constants import PREFETCH_MAX
 from odoo.tools.misc import OrderedSet, SENTINEL, Sentinel
 from odoo.tools.sql import pattern_to_translated_trigram_pattern, pg_varchar, value_to_translated_trigram_pattern
 from odoo.tools.translate import StoredTranslations, ParsedTranslation, html_translate
 
 from .fields import Field, _logger
-from .utils import COLLECTION_TYPES, SQL_OPERATORS, expand_ids
+from .utils import COLLECTION_TYPES, SQL_OPERATORS
 
 if typing.TYPE_CHECKING:
     from collections.abc import Callable, Collection
@@ -173,7 +171,7 @@ class BaseString(Field[str | typing.Literal[False]]):
             else:
                 get_base = lambda term: term
 
-            translations = self._get_stored_translations(record)
+            translations = dict(record._get_stored_translations(self.name))
 
             # use a wrapper to let the frontend js code identify each term and
             # its metadata in the 'edit_translations' context
@@ -204,33 +202,6 @@ class BaseString(Field[str | typing.Literal[False]]):
 
     def convert_to_write(self, value, record):
         return value
-
-    def _get_stored_translations(self, record):
-        """
-        : return: {'en_US': 'value_en_US', 'fr_FR': 'French'}
-        """
-        assert (self.translate and self.store and record)
-        if self.compute and self.store:
-            self.recompute(record)
-        field_cache = record.env.transaction.field_data[self]
-        value = field_cache.get(record.id, SENTINEL)
-        if value is None:
-            return None
-        if isinstance(value, StoredTranslations):
-            return dict(value)
-        complete_translations_types = (type(None), StoredTranslations)
-        records_to_fetch = record.browse(itertools.islice((
-            id_ for id_ in expand_ids(record.id, record._prefetch_ids)
-            if not isinstance(field_cache.get(id_, SENTINEL), complete_translations_types)
-        ), PREFETCH_MAX))
-        # refetch field values for all languages
-        records_to_fetch.invalidate_recordset([self.name])
-        records_to_fetch.with_context(prefetch_langs=True).fetch([self.name])
-        value = field_cache.get(record.id, SENTINEL)
-        if isinstance(value, StoredTranslations):
-            return dict(value)
-        # column value is NULL or the record row doesn't exist in database
-        return None
 
     def translation_lang(self, env):
         return (env.lang or 'en_US') if self.translate is True else env._lang
@@ -398,12 +369,12 @@ class BaseString(Field[str | typing.Literal[False]]):
         delay_translations = records.env.context.get('delay_translations')
         adapt_close_terms = records.env.context.get("install_mode") and lang == 'en_US'
         for record in records.with_context(prefetch_langs=True):
-            if not (stored_translations_data := self._get_stored_translations(record)):
+            if not (stored_translations_data := record._get_stored_translations(self.name)):
                 # directly update the cache when no translation existed before
                 self._update_cache(record, StoredTranslations({**cache_value_dict, 'en_US': cache_value_dict[base_lang]}), dirty=True)
                 continue
 
-            stored_translations = StoredTranslations(stored_translations_data).written(
+            stored_translations = stored_translations_data.written(
                 records.env, self, parsed_translation_dict,
                 adapt_close_terms=adapt_close_terms, delay_translations=delay_translations
             )

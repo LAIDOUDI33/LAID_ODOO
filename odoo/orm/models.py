@@ -51,7 +51,7 @@ from odoo.tools import (
 from odoo.tools.constants import PREFETCH_MAX
 from odoo.tools.func import deprecated
 from odoo.tools.lru import LRU
-from odoo.tools.misc import ReversedIterable, exception_to_unicode, unquote
+from odoo.tools.misc import SENTINEL, ReversedIterable, exception_to_unicode, unquote
 from odoo.tools.safe_eval import _UNSAFE_ATTRIBUTES, safe_checker, safe_eval
 from odoo.tools.translate import _, LazyTranslate
 
@@ -66,7 +66,7 @@ from .fields_textual import Char, StoredTranslations
 from .identifiers import NewId
 from .query import Query, TableSQL
 from .utils import (
-    OriginIds, Prefetch, ReversibleComparator, check_object_name, parse_field_expr,
+    OriginIds, Prefetch, ReversibleComparator, check_object_name, expand_ids, parse_field_expr,
     COLLECTION_TYPES, SQL_OPERATORS,
     SUPERUSER_ID,
 )
@@ -2905,7 +2905,7 @@ class BaseModel(metaclass=MetaModel):
             drop_langs = {lang for lang, value in translations.items() if not isinstance(value, str)}
             translations = {lang: value for lang, value in translations.items() if lang not in drop_langs}
             if drop_langs:
-                stored_translations = field._get_stored_translations(self)
+                stored_translations = self._get_stored_translations(field_name)
                 if field.type == 'html':
                     translations = {lang: field._validated_cache_value(value, self.env) for lang, value in translations.items()}
                 if stored_translations is None:
@@ -2925,10 +2925,9 @@ class BaseModel(metaclass=MetaModel):
             self[field_name] = write_value
             return True
         else:
-            stored_translations = field._get_stored_translations(self)
+            stored_translations = self._get_stored_translations(field_name)
             if not stored_translations:
                 return False
-            stored_translations = StoredTranslations(stored_translations)
             write_value = stored_translations.translated(
                 self.env, field, source_lang, translations, digest=digest,
                 delay_translations=bool(self.env.context.get('delay_translations')),
@@ -2975,6 +2974,43 @@ class BaseModel(metaclass=MetaModel):
         context['translation_show_source'] = callable(field.translate)
 
         return translations, context
+
+    def _get_stored_translations(self, field_name: str) -> StoredTranslations | None:
+        """Return the cached StoredTranslations for ``field_name``, or ``None`` if the column is NULL.
+
+        For non-stored related fields, follows the related path to the first stored
+        translated field.
+        """
+        self.ensure_one()
+        field = self._fields[field_name]
+        record = self
+        while field.related and not field.store:
+            record = record.mapped(field.related.rsplit('.', 1)[0])[:1]
+            if not record:
+                return None
+            field = field.related_field
+        assert field.translate and field.store
+        if field.compute and field.store:
+            field.recompute(record)
+        field_cache = record.env.transaction.field_data[field]
+        value = field_cache.get(record.id, SENTINEL)
+        if value is None:
+            return None
+        if isinstance(value, StoredTranslations):
+            return value.copy()
+        complete_translations_types = (type(None), StoredTranslations)
+        records_to_fetch = record.browse(itertools.islice((
+            id_ for id_ in expand_ids(record.id, record._prefetch_ids)
+            if not isinstance(field_cache.get(id_, SENTINEL), complete_translations_types)
+        ), PREFETCH_MAX))
+        # refetch field values for all languages
+        records_to_fetch.invalidate_recordset([field.name])
+        records_to_fetch.with_context(prefetch_langs=True).fetch([field.name])
+        value = field_cache.get(record.id, SENTINEL)
+        if isinstance(value, StoredTranslations):
+            return value.copy()
+        # column value is NULL or the record row doesn't exist in database
+        return None
 
     def _get_base_lang(self) -> str:
         """ Return the base language of the record. """
@@ -4926,18 +4962,13 @@ class BaseModel(metaclass=MetaModel):
                     # copy only links that we can read, otherwise the write will fail
                     vals[name] = [Command.set(record[name]._filtered_access('read').ids)]
                 elif field.translate:
-                    field_ = field
-                    record_ = record
-                    while field_.related and not field_.store:
-                        record_ = record_.mapped(field_.related.rsplit('.', 1)[0])[:1]
-                        field_ = field_.related_field
-                    translations = field_._get_stored_translations(record_)
+                    translations = record._get_stored_translations(name)
                     if not translations:
                         vals[name] = False
                     elif field.translate is True:
-                        vals[name] = StoredTranslations(translations).normalize(record.env, field)
+                        vals[name] = translations.normalize(record.env, field)
                     else:
-                        vals[name] = StoredTranslations(translations).translated(
+                        vals[name] = translations.translated(
                             record.env, field, 'en_US', {lang: {} for lang in active_langs}
                         )
                 else:
