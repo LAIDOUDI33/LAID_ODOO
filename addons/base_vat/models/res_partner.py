@@ -232,7 +232,16 @@ class ResPartner(models.Model):
             self.vies_valid = False
             return
 
-        for partner in self:
+        # Field.compute_value() removes the whole batch from the "to compute"
+        # queue before running this loop (see fields.py), so a child read
+        # below (partner.parent_id.vies_valid) does not trigger a recursive
+        # recompute of its parent: it just returns whatever is already
+        # cached/stored for it. If the parent happens to be processed AFTER
+        # its child in this loop, the child ends up copying the parent's
+        # stale/default value instead of the one computed right below.
+        # Sorting parents (falsy parent_id) first guarantees every parent is
+        # already computed by the time a child reads it.
+        for partner in self.sorted('parent_id'):
             if not partner.vies_vat_to_check:
                 partner.vies_valid = False
                 continue
