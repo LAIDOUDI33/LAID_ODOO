@@ -427,6 +427,49 @@ test("PriorityField hover in editable list view", async () => {
     expect(
         ".o_data_row:first-child .o_priority button.o_priority_star[data-icon='star']:not(.oi-filled)"
     ).toHaveCount(1);
+
+    // verify that the empty star is hidden when the current priority is set
+    expect(
+        ".o_data_row:first-child .o_priority button.o_priority_star[data-icon='star'].oi-filled"
+    ).toHaveCount(1, {
+        message: "should have one filled star for the current priority",
+    });
+    expect(
+        ".o_data_row:first-child .o_priority button.o_priority_star[data-icon='star']:not(.oi-filled).opacity-0"
+    ).toHaveCount(1, {
+        message: "should hide the empty star until the priority widget is hovered",
+    });
+
+    const filledStar =
+        ".o_data_row:first-child .o_priority button.o_priority_star[data-icon='star'].oi-filled";
+    await hover(filledStar);
+    await animationFrame();
+
+    expect(
+        ".o_data_row:first-child .o_priority button.o_priority_star[data-icon='star'].oi-filled"
+    ).toHaveCount(1, {
+        message: "should fill star while hovering the higher priority",
+    });
+    expect(
+        ".o_data_row:first-child .o_priority button.o_priority_star[data-icon='star']:not(.oi-filled)"
+    ).toHaveCount(1, {
+        message: "should show hidden empty star while hovering",
+    });
+
+    await leave(filledStar);
+    await animationFrame();
+
+    await click(filledStar);
+    await animationFrame();
+
+    expect(
+        ".o_data_row:first-child .o_priority button.o_priority_star[data-icon='star']:not(.oi-filled).opacity-25"
+    ).toHaveCount(1, {
+        message: "should show only the first empty star",
+    });
+    expect(
+        ".o_data_row:first-child .o_priority button.o_priority_star[data-icon='star']:not(.oi-filled).opacity-0"
+    ).toHaveCount(1);
 });
 
 test("PriorityField with readonly attribute", async () => {

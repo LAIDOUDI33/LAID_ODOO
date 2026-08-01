@@ -11,3 +11,20 @@
         }
     }
 }
+
+@media (hover: none) {
+    .o_list_view .o_field_widget {
+        .o_priority > .o_priority_star:not(.oi-filled) {
+            opacity: 0.25 !important;
+        }
+        &.o_readonly_modifier .o_priority > .o_priority_star:not(.oi-filled) {
+            opacity: 1 !important;
+        }
+    }
+}
+
+.o_list_view .o_priority_cell:is(:hover, :focus-within) {
+    .o_priority > .opacity-100-hover {
+        opacity: 1 !important;
+    }
+}

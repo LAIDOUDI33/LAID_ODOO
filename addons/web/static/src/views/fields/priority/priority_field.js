@@ -10,6 +10,7 @@ export class PriorityField extends Component {
     props = useProps({
         ...standardFieldProps,
         withCommand: t.boolean().optional(),
+        isListView: t.boolean().optional(),
     });
 
     setup() {
@@ -73,6 +74,16 @@ export class PriorityField extends Component {
             label: currentValue === value ? this.options[0][1] : label,
         });
     }
+    getStarClass(valueIndex, emptyClass = "") {
+        const isFilled = valueIndex <= this.index;
+        if (isFilled) {
+            return "oi-filled";
+        }
+        if (!this.props.isListView || (this.index <= 0 && valueIndex === 1)) {
+            return emptyClass;
+        }
+        return "opacity-0 opacity-100-hover";
+    }
     /**
      * @param {string} value
      */
@@ -98,6 +109,7 @@ export const priorityField = {
         return {
             withCommand: viewType === "form",
             readonly: dynamicInfo.readonly,
+            isListView: viewType === "list",
         };
     },
 };
