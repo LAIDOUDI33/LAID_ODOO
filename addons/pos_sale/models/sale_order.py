@@ -72,7 +72,9 @@ class SaleOrder(models.Model):
             if order.invoice_status == 'invoiced':
                 continue
             # We need to account for the downpayment paid in POS with and without invoice
-            order_amount = sum(order.sudo().pos_order_line_ids.filtered(lambda pol: pol.order_id.state in ['paid', 'done', 'invoiced'] and pol.sale_order_line_id.is_downpayment).mapped('price_subtotal_incl'))
+            order_lines = order.sudo().pos_order_line_ids
+            pos_lines = order_lines | order_lines.refund_orderline_ids
+            order_amount = sum(pos_lines.filtered(lambda pol: pol.order_id.state in ['paid', 'done', 'invoiced'] and pol.sale_order_line_id.is_downpayment).mapped('price_subtotal_incl'))
             order.amount_invoiced += order_amount
 
 
@@ -112,7 +114,7 @@ class SaleOrderLine(models.Model):
         super()._compute_qty_invoiced()
         for sale_line in self:
             pos_lines = sale_line.pos_order_line_ids.filtered(lambda order_line: order_line.order_id.state not in ['cancel', 'draft'])
-            sale_line.qty_invoiced += sum(self._convert_qty(sale_line, pos_line.qty, 'p2s') for pos_line in pos_lines)
+            sale_line.qty_invoiced += sum(self._convert_qty(sale_line, pos_line.qty, 'p2s') for pos_line in pos_lines if not pos_line.refunded_orderline_id)
             refund_lines = sale_line.pos_order_line_ids.refund_orderline_ids.filtered(lambda order_line: order_line.order_id.state not in ['cancel', 'draft'])
             sale_line.qty_invoiced += sum(self._convert_qty(sale_line, pos_line.qty, 'p2s') for pos_line in refund_lines)
 

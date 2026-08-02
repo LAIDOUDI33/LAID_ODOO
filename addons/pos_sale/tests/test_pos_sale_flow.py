@@ -201,7 +201,19 @@ class TestPoSSale(TestPointOfSaleHttpCommon):
         self.start_pos_tour('PosRefundDownpayment', login="accountman")
         self.assertEqual(len(sale_order.order_line), 4)
         self.assertEqual(sale_order.order_line[2].qty_invoiced, 0)
-        self.assertEqual(sale_order.order_line[3].qty_invoiced, -1)
+        self.assertEqual(sale_order.order_line[2].price_unit, 10)
+        self.assertEqual(sale_order.order_line[3].qty_invoiced, 0)
+        self.assertEqual(sale_order.order_line[3].price_unit, -10)
+        self.assertEqual(sale_order.amount_invoiced, 0)
+        payment = self.env['sale.advance.payment.inv'].with_context(
+            active_model='sale.order',
+            active_ids=sale_order.ids,
+            active_id=sale_order.id,
+        ).create({
+            'advance_payment_method': 'delivered',
+        })
+        payment.create_invoices()
+        self.assertEqual(sale_order.invoice_ids.amount_untaxed, 100)
 
     def test_settle_order_unreserve_order_lines(self):
         #create a product category that use the closest location for the removal strategy
