@@ -15,11 +15,22 @@ class CloudStorageAttachment(models.Model):
     _inherit = 'ir.attachment'
     _cloud_storage_upload_url_time_to_expiry = 300  # 300 seconds
     _cloud_storage_download_url_time_to_expiry = 300  # 300 seconds
+    _cloud_storage_public_url_time_to_expiry = 7 * 24 * 60 * 60  # 7 days
 
     type = fields.Selection(
         selection_add=[('cloud_storage', 'Cloud Storage')],
         ondelete={'cloud_storage': 'set url'}
     )
+
+    def _get_public_url(self):
+        self.ensure_one()
+        if (self.type == 'cloud_storage' and
+                self.env['res.config.settings']._get_cloud_storage_configuration()):
+            attachment = self.with_context(
+                cloud_storage_download_url_time_to_expiry=self._cloud_storage_public_url_time_to_expiry
+            )
+            return attachment._generate_cloud_storage_download_info().get('url')
+        return super()._get_public_url()
 
     def _to_http_stream(self):
         if (self.type == 'cloud_storage' and
