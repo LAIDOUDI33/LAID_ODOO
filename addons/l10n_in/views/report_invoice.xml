@@ -37,8 +37,14 @@
             </td>
         </xpath>
 
-        <xpath expr="//t[@name='account_invoice_line_section']/td[1]" position="after">
+        <xpath expr="//t[@name='account_invoice_line_section']/td[2]" position="after">
             <td t-if="o.company_id.account_fiscal_country_id.code == 'IN' and o.company_id.l10n_in_is_gst_registered"></td>
+        </xpath>
+
+        <xpath expr="//table[@name='invoice_line_table']//td[@name='account_invoice_line_name_grouped']" position="after">
+            <td t-if="o.company_id.account_fiscal_country_id.code == 'IN' and o.company_id.l10n_in_is_gst_registered">
+                <span t-if="line.l10n_in_hsn_code and hide_prices and grouped_line['display_type'] == 'product'" t-field="line.l10n_in_hsn_code"></span>
+            </td>
         </xpath>
 
         <xpath expr="//div[@id='qrcode_info']" position="attributes">
