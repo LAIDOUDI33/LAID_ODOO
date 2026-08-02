@@ -319,6 +319,43 @@ class ResourceCalendar(models.Model):
     # Computation API
     # --------------------------------------------------
 
+    def _get_centered_duration_interval(self, day, tz, start_datetime, end_datetime, allocate_hours):
+        day_start = tz.localize(datetime.combine(day, time.min))
+        day_end = tz.localize(datetime.combine(day, time.max))
+        day_period_start = max(start_datetime, day_start)
+        day_period_end = min(end_datetime, day_end)
+        allocate_hours = min(allocate_hours, float_round((day_period_end - day_period_start).total_seconds() / 3600, precision_rounding=0.0000001))
+
+        midpoint = tz.localize(datetime.combine(day, time(12, 0)))
+        start_time = midpoint - timedelta(hours=allocate_hours / 2)
+        end_time = midpoint + timedelta(hours=allocate_hours / 2)
+
+        if start_time < day_period_start:
+            start_time = day_period_start
+            end_time = start_time + timedelta(hours=allocate_hours)
+        elif end_time > day_period_end:
+            end_time = day_period_end
+            start_time = end_time - timedelta(hours=allocate_hours)
+        return start_time, end_time, allocate_hours
+
+    def _get_duration_based_day_attendances(self, date):
+        self.ensure_one()
+        if not self.duration_based:
+            return self.env['resource.calendar.attendance']
+        week_type = False
+        if self.two_weeks_calendar:
+            week_type = str(self.env['resource.calendar.attendance'].get_week_type(date))
+        return self.attendance_ids.filtered(
+            lambda att: not att.display_type and att.day_period != 'lunch'
+            and att.dayofweek == str(date.weekday()) and att.week_type == week_type)
+
+    def _get_half_day_leave_hours_on_date(self, date, date_from, date_to, date_from_period, date_to_period):
+        self.ensure_one()
+        is_half = (date == date_from and date_from_period == 'pm') or (date == date_to and date_to_period == 'am')
+        day_hours = sum(self._get_duration_based_day_attendances(date).mapped('duration_hours'))
+        hours = day_hours * 0.5 if is_half else day_hours
+        return is_half, hours
+
     def _attendance_intervals_batch(self, start_dt, end_dt, resources=None, domain=None, tz=None, lunch=False):
         assert start_dt.tzinfo and end_dt.tzinfo
         self.ensure_one()
@@ -445,24 +482,9 @@ class ResourceCalendar(models.Model):
                         current_day = week_start
                         while current_day <= week_end:
                             if remaining_hours > 0:
-                                day_start = tz.localize(datetime.combine(current_day, time.min))
-                                day_end = tz.localize(datetime.combine(current_day, time.max))
-                                day_period_start = max(start_datetime, day_start)
-                                day_period_end = min(end_datetime, day_end)
-                                allocate_hours = min(max_hours_per_day, remaining_hours, (day_period_end - day_period_start).total_seconds() / 3600)
+                                start_time, end_time, allocate_hours = self._get_centered_duration_interval(
+                                    current_day, tz, start_datetime, end_datetime, min(max_hours_per_day, remaining_hours))
                                 remaining_hours -= allocate_hours
-
-                                # Create interval centered at 12:00 PM (or as close as possible)
-                                midpoint = tz.localize(datetime.combine(current_day, time(12, 0)))
-                                start_time = midpoint - timedelta(hours=allocate_hours / 2)
-                                end_time = midpoint + timedelta(hours=allocate_hours / 2)
-
-                                if start_time < day_period_start:
-                                    start_time = day_period_start
-                                    end_time = start_time + timedelta(hours=allocate_hours)
-                                elif end_time > day_period_end:
-                                    end_time = day_period_end
-                                    start_time = end_time - timedelta(hours=allocate_hours)
 
                                 dummy_attendance = self.env['resource.calendar.attendance'].new({
                                     'duration_hours': allocate_hours,
@@ -474,6 +496,28 @@ class ResourceCalendar(models.Model):
                             current_day += timedelta(days=1)
 
                         current_start_day += timedelta(days=7)
+
+                    result_per_resource_id[resource.id] = Intervals(intervals, keep_distinct=True)
+                elif self.duration_based or (resource and resource_calendars[resource].duration_based):
+                    calendar = resource_calendars[resource] if resource else self
+
+                    intervals = []
+                    current_day = start_datetime.date()
+                    last_day = (end_datetime - relativedelta(seconds=1)).date()
+
+                    while current_day <= last_day:
+                        day_attendances = calendar._get_duration_based_day_attendances(current_day)
+                        total_hours = sum(day_attendances.mapped('duration_hours'))
+
+                        if total_hours:
+                            current_hour_from, day_end_time, __ = self._get_centered_duration_interval(
+                                current_day, tz, start_datetime, end_datetime, total_hours)
+                            for attendance in day_attendances:
+                                next_current_hour_from = min(current_hour_from + timedelta(hours=attendance.duration_hours), day_end_time)
+                                intervals.append((current_hour_from, next_current_hour_from, attendance))
+                                current_hour_from = next_current_hour_from
+
+                        current_day += timedelta(days=1)
 
                     result_per_resource_id[resource.id] = Intervals(intervals, keep_distinct=True)
                 else:

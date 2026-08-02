@@ -251,9 +251,23 @@ class HrVersion(models.Model):
                 ) - real_leaves
 
             elif version.has_static_work_entries() or not leaves:
-                # Empty leaves means empty real_leaves
-                real_worked_leaves = attendances - real_attendances - leaves
-                real_leaves = attendances - real_attendances - real_worked_leaves
+                if calendar.duration_based:
+                    duration_based_days = []
+                    current_day = tz.localize(datetime.combine(start_dt.astimezone(tz).date(), time.min))
+                    last_day = end_dt.astimezone(tz)
+                    while current_day < last_day:
+                        if calendar._get_duration_based_day_attendances(current_day.date()):
+                            duration_based_days.append((current_day, current_day + timedelta(days=1), leaves))
+                        current_day += timedelta(days=1)
+                    duration_based_days = Intervals(duration_based_days, keep_distinct=True)
+                    real_leaves = (leaves & duration_based_days) | (attendances & (leaves - duration_based_days))
+                    real_worked_leaves = (
+                        (worked_leaves & duration_based_days) | (attendances & (worked_leaves - duration_based_days))
+                    ) - real_leaves
+                else:
+                    # Empty leaves means empty real_leaves
+                    real_worked_leaves = attendances - real_attendances - leaves
+                    real_leaves = attendances - real_attendances - real_worked_leaves
             else:
                 # In the case of attendance based versions use regular attendances to generate leave intervals
                 static_attendances = calendar._attendance_intervals_batch(
@@ -262,6 +276,39 @@ class HrVersion(models.Model):
                 real_worked_leaves = (static_attendances & worked_leaves) - real_leaves
 
             real_attendances = self._get_real_attendances(attendances, leaves, worked_leaves)
+
+            if calendar and calendar.duration_based:
+                consumed = leaves | worked_leaves
+                duration_based_attendances = []
+                current_day = tz.localize(datetime.combine(start_dt.astimezone(tz).date(), time.min))
+                last_day = end_dt.astimezone(tz)
+                while current_day < last_day:
+                    next_day = current_day + timedelta(days=1)
+                    day_attendances = calendar._get_duration_based_day_attendances(current_day.date())
+                    if day_attendances:
+                        budget = sum(day_attendances.mapped('duration_hours'))
+                        day_consumed = consumed & Intervals([(current_day, next_day, self.env['resource.calendar.leaves'])], keep_distinct=True)
+                        consumed_hours = 0.0
+                        for chunk_start, chunk_end, chunk_leaves in day_consumed:
+                            chunk_hours = (chunk_end - chunk_start).total_seconds() / 3600
+                            for leave_record in chunk_leaves:
+                                holiday = leave_record['holiday_id'] if 'holiday_id' in leave_record._fields else False
+                                if (
+                                    holiday and holiday.request_unit_half
+                                    and holiday.request_date_from != holiday.request_date_to
+                                    and current_day.date() in (holiday.request_date_from, holiday.request_date_to)
+                                ):
+                                    __, chunk_hours = calendar._get_half_day_leave_hours_on_date(
+                                        current_day.date(), holiday.request_date_from, holiday.request_date_to,
+                                        holiday.request_date_from_period, holiday.request_date_to_period)
+                                    break
+                            consumed_hours += chunk_hours
+                        remaining_hours = max(0.0, budget - consumed_hours)
+                        if remaining_hours:
+                            duration_based_attendances.append(
+                                (current_day, current_day + timedelta(hours=remaining_hours), self.env['resource.calendar.attendance']))
+                    current_day = next_day
+                real_attendances = Intervals(duration_based_attendances, keep_distinct=True)
 
             if not version.has_static_work_entries():
                 # An attendance based version might have an invalid planning, by definition it may not happen with
