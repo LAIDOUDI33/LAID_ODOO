@@ -189,7 +189,7 @@ class TestSaleExpense(TestExpenseCommon, TestSaleCommon):
         })
         expense.action_submit()
         expense.action_approve()
-        self.post_expenses_with_wizard(expense)
+        self.post_expenses(expense)
 
         line = self.env['account.analytic.line'].search([('account_id', '=', account.id)])
         self.assertEqual('expense', line.category)

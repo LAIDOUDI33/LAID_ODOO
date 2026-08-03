@@ -1,6 +1,7 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 from odoo import api, fields, models
+from odoo.exceptions import UserError
 from odoo.fields import Domain
 
 
@@ -11,10 +12,39 @@ class SaleOrder(models.Model):
         comodel_name='hr.expense',
         inverse_name='sale_order_id',
         string='Expenses',
-        domain=[('state', 'in', ('posted', 'in_payment', 'paid'))],
+        #TODO can delete domain ?
+        #domain=[('state', 'in', ('approved', 'posted', 'in_payment', 'paid'))],
         readonly=True,
     )
     expense_count = fields.Integer("# of Expenses", compute='_compute_expense_count', compute_sudo=True)
+    is_linked_to_expense_with_attachment = fields.Boolean(compute='_compute_is_linked_to_expense_with_attachment')
+
+    #@api.depends('expense_ids.attachment_ids')
+    def _compute_is_linked_to_expense_with_attachment(self):
+        order2attachment = self._get_attachments_not_linked_yet({order.id: order.expense_ids.attachment_ids for order in self})
+        for order in self:
+            order.is_linked_to_expense_with_attachment = order2attachment.get(order.id, [])
+
+    def _get_attachments_not_linked_yet(self, order2attachments):
+        """
+        Returns a dict specifying attachments that are not linked yet with the sale order(s) in self
+        :param order2attachments: A dict with key being sale order id, and values a recordset of ir.attachment
+        :return: A dict with the same structure as order2attachments
+        """
+        checksums = dict(self.env['ir.attachment']._read_group([
+            ('res_model', 'in', self._name),
+            ('res_id', 'in', self.ids),
+        ], groupby=['res_id'], aggregates=['checksum:array_agg']))
+        return {
+            order_id: attachments.filtered(lambda a: a.checksum not in checksums.get(order_id, []))
+            for order_id, attachments in order2attachments.items()
+        }
+
+    def _get_attachments_checksum_grouped_by_order(self):
+        return dict(self.env['ir.attachment']._read_group([
+            ('res_model', 'in', self._name),
+            ('res_id', 'in', self.ids),
+        ], groupby=['res_id'], aggregates=['checksum:array_agg']))
 
     @api.model
     def _search_display_name(self, operator, value):
@@ -42,7 +72,20 @@ class SaleOrder(models.Model):
         for sale_order in self:
             sale_order.expense_count = mapped_data.get(sale_order.id, 0)
 
-    def _create_invoices(self, grouped=False, final=False, date=None):
-        invoices = super()._create_invoices(grouped=grouped, final=final, date=date)
-        invoices._copy_reinvoiced_expense_receipts()
-        return invoices
+    def action_copy_reinvoiced_expense_receipts(self):
+        self.ensure_one()
+        if not self.expense_ids.attachment_ids:
+            raise UserError(self.env._("No attachment found to import from linked expense(s)"))
+
+        wizard = self.env['expense.attachment.selection.wizard'].create({
+            'sale_order_id': self.id,
+        })
+        return {
+            'type': 'ir.actions.act_window',
+            'name': "Attachments Selection",
+            'view_mode': 'form',
+            'views': [(False, "form")],
+            'res_id': wizard.id,
+            'res_model': wizard._name,
+            'target': 'new',
+        }

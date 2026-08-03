@@ -243,8 +243,7 @@ class HrExpense(models.Model):
     # Account fields
     journal_id = fields.Many2one(
         comodel_name='account.journal',
-        related='payment_method_line_id.journal_id',
-        readonly=True,
+        compute='_compute_journal_id',
     )
     selectable_payment_method_line_ids = fields.Many2many(
         comodel_name='account.payment.method.line',
@@ -539,7 +538,7 @@ class HrExpense(models.Model):
                     # Shortcut to paid, as it's already paid, but we may not have the bank statement yet
                     expense.state = 'paid'
                 elif move.state == 'draft':
-                    expense.state = 'posted'
+                    expense.state = 'approved'
                 elif move.payment_state == 'not_paid':
                     expense.state = 'posted'
                 elif (
@@ -972,6 +971,16 @@ class HrExpense(models.Model):
         for expense in self:
             expense.can_approve = not cannot_reason_per_record_id[expense.id]
 
+    @api.depends('payment_mode', 'payment_method_line_id')
+    def _compute_journal_id(self):
+        for expense in self:
+            if expense.payment_mode == 'company_account':
+                expense.journal_id = expense.payment_method_line_id.journal_id
+            elif expense.payment_mode == 'own_account':
+                expense.journal_id = expense._get_default_journal()
+            else:
+                expense.journal_id = False
+
     # ----------------------------------------
     # ORM Overrides
     # ----------------------------------------
@@ -1394,49 +1403,6 @@ class HrExpense(models.Model):
         refuse_wizard['context'] = dict(ast.literal_eval(refuse_wizard['context']), default_expense_ids=self.ids)
         return refuse_wizard
 
-    def action_post(self):
-        """
-        Post the expense, following one of those two options:
-            - Company-paid expenses: Create and post a payment, with an accounting entry
-            - Employee-paid expenses: Through a wizard, create and post a receipt
-        """
-        # When a move has been deleted
-        self._check_can_create_move()
-
-        company_expenses = self.filtered(lambda expense: expense.payment_mode == 'company_account')
-        employee_expenses = self - company_expenses
-        if len(employee_expenses.company_id) > 1:
-            raise UserError(_("You can't post simultaneously employee-paid expenses belonging to different companies"))
-
-        for expense in self.with_context(validate_analytic=True):
-            expense._validate_distribution(
-                account=expense.account_id.id,
-                product=expense.product_id.id,
-                business_domain='expense',
-                company_id=expense.company_id.id,
-            )
-
-        # For company-paid expenses using SEPA Credit Transfer, the vendor must be set
-        # because SEPA XML generation requires a creditor name (partner).
-        expenses_missing_vendor = company_expenses.filtered(
-            lambda exp: exp.payment_method_line_id.code == 'sepa_ct' and not exp.vendor_id
-        )
-        if expenses_missing_vendor:
-            expense_names = ', '.join(expenses_missing_vendor.mapped('name'))
-            raise UserError(_(
-                "The vendor is required for expenses using SEPA Credit Transfer as the payment method."
-                "\nPlease set a vendor on the following expenses: %s",
-                expense_names
-            ))
-
-        if company_expenses:
-            company_expenses._create_company_paid_moves()
-            # Post the company-paid expense through the payment, to post both at the same time
-            company_expenses.account_move_id.origin_payment_id.action_post()
-
-        if employee_expenses:
-            return employee_expenses.with_context(company_paid_move_ids=company_expenses.account_move_id.ids)._post_wizard()
-
     def action_pay(self):
         """ Register payment shortcut on the expense form view """
         return self.account_move_id.with_context(default_partner_bank_id=(
@@ -1731,6 +1697,42 @@ class HrExpense(models.Model):
                 'approval_date': fields.Datetime().now(),
             })
         self.update_activities_and_mails()
+        expenses_to_approve._create_move()
+
+    def _create_move(self):
+        self._check_can_create_move()
+
+        company_expenses = self.filtered(lambda expense: expense.payment_mode == 'company_account')
+        employee_expenses = self - company_expenses
+        if len(employee_expenses.company_id) > 1:
+            raise UserError(self.env._("You can't post simultaneously employee-paid expenses belonging to different companies"))
+
+        for expense in self.with_context(validate_analytic=True):
+            expense._validate_distribution(
+                account=expense.account_id.id,
+                product=expense.product_id.id,
+                business_domain='expense',
+                company_id=expense.company_id.id,
+            )
+
+        # For company-paid expenses using SEPA Credit Transfer, the vendor must be set
+        # because SEPA XML generation requires a creditor name (partner).
+        expenses_missing_vendor = company_expenses.filtered(
+            lambda exp: exp.payment_method_line_id.code == 'sepa_ct' and not exp.vendor_id
+        )
+        if expenses_missing_vendor:
+            expense_names = ', '.join(expenses_missing_vendor.mapped('name'))
+            raise UserError(self.env._(
+                "The vendor is required for expenses using SEPA Credit Transfer as the payment method."
+                "\nPlease set a vendor on the following expenses: %s",
+                expense_names
+            ))
+
+        if company_expenses:
+            company_expenses._create_company_paid_moves()
+
+        if employee_expenses:
+            employee_expenses._create_employee_paid_moves()
 
     def _do_reset_approval(self):
         self.sudo().write({'approval_state': False, 'approval_date': False, 'last_notification_date': False, 'account_move_id': False})
@@ -1800,30 +1802,6 @@ class HrExpense(models.Model):
         self.ensure_one()
         return self.product_has_cost
 
-    def _prepare_post_wizard_vals(self):
-        # Hook to be overridden.
-        return {}
-
-    def _post_wizard(self):
-        if 'company_account' in set(self.mapped('payment_mode')):
-            raise UserError(_("Only expense paid by the employee can be posted with the wizard"))
-
-        wizard_name = (
-            _("Post expenses paid by the employee")
-            if self.env.context.get('company_paid_move_ids')
-            else _("Post expenses")
-        )
-        return {
-            'type': 'ir.actions.act_window',
-            'name': wizard_name,
-            'view_mode': 'form',
-            'views': [(False, "form")],
-            'res_model': 'hr.expense.post.wizard',
-            'res_id': self.env['hr.expense.post.wizard'].create(self._prepare_post_wizard_vals()).id,
-            'target': 'new',
-            'context': self.with_context(active_ids=self.ids).env.context,
-        }
-
     def _create_company_paid_moves(self):
         """
         Creation of the account moves for the company paid expenses.
@@ -1836,12 +1814,12 @@ class HrExpense(models.Model):
         if company_account_expenses:
             move_vals_list, payment_vals_list = zip(*[expense._prepare_payments_vals() for expense in company_account_expenses])
 
-            payment_moves = self.env['account.move'].create(move_vals_list)
-            for payment_vals, move in zip(payment_vals_list, payment_moves):
+            payment_moves_sudo = self.env['account.move'].sudo().create(move_vals_list)
+            for payment_vals, move in zip(payment_vals_list, payment_moves_sudo):
                 payment_vals['move_id'] = move.id
 
             payments_sudo = self.env['account.payment'].sudo().create(payment_vals_list)
-            for payment, move in zip(payments_sudo, payment_moves):
+            for payment, move in zip(payments_sudo, payment_moves_sudo):
                 move.update({
                     'origin_payment_id': payment.id,
                     # We need to put the journal_id because editing origin_payment_id triggers a re-computation chain
@@ -1853,7 +1831,7 @@ class HrExpense(models.Model):
                 if expense.existing_bill_id:
                     expense._reconcile_expense_with_bill()
 
-            moves |= payment_moves
+            moves |= payment_moves_sudo
 
         return moves
 
@@ -1867,6 +1845,22 @@ class HrExpense(models.Model):
 
         if bill_payable_lines and expense_payable_lines:
             (bill_payable_lines + expense_payable_lines).reconcile()
+
+    def _create_employee_paid_moves(self):
+        expenses = self.filtered(lambda exp: exp.payment_mode != 'company_account')
+        journal = expenses[0]._get_default_journal()
+        today = fields.Date.context_today(self)
+        expense_receipt_vals_list = [
+            {
+                **new_receipt_vals,
+                'journal_id': journal.id,
+                'invoice_date': today,
+            }
+            for new_receipt_vals in expenses._prepare_receipts_vals()
+        ]
+        moves_sudo = self.env['account.move'].sudo().create(expense_receipt_vals_list)
+        for move_sudo in moves_sudo:
+            move_sudo._message_set_main_attachment_id(move_sudo.attachment_ids, force=True, filter_xml=False)
 
     def _prepare_receipts_vals(self):
         return_vals = []
@@ -2150,6 +2144,18 @@ class HrExpense(models.Model):
                 button_text=_("Go to Account"),
             )
         return outstanding_account
+
+    def _get_default_journal(self):
+        self.ensure_one()
+        if company_journal_id := self.company_id.expense_journal_id:
+            return company_journal_id
+        if closest_parent_company_journal := self.company_id.parent_ids[::-1].expense_journal_id[:1]:
+            return closest_parent_company_journal
+        journal = self.env['account.journal'].search([
+            *self.env['account.journal']._check_company_domain(self.company_id.id),
+            ('type', '=', 'purchase'),
+        ], limit=1)
+        return journal
 
     def _creation_message(self):
         if self.env.context.get('from_split_wizard'):
