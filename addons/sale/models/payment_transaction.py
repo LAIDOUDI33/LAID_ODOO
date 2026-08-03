@@ -101,12 +101,20 @@ class PaymentTransaction(models.Model):
                 (done_tx.sale_order_ids - confirmed_orders)._send_payment_succeeded_for_order_mail()
 
             auto_invoice = done_tx.company_id.sale_automatic_invoice
-            if auto_invoice:
-                # Invoice the sales orders of confirmed transactions instead of only confirmed
-                # orders to create the invoice even if only a partial payment was made.
+            should_invoice = all(
+                order.currency_id.compare_amounts(order.amount_total, order.amount_paid) <= 0
+                for order in done_tx.sale_order_ids
+            )
+            if auto_invoice and should_invoice:
+                # Automatically invoice the sales orders when automatic invoicing is enabled
+                # and all linked sales orders have been fully paid.
                 done_tx._invoice_sale_orders()
             super(PaymentTransaction, done_tx)._post_process()  # Post the invoices.
-            if auto_invoice and not self.env.context.get("skip_sale_auto_invoice_send"):
+            if (
+                auto_invoice
+                and should_invoice
+                and not self.env.context.get("skip_sale_auto_invoice_send")
+            ):
                 if self.env["ir.config_parameter"].sudo().get_bool("sale.async_emails") and (
                     send_invoice_cron := self.env.ref(
                         "sale.send_invoice_cron", raise_if_not_found=False
@@ -208,17 +216,11 @@ class PaymentTransaction(models.Model):
                 # Filter orders between those fully paid and those partially paid.
                 fully_paid_orders = confirmed_orders.filtered(lambda so: so._is_paid())
 
-                # Create a down payment invoice for partially paid orders
-                downpayment_invoices = (
-                    confirmed_orders - fully_paid_orders
-                )._generate_downpayment_invoices()
-
                 # For fully paid orders create a final invoice.
                 fully_paid_orders._force_lines_to_invoice_policy_order()
-                final_invoices = fully_paid_orders.with_context(
+                invoices = fully_paid_orders.with_context(
                     raise_if_nothing_to_invoice=False
                 )._create_invoices(final=True)
-                invoices = downpayment_invoices + final_invoices
 
                 # Setup access token in advance to avoid serialization failure between
                 # edi postprocessing of invoice and displaying the sale order on the portal

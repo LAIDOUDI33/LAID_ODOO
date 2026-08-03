@@ -1303,8 +1303,8 @@ class SaleOrder(models.Model):
     @api.onchange("pricelist_id")
     def _onchange_pricelist_id_recompute_prices(self):
         # DO NOT ADD the `pricelist_id` as dependency to the order lines compute methods as it
-        # would trigger unwanted recomputations as the orm recomputes all depending fields regardless
-        # of whether the field was effectively modified.
+        # would trigger unwanted recomputations as the orm recomputes all depending fields
+        # regardless of whether the field was effectively modified.
         if self.order_line:
             self._recompute_prices()
 
@@ -1784,10 +1784,10 @@ class SaleOrder(models.Model):
 
         txs_to_be_linked = self.sudo().transaction_ids.filtered(
             lambda tx: (
-                tx.state in ('pending', 'authorized')
+                tx.state in ("pending", "authorized")
                 or (
-                    tx.state == 'done'
-                    and tx.payment_id.move_id.state == 'posted'
+                    tx.state == "done"
+                    and tx.payment_id.move_id.state == "posted"
                     and not tx.payment_id.is_reconciled
                 )
             )
@@ -2574,24 +2574,6 @@ class SaleOrder(models.Model):
             self._get_prepayment_required_amount(), self.amount_paid
         )
         return amount_comparison <= 0
-
-    def _generate_downpayment_invoices(self):
-        """Generate invoices as down payments for sale order.
-
-        :return: The generated down payment invoices.
-        :rtype: recordset of `account.move`
-        """
-        generated_invoices = self.env["account.move"]
-
-        for order in self:
-            downpayment_wizard = order.env["sale.advance.payment.inv"].create({
-                "sale_order_ids": order,
-                "advance_payment_method": "fixed",
-                "fixed_amount": order.amount_paid,
-            })
-            generated_invoices |= downpayment_wizard._create_invoices(order)
-
-        return generated_invoices
 
     def deliver_sold_quantity(self):
         invalid_targets = self.filtered(
