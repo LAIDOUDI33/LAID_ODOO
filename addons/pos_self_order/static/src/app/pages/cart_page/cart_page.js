@@ -53,10 +53,7 @@ export class CartPage extends Component {
                 return [order.preset_id?.id, applicableTotal];
             }
         );
-    }
-
-    get isCheckout() {
-        return !history.state?.fromLanding;
+        this.isCheckout = !history.state?.fromLanding;
     }
 
     onClickBack() {
