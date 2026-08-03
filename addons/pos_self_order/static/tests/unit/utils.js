@@ -13,6 +13,7 @@ import { registry } from "@web/core/registry";
 import { selfOrderIndex } from "@pos_self_order/app/self_order_index";
 import { setupPosEnv } from "@point_of_sale/../tests/unit/utils";
 import { unpatchSelf } from "@pos_self_order/app/services/data_service";
+import { SelfOrderRouter } from "@pos_self_order/app/services/self_order_router_service";
 
 export function initMockRpc() {
     onRpc("/pos-self/relations/1", () =>
@@ -56,6 +57,7 @@ export function initMockRpc() {
     onRpc("/pos-self-order/get-slots/", () => ({ usage_utc: {} }));
     onRpc("/pos-self-order/remove-order", () => ({}));
     onRpc("/pos-self-order/sync-from-ui", mockSyncOrder);
+    onRpc("/pos-self-order/change-printer-status", () => {});
 }
 
 export const setupPoSEnvForSelfOrder = async () => {
@@ -80,6 +82,18 @@ export const setupSelfPosEnv = async (
         db: "test",
         data: {
             config_id: 1,
+        },
+    });
+    patchWithCleanup(SelfOrderRouter.prototype, {
+        navigate(routeName, routeParams = {}, historyState = {}) {
+            const { route } = this.registeredRoutes[routeName];
+            const pathName = route.replace(
+                /\{\w+:(\w+)\}/g,
+                (match, paramName) => routeParams[paramName]
+            );
+            this.path = pathName;
+            this.historyPage = pathName;
+            window.history.replaceState(historyState, "");
         },
     });
 
