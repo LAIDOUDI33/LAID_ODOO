@@ -576,6 +576,21 @@ class SaleOrder(models.Model):
     def _verify_updated_quantity(self, order_line, product_id, new_qty, uom_id, **_kwargs):  # noqa: ARG002, PLR6301
         self.ensure_one()
         product = self.env["product.product"].browse(product_id)
+
+        if product.minimum_qty:
+            uom = self.env["uom.uom"].browse(uom_id)
+            product_uom = product.uom_id
+
+            old_qty = order_line.product_uom_qty if order_line else 0
+            old_qty_in_product_uom = uom._compute_quantity(old_qty, product_uom)
+            remaining_min_qty = self._get_remaining_minimum_qty(
+                product, exclude_qty=old_qty_in_product_uom
+            )
+            if remaining_min_qty:
+                min_qty = product_uom._compute_quantity(remaining_min_qty, uom, round=False)
+                min_qty = float_round(min_qty, precision_digits=0, rounding_method="UP")
+                new_qty = max(new_qty, min_qty)
+
         if product.is_storable and not product.allow_out_of_stock_order:
             uom = self.env["uom.uom"].browse(uom_id)
             product_uom = product.uom_id
@@ -586,6 +601,23 @@ class SaleOrder(models.Model):
             product_qty_in_cart = product_uom._compute_quantity(product_qty_in_cart, uom)
             available_qty = product_uom._compute_quantity(available_qty, uom, round=False)
             available_qty = float_round(available_qty, precision_digits=0, rounding_method="DOWN")
+
+            if product.minimum_qty:
+                min_qty = float_round(
+                    product_uom._compute_quantity(product.minimum_qty, uom, round=False),
+                    precision_digits=0,
+                    rounding_method="UP",
+                )
+                if available_qty < min_qty:
+                    if order_line:
+                        warning = order_line._get_shop_warning_stock(min_qty, available_qty)
+                    else:
+                        warning = self.env._(
+                            "%(product_name)s was not added to your cart because it is"
+                            " unavailable.",
+                            product_name=product.display_name,
+                        )
+                    return 0, warning
 
             old_qty = order_line.product_uom_qty if order_line else 0
             added_qty = new_qty - old_qty
@@ -1133,6 +1165,14 @@ class SaleOrder(models.Model):
             )
             return False
 
+        if not all(sol._check_minimum_qty() for sol in self.order_line):
+            self._add_warning_alert(
+                self.env._(
+                    "Some products don't meet the minimum quantity required to be purchased."
+                )
+            )
+            return False
+
         return True
 
     def _is_cart_ready_for_payment(self):
@@ -1377,6 +1417,16 @@ class SaleOrder(models.Model):
 
     def _get_free_qty(self, product):
         return self.website_id._get_product_available_qty(product)
+
+    def _get_remaining_minimum_qty(self, product, exclude_qty=0.0):
+        """Compute the remaining minimum quantity to order for a product.
+
+        :param product: the product to check.
+        :param float exclude_qty: quantity, in the product's uom, to exclude from the current
+            cart quantity (e.g. the quantity of the line being updated).
+        :return: the remaining minimum quantity to order for the product
+        """
+        return max(product.minimum_qty - self._get_cart_qty(product.id) + exclude_qty, 0)
 
     def _all_product_available(self):
         """Whether all the products are available on the current website."""

@@ -404,6 +404,21 @@ export class ProductPage extends Interaction {
     }
 
     /**
+     * Update the minimum quantity of the product based on the selected combination
+     *
+     * @param {Element} parent
+     * @param {Object} combination
+     */
+    _updateMinimumQuantity(parent, combination) {
+        const addQtyInput = parent.querySelector('input[name="add_qty"]');
+        const minimumQty = combination.minimum_qty || 1;
+        addQtyInput.dataset.min = minimumQty;
+        if (addQtyInput.value < minimumQty) {
+            addQtyInput.value = minimumQty;
+        }
+    }
+
+    /**
      * @see onChangeVariant
      *
      * @param {Event} ev
@@ -742,6 +757,7 @@ export class ProductPage extends Interaction {
             }
         });
 
+        this._updateMinimumQuantity(parent, combination);
         this._toggleDisable(parent, isCombinationPossible && this.el.dataset.hasAvailableUoms);
 
         // Only update the images, tags and packaging selector if the product has changed.
@@ -805,7 +821,13 @@ export class ProductPage extends Interaction {
                     addQtyInput.value = addQtyInput.dataset.max;
                 }
             }
-            if (combination.free_qty < 1 && !combination.prevent_sale) {
+            combination.minimum_qty_unreachable = (
+                'minimum_qty' in combination && combination.free_qty < combination.minimum_qty
+            );
+            if (
+                (combination.free_qty < 1 || combination.minimum_qty_unreachable)
+                && !combination.prevent_sale
+            ) {
                 ctaWrapper.classList.replace('d-flex', 'd-none');
                 ctaWrapper.classList.add('out_of_stock');
             }

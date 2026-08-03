@@ -191,6 +191,7 @@
                     t-att-value="line._get_displayed_quantity()"
                     t-attf-name="cart-quantity-{{line.id}}{{'-mobile' if is_mobile else ''}}"
                     t-att-data-max="line._get_max_line_qty()"
+                    t-att-data-min="line._get_min_line_qty()"
                     aria-label="Quantity"
                 />
                 <div t-if="line.alerts" class="btn btn-link d-inline-block border border-start-0">

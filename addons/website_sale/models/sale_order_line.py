@@ -2,6 +2,7 @@
 
 from odoo import api, fields, models
 from odoo.exceptions import UserError
+from odoo.tools import float_round
 
 
 class SaleOrderLine(models.Model):
@@ -169,6 +170,25 @@ class SaleOrderLine(models.Model):
         max_quantity = self._get_max_available_qty()
         return self.product_uom_qty + max_quantity if (max_quantity is not None) else None
 
+    def _get_min_line_qty(self):
+        """Return the lowest quantity this line can be set to without breaking the minimum
+        quantity required to purchase the product, considering the other lines of the same
+        product in the cart.
+        """
+        self.ensure_one()
+        old_qty_in_product_uom = self.product_uom_id._compute_quantity(
+            self.product_uom_qty, self.product_id.uom_id
+        )
+        remaining_min_qty = self.order_id._get_remaining_minimum_qty(
+            self.product_id, exclude_qty=old_qty_in_product_uom
+        )
+        if not remaining_min_qty:
+            return 0
+        min_qty = self.product_id.uom_id._compute_quantity(
+            remaining_min_qty, self.product_uom_id, round=False
+        )
+        return float_round(min_qty, precision_digits=0, rounding_method="UP")
+
     def _get_max_available_qty(self):
         """Return the max quantity of a combo product.
 
@@ -196,9 +216,19 @@ class SaleOrderLine(models.Model):
             available=available_quantity,
         )
 
+    def _get_shop_warning_minimum_qty(self, remaining_min_qty):
+        self.ensure_one()
+        return self.env._(
+            "%(product_name)s requires a minimum of %(min_qty)g; please add %(missing_qty)g more"
+            " to your cart.",
+            product_name=self.product_id.display_name,
+            min_qty=self.product_id.minimum_qty,
+            missing_qty=remaining_min_qty,
+        )
+
     def _check_availability(self):
         """Check there is sufficient stock to fulfill the cart quantity for the product in the
-        current line.
+        current line taking into account the minimum quantity required to purchase the product.
 
         Note: `self.ensure_one()`.
 
@@ -211,6 +241,25 @@ class SaleOrderLine(models.Model):
             if cart_qty > avl_qty:
                 self._add_warning_alert(self._get_shop_warning_stock(cart_qty, max(avl_qty, 0)))
                 return False
+            if self.product_id.minimum_qty and avl_qty < self.product_id.minimum_qty:
+                self._add_warning_alert(
+                    self._get_shop_warning_stock(self.product_id.minimum_qty, max(avl_qty, 0))
+                )
+                return False
+        return True
+
+    def _check_minimum_qty(self):
+        """Check that the line's quantity meets the minimum quantity required to purchase the
+        product in the current line.
+
+        :return: True if the quantity is valid, False otherwise.
+        :rtype: bool
+        """
+        self.ensure_one()
+        remaining_min_qty = self.order_id._get_remaining_minimum_qty(self.product_id)
+        if remaining_min_qty > 0.0:
+            self._add_warning_alert(self._get_shop_warning_minimum_qty(remaining_min_qty))
+            return False
         return True
 
     def _show_line_in_cart(self):

@@ -30,10 +30,11 @@ export class CartLine extends Interaction {
      */
     async incOrDecQuantity(ev) {
         const input = ev.currentTarget.closest('.css_quantity').querySelector('input.js_quantity');
+        const minQuantity = parseFloat(input.dataset.min || 0);
         const maxQuantity = parseFloat(input.dataset.max || Infinity);
         const oldQuantity = parseFloat(input.value || 0);
         const newQuantity = ev.currentTarget.name === 'minus_button'
-            ? Math.min(Math.max(oldQuantity - 1, 0), maxQuantity)
+            ? Math.min(Math.max(oldQuantity - 1, minQuantity), maxQuantity)
             : Math.min(oldQuantity + 1, maxQuantity);
         if (oldQuantity !== newQuantity) {
             input.value = newQuantity;

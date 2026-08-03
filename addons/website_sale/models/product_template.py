@@ -5,7 +5,7 @@ import random
 from collections import defaultdict
 from urllib.parse import urlencode, urlparse
 
-from odoo import api, fields, models
+from odoo import _, api, fields, models
 from odoo.exceptions import UserError, ValidationError
 from odoo.fields import Domain
 from odoo.http import request
@@ -127,6 +127,7 @@ class ProductTemplate(models.Model):
     website_size_x = fields.Integer(string="Size X", default=1)
     website_size_y = fields.Integer(string="Size Y", default=1)
     website_ribbon_id = fields.Many2one(string="Ribbon", comodel_name="product.ribbon")
+    minimum_qty = fields.Integer(string="Minimum Quantity")
     website_sequence = fields.Integer(
         string="Website Sequence",
         help="Determine the display order in the Website E-commerce",
@@ -221,6 +222,14 @@ class ProductTemplate(models.Model):
                 RARE_DELIMITER,
             )
         )
+
+    # === CONSTRAINT METHODS ===#
+
+    @api.constrains("minimum_qty")
+    def _check_minimum_qty(self):
+        for product in self:
+            if product.minimum_qty < 0:
+                raise ValidationError(_("The minimum quantity must be greater than or equal to 0."))
 
     # === COMPUTE METHODS ===#
 
@@ -937,6 +946,18 @@ class ProductTemplate(models.Model):
 
         if not self.env.context.get("website_sale_product_page"):
             return combination_info
+
+        if product_or_template.minimum_qty:
+            remaining_minimum_qty = request.cart._get_remaining_minimum_qty(product_or_template)
+            combination_info["minimum_qty"] = int(
+                float_round(
+                    product_or_template.uom_id._compute_quantity(
+                        remaining_minimum_qty, to_unit=uom
+                    ),
+                    precision_digits=0,
+                    rounding_method="UP",
+                )
+            )
 
         if product_or_template.type == "combo":
             # The max quantity of a combo product is the max quantity of its combo with the lowest
