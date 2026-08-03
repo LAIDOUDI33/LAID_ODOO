@@ -37,7 +37,8 @@ class AccountEdiXmlUblTr(models.AbstractModel):
 
     def _export_invoice_filename(self, invoice):
         # EXTENDS account_edi_ubl_cii
-        return '%s_einvoice.xml' % invoice.name.replace("/", "_")
+        name = invoice.name if invoice.name and invoice.name != '/' else 'draft'
+        return '%s_einvoice.xml' % name.replace("/", "_")
 
     def _get_tax_category_code(self, customer, supplier, tax):
         # OVERRIDES account.edi.ubl_21
@@ -71,7 +72,7 @@ class AccountEdiXmlUblTr(models.AbstractModel):
 
         # Using _get_sequence_format_param to extract the invoice sequence components for various formats.
         # To send an invoice to Nilvera, the format needs to follow ABC2009123456789.
-        _, parts = invoice._get_sequence_format_param(invoice.name)
+        _, parts = invoice._get_sequence_format_param(invoice.name or "")
         prefix, year, number = parts['prefix1'][:3], parts['year'], str(parts['seq']).zfill(9)
         invoice_id = f"{prefix.upper()}{year}{number}"
 
@@ -93,6 +94,11 @@ class AccountEdiXmlUblTr(models.AbstractModel):
         })
 
         document_node['cac:OrderReference']['cbc:IssueDate'] = {'_text': invoice.invoice_date}
+
+        if invoice.state == "draft" and (not invoice.name or invoice.name == '/'):
+            prefix = invoice._l10n_tr_nilvera_get_series_prefix()
+            document_node['cac:OrderReference']['cbc:ID'] = {'_text': prefix}
+            document_node['cbc:ID'] = {'_text': prefix}
 
         if invoice.partner_id.l10n_tr_nilvera_customer_status == 'earchive':
             document_node['cac:AdditionalDocumentReference'] = {
@@ -923,6 +929,12 @@ class AccountEdiXmlUblTr(models.AbstractModel):
         super()._add_document_line_item_nodes(line_node, vals)
         if line_node.get('cac:Item', {}).get('cac:StandardItemIdentification'):
             line_node['cac:Item']['cac:StandardItemIdentification'] = None
+
+    def _export_invoice_constraints(self, invoice, vals):
+        constraints = super()._export_invoice_constraints(invoice, vals)
+        if invoice.state == "draft" and invoice.l10n_tr_is_export_invoice:
+            constraints["ubl20_invoice_name_required"] = False
+        return constraints
 
     def _add_document_line_tax_category_nodes(self, line_node, vals):
         # No InvoiceLine/Item/ClassifiedTaxCategory in Turkey
