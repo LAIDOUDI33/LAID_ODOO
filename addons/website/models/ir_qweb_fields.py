@@ -29,6 +29,18 @@ class IrQwebFieldHtml(models.AbstractModel):
         return super()._post_processing_att(tag, attrib)
 
     @api.model
+    def render_values(self, options):
+        values = super().render_values(options)
+        record = options.get('record')
+        if record and 'website_id' in record._fields:
+            website = record.website_id or self.env.website
+            values |= dict(
+                website=website,
+                is_view_active=website.is_view_active,
+            )
+        return values
+
+    @api.model
     def value_to_html(self, value, options):
         res = super().value_to_html(value, options)
 
