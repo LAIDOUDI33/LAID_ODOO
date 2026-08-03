@@ -1,3 +1,31 @@
+<<<<<<< 4cf65471e42cf3170ee1f8a555a13d55e9daaa95
+||||||| 90b18d8b6df2a41b53304d3efa8117450e098411
+import { useExternalListener, useRef, useSubEnv } from "@web/owl2/utils";
+import { isBrowserFirefox } from "@web/core/browser/feature_detection";
+import { getActiveHotkey } from "@web/core/hotkeys/hotkey_service";
+import { rpc } from "@web/core/network/rpc";
+import { renderToElement } from "@web/core/utils/render";
+import { useAutofocus, useService } from "@web/core/utils/hooks";
+import { _t } from "@web/core/l10n/translation";
+import { utils as uiUtils, SIZES } from "@web/core/ui/ui_service";
+import { useDebounced } from "@web/core/utils/timing";
+import { WebsiteDialog } from "@website/components/dialog/dialog";
+=======
+import { useExternalListener, useRef, useSubEnv } from "@web/owl2/utils";
+import { isBrowserFirefox } from "@web/core/browser/feature_detection";
+import { getActiveHotkey } from "@web/core/hotkeys/hotkey_service";
+import { rpc } from "@web/core/network/rpc";
+import { renderToElement } from "@web/core/utils/render";
+import { useAutofocus, useService } from "@web/core/utils/hooks";
+import { _t } from "@web/core/l10n/translation";
+import { utils as uiUtils, SIZES } from "@web/core/ui/ui_service";
+import { useDebounced } from "@web/core/utils/timing";
+import { WebsiteDialog } from "@website/components/dialog/dialog";
+import {
+    adaptDarkPaletteContent,
+    isDarkColorPalette,
+} from "@website/components/dialog/dark_palette_utils";
+>>>>>>> 40425b9df1b7a2cc08224d66e47dc0de89510878
 import { useMatrixKeyNavigation } from "@html_builder/utils/keyboard_navigation";
 import { Switch } from "@html_editor/components/switch/switch";
 import {
@@ -122,13 +150,23 @@ class AddPageTemplatePreview extends Component {
             if (status(this) === "destroyed") {
                 return;
             }
+            const cssLoadPromises = [];
             for (const cssLinkEl of cssLinkEls) {
                 const preloadLinkEl = document.createElement("link");
                 preloadLinkEl.setAttribute("rel", "preload");
                 preloadLinkEl.setAttribute("href", cssLinkEl.getAttribute("href"));
                 preloadLinkEl.setAttribute("as", "style");
                 iframeEl.contentDocument.head.appendChild(preloadLinkEl);
-                iframeEl.contentDocument.head.appendChild(cssLinkEl.cloneNode(true));
+                const styleLinkEl = cssLinkEl.cloneNode(true);
+                // Dark palette detection reads CSS variables, so wait for the
+                // stylesheets.
+                cssLoadPromises.push(
+                    new Promise((resolve) => {
+                        styleLinkEl.addEventListener("load", resolve, { once: true });
+                        styleLinkEl.addEventListener("error", resolve, { once: true });
+                    })
+                );
+                iframeEl.contentDocument.head.appendChild(styleLinkEl);
             }
             // Adjust styles.
             const styleEl = document.createElement("style");
@@ -236,12 +274,22 @@ class AddPageTemplatePreview extends Component {
             for (const imgEl of lazyLoadedImgEls) {
                 imgEl.setAttribute("loading", "lazy");
             }
+<<<<<<< 4cf65471e42cf3170ee1f8a555a13d55e9daaa95
             if (!this.previewRef()) {
+||||||| 90b18d8b6df2a41b53304d3efa8117450e098411
+            if (!this.previewRef.el) {
+=======
+            await Promise.all(cssLoadPromises);
+            if (!this.previewRef.el) {
+>>>>>>> 40425b9df1b7a2cc08224d66e47dc0de89510878
                 // Stop the process when preview is removed
                 return;
             }
             // Wait for fonts.
             await iframeEl.contentDocument.fonts.ready;
+            if (!this.props.isCustom && isDarkColorPalette(iframeEl.contentDocument)) {
+                adaptDarkPaletteContent(wrapEl);
+            }
             holderEl.classList.remove("o_loading");
             const adjustHeight = () => {
                 if (!this.previewRef()) {
