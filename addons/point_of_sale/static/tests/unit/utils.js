@@ -12,6 +12,8 @@ import { animationFrame, tick, waitFor, waitUntil } from "@odoo/hoot-dom";
 import { mountPosApp } from "@point_of_sale/../tests/unit/ui_utils";
 import { expect } from "@odoo/hoot";
 import { MainComponentsContainer } from "@web/core/main_components_container";
+import { session } from "@web/session";
+import { CustomerDisplay } from "@point_of_sale/customer_display/customer_display";
 
 const { DateTime } = luxon;
 
@@ -169,3 +171,27 @@ export async function setupAndMountPosApp(config = {}, opts = { openRegister: tr
 
     return store;
 }
+
+export const mountCustomerDisplayWithOrder = async (orderData = {}) => {
+    patchWithCleanup(session, {
+        config_id: 1,
+        has_bg_img: false,
+        customer_display_bg_img: false,
+    });
+
+    const customerDisplayData = getService("customer_display_data");
+    for (const key of Object.keys(customerDisplayData)) {
+        delete customerDisplayData[key];
+    }
+    Object.assign(customerDisplayData, {
+        finalized: false,
+        lines: [],
+        paymentLines: [],
+        qrPaymentData: null,
+        onlinePaymentData: null,
+        displayScreenSaver: false,
+        ...orderData,
+    });
+
+    return mountWithCleanup(CustomerDisplay);
+};
