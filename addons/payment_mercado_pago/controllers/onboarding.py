@@ -60,8 +60,12 @@ class MercadoPagoOnboardingController(Controller):
             )
         except ValidationError as e:
             return request.render(
-                "payment_mercado_pago.authorization_error",
-                {"error_message": str(e), "provider_url": redirect_url},
+                "payment.authorization_error",
+                {
+                    "error_message": str(e),
+                    "provider_url": redirect_url,
+                    "provider_name": "Mercado Pago",
+                },
             )
         # Backdate the access token expiry to refresh it before it expires, since the refresh token
         # would become unusable at that time (according to Mercado Pago's dev team).
