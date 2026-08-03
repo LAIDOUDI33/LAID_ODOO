@@ -53,6 +53,9 @@ class PurchaseOrderLine(models.Model):
         for line in self:
             line.date_promised = line.date_planned
 
+    def _get_countable_rfq_qty_by_line(self):
+        return {line: line.product_uom_qty for line in self}
+
     @api.depends('move_ids.state', 'move_ids.uom_id', 'move_ids.quantity')
     def _compute_qty_received(self):
         super()._compute_qty_received()
