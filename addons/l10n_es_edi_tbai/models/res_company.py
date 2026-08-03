@@ -2,10 +2,10 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 import markupsafe
-import re
 
 from odoo import api, fields, models, release
 from odoo.tools import LazyTranslate
+from odoo.addons.l10n_es.models.res_partner import L10N_ES_DNI_RE, L10N_ES_NIE_RE, _l10n_es_cif_regex
 
 _lt = LazyTranslate(__name__)
 
@@ -172,4 +172,4 @@ class ResCompany(models.Model):
         if vat.startswith('ES'):
             vat = vat[2:]
 
-        return re.fullmatch(r"(\d{8}[TRWAGMYFPDXBNJZSQVHLCKE]|[XYZ]\d{7}[TRWAGMYFPDXBNJZSQVHLCKE]|E\d{7}[A-J0-9])", vat) or False
+        return bool(L10N_ES_DNI_RE.fullmatch(vat) or L10N_ES_NIE_RE.fullmatch(vat) or _l10n_es_cif_regex("E").fullmatch(vat))

@@ -1,4 +1,26 @@
+import re
+
 from odoo import models
+
+
+def _l10n_es_cif_regex(letters=None):
+    """CIF = 1 letter + 7 digits + checksum (digit or letter) (e.g., A12345674)"""
+    admitted_letters = "ABCDEFGHJNPQRSUVW"
+    if letters is None:
+        letters = admitted_letters
+    else:
+        letters = letters.upper()
+        invalid = set(letters) - set(admitted_letters)
+        if invalid:
+            raise ValueError(
+                f"Lettere non valide per il CIF: {''.join(sorted(invalid))} "
+                f"(ammesse: {admitted_letters})"
+            )
+    return re.compile(rf"[{letters}]\d{{7}}[0-9A-J]")
+
+
+L10N_ES_DNI_RE = re.compile(r"\d{8}[TRWAGMYFPDXBNJZSQVHLCKE]")  # DNI = 8 digits + checksum letter (e.g., 12345678Z)
+L10N_ES_NIE_RE = re.compile(r"[XYZ]\d{7}[TRWAGMYFPDXBNJZSQVHLCKE]")  # NIE = 1 letter (X/Y/Z) + 7 digits + checksum letter (e.g., X1234567L)
 
 
 class ResPartner(models.Model):
@@ -38,14 +60,15 @@ class ResPartner(models.Model):
 
     def _compute_is_company(self):
         """
-        Determines if the Spanish VAT corresponds to a legal entity (CIF format):
-        CIF = 1 letter + 7 digits + checksum (digit or letter) (e.g., A1234567Y)
+        Determines whether the Spanish VAT corresponds to a legal entity (CIF format)
+        or to an individual (DNI/NIE format).
         """
         super()._compute_is_company()
         for partner in self:
             country_code, vat_number = self._split_vat(partner.vat or '')
-            if partner.commercial_partner_id == partner\
-                and country_code in ('ES', '') and len(vat_number) == 9\
-                and vat_number[0].upper() in 'ABCDEFGHJNPQRSUVW'\
-                and vat_number[1:-1].isdigit():
+            if partner.commercial_partner_id != partner or country_code not in ('ES', '') or len(vat_number) != 9:
+                continue
+            if _l10n_es_cif_regex().fullmatch(vat_number):
                 partner.is_company = True
+            elif L10N_ES_DNI_RE.fullmatch(vat_number) or L10N_ES_NIE_RE.fullmatch(vat_number):
+                partner.is_company = False
