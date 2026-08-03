@@ -5,7 +5,7 @@ registry.category("web_tour.tours").add("website_sale.pricelist_on_login", {
     steps: () => [
         {
             content: "Check can't select user pricelist as public user",
-            trigger: `[name="currency_dropup"]:not(:has(.dropdown-item[data-code="GBP"]))`,
+            trigger: `[name="currency_selector"]:not(:has(.dropdown-item[data-code="GBP"]))`,
         },
         {
             content: "Go to login page",
@@ -20,7 +20,7 @@ registry.category("web_tour.tours").add("website_sale.pricelist_on_login", {
         }),
         {
             content: "Check user pricelist is active by default once logged in",
-            trigger: `[name="currency_dropup"]:has(.dropdown-item.active[data-code="GBP"])`,
+            trigger: `[name="currency_selector"]:has(.dropdown-item.active[data-code="GBP"])`,
         },
     ],
 });

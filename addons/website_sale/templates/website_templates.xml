@@ -423,6 +423,53 @@
         </xpath>
     </template>
 
+    <!-- Priority must be lower than website.header_language_selector such that
+         this view (and website_sale.header_pricelist_selector_inline) is applied
+         while header_language_selector_hook is still part of the arch. -->
+    <template
+        id="website_sale.header_pricelist_selector"
+        inherit_id="website.placeholder_header_language_selector"
+        name="Header Pricelist Selector"
+        priority="10"
+        active="False"
+    >
+        <t id="header_language_selector_hook" position="before">
+            <t t-set="pricelist_options" t-value="website._prepare_pricelist_selector_values()"/>
+            <li
+                name="header_country_selector"
+                t-attf-class="o_header_pricelist_selector o_no_autohide_item #{_item_class}"
+            >
+                <t t-call="website_sale.country_selector"
+                    countries="pricelist_options['countries']"
+                    _div_classes="(_div_classes or '') + ' dropdown'"/>
+            </li>
+        </t>
+        <t id="header_language_selector_hook" position="after">
+            <li
+                t-if="len(pricelist_options['currencies']) > 1"
+                name="header_currency_selector"
+                t-attf-class="o_header_pricelist_selector o_no_autohide_item #{_item_class}"
+            >
+                <t t-call="website_sale.currency_selector"
+                    currencies="pricelist_options['currencies']"
+                    _div_classes="(_div_classes or '') + ' dropdown'"/>
+            </li>
+        </t>
+    </template>
+
+    <!-- With the inline language selector, the languages are rendered as a flat
+         list of links: keep both pricelist selectors together next to that list
+         instead of splitting them around it. -->
+    <template
+        id="website_sale.header_pricelist_selector_inline"
+        inherit_id="website_sale.header_pricelist_selector"
+        active="False"
+    >
+        <t id="header_language_selector_hook" position="after">
+            <li name="header_country_selector" position="move"/>
+        </t>
+    </template>
+
     <!-- Priority must be lower than portal.footer_language_selector such that
          website_sale.footer_pricelist_selector_with_language_selector can move
          language_selector_hook before portal.footer_language_selector is applied. -->
@@ -449,9 +496,8 @@
         inherit_id="website_sale.footer_pricelist_selector"
         active="False"
     >
-        <t id="language_selector_hook" position="replace"/>
         <t t-call="website_sale.country_selector" position="after">
-            <t id="language_selector_hook"/>
+            <t id="language_selector_hook" position="move"/>
         </t>
     </template>
 
@@ -460,9 +506,12 @@
             t-set="active_country"
             t-value="website.country_id.with_prefetch([c.id for c in countries])"
         />
-        <div name="country_dropup" class="dropup d-print-none flex-grow-1 min-w-0">
+        <div
+            name="country_selector"
+            t-attf-class="#{_div_classes or 'dropup'} o_typeahead d-print-none flex-grow-1 min-w-0"
+        >
             <button
-                class="dropdown-toggle btn btn-secondary btn-sm border-0 d-inline-flex align-items-center w-100 min-w-0"
+                t-attf-class="border-0 dropdown-toggle d-inline-flex align-items-center min-w-0 #{_btn_class or 'btn btn-secondary btn-sm w-100'}"
                 type="button"
                 data-bs-toggle="dropdown"
                 data-bs-auto-close="true"
@@ -474,12 +523,12 @@
                     t-if="active_country.image_url"
                     class="d-contents"
                     t-field="active_country.image_url"
-                    t-options="{'widget': 'image_url', 'class': 'o_lang_flag me-1 flex-shrink-0'}"
+                    t-options="{'widget': 'image_url', 'class': 'o_lang_flag flex-shrink-0 ' + (_flag_class or 'me-1')}"
                     aria-hidden="true"
                 />
-                <span class="text-truncate min-w-0" t-out="active_country.name"/>
+                <span t-attf-class="text-truncate min-w-0 #{_txt_class}" t-out="active_country.name"/>
             </button>
-            <div class="dropdown-menu">
+            <div t-attf-class="dropdown-menu #{_dropdown_menu_class}">
                 <a
                     t-foreach="countries.items()"
                     t-as="item"
@@ -492,10 +541,10 @@
                         t-if="item[0].image_url"
                         class="d-contents"
                         t-field="item[0].image_url"
-                        t-options="{'widget': 'image_url', 'class': 'o_lang_flag me-1'}"
+                        t-options="{'widget': 'image_url', 'class': 'o_lang_flag ' + (_flag_class or 'me-1')}"
                         aria-hidden="true"
                     />
-                    <span t-out="item[0].name"/>
+                    <span t-attf-class="#{_txt_class}" t-out="item[0].name"/>
                 </a>
             </div>
         </div>
@@ -508,31 +557,32 @@
         />
         <div
             t-if="len(currencies) > 1"
-            name="currency_dropup"
-            class="dropup d-print-none"
+            name="currency_selector"
+            t-attf-class="#{_div_classes or 'dropup'} o_typeahead d-print-none"
         >
             <button
-                class="dropdown-toggle btn btn-secondary btn-sm border-0"
+                t-attf-class="border-0 dropdown-toggle #{_btn_class or 'btn btn-secondary btn-sm'}"
                 type="button"
                 data-bs-toggle="dropdown"
                 data-bs-auto-close="true"
                 aria-haspopup="true"
                 aria-expanded="false"
-                t-attf-aria-label="Currency: #{active_currency.full_name or active_currency.name}"
+                t-attf-aria-label="Currency: #{active_currency.name}"
             >
-                <span t-out="active_currency.symbol"/>
+                <span t-attf-class="#{_txt_class}" t-out="active_currency.symbol"/>
             </button>
-            <div class="dropdown-menu">
+            <div t-attf-class="dropdown-menu #{_dropdown_menu_class}">
                 <a
                     t-foreach="currencies.items()"
                     t-as="item"
                     t-attf-class="dropdown-item {{item[0] == active_currency and 'active'}}"
                     t-att-aria-current="item[0] == active_currency and 'true'"
-                    t-att-aria-label="item[0].full_name or item[0].name"
+                    t-att-aria-label="item[0].name"
                     t-att-href="item[1]._get_shop_switch_url()"
                     t-att-data-code="item[0].name"
+                    t-att-data-value="item[0].name"
                 >
-                    <span t-out="item[0].symbol"/>
+                    <span t-attf-class="#{_txt_class}" t-out="item[0].symbol"/>
                 </a>
             </div>
         </div>

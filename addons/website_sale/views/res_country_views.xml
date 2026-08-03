@@ -7,7 +7,8 @@
         <field name="inherit_id" ref="base.view_country_form"/>
         <field name="arch" type="xml">
             <group name="phone_vat_settings" position="inside">
-                <field name="tax_display" placeholder="Defined on website"/>
+                <label for="tax_display" class="text-nowrap"/>
+                <field name="tax_display" nolabel="1" placeholder="Defined on website"/>
             </group>
         </field>
     </record>

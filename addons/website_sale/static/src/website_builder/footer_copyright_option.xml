@@ -10,6 +10,18 @@
                 ],
             }</attribute>
         </xpath>
+        <t name="footer_language_selector_opts" position="before">
+            <BuilderRow label.translate="Country &amp; Currency Selector">
+                <BuilderCheckbox
+                    preview="false"
+                    action="'websiteConfig'"
+                    actionParam="{
+                        views: ['website_sale.footer_pricelist_selector'],
+                        resetViewArch: true,
+                    }"
+                />
+            </BuilderRow>
+        </t>
     </t>
 
 </templates>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="website_sale.LanguageSelectorOption" t-inherit="website.LanguageSelectorOption" t-inherit-mode="extension">
+        <xpath expr="//*[contains(@id, 'header_language_selector_style_opt')]/BuilderSelectItem[2]" position="attributes">
+            <attribute name="actionParam">{
+                views: [
+                    'website.header_language_selector',
+                    'website.header_language_selector_inline',
+                    'website_sale.header_pricelist_selector_inline',
+                ],
+            }</attribute>
+        </xpath>
+    </t>
+
+</templates>

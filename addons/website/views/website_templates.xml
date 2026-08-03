@@ -2714,16 +2714,21 @@
     </xpath>
 </template>
 
-<template id="placeholder_header_language_selector" name="Placeholder Header Language Selector"/>
+<template id="placeholder_header_language_selector" name="Placeholder Header Language Selector">
+    <!-- Named hook so that other modules (e.g. website_sale) can add elements
+         around the language selector, before it replaces the hook. Such views
+         must therefore have a lower priority than header_language_selector. -->
+    <t id="header_language_selector_hook"/>
+</template>
 
 <template id="header_language_selector" inherit_id="website.placeholder_header_language_selector" name="Header Language Selector" active="True">
-    <xpath expr="." position="inside">
+    <t id="header_language_selector_hook" position="replace">
         <li t-if="len(frontend_languages) > 1" data-name="Language Selector" t-attf-class="o_header_language_selector #{_item_class}">
             <t id="header_language_selector_call"
                 t-call="portal.language_selector"
                 _div_classes="(_div_classes or '') + ' dropdown'"/>
         </li>
-    </xpath>
+    </t>
 </template>
 
 <template id="header_language_selector_inline" name="Header Language Selector Inline" inherit_id="website.header_language_selector" active="False">
