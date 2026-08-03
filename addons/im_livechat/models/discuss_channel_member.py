@@ -208,3 +208,16 @@ class DiscussChannelMember(models.Model):
         if self.channel_id.channel_type == "livechat" and self.partner_id.user_livechat_username:
             return self.partner_id.user_livechat_username
         return super()._get_html_link_title()
+
+    def unlink(self):
+        channels = self.mapped("channel_id")
+        res = super().unlink()
+        # sudo: discuss.channel - last operator left the conversation, state must be updated.
+        for channel in channels.sudo():
+            if (
+                channel.channel_type == "livechat"
+                and not channel.livechat_end_dt
+                and channel.member_count == 1
+            ):
+                channel.livechat_end_dt = fields.Datetime.now()
+        return res
