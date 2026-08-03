@@ -784,6 +784,16 @@ class MrpWorkorder(models.Model):
         self.end_all()
         return self.filtered(lambda wo: wo.state != 'cancel').write({'state': 'cancel'})
 
+    def action_reset_to_draft(self):
+        for wo in self:
+            wo.time_ids.unlink()
+            wo.state = 'blocked' if wo.blocked_by_workorder_ids.filtered(lambda w: w.state not in ('done', 'cancel')) else 'ready'
+            wo.write({
+                'qty_produced': 0,
+                'date_start': False,
+                'date_finished': False,
+            })
+
     def action_replan(self):
         """ Replans every planned work orders
         """

@@ -44,6 +44,9 @@ class StockMoveLine(models.Model):
                     line.produce_line_ids = [(6, 0, produced_move_lines.ids)]
         return res
 
+    def _unlink_except_done_or_cancel(self):
+        pass
+
     def _get_similar_move_lines(self):
         lines = super()._get_similar_move_lines()
         if self.move_id.production_id:

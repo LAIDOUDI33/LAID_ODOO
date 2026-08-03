@@ -1696,6 +1696,14 @@ class MrpProduction(models.Model):
 
     def action_confirm(self):
         self._check_company()
+        for production in self:
+            linked_moves = production.move_raw_ids.filtered(lambda m: m.state == 'draft' and (m.move_orig_ids or m._get_active_created_purchase_lines()))
+            if linked_moves:
+                linked_moves._adjust_procure_method()
+                production._run_mto_links_procurement(linked_moves)
+                linked_moves._action_confirm(merge=False, create_proc=False)
+                # to avoid raw_move_ids going to waiting state because move_orig_ids are done
+                linked_moves.filtered(lambda m: m.move_orig_ids and all(o.state == 'done' for o in m.move_orig_ids))._action_assign()
         moves_ids_to_confirm = set()
         move_raws_ids_to_adjust = set()
         workorder_ids_to_confirm = set()
@@ -1975,6 +1983,125 @@ class MrpProduction(models.Model):
             production._log_manufacture_exception(filtered_documents, cancel=True)
 
         return True
+
+    def action_reset_to_draft(self):
+        mto_links_by_production = {production.id: production._get_mto_links() for production in self}
+        self._reverse_done_moves()
+        self.workorder_ids.action_reset_to_draft()
+        (self.move_raw_ids | self.move_finished_ids).filtered(lambda m: m.state == 'cancel').unlink()
+        self.write({
+            'state': 'draft',
+            'qty_producing': 0,
+            'is_locked': False,
+            'date_finished': False,
+        })
+        self._compute_move_raw_ids()
+        for production in self:
+            production._restore_mto_links(mto_links_by_production[production.id])
+        return True
+
+    def _get_mto_links(self):
+        """ returns the mto links (using orig_moves and po_lines) per bom_line_id in each component.
+        """
+        self.ensure_one()
+        child_finished_moves_by_product = defaultdict(lambda: self.env['stock.move'])
+        for child in self._get_children().filtered(lambda mo: mo.state != 'cancel'):
+            child_finished_moves_by_product[child.product_id.id] |= child.move_finished_ids.filtered(lambda m: m.product_id == child.product_id and m.state != 'cancel')
+
+        pick_moves_by_product = defaultdict(lambda: self.env['stock.move'])
+        for pick_move in self.picking_ids.move_ids.filtered(
+                lambda m: m.state != 'cancel' and m.location_dest_id == self.location_src_id):
+            pick_moves_by_product[pick_move.product_id.id] |= pick_move
+
+        links = {}
+        for move in self.move_raw_ids.filtered(lambda m: m.bom_line_id):
+            orig_moves = move.move_orig_ids.filtered(lambda m: m.state != 'cancel')
+            orig_moves |= child_finished_moves_by_product.get(move.product_id.id, self.env['stock.move'])
+            orig_moves |= pick_moves_by_product.get(move.product_id.id, self.env['stock.move'])
+            po_lines = move._get_active_created_purchase_lines()
+            if orig_moves or po_lines:
+                links[move.bom_line_id.id] = {'orig_moves': orig_moves, 'po_lines': po_lines}
+        return links
+
+    def _restore_mto_links(self, links):
+        self.ensure_one()
+        for move in self.move_raw_ids.filtered(lambda m: m.bom_line_id.id in links):
+            move_links = links[move.bom_line_id.id]
+            if move_links['orig_moves']:
+                move.move_orig_ids = [Command.set(move_links['orig_moves'].ids)]
+            if move_links['po_lines']:
+                move._set_created_purchase_lines(move_links['po_lines'])
+
+    def _reverse_done_moves(self):
+        done_moves = (self.move_raw_ids | self.move_finished_ids).filtered(lambda m: m.state == 'done')
+        if not done_moves:
+            return
+        done_moves.move_dest_ids._do_unreserve()
+        self._reverse_posted_jentries(done_moves)
+
+        moves_vals = []
+        for move in done_moves:
+            vals = move.copy_data()[0]
+            vals.update({
+                'production_id': False,
+                'raw_material_production_id': False,
+                'origin_returned_move_id': move.id,
+                'location_id': move.location_dest_id.id,
+                'location_dest_id': move.location_id.id,
+                'picking_type_id': False,
+                'quantity': move.quantity,
+                'reference': move.reference,
+                'picked': True,
+                'procure_method': 'make_to_stock',
+            })
+            moves_vals.append(vals)
+
+        reverse_moves = self.env['stock.move'].create(moves_vals)
+        done_moves.write({
+            'production_id': False,
+            'raw_material_production_id': False,
+            'move_orig_ids': False,
+        })
+        for move, reverse_move in zip(done_moves, reverse_moves):
+            # to keep the reference on the done_move history report
+            move.reference = reverse_move.reference
+            if move.has_tracking in ['lot', 'serial'] or move.move_line_ids.package_id:
+                mls_vals = []
+                for ml in move.move_line_ids:
+                    vals = {
+                        'move_id': reverse_move.id,
+                        'product_id': ml.product_id.id,
+                        'package_id': ml.result_package_id.id,
+                        'result_package_id': ml.package_id.id,
+                        'quantity': ml.quantity,
+                        'lot_id': ml.lot_id.id,
+                    }
+                    mls_vals.append(vals)
+
+                reverse_move.move_line_ids.unlink()
+                self.env['stock.move.line'].create(mls_vals)
+        reverse_moves._action_confirm()
+        reverse_moves._action_done()
+        return True
+
+    def _reverse_posted_jentries(self, done_moves):
+        # overridden in mrp_account
+        pass
+
+    def _run_mto_links_procurement(self, linked_moves):
+        """only used upon re-confirming an MO after it was reset to Draft.
+        """
+        procurements = []
+        for move in linked_moves:
+            delta = move.product_uom_qty - move._get_old_demand_qty()
+            if move.uom_id.is_zero(delta):
+                continue
+            values = move._prepare_procurement_values()
+            procurements.append(self.env['stock.rule'].Procurement(
+                move.product_id, delta, move.uom_id, move.location_id,
+                move.reference, move.origin, move.company_id, values))
+        if procurements:
+            self.env['stock.rule'].run(procurements)
 
     def _get_document_iterate_key(self, move_raw_id):
         return move_raw_id.move_orig_ids and 'move_orig_ids' or False
@@ -2475,7 +2602,8 @@ class MrpProduction(models.Model):
     def _auto_production_checks(self):
         self.ensure_one()
         return all(p.tracking not in ['lot', 'serial'] for p in self.move_raw_ids.product_id | self.move_finished_ids.product_id)\
-            or self.product_uom_qty == 1 or (self.product_id.tracking != 'serial' and self.reservation_state in ('assigned', 'confirmed', 'waiting'))
+            or self.product_uom_qty == 1 or (self.product_id.tracking != 'serial' and self.reservation_state in ('assigned', 'confirmed', 'waiting'))\
+            or (self.product_id.tracking == 'serial' and self.lot_producing_ids and not self.qty_producing)
 
     def _should_return_records(self):
         # Meant to be overriden for flows that don't want to be redirected to the backend e.g. barcode
@@ -2962,10 +3090,11 @@ class MrpProduction(models.Model):
             ('production_id', '=', False),
             ('location_dest_id.usage', '=', 'production')
         ]
-        # Check presence of same sn in previous productions
+        # Check presence of same sn in previous productions that were not reset to draft
         duplicates = self.env['stock.move.line'].search_count(domain + [
             ('location_id.usage', '=', 'production'),
-            ('move_id.unbuild_id', '=', False)
+            ('move_id.unbuild_id', '=', False),
+            ('move_id.production_id', '!=', False),
         ])
         if duplicates:
             # Maybe some move lines have been compensated by unbuild
@@ -3032,7 +3161,9 @@ class MrpProduction(models.Model):
 
     def _set_quantities(self):
         self.ensure_one()
-        self.qty_producing = self.product_qty - self.qty_produced
+        # to prioritize qty_producing to use len(lot_producing_ids) first
+        if not (self.product_id.tracking == 'serial' and self.lot_producing_ids):
+            self.qty_producing = self.product_qty - self.qty_produced
         self._set_qty_producing()
         self._mark_byproducts_as_produced()
 
