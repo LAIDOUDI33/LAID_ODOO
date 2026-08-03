@@ -15,6 +15,7 @@ class HrLeaveAccrualPlan(models.Model):
     name = fields.Char('Name', required=True)
     employees_count = fields.Integer("Employees", compute='_compute_employee_count')
     level_ids = fields.One2many('hr.leave.accrual.level', 'accrual_plan_id', copy=True, string="Milestones")
+    work_entry_type_id = fields.Many2one("hr.work.entry.type", string="Time Type", required=True)  # ABSHE Add allocation, company filters.
     allocation_ids = fields.One2many('hr.leave.allocation', 'accrual_plan_id',
         export_string_translation=False)
     company_id = fields.Many2one('res.company', string='Company', domain=lambda self: [('id', 'in', self.env.companies.ids)])

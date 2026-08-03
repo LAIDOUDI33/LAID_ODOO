@@ -1,12 +1,24 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-from odoo import fields, models
+from odoo import api, fields, models
 
 
 class ResourceCalendar(models.Model):
     _inherit = "resource.calendar"
 
     associated_leaves_count = fields.Integer("Time Off Count", compute='_compute_associated_leaves_count')
+    leave_accrual_plan_id = fields.Many2one(
+        string="Accrual Plan",
+        comodel_name="hr.leave.accrual.plan",
+        index="btree_not_null",
+        help="",
+    )
+    accrual_work_entry_type = fields.Many2one(
+        string="Accrual Time Type",
+        comodel_name="hr.work.entry.type",
+        index="btree_not_null",
+        help="",
+    )
 
     def _compute_associated_leaves_count(self):
         leaves_read_group = self.env['resource.calendar.leaves']._read_group(
@@ -51,3 +63,29 @@ class ResourceCalendar(models.Model):
             },
             'search_view_id': self.env.ref('hr_holidays.resource_calendar_leaves_view_search_inherit').id,
         }
+            calendar.associated_leaves_count = result.get(calendar.id, 0) + global_leave_count
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        res = super().create(vals_list)
+        for vals in vals_list:
+            if "leave_accrual_plan_id" in vals or "accrual_work_entry_type" in vals:
+                self.env["hr.employee"].sudo().search(
+                    domain=[
+                        ('company_id', '=', self.company_id.id),
+                        ('resource_calendar_id', '=', self.id),
+                    ],
+                )._action_trigger_accrual_plan_working_schedule(self.id)
+        return res
+
+    def write(self, vals):
+        res = super().write(vals)
+        if 'leave_accrual_plan_id' in vals or 'accrual_work_entry_type' in vals:
+            self.env["hr.employee"].sudo().search(
+                domain=[
+                    ('company_id', '=', self.company_id.id),
+                    ('resource_calendar_id', '=', self.id),
+                ],
+            )._action_trigger_accrual_plan_working_schedule(self.id)
+        return res
+    # ABSHE ADD UNLINK

@@ -280,7 +280,12 @@ class HrEmployee(models.Model):
                 group_updates.append((4, vals['leave_manager_id']))
         if group_updates:
             approver_group.sudo().write({'user_ids': group_updates})
-        return super().create(vals_list)
+
+        res = super().create(vals_list)
+        for vals in vals_list:
+            if 'resource_calendar_id' in vals:
+                self._action_trigger_accrual_plan_working_schedule(vals['resource_calendar_id'])
+        return res
 
     def write(self, vals):
         values = vals
@@ -304,6 +309,8 @@ class HrEmployee(models.Model):
                 if approver_group and not leave_manager.has_group('hr_holidays.group_hr_holidays_responsible'):
                     leave_manager.sudo().write({'group_ids': [(4, approver_group.id)]})
 
+        if 'resource_calendar_id' in values:
+            self._action_trigger_accrual_plan_working_schedule(values['resource_calendar_id'])
         res = super().write(values)
         # remove users from the Responsible group if they are no longer leave managers
         old_managers.sudo()._clean_leave_responsible_users()
@@ -813,3 +820,41 @@ class HrEmployee(models.Model):
         hour_to = max((att['hour_to'] for att in attendances), default=default_end)
 
         return (hour_from, hour_to)
+
+    def _action_trigger_accrual_plan_working_schedule(self, resource_calendar_id):
+        """
+            this method links accrual plan from resource_calendar_id to employees self
+            this should be triggered everytime a change happens for the field in ws,
+            or the ws changes in the employee
+        """
+        if not self:
+            return
+
+        working_schedule = self.env['resource.calendar'].sudo().search_fetch(
+            domain=[('id', '=', resource_calendar_id)],
+            field_names=['work_time_rate', 'leave_accrual_plan_id', 'accrual_work_entry_type'],
+        )
+
+        leave = self.env['hr.leave.allocation'].sudo().search(
+            domain=[
+                ('employee_id' , 'in', self.ids),
+                ('active_from_working_schedule', '=', True),
+            ]
+        )
+        leave.write({
+            'accrual_plan_id': None,
+            'active_from_working_schedule': None,
+        })
+
+        if working_schedule.work_time_rate <= 1.0 or not working_schedule.accrual_work_entry_type or not working_schedule.leave_accrual_plan_id:
+            return
+
+        self.env['hr.leave.allocation'].sudo().create([{
+            'name': 'Compensatory Allocations for the difference in working schedules',
+            'accrual_plan_id': working_schedule.leave_accrual_plan_id.id,
+            'employee_id': emp.id,
+            'work_entry_type_id': working_schedule.accrual_work_entry_type.id,
+            'date_from': emp.version_id.date_start,
+            'active_from_working_schedule': True,
+            'state': 'confirm',
+        } for emp in self]).action_approve()

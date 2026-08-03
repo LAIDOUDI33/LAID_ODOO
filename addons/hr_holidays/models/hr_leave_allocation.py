@@ -135,12 +135,19 @@ class HrLeaveAllocation(models.Model):
     already_accrued = fields.Boolean()
     yearly_accrued_amount = fields.Float(export_string_translation=False)
     is_officer = fields.Boolean(compute='_compute_is_officer')
-    accrual_plan_id = fields.Many2one('hr.leave.accrual.plan', index='btree_not_null', tracking=True)
+    accrual_plan_id = fields.Many2one('hr.leave.accrual.plan', index='btree_not_null', domain='[("id", "in", allowed_accrual_plan_ids)]', tracking=True)
+    allowed_accrual_plan_ids = fields.Many2many('hr.leave.accrual.plan', compute='_compute_allowed_accrual_plan_ids')
     max_leaves = fields.Float(compute='_compute_leaves')
     leaves_taken = fields.Float(compute='_compute_leaves', string='Time off Taken')
     virtual_remaining_leaves = fields.Float(compute='_compute_leaves', string='Available Time Off')
     expiring_carryover_days = fields.Float("The number of carried over days that will expire on carried_over_days_expiration_date")
     carried_over_days_expiration_date = fields.Date("Carried over days expiration date")
+    active_from_working_schedule = fields.Boolean(default=None)
+
+    _active_from_working_schedule_constraint = models.UniqueIndex(
+        '(employee_id, active_from_working_schedule) WHERE active_from_working_schedule = TRUE',
+        'Only one allocation from working schedule is allowed for each employee',
+    )
 
     @api.constrains('date_from', 'date_to')
     def _check_date_from_date_to(self):
@@ -267,7 +274,7 @@ class HrLeaveAllocation(models.Model):
         for allocation in self:
             allocation.manager_id = allocation.employee_id and allocation.employee_id.parent_id
 
-    @api.depends('employee_company_id')
+    @api.depends('employee_company_id', 'accrual_plan_id')
     def _compute_allowed_work_entry_type_ids(self):
         for allocation in self:
             country = allocation.employee_company_id.country_id or self.env.company.country_id
@@ -275,8 +282,20 @@ class HrLeaveAllocation(models.Model):
                 domain = [('country_id', '=', False)]
             else:
                 domain = [('country_id', '=', country.id)]
+            # if allocation.accrual_plan_id:
+            #     domain = Domain.AND([[('id', '=', allocation.accrual_plan_id.work_entry_type_id.id)], domain])
             domain = Domain.AND([allocation._domain_work_entry_type_id(), domain])
             allocation.allowed_work_entry_type_ids = self.env['hr.work.entry.type'].search(domain)
+
+    @api.depends('work_entry_type_id')
+    def _compute_allowed_accrual_plan_ids(self):
+        for allocation in self:
+            domain = []
+            if allocation.work_entry_type_id:
+                domain = [('work_entry_type_id', '=', allocation.work_entry_type_id.id)]
+            if allocation.accrual_plan_id and allocation.accrual_plan_id.work_entry_type_id != allocation.work_entry_type_id:
+                allocation.accrual_plan_id = None
+            allocation.allowed_accrual_plan_ids = self.env['hr.leave.accrual.plan'].search(domain)
 
     @api.depends('accrual_plan_id')
     def _compute_work_entry_type_id(self):
@@ -286,6 +305,9 @@ class HrLeaveAllocation(models.Model):
                 if not default_work_entry_type_id:  # fetch when we need it
                     default_work_entry_type_id = self._default_work_entry_type_id()
                 allocation.work_entry_type_id = default_work_entry_type_id
+
+            if allocation.accrual_plan_id and allocation.work_entry_type_id != allocation.accrual_plan_id.work_entry_type_id:
+                allocation.work_entry_type_id = allocation.accrual_plan_id.work_entry_type_id
 
     @api.depends('work_entry_type_id', 'number_of_hours_display', 'number_of_days_display', 'type_request_unit', 'employee_id')
     def _compute_number_of_days(self):
