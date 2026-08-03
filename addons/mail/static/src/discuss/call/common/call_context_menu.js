@@ -113,7 +113,11 @@ export class CallContextMenu extends Component {
     }
 
     get volume() {
-        return this.store.settings.getVolume(this.props.rtcSession);
+        return (
+            this.store.self_user?.res_users_settings_id?.getVolume(this.props.rtcSession) ??
+            this.props.rtcSession.volume ??
+            0.5
+        );
     }
 
     /**
