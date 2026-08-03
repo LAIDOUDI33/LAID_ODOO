@@ -107,6 +107,10 @@ class PaymentTransaction(models.Model):
         if self.provider_code != "demo":
             return super()._apply_updates(payment_data)
 
+        # Update the payment method.
+        payment_method = self.provider_id._get_pm_from_code("demo")
+        self.payment_method_id = payment_method or self.payment_method_id
+
         # Update the provider reference.
         self.provider_reference = f"demo-{self.reference}"
 
