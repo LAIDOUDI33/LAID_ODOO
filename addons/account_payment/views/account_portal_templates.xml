@@ -91,7 +91,7 @@
             </td>
         </xpath>
         <xpath expr="//t[@name='invoice_status_posted']/span[1]" position="before">
-            <t t-set="tx_sudo" t-value="invoice.get_portal_last_transaction()"/>
+            <t t-set="tx_sudo" t-value="invoice._get_portal_display_transaction()"/>
         </xpath>
         <xpath expr="//span[@name='invoice_status_waiting_for_payment']" position="before">
             <span t-elif="invoice.payment_state in ('not_paid', 'partial') and tx_sudo.state == 'authorized'"
@@ -251,14 +251,17 @@
 
     <template id="portal_invoice_page_inherit_payment" name="Payment on My Invoices" inherit_id="account.portal_invoice_page">
         <xpath expr="//t[@t-set='title']//h2[1]" position="after">
-            <t t-set="pending_txs" t-value="invoice.transaction_ids.filtered(lambda tx: tx.state in ('pending', 'authorized') and tx.provider_code not in ('none', 'custom'))"/>
+            <t t-set="tx_sudo" t-value="invoice._get_portal_display_transaction()"/>
             <div name="invoice_paid_badge" t-if="invoice.currency_id.is_zero(invoice.amount_residual)" class="rounded text-bg-success fw-normal badge">
                 <i class="oi oi-fw" data-icon="check_circle"/> Paid
             </div>
-            <div t-if="invoice.payment_state == 'in_payment' and not invoice.currency_id.is_zero(invoice.amount_residual)" class="rounded text-bg-info fw-normal badge">
+            <div t-elif="invoice.payment_state == 'in_payment'" class="rounded text-bg-info fw-normal badge">
                 <i class="oi oi-fw" data-icon="check_circle"/> Processing Payment
             </div>
-            <div t-elif="pending_txs" class="rounded text-bg-info fw-normal badge">
+            <div t-elif="tx_sudo.state == 'authorized'" class="rounded text-bg-success fw-normal badge">
+                <i class="oi oi-fw" data-icon="check_circle"/> Authorized
+            </div>
+            <div t-elif="tx_sudo.state == 'pending'" class="rounded text-bg-info fw-normal badge">
                 <i class="oi oi-fw" data-icon="check_circle"/> Pending
             </div>
         </xpath>
@@ -273,7 +276,7 @@
         </xpath>
         <xpath expr="//div[@id='invoice_content']//div[hasclass('o_portal_html_view')]" position="before">
             <t t-set="tx" t-value="invoice.get_portal_last_transaction()"/>
-            <div t-if="invoice.get_portal_last_transaction() and invoice.amount_total and not success and not error and (invoice.payment_state != 'not_paid' or tx.state in ('pending', 'authorized'))"
+            <div t-if="tx and invoice.amount_total"
                  class="o_account_payment_tx_status"
                  t-att-data-invoice-id="invoice.id">
                 <t t-call="payment.state_header"/>
@@ -298,6 +301,7 @@
             </t>
             <t t-elif="error == 'pay_invoice_tx_fail'">
                 There was an error processing your payment: transaction failed.<br />
+                <!--TODO-PDA dead code? Fix with separate commit-->
                 <t t-set="tx_sudo" t-value="invoice.get_portal_last_transaction()"/>
                 <t t-if="tx_sudo and tx_sudo.state_message">
                     <t t-out="tx_sudo.state_message"/>
@@ -313,6 +317,7 @@
             inherit_id="account.portal_invoice_success">
         <xpath expr="//a[hasclass('close')]" position="after">
             <t t-if="success == 'pay_invoice'">
+                <!--TODO-PDA dead code? Fix with separate commit-->
                 <t t-set="tx_sudo" t-value="invoice.get_portal_last_transaction()"/>
                 <span t-if="tx_sudo.provider_id.sudo().done_msg" t-out="tx_sudo.provider_id.sudo().done_msg"/>
                 <div t-if="tx_sudo.provider_id.sudo().pending_msg and tx_sudo.provider_code == 'custom' and invoice.ref">

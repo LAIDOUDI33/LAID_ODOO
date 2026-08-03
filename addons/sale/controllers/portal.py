@@ -274,16 +274,20 @@ class CustomerPortal(payment_portal.PaymentPortal):
         logged_in = not self.env.user._is_public()
         partner_sudo = self.env.user.partner_id if logged_in else order_sudo.partner_id
         currency = order_sudo.currency_id
-
+        remaining_amount = currency.round(
+            max(0, order_sudo.amount_total - order_sudo.amount_paid - order_sudo.amount_pending)
+        )
+        # TODO-PDA double check remaining_amount with pending and the overwrites of
+        # _get_payment_values
         if is_down_payment:
             if payment_amount and payment_amount < order_sudo.amount_total:
                 amount = payment_amount
             else:
                 amount = order_sudo._get_prepayment_required_amount()
         elif order_sudo.state == "sale":
-            amount = payment_amount or order_sudo.amount_total
+            amount = payment_amount or remaining_amount
         else:
-            amount = order_sudo.amount_total
+            amount = remaining_amount
 
         # Prepare the portal page values
         company_mismatch = not payment_portal.PaymentPortal._can_partner_pay_in_company(

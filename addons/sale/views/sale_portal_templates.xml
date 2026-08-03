@@ -133,6 +133,21 @@
                                 }"
                         />
                     </div>
+                    <div
+                        t-if="sale_order.amount_pending &gt; 0
+                                  and sale_order.state != 'cancel'"
+                        class="alert alert-info mt-3"
+                        role="alert"
+                    >
+                        Pending:
+                    <span
+                            t-field="sale_order.amount_pending"
+                            t-options="{
+                                    'widget': 'monetary',
+                                    'display_currency': sale_order.currency_id,
+                                }"
+                        />
+                    </div>
 
                     <div class="d-flex flex-column gap-4 mt-3">
                         <div class="d-flex flex-column gap-2" id="sale_order_sidebar_button">
@@ -324,7 +339,7 @@
                         Your order is not in a state to be rejected.
                     </div>
 
-                    <t t-set="current_tx" t-value="sale_order.get_portal_last_transaction()"/>
+                    <t t-set="current_tx" t-value="sale_order._get_portal_display_transaction()"/>
                     <!-- hide state header when invoice is posted for current transaction. -->
                     <t t-if="current_tx and not (len(current_tx.invoice_ids) == 1 and current_tx.invoice_ids.state == 'posted')">
                         <t t-call="payment.state_header" tx="current_tx"/>
@@ -549,11 +564,10 @@
         <div id="content">
             <div id="informations" class="row">
                 <span id="transaction_info">
-                    <div t-if="sale_order.get_portal_last_transaction() and not invoices and sale_order.state in ('sent', 'sale') and portal_confirmation == 'pay' and not success and not error"
+                    <t t-set="last_tx" t-value="sale_order._get_portal_display_transaction()"/>
+                    <div t-if="last_tx and not invoices and sale_order.state in ('sent', 'sale') and portal_confirmation == 'pay'"
                         t-att-data-order-id="sale_order.id">
-                        <t t-if="sale_order.transaction_ids">
-                            <t t-call="payment.state_header" tx="sale_order.get_portal_last_transaction()"/>
-                    </t>
+                        <t t-call="payment.state_header" tx="last_tx"/>
                     </div>
                 </span>
                 <!-- Information -->

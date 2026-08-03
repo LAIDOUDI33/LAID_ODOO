@@ -98,6 +98,8 @@ class PaymentTransaction(models.Model):
         for done_tx in self.filtered(lambda tx: tx.state == "done"):
             if done_tx.operation != "validation":
                 confirmed_orders = done_tx._check_amount_and_confirm_order()
+                # TODO-PDA can we consider we're awaiting split payment if prepayment_amount not
+                # reached and already one done tx?
                 (done_tx.sale_order_ids - confirmed_orders)._send_payment_succeeded_for_order_mail()
 
             auto_invoice = done_tx.company_id.sale_automatic_invoice

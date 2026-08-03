@@ -622,7 +622,6 @@ class PaymentTransaction(models.Model):
             # The payment preparation requests made by some providers are safe to replay
             payment_safe_write=True
         )
-
         processing_values = {
             "provider_id": self.provider_id.id,
             "provider_code": self.provider_code,
@@ -1497,6 +1496,8 @@ class PaymentTransaction(models.Model):
                 ),
                 "pending": provider_sudo.pending_msg,
                 "authorized": provider_sudo.auth_msg,
+                # TODO-PDA consider a different done_msg if split_payment
+                # Your payments have been processed.
                 "done": provider_sudo.done_msg,
                 "cancel": provider_sudo.cancel_msg,
                 "error": (

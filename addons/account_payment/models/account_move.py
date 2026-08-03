@@ -26,6 +26,10 @@ class AccountMove(models.Model):
         string="Amount paid",
         compute='_compute_amount_paid'
     )
+    amount_pending = fields.Monetary(
+        string="Amount pending",
+        compute='_compute_amount_pending'
+    )
 
     @api.depends('transaction_ids')
     def _compute_authorized_transaction_ids(self):
@@ -41,12 +45,21 @@ class AccountMove(models.Model):
 
     @api.depends('transaction_ids')
     def _compute_amount_paid(self):
-        """ Sum all the transaction amount for which state is in 'authorized' or 'done'
-        """
+        """Sum all the transaction amount for which state is in 'authorized' or 'done'"""
         for invoice in self:
             invoice.amount_paid = sum(
                 invoice.transaction_ids.filtered(
                     lambda tx: tx.state in ('authorized', 'done')
+                ).mapped('amount')
+            )
+
+    @api.depends('transaction_ids')
+    def _compute_amount_pending(self):
+        """Sum all the transaction amount for which state is 'pending'"""
+        for invoice in self:
+            invoice.amount_pending = sum(
+                invoice.transaction_ids.filtered(
+                    lambda tx: tx.state == 'pending'
                 ).mapped('amount')
             )
 
@@ -99,7 +112,34 @@ class AccountMove(models.Model):
     @api.private
     def get_portal_last_transaction(self):
         self.ensure_one()
+        # TODO-PDA have a look at all calls to see if _get_portal_display_transaction is not needed
         return self.with_context(active_test=False).sudo().transaction_ids._get_last()
+
+    @api.private
+    def _get_portal_display_transaction(self):
+        """Return the transaction whose state should be displayed on the customer portal.
+        # TODO-PDA brainstorm name. It's the main payment transaction used to display where it is
+        # not relevant to consider only the last transaction.
+
+        With split payments, the status can no longer be inferred from the last transaction only;
+        it is derived from the most relevant transaction, considering the following order:
+        - done (amount_paid >= amount_total, all done transactions)
+        - authorized (amount_paid >= amount_total, at least 1 authorized transaction)
+        - pending (amount_paid + amount_pending >= amount_total, at least 1 pending transaction)
+
+        :return: The last transaction in the relevant state ('done', 'authorized' or 'pending'),
+                 or an empty recordset if no status should be displayed.
+        :rtype: recordset of `payment.transaction`
+        """
+        self.ensure_one()
+        txs_sudo = self.with_context(active_test=False).sudo().transaction_ids
+        if self.currency_id.compare_amounts(self.amount_paid, self.amount_total) >= 0:
+            authorized_tx = txs_sudo.filtered(lambda tx: tx.state == 'authorized')._get_last()
+            return authorized_tx or txs_sudo.filtered(lambda tx: tx.state == 'done')._get_last()
+        paid_or_pending_amount = self.amount_paid + self.amount_pending
+        if self.currency_id.compare_amounts(paid_or_pending_amount, self.amount_total) >= 0:
+            return txs_sudo.filtered(lambda tx: tx.state == 'pending')._get_last()
+        return self.env['payment.transaction']
 
     def payment_action_capture(self):
         """ Capture all transactions linked to this invoice. """
