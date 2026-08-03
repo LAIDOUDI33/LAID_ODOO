@@ -461,6 +461,27 @@ class TestLivechatChatbotUI(TestLivechatChatbotUICommon):
         )
         self.assertEqual(count, 2, "Email step should be triggered twice (1 failure + 1 retry)")
 
+    def test_chatbot_continue_after_login(self):
+        portal_user = tests.new_test_user(
+            self.env,
+            name="Batman",
+            login="portal_user",
+            password="portal_user",
+            groups="base.group_portal",
+        )
+        self.start_tour("/", "website_livechat.chatbot_continue_after_login_tour")
+        channel = self.env["discuss.channel"].search([
+            ("livechat_channel_id", "=", self.livechat_channel.id),
+            ("channel_member_ids.partner_id", "=", portal_user.partner_id.id),
+        ])
+        visitor_members = channel.channel_member_ids.filtered(lambda m: m.livechat_member_type == "visitor")
+        self.assertEqual(len(visitor_members), 1)
+        self.assertEqual(visitor_members.partner_id, portal_user.partner_id)
+        visitor_histories = channel.livechat_channel_member_history_ids.filtered(
+            lambda h: h.livechat_member_type == "visitor"
+        )
+        self.assertEqual(len(visitor_histories), 2)
+
 
 class TestLivechatChatbotUIMoblie(TestLivechatChatbotUICommon):
     browser_size = '375x667'

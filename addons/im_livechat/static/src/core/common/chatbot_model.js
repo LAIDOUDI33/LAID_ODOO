@@ -59,8 +59,17 @@ export class Chatbot extends Record {
         if (this.completed) {
             return;
         }
-        if (this.channel_id.isLastMessageFromCustomer) {
-            await this.processAnswer(this.channel_id.newestPersistentOfAllMessage);
+        // When resuming, process the latest user-authored message because an
+        // incoming notification may have been posted after it (e.g. during login).
+        // Without this, two issues can occur:
+        // 1. The user's pending answer may be skipped because the notification
+        //    becomes the latest message.
+        // 2. The notification itself may be mistakenly treated as the user's answer.
+        const lastCommentMessage = this.channel_id.newestPersistentAllMessages.find(
+            (e) => e.message_type === "comment"
+        );
+        if (lastCommentMessage?.isSelfAuthored) {
+            await this.processAnswer(lastCommentMessage);
         }
         if (!this.currentStep?.expectAnswer || this.currentStep?.completed) {
             this._runUntilUserInputStep();

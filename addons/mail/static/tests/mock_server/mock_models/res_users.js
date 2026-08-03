@@ -59,7 +59,8 @@ export class ResUsers extends webModels.ResUsers {
                     value: ResUsers.browse(this.env.user.id),
                 });
                 res.attr("settings", ResUsersSettings.res_users_settings_format(userSettings.id));
-            } else if (this.env.cookie.get("dgid")) {
+            }
+            if (this.env.cookie.get("dgid")) {
                 res.one(
                     "self_guest",
                     (r) => {
