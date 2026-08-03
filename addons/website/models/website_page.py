@@ -396,6 +396,7 @@ class WebsitePage(models.Model):
             # The cached response is too old and considered out-of-date. Get it
             # from scratch and update the cache accordingly.
             response = self._get_response_raw(request)
+            response.flatten()
             self._get_response_cached.__cache__.add_value(self, request, cache_value=(response, cache_key))
             return response
 
