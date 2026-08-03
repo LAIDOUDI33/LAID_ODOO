@@ -5,7 +5,7 @@ import binascii
 import io
 from typing import Tuple, Union
 
-from PIL import Image, ImageOps
+from PIL import Image, ImageOps, ImageSequence
 # We can preload Ico too because it is considered safe
 from PIL import IcoImagePlugin
 try:
@@ -77,6 +77,7 @@ class ImageProcess:
         """
         self.source = source or False
         self.operationsCount = 0
+        self.animated_frames = []
 
         if not source or source[:1] == b'<':
             # don't process empty source or SVG
@@ -156,7 +157,7 @@ class ImageProcess:
         if output_format == 'GIF':
             opt['optimize'] = True
             opt['save_all'] = True
-
+            opt['append_images'] = self.animated_frames
         if output_image.mode not in ["1", "L", "P", "RGB", "RGBA"] or (output_format == 'JPEG' and output_image.mode == 'RGBA'):
             output_image = output_image.convert("RGB")
 
@@ -179,8 +180,9 @@ class ImageProcess:
         If `max_width` or `max_height` is falsy, it will be computed from the
         other to keep the current ratio. If both are falsy, no resize is done.
 
-        It is currently not supported for GIF because we do not handle all the
-        frames properly.
+        Upscaling (expanding) is intentionally not supported for animated GIFs
+        as forcing color palette interpolation across sequential frames causes
+        the resulting file size to skyrocket.
 
         :param int max_width: max width
         :param int max_height: max height
@@ -188,10 +190,16 @@ class ImageProcess:
         :return: self to allow chaining
         :rtype: ImageProcess
         """
-        if self.image and self.original_format != 'GIF' and (max_width or max_height):
+        if self.image and (max_width or max_height):
             w, h = self.image.size
             asked_width = max_width or (w * max_height) // h
             asked_height = max_height or (h * max_width) // w
+            if self.original_format == 'GIF' and self.image.is_animated:
+                if asked_width < w or asked_height < h:
+                    self._apply_gif_operation(target_size=(asked_width, asked_height))
+                    if self.image.width != w or self.image.height != h:
+                        self.operationsCount += 1
+                return self
             if expand and (asked_width > w or asked_height > h):
                 self.image = self.image.resize((asked_width, asked_height))
                 self.operationsCount += 1
@@ -230,7 +238,7 @@ class ImageProcess:
         :return: self to allow chaining
         :rtype: ImageProcess
         """
-        if self.image and self.original_format != 'GIF' and max_width and max_height:
+        if self.image and max_width and max_height:
             w, h = self.image.size
             # We want to keep as much of the image as possible -> at least one
             # of the 2 crop dimensions always has to be the same value as the
@@ -255,9 +263,16 @@ class ImageProcess:
             h_offset = int((h - new_h) * center_y)
 
             if new_w != w or new_h != h:
-                self.image = self.image.crop((x_offset, h_offset, x_offset + new_w, h_offset + new_h))
-                if self.image.width != w or self.image.height != h:
-                    self.operationsCount += 1
+                crop_box = (x_offset, h_offset, x_offset + new_w, h_offset + new_h)
+                if self.original_format == 'GIF' and self.image.is_animated:
+                    self._apply_gif_operation(crop_box=crop_box, target_size=(max_width, max_height))
+                    if self.image.width != w or self.image.height != h:
+                        self.operationsCount += 1
+                    return self
+                else:
+                    self.image = self.image.crop(crop_box)
+                    if self.image.width != w or self.image.height != h:
+                        self.operationsCount += 1
 
         return self.resize(max_width, max_height)
 
@@ -291,6 +306,33 @@ class ImageProcess:
             self.image = ImageOps.expand(self.image, border=padding)
             self.operationsCount += 1
         return self
+
+    def _apply_gif_operation(self, target_size=None, crop_box=None):
+        """Process animated GIF frames by applying a crop or a resize.
+
+        :param tuple target_size: (width, height) target dimensions for resize
+        :param tuple crop_box: (left, upper, right, lower) coordinates for crop
+        """
+        processed_frames = []
+        for frame in ImageSequence.Iterator(self.image):
+            frame_copy = frame.copy()
+            if crop_box:
+                frame_copy = frame_copy.crop(crop_box)
+                w, h = frame_copy.size
+                max_width, max_height = target_size
+                if max_width < w or max_height < h:
+                    frame_copy.thumbnail(target_size, Resampling.LANCZOS)
+            else:
+                frame_copy.thumbnail(target_size, Resampling.LANCZOS)
+
+            processed_frames.append(frame_copy)
+
+        if processed_frames:
+            # Set primary anchor to the newly shrunken first frame
+            self.image = processed_frames[0]
+            self.image.is_animated = True
+            # Pack remaining frames into instance memory
+            self.animated_frames = processed_frames[1:]
 
 
 def image_process(source, size=(0, 0), verify_resolution=False, quality=0, expand=False, crop=None, colorize=False, output_format='', padding=False):
