@@ -33,7 +33,7 @@ from odoo.tools import (
     reset_cached_properties,
     str2bool,
 )
-from odoo.tools.date_utils import all_timezones
+from odoo.tools.date_utils import all_timezones, canonical_timezone
 from odoo.tools.sql import escape_like_value
 
 _logger = logging.getLogger(__name__)
@@ -761,7 +761,8 @@ class ResUsers(models.Model):
                     raise AccessDenied()
                 user = user.with_user(user).sudo()
                 auth_info = user._check_credentials(credential, user_agent_env)
-                tz = request.cookies.get('tz') if request else None
+                # browsers report the CLDR name, which is deprecated for some timezones
+                tz = canonical_timezone(request.cookies.get('tz')) if request else None
                 if tz in all_timezones and (not user.tz or not user.login_date):
                     # first login or missing tz -> set tz to browser tz
                     user.tz = tz

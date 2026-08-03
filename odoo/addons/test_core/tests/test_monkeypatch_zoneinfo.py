@@ -1,11 +1,11 @@
 import datetime
 import logging
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from odoo.tests.common import tagged, TransactionCase
 from odoo._monkeypatches.zoneinfo import _tz_mapping
-from odoo.tools.date_utils import all_timezones
+from odoo.tools.date_utils import all_timezones, canonical_timezone
 
 _logger = logging.getLogger(__name__)
 
@@ -72,3 +72,29 @@ class TestTZ(TransactionCase):
             self.env['res.partner'].create({'name': 'test', 'tz': 'localtime'})
         with self.assertRaises(ValueError):
             self.env['res.partner'].create({'name': 'test', 'tz': 'Factory'})
+
+    def test_canonical_timezone(self):
+        self.assertEqual(canonical_timezone('Asia/Saigon'), 'Asia/Ho_Chi_Minh')
+        # values without a known equivalent are returned unchanged
+        self.assertEqual(canonical_timezone('Europe/Brussels'), 'Europe/Brussels')
+        self.assertEqual(canonical_timezone(False), False)
+        # a mapping is not applied when the target is missing from the system
+        with patch.dict(_tz_mapping, {'Old/Zone': 'Nowhere/Unknown'}):
+            self.assertEqual(canonical_timezone('Old/Zone'), 'Old/Zone')
+
+    def test_login_deprecated_timezone(self):
+        # browsers report the CLDR name, which is deprecated for some timezones
+        user = self.env['res.users'].create({
+            'name': 'tz test',
+            'login': 'tz_test',
+            'password': 'tz_test',
+            'tz': False,
+        })
+        request = MagicMock(cookies={'tz': 'US/Eastern'})
+        with patch('odoo.addons.base.models.res_users.request', request):
+            self.env['res.users']._login(
+                {'login': 'tz_test', 'password': 'tz_test', 'type': 'password'},
+                {'interactive': False},
+            )
+        user.invalidate_recordset()
+        self.assertEqual(user.tz, 'America/New_York')

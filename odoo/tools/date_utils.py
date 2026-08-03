@@ -12,6 +12,8 @@ from operator import methodcaller
 
 from dateutil.relativedelta import relativedelta, weekdays
 
+from odoo._monkeypatches.zoneinfo import _tz_mapping
+
 from .func import lazy
 from .float_utils import float_round
 
@@ -30,6 +32,19 @@ def all_timezones():
             babel.dates.get_timezone(tz)
             tzs.append(tz)
     return tzs
+
+
+def canonical_timezone(name):
+    """ Resolve a deprecated tzdb alias (Asia/Saigon, US/Eastern, ...) to the
+    name the system ships. Values without a known equivalent, or whose
+    equivalent is missing locally, are returned unchanged.
+    """
+    if not name:
+        return name
+    canonical = _tz_mapping.get(name)
+    if canonical and canonical in all_timezones:
+        return canonical
+    return name
 
 
 TRUNCATE_TODAY = relativedelta(microsecond=0, second=0, minute=0, hour=0)
@@ -58,6 +73,7 @@ _SHORT_DATE_UNIT = {
 }
 
 __all__ = [
+    'canonical_timezone',
     'date_range',
     'float_to_time',
     'get_fiscal_year',
