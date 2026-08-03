@@ -12,7 +12,15 @@ class AccountMoveSend(models.AbstractModel):
     @api.model
     def _is_es_facturae_applicable(self, move) -> bool:
         """Check if the Factura-e applies to the given move."""
-        return move._l10n_es_edi_facturae_get_default_enable() and move.partner_id.country_code == 'ES'
+        return (
+                not move.invoice_pdf_report_id
+                and not move.l10n_es_edi_facturae_xml_id
+                and not move.l10n_es_is_simplified
+                and move.is_invoice(include_receipts=True)
+                and move.country_code == 'ES'
+                and move.partner_id.country_code == 'ES'
+                and move.company_id.sudo().l10n_es_edi_facturae_certificate_ids
+        )
 
     def _get_all_extra_edis(self) -> dict:
         """Extend the EDI providers with the Factura-e option."""
@@ -55,7 +63,7 @@ class AccountMoveSend(models.AbstractModel):
 
         if (
             ('es_facturae' in extra_edis or invoice_edi_format == 'es_facturae')
-            and move._l10n_es_edi_facturae_get_default_enable()
+            and self._is_es_facturae_applicable(move)
         ):
             filename = f'{move.name.replace("/", "_")}_facturae_signed.xml'
             results.append({
@@ -77,7 +85,7 @@ class AccountMoveSend(models.AbstractModel):
 
         if (
             ('es_facturae' in invoice_data['extra_edis'] or invoice_data['invoice_edi_format'] == 'es_facturae')
-            and invoice._l10n_es_edi_facturae_get_default_enable()
+            and self._is_es_facturae_applicable(invoice)
         ):
             try:
                 xml_content, errors = invoice._l10n_es_edi_facturae_render_facturae()
