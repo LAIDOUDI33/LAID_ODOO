@@ -5,7 +5,15 @@ import { Call } from "@mail/discuss/call/common/call";
 import { CallActionList } from "@mail/discuss/call/common/call_action_list";
 import { useMessageScrolling } from "@mail/utils/common/hooks";
 
-import { Component, onMounted, onWillUnmount, signal, types, useProps } from "@odoo/owl";
+import {
+    Component,
+    onMounted,
+    onWillUnmount,
+    providePlugins,
+    signal,
+    types,
+    useProps,
+} from "@odoo/owl";
 
 import { Dropdown } from "@web/core/dropdown/dropdown";
 import { user } from "@web/core/user";
@@ -16,6 +24,7 @@ import { MeetingSideActions } from "./meeting_side_actions";
 import { useThreadActions } from "@mail/core/common/thread_actions";
 import { useMessageSearch } from "@mail/core/common/message_search_hook";
 import { useDynamicInterval } from "@mail/utils/common/misc";
+import { AncestorsPlugin } from "@mail/core/common/ancestors_plugin";
 
 const { DateTime } = luxon;
 const PIP_EXTRA_ACTION_IDS = ["copy-invite-link", "meeting-chat"];
@@ -59,6 +68,7 @@ export class Meeting extends Component {
         this.threadActions = useThreadActions({ thread: () => this.channel.thread });
         this.messageHighlight = useMessageScrolling({ thread: () => this.channel.thread });
         this.messageSearch = useMessageSearch(this.channel.thread);
+        providePlugins([AncestorsPlugin]);
         useChildSubEnv({
             hasPreviousActionPanel: () => this.threadActions.actionStack.length > 0,
             messageHighlight: this.messageHighlight,

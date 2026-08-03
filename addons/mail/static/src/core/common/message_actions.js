@@ -88,7 +88,7 @@ registerMessageAction("reply-to", {
         if (!message.isSelfAuthored && message.model !== "discuss.channel" && message.author) {
             composer.insertReplyFromNote(message);
         }
-        owner.env.inChatter?.toggleComposer("note", { force: true });
+        owner.ancestor?.inChatter?.toggleComposer("note", { force: true });
         composer.restoredFromFullComposer = false;
         if (!composer.isFocused) {
             composer.autofocus++;

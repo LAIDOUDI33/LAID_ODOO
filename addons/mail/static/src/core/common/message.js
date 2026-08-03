@@ -1,6 +1,7 @@
 import { mountComponent } from "@html_editor/others/embedded_component_utils";
 import { readonlySyntaxHighlightingEmbedding } from "@html_editor/others/embedded_components/core/syntax_highlighting/readonly_syntax_highlighting";
 
+import { AncestorsPlugin } from "@mail/core/common/ancestors_plugin";
 import { AttachmentList } from "@mail/core/common/attachment_list";
 import { Composer } from "@mail/core/common/composer";
 import { ImStatus } from "@mail/core/common/im_status";
@@ -14,7 +15,7 @@ import { PollResult } from "@mail/core/common/poll_result";
 import { RelativeTime } from "@mail/core/common/relative_time";
 import { htmlToTextContentInline } from "@mail/utils/common/format";
 
-import { Component, computed, proxy, signal, t, useApp, useProps } from "@odoo/owl";
+import { Component, computed, proxy, signal, t, useApp, usePlugin, useProps } from "@odoo/owl";
 import { MessageSearchState } from "@mail/core/common/message_search_hook";
 
 import { isMobileOS } from "@web/core/browser/feature_detection";
@@ -136,6 +137,7 @@ export class Message extends Component {
         this.openReactionMenu = this.openReactionMenu.bind(this);
         this.optionsDropdown = useDropdownState();
         this.isActive = computed(() => Boolean(this._isActive));
+        this.ancestor = usePlugin(AncestorsPlugin);
         useSubEnv({ inMessage: true });
         useChildSubEnv({
             message: this.props.message,
@@ -337,7 +339,7 @@ export class Message extends Component {
         const isNoteVisual = this.message.isNote || this.message.message_type === "notification";
         return {
             "p-1": isNoteVisual,
-            "fs-1": !this.isEditing && !this.env.inChatter && this.message.onlyEmojis,
+            "fs-1": !this.isEditing && !this.ancestor.inChatter && this.message.onlyEmojis,
             "mb-0": !isNoteVisual,
             "py-2": !isNoteVisual && !this.isEditing && this.showTextVisually,
             "pt-2 pb-1": !isNoteVisual && this.isEditing,

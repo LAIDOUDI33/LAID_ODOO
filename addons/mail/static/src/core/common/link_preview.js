@@ -1,10 +1,11 @@
+import { AncestorsPlugin } from "@mail/core/common/ancestors_plugin";
 import { Gif } from "@mail/core/common/gif";
 import { LinkPreviewConfirmDelete } from "@mail/core/common/link_preview_confirm_delete";
 
 import { Component, proxy, signal, types, useProps } from "@odoo/owl";
 
 import { useService } from "@web/core/utils/hooks";
-import { useOnChange } from "@mail/utils/common/hooks";
+import { useMaybePlugin, useOnChange } from "@mail/utils/common/hooks";
 
 export class LinkPreview extends Component {
     static components = { Gif };
@@ -15,6 +16,7 @@ export class LinkPreview extends Component {
 
     setup() {
         super.setup();
+        this.ancestor = useMaybePlugin(AncestorsPlugin);
         this.store = useService("mail.store");
         this.props = useProps({
             messageLinkPreview: types.instanceOf(this.store["mail.message.link.preview"]),

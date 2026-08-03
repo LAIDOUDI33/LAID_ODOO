@@ -3,12 +3,13 @@ import { Composer } from "@mail/core/common/composer";
 import { Thread } from "@mail/core/common/thread";
 import { propComputed, useMessageScrolling, useOnChange } from "@mail/utils/common/hooks";
 
-import { Component, onMounted, proxy, signal, t } from "@odoo/owl";
+import { Component, onMounted, providePlugins, proxy, signal, t, usePlugin } from "@odoo/owl";
 
 import { _t } from "@web/core/l10n/translation";
 import { router } from "@web/core/browser/router";
 import { useBus, useService } from "@web/core/utils/hooks";
 import { useThrottleForAnimation } from "@web/core/utils/timing";
+import { AncestorsPlugin } from "@mail/core/common/ancestors_plugin";
 
 export class Chatter extends Component {
     static template = "mail.Chatter";
@@ -44,7 +45,9 @@ export class Chatter extends Component {
         this.onScrollDebounced = useThrottleForAnimation(this.onScroll);
         useChildSubEnv(this.childSubEnv);
         useSubEnv(this.subEnv);
-
+        providePlugins([AncestorsPlugin]);
+        this.ancestor = usePlugin(AncestorsPlugin);
+        this.ancestor.inChatter = this.state;
         onMounted(this._onMounted);
 
         useOnChange(
@@ -83,7 +86,6 @@ export class Chatter extends Component {
 
     get childSubEnv() {
         return {
-            inChatter: this.state,
             messageHighlight: this.messageHighlight,
         };
     }

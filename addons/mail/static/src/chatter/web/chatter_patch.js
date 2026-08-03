@@ -73,6 +73,8 @@ const chatterPatch = {
             record: t.instanceOf(Record).optional(),
             saveRecord: t.function([]).optional(),
         });
+        assignGetter(this.ancestor.inChatter, { aside: () => this.webChatterProps.isChatterAside });
+        Object.assign(this.ancestor.inChatter, { toggleComposer: this.toggleComposer.bind(this) });
         // When there's no highlight in the URL (e.g. the record was opened in a new
         // window from the messaging menu), fall back to the one carried by the action
         // context.
@@ -251,13 +253,6 @@ const chatterPatch = {
 
     get attachments() {
         return this.state.thread?.attachments ?? [];
-    },
-
-    get childSubEnv() {
-        const res = super.childSubEnv;
-        assignGetter(res.inChatter, { aside: () => this.webChatterProps.isChatterAside });
-        Object.assign(res.inChatter, { toggleComposer: this.toggleComposer.bind(this) });
-        return res;
     },
 
     get followerButtonLabel() {
