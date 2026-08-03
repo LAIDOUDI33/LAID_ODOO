@@ -890,6 +890,7 @@ test(`[Offline] list with priority widget`, async () => {
     });
 
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -1132,6 +1133,7 @@ test(`list with export button`, async () => {
 test(`Direct export button invisible`, async () => {
     onRpc("has_group", ({ args }) => args[1] === "base.group_allow_export");
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `<list export_xlsx="0"><field name="foo"/></list>`,
@@ -1141,6 +1143,7 @@ test(`Direct export button invisible`, async () => {
 
 test(`list view with adjacent buttons`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -1161,6 +1164,7 @@ test(`list view with adjacent buttons`, async () => {
 
 test(`list view with adjacent buttons and invisible field and button`, async () => {
     await mountView({
+        noMainContainer: true,
         type: "list",
         resModel: "foo",
         arch: `
@@ -1185,6 +1189,7 @@ test(`list view with adjacent buttons and invisible field and button`, async () 
 
 test(`list view with adjacent buttons and invisible field (modifier)`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -1307,6 +1312,7 @@ test(`wait the view reload before closing the dialog (cancel)`, async () => {
 
 test(`list view with adjacent buttons with invisible modifier`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -1331,6 +1337,7 @@ test(`list view with adjacent buttons with invisible modifier`, async () => {
 
 test(`list view with adjacent buttons with width attribute`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -1728,6 +1735,7 @@ test(`list view: action button executes action on click: correct parameters`, as
     });
 
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -1904,6 +1912,7 @@ test(`simple editable rendering`, async () => {
 
 test(`invisible columns are not displayed`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -1920,6 +1929,7 @@ test(`invisible columns are not displayed`, async () => {
 
 test(`invisible column based on the context are correctly displayed`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -1945,6 +1955,7 @@ test(`invisible column based on the context are correctly displayed in o2m`, asy
     Foo._fields.foo_o2m = fields.One2many({ relation: "foo" });
 
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "form",
         arch: `
@@ -2282,6 +2293,7 @@ test(`discard a new record in editable="top" list with less than 4 records`, asy
 
 test(`basic grouped list rendering`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `<list><field name="foo"/><field name="bar"/></list>`,
@@ -2295,6 +2307,7 @@ test(`basic grouped list rendering`, async () => {
 
 test(`basic grouped list rendering with widget="handle" col`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -2321,6 +2334,7 @@ test(`basic grouped list rendering with widget="handle" col`, async () => {
 
 test(`basic grouped list rendering with a date field between two fields with a aggregator`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -2349,6 +2363,7 @@ test(`basic grouped list rendering with a date field between two fields with a a
 
 test(`basic grouped list rendering 1 col without selector and with optional field`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `<list><field name="foo"/><field name="bar" optional="hidden"/></list>`,
@@ -2361,6 +2376,7 @@ test(`basic grouped list rendering 1 col without selector and with optional fiel
 
 test(`basic grouped list rendering 1 col without selector`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `<list><field name="foo"/></list>`,
@@ -2374,6 +2390,7 @@ test(`basic grouped list rendering 1 col without selector`, async () => {
 test.tags("desktop");
 test(`basic grouped list rendering 1 col with selector on desktop`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `<list><field name="foo"/></list>`,
@@ -2386,6 +2403,7 @@ test(`basic grouped list rendering 1 col with selector on desktop`, async () => 
 test.tags("mobile");
 test(`basic grouped list rendering 1 col with selector on mobile`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `<list><field name="foo"/></list>`,
@@ -2397,6 +2415,7 @@ test(`basic grouped list rendering 1 col with selector on mobile`, async () => {
 
 test(`basic grouped list rendering 2 cols without selector`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `<list><field name="foo"/><field name="bar"/></list>`,
@@ -2409,6 +2428,7 @@ test(`basic grouped list rendering 2 cols without selector`, async () => {
 
 test(`basic grouped list rendering 3 cols without selector`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `<list><field name="foo"/><field name="bar"/><field name="text"/></list>`,
@@ -2421,6 +2441,7 @@ test(`basic grouped list rendering 3 cols without selector`, async () => {
 
 test(`basic grouped list rendering 3 cols without selector and with optional fields`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -2441,6 +2462,7 @@ test(`basic grouped list rendering 3 cols without selector and with optional fie
 test.tags("desktop");
 test(`basic grouped list rendering 2 col with selector on desktop`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `<list><field name="foo"/><field name="bar"/></list>`,
@@ -2454,6 +2476,7 @@ test(`basic grouped list rendering 2 col with selector on desktop`, async () => 
 test.tags("mobile");
 test(`basic grouped list rendering 2 col with selector on mobile`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `<list><field name="foo"/><field name="bar"/></list>`,
@@ -2467,6 +2490,7 @@ test(`basic grouped list rendering 2 col with selector on mobile`, async () => {
 test.tags("desktop");
 test(`basic grouped list rendering 3 cols with selector on desktop`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `<list><field name="foo"/><field name="bar"/><field name="text"/></list>`,
@@ -2481,6 +2505,7 @@ test(`basic grouped list rendering 3 cols with selector on desktop`, async () =>
 test.tags("mobile");
 test(`basic grouped list rendering 3 cols with selector on mobile`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `<list><field name="foo"/><field name="bar"/><field name="text"/></list>`,
@@ -2495,6 +2520,7 @@ test(`basic grouped list rendering 3 cols with selector on mobile`, async () => 
 test.tags("desktop");
 test(`basic grouped list rendering 7 cols with aggregates and selector on desktop`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -2523,6 +2549,7 @@ test(`basic grouped list rendering 7 cols with aggregates and selector on deskto
 test.tags("mobile");
 test(`basic grouped list rendering 7 cols with aggregates and selector on mobile`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -2551,6 +2578,7 @@ test(`basic grouped list rendering 7 cols with aggregates and selector on mobile
 test.tags("desktop");
 test(`basic grouped list rendering 7 cols with aggregates, selector and optional on desktop`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -2579,6 +2607,7 @@ test(`basic grouped list rendering 7 cols with aggregates, selector and optional
 test.tags("mobile");
 test(`basic grouped list rendering 7 cols with aggregates, selector and optional on mobile`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -2607,6 +2636,7 @@ test(`basic grouped list rendering 7 cols with aggregates, selector and optional
 test.tags("desktop");
 test(`basic grouped list rendering 4 cols with aggregates, selector and openFormView on desktop`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -2627,6 +2657,7 @@ test(`basic grouped list rendering 4 cols with aggregates, selector and openForm
 test.tags("mobile");
 test(`basic grouped list rendering 4 cols with aggregates, selector and openFormView on mobile`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -2647,6 +2678,7 @@ test(`basic grouped list rendering 4 cols with aggregates, selector and openForm
 test.tags("desktop");
 test(`basic grouped list rendering 4 cols with aggregates, selector, optional and openFormView on desktop`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -2666,6 +2698,7 @@ test(`basic grouped list rendering 4 cols with aggregates, selector, optional an
 test.tags("mobile");
 test(`basic grouped list rendering 4 cols with aggregates, selector, optional and openFormView on mobile`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -3487,6 +3520,7 @@ test(`Loading a filter with a sort attribute`, async () => {
 
     onRpc("web_search_read", ({ kwargs }) => expect.step(kwargs.order));
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -5195,6 +5229,7 @@ test(`monetary aggregates in grouped list (!= currencies in same group, delete)`
 
 test(`list with monetary field with attribute column_invisible="1"`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -5230,6 +5265,7 @@ test(`handle false values in aggregates`, async () => {
         return res;
     });
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -5262,6 +5298,7 @@ test(`handle false values in aggregates`, async () => {
 
 test(`aggregates in grouped lists with buttons`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         groupBy: ["m2o"],
@@ -5355,6 +5392,7 @@ test(`aggregates are formatted according to field widget`, async () => {
 
 test(`aggregates are formatted according to field widget with options`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -5371,6 +5409,7 @@ test(`aggregates are formatted according to field widget with options`, async ()
 
 test(`aggregates of monetary widget with no currency data in grouped list`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         groupBy: ["bar"],
@@ -5473,6 +5512,7 @@ test(`aggregates monetary (currency field not in view)`, async () => {
     Foo._fields.currency_test = fields.Many2one({ relation: "res.currency", default: 1 });
 
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -5580,6 +5620,7 @@ test(`aggregates monetary with custom digits (same currency)`, async () => {
     patchWithCleanup(currencies[1], { digits: [42, 4] });
 
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -5607,6 +5648,7 @@ test(`aggregates float with monetary widget and custom digits (same currency)`, 
     patchWithCleanup(currencies[1], { digits: [42, 4] });
 
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -5632,6 +5674,7 @@ test(`currency_field is taken into account when formatting monetary values`, asy
     Foo._records[0].company_currency_id = 1;
 
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -5839,6 +5882,7 @@ test(`colspan of empty lines is correct in readonly`, async () => {
     Foo._fields.foo_o2m = fields.One2many({ relation: "foo" });
 
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "form",
         arch: `
@@ -5862,6 +5906,7 @@ test(`colspan of empty lines is correct in edit`, async () => {
     Foo._fields.foo_o2m = fields.One2many({ relation: "foo" });
 
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "form",
         arch: `
@@ -5885,6 +5930,7 @@ test(`colspan of empty lines is correct in readonly with optional fields`, async
     Foo._fields.foo_o2m = fields.One2many({ relation: "foo" });
 
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "form",
         arch: `
@@ -6471,6 +6517,7 @@ test(`apply custom static action menu (archive)`, async () => {
     });
 
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `<list js_class="custom_list"><field name="foo"/></list>`,
@@ -7563,6 +7610,7 @@ test(`can display button in edit mode`, async () => {
 test(`can display a list with a many2many field`, async () => {
     stepAllNetworkCalls();
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `<list><field name="m2m"/></list>`,
@@ -7585,6 +7633,7 @@ test(`can display a list with a many2many field`, async () => {
 test.tags("desktop");
 test(`display a tooltip on a field`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -7675,6 +7724,7 @@ test(`support row decoration with date`, async () => {
     Foo._records[0].datetime = "2017-02-27 12:51:35";
 
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -7695,6 +7745,7 @@ test(`support row decoration with date`, async () => {
 
 test(`support row decoration (decoration-bf)`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -7712,6 +7763,7 @@ test(`support row decoration (decoration-bf)`, async () => {
 
 test(`support row decoration (decoration-it)`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -7729,6 +7781,7 @@ test(`support row decoration (decoration-it)`, async () => {
 
 test(`support field decoration`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -7811,6 +7864,7 @@ test(`no content helper when no data`, async () => {
     Foo._records = [];
 
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `<list><field name="foo"/></list>`,
@@ -7831,6 +7885,7 @@ test(`no nocontent helper when no data and no help`, async () => {
     Foo._records = [];
 
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `<list><field name="foo"/></list>`,
@@ -7844,6 +7899,7 @@ test(`no nocontent helper when no data and no help`, async () => {
 
 test(`empty list with sample data`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -8020,6 +8076,7 @@ test(`empty list with sample data: keyboard navigation`, async () => {
 
 test(`empty list with sample data: group by date`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -8436,6 +8493,7 @@ test(`groupby node with a button with modifiers using a many2one`, async () => {
     stepAllNetworkCalls();
 
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -9033,6 +9091,7 @@ test(`invisible attrs in readonly and editable list`, async () => {
 test.tags("desktop");
 test(`monetary fields are properly rendered on desktop`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -9785,6 +9844,7 @@ test(`execute ActionMenus actions on mobile`, async () => {
     });
 
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `<list><field name="foo"/></list>`,
@@ -9952,6 +10012,7 @@ test(`execute ActionMenus actions with correct params (single page) on mobile`, 
     });
 
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `<list><field name="foo"/></list>`,
@@ -10820,6 +10881,7 @@ test(`pressing ESC discard the current line changes (with required)`, async () =
 
 test(`field with password attribute`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `<list><field name="foo" password="True"/></list>`,
@@ -10836,6 +10898,7 @@ test(`list with handle widget`, async () => {
     });
 
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -10906,6 +10969,7 @@ test(`result of consecutive resequences is correctly sorted`, async () => {
     });
 
     await mountView({
+        noMainContainer: true,
         resModel: "my.foo",
         type: "list",
         arch: `
@@ -11414,6 +11478,7 @@ test(`reference field rendering`, async () => {
     });
 
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `<list><field name="reference"/></list>`,
@@ -13279,6 +13344,7 @@ test(`use the limit attribute in arch`, async () => {
     });
 
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `<list limit="2"><field name="foo"/></list>`,
@@ -13299,6 +13365,7 @@ test(`concurrent reloads finishing in inverse order`, async () => {
     });
 
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `<list><field name="foo"/></list>`,
@@ -13682,6 +13749,7 @@ test(`grouped list with groups_limit attribute`, async () => {
     stepAllNetworkCalls();
 
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `<list groups_limit="3"><field name="foo"/></list>`,
@@ -13707,6 +13775,7 @@ test(`grouped list with groups_limit attribute`, async () => {
 test.tags("desktop");
 test(`ungrouped list with groups_limit attribute, then group`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `<list groups_limit="3"><field name="foo"/></list>`,
@@ -13796,6 +13865,7 @@ test(`grouped list with expand attribute`, async () => {
     stepAllNetworkCalls();
 
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `<list expand="1"><field name="foo"/></list>`,
@@ -13815,6 +13885,7 @@ test(`grouped list with expand attribute`, async () => {
 
 test(`grouped list with dynamic expand attribute (eval true)`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `<list expand="context.get('expand', False)"><field name="foo"/></list>`,
@@ -13829,6 +13900,7 @@ test(`grouped list with dynamic expand attribute (eval true)`, async () => {
 
 test(`grouped list with dynamic expand attribute (eval false)`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `<list expand="context.get('expand', False)"><field name="foo"/></list>`,
@@ -13846,6 +13918,7 @@ test(`grouped list (two levels) with expand attribute`, async () => {
 
     // the expand attribute only opens the first level groups
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `<list expand="1"><field name="foo"/></list>`,
@@ -13871,6 +13944,7 @@ test(`grouped lists with expand attribute and a lot of groups`, async () => {
         expect.step("web_read_group");
     });
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `<list expand="1"><field name="foo"/></list>`,
@@ -16280,6 +16354,7 @@ test(`Date in evaluation context works with date field`, async () => {
     Foo._records[2].birthday = "1997-01-10";
 
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -17168,6 +17243,7 @@ test(`create a record with the correct context in a group`, async () => {
 
 test(`classNames given to a field are set on the right field directly`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -18259,6 +18335,7 @@ test(`properties: optional show/hide (no config in local storage)`, async () => 
     }
 
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -18366,6 +18443,7 @@ test(`reload properties definitions when domain change`, async () => {
 
     stepAllNetworkCalls();
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -19108,6 +19186,7 @@ test("Open record in new tab on ctrl+click and middleclick for an editable list"
 test.tags("mobile");
 test("selection is properly displayed (single page) on mobile", async () => {
     await mountView({
+        noMainContainer: true,
         type: "list",
         resModel: "foo",
         arch: `
@@ -19224,6 +19303,7 @@ test(`display 'None' for false group, when grouped by char field`, async () => {
     Foo._records[0].foo = false;
 
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `<list><field name="foo"/></list>`,
@@ -19237,6 +19317,7 @@ test(`display '0' for false group, when grouped by int field`, async () => {
     Foo._records[0].int_field = 0;
 
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `<list><field name="foo"/></list>`,
@@ -19251,6 +19332,7 @@ test(`display the field's falsy_value_label for false group, if defined`, async 
     Foo._records[0].foo = false;
 
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `<list><field name="foo"/></list>`,
@@ -19264,6 +19346,7 @@ test(`hide pager in the list view with sample data`, async () => {
     Foo._records = [];
 
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -20656,6 +20739,7 @@ test(`widget visibility with invisible attribute`, async () => {
     registry.category("view_widgets").add("test_widget", { component: TestWidget });
 
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -20678,6 +20762,7 @@ test(`widget column visibility with column_invisible attribute`, async () => {
     registry.category("view_widgets").add("test_widget", { component: TestWidget });
 
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -20694,6 +20779,7 @@ test(`widget column visibility with column_invisible attribute`, async () => {
 
 test(`column tag: stacks multiple fields in a single cell`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -20721,6 +20807,7 @@ test(`column tag: stacks multiple fields in a single cell`, async () => {
 
 test(`column tag: uses string attribute as header label`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -20928,6 +21015,7 @@ test(`column tag: optional attribute on sub-fields shows/hides individual sub-fi
 
 test(`column tag: aggregate computed for first aggregatable stacked field`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -20945,6 +21033,7 @@ test(`column tag: aggregate computed for first aggregatable stacked field`, asyn
 
 test(`column tag: aggregate uses first aggregatable field, skipping non-aggregatable`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -20962,6 +21051,7 @@ test(`column tag: aggregate uses first aggregatable field, skipping non-aggregat
 
 test(`column tag: aggregate shown in grouped list header for stacked field`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         groupBy: ["m2o"],
@@ -20982,6 +21072,7 @@ test(`column tag: aggregate shown in grouped list header for stacked field`, asy
 
 test(`column tag: class attribute is applied to sub-field wrapper`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -21004,6 +21095,7 @@ test(`column tag: class attribute is applied to sub-field wrapper`, async () => 
 
 test(`column tag: field decorations are applied to sub-field wrapper`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -21033,6 +21125,7 @@ test(`column tag: field decorations are applied to sub-field wrapper`, async () 
 
 test(`column tag: class attribute combines with field decorations on sub-field wrapper`, async () => {
     await mountView({
+        noMainContainer: true,
         resModel: "foo",
         type: "list",
         arch: `
@@ -21238,6 +21331,7 @@ test("apply a filter with list_optional_show property", async () => {
     });
 
     await mountView({
+        noMainContainer: true,
         type: "list",
         resModel: "foo",
         arch: `
