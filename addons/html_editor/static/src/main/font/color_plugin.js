@@ -176,6 +176,7 @@ export class ColorPlugin extends Plugin {
     }
 
     removeAllColor() {
+        this.activeColorInfo = {};
         const sel = this.dependencies.selection.getEditableSelection();
         if (sel.isCollapsed) {
             const el = closestElement(sel.anchorNode);
@@ -189,7 +190,6 @@ export class ColorPlugin extends Plugin {
             this.trigger("on_color_requested_handlers");
             return;
         }
-        this.activeColorInfo = {};
         const colorModes = ["color", "backgroundColor"];
         const colorNodeProviders = this.getResource("color_target_providers");
         let someColorWasRemoved = true;
@@ -264,10 +264,10 @@ export class ColorPlugin extends Plugin {
             return;
         }
         const selection = this.dependencies.selection.getEditableSelection();
-        let targetedNodes;
+        let targetedNodes, zws;
         // Get the <font> nodes to color
         if (selection.isCollapsed) {
-            const zws = this.dependencies.format.getOrCreateZws();
+            zws = this.dependencies.format.getOrCreateZws();
             this.dependencies.selection.setSelection(
                 {
                     anchorNode: zws,
@@ -444,16 +444,19 @@ export class ColorPlugin extends Plugin {
                 (!font.hasAttribute("style") || !color)
             ) {
                 const parent = font.parentNode;
-                if (
-                    font.childNodes.length === 1 &&
-                    isTextNode(font.firstChild) &&
-                    isZWS(font.firstChild)
-                ) {
-                    cursors.update(callbacksForCursorUpdate.remove(font));
-                    font.remove();
-                } else {
-                    cursors.update(callbacksForCursorUpdate.unwrap(font));
-                    unwrapContents(font);
+                cursors.update(callbacksForCursorUpdate.unwrap(font));
+                unwrapContents(font);
+                if (zws) {
+                    this.dependencies.selection.setSelection(
+                        {
+                            anchorNode: zws,
+                            anchorOffset: 0,
+                            focusNode: zws,
+                            focusOffset: 1,
+                        },
+                        { normalize: false }
+                    );
+                    return;
                 }
                 fillEmpty(parent);
                 fontsSet.delete(font);
