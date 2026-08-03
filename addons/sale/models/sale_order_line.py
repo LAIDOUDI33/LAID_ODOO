@@ -985,12 +985,9 @@ class SaleOrderLine(models.Model):
 
     @api.depends("product_uom_qty", "discount", "price_unit", "tax_ids", "document_tax_mode")
     def _compute_amount(self):
-        AccountTax = self.env["account.tax"]
         for line in self:
-            company = line.company_id or self.env.company
             base_line = line._prepare_base_line_for_taxes_computation()
-            AccountTax._add_tax_details_in_base_line(base_line, company)
-            AccountTax._round_base_lines_tax_details([base_line], company)
+            base_line = line._get_taxed_base_line(base_line)
             line.price_subtotal = base_line["tax_details"]["total_excluded_currency"]
             line.price_total = base_line["tax_details"]["total_included_currency"]
             line.price_tax = line.price_total - line.price_subtotal
@@ -1118,6 +1115,14 @@ class SaleOrderLine(models.Model):
             return "cancel"
 
         return ""
+
+    def _get_taxed_base_line(self, base_line):
+        company = self.company_id or self.env.company
+
+        self.env["account.tax"]._add_tax_details_in_base_line(base_line, company)
+        self.env["account.tax"]._round_base_lines_tax_details([base_line], company)
+
+        return base_line
 
     def _get_delivered_quantity_by_analytic(self, additional_domain):
         """Compute and return the delivered quantity of current SO lines, based on their related
@@ -1481,21 +1486,40 @@ class SaleOrderLine(models.Model):
             line.untaxed_amount_to_invoice = amount_to_invoice
 
     @api.depends(
-        "discount", "price_total", "product_uom_qty", "qty_delivered", "qty_invoiced_posted"
+        "discount",
+        "price_unit",
+        "product_uom_qty",
+        "qty_delivered",
+        "qty_invoiced_posted",
+        "tax_ids",
     )
     def _compute_amount_to_invoice(self):
         for line in self:
-            if line.product_uom_qty:
-                uom_qty_to_consider = (
-                    line.qty_delivered
-                    if line.product_id.invoice_policy == "delivery"
-                    else line.product_uom_qty
-                )
-                qty_to_invoice = uom_qty_to_consider - line.qty_invoiced_posted
-                unit_price_total = line.price_total / line.product_uom_qty
-                line.amount_to_invoice = unit_price_total * qty_to_invoice
-            else:
-                line.amount_to_invoice = 0.0
+            uom_qty_to_consider = (
+                line.qty_delivered
+                if line.product_id.invoice_policy == "delivery"
+                else line.product_uom_qty
+            )
+            qty_to_invoice = uom_qty_to_consider - line.qty_invoiced_posted
+
+            # For standard down payments, both the initial invoice line (+1) and the
+            # deduction line (-1) in the final invoice are linked to the same SO line:
+            #   qty_invoiced_posted = (+1) + (-1) = 0
+            #   qty_to_invoice = 0 - 0 = 0  →  amount_to_invoice = 0
+            #
+            # However, some flows (e.g. POS down payments) only link the deduction line
+            # to the SO line, not the initial payment line:
+            #   qty_invoiced_posted = -1  (only the deduction is linked)
+            #   qty_to_invoice = 0 - (-1) = 1
+            # This would incorrectly generate an amount_to_invoice equal to the down
+            # payment amount, even after the final invoice has been created.
+            if not qty_to_invoice or (line.is_downpayment and line.qty_invoiced_posted < 0):
+                line.amount_to_invoice = 0
+                continue
+            base_line = line._prepare_base_line_for_taxes_computation()
+            base_line["quantity"] = qty_to_invoice
+            base_line = line._get_taxed_base_line(base_line)
+            line.amount_to_invoice = base_line["tax_details"]["total_included_currency"]
 
     @api.depends("price_unit", "qty_invoiced_at_date", "qty_delivered_at_date")
     @api.depends_context("accrual_entry_date")

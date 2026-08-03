@@ -159,6 +159,7 @@
                        decoration-bf="1"
                        decoration-info="invoice_status == 'to invoice'"
                        optional="show"/>
+                <field name="amount_to_invoice" widget="monetary" optional="hide"/>
                 <field name="tag_ids"
                       widget="many2many_tags"
                       options="{'color_field': 'color', 'on_tag_click': 'edit_color'}"
@@ -200,6 +201,18 @@
                     decoration-info="delivery_status in ['pending', 'started']"
                     widget="badge"
                     optional="hide"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_order_tree_to_invoice" model="ir.ui.view">
+        <field name="name">sale.order.list.to.invoice</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_tree"/>
+        <field name="mode">primary</field>
+        <field name="arch" type="xml">
+            <field name="amount_to_invoice" position="attributes">
+                <attribute name="optional">show</attribute>
             </field>
         </field>
     </record>
@@ -1262,6 +1275,13 @@
             or check every order and invoice them one by one.
             </p>
         </field>
+    </record>
+
+    <record id="action_orders_to_invoice_list" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_order_tree_to_invoice"/>
+        <field name="act_window_id" ref="action_orders_to_invoice"/>
     </record>
 
     <record id="action_orders_upselling" model="ir.actions.act_window">
