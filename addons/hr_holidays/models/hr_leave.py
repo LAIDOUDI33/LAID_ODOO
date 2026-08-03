@@ -279,7 +279,10 @@ class HrLeave(models.Model):
                 and calendar
                 and (
                     leave.work_entry_type_id.request_unit != 'hour'
-                    or not leave.request_hour_from
+                    or (
+                        not self.env.context.get('preserve_hourly_request_hours')
+                        and not leave.request_hour_from
+                    )
                 )
             ):
                 hour_from, hour_to = leave._get_hour_from_to(leave.request_date_from, leave.request_date_to)
@@ -473,10 +476,6 @@ class HrLeave(models.Model):
             if holiday.work_entry_type_request_unit == 'hour':
                 hour_from = holiday.request_hour_from
                 hour_to = holiday.request_hour_to
-                if not hour_from or not hour_to:
-                    computed_from, computed_to = holiday._get_hour_from_to(holiday.request_date_from, holiday.request_date_to)
-                    hour_from = hour_from or computed_from
-                    hour_to = hour_to or computed_to
 
             elif holiday.work_entry_type_request_unit == 'half_day':
                 period_map = {'am': 'morning', 'pm': 'afternoon'}
@@ -1015,6 +1014,12 @@ class HrLeave(models.Model):
                 values['request_date_from'] = values['date_from']
             if 'date_to' in values:
                 values['request_date_to'] = values['date_to']
+        if (
+            any(field in values for field in ('request_date_from', 'request_date_to'))
+            and not any(field in values for field in ('request_hour_from', 'request_hour_to'))
+        ):
+            # 0.0 is a valid midnight value for hourly leaves; keep selected hours when only dates change.
+            self = self.with_context(preserve_hourly_request_hours=True)
         result = super().write(values)
         if any(field in values for field in ['request_date_from', 'date_from', 'request_date_from', 'date_to', 'work_entry_type_id', 'employee_id', 'state']):
             if not values.get('state') or values.get('state') not in ('refuse', 'cancel'):
