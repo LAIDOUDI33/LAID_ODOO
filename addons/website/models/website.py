@@ -1594,7 +1594,11 @@ class Website(models.CachedModel):
         # previous state (see the part related to cookies in
         # `_post_processing_att`).
         is_allowed_optional_cookies = self.env['ir.http']._is_allowed_cookie('optional')
-        context = {'website_id': self.id, 'cookies_allowed': is_allowed_optional_cookies}
+        context = {
+            'website_id': self.id,
+            'cookies_allowed': is_allowed_optional_cookies,
+            'is_mobile': self.env['ir.http']._is_mobile_request(),
+        }
         if 'inherit_branding' not in self.env.context and not self.env.context.get('rendering_bundle'):
             if editable:
                 # in edit mode add branding on ir.ui.view tag nodes

@@ -446,6 +446,17 @@ class IrHttp(models.AbstractModel):
         # is not restricted by the website module.
         return result
 
+    def _is_mobile_request(self):
+        """Check if the request originates from a mobile device.
+
+        Coarse UA heuristic. the "mobi" token matches Android Chrome/Firefox and
+        iPhone Safari; iPad and desktop do not. Used to pick the device-specific
+        LCP image at render time (see ir_qweb.py `_post_processing_att`).
+        """
+        if not request:
+            return False
+        return "mobi" in (request.httprequest.user_agent.string or "").lower()
+
     def _get_visitor_from_request(self, force_create=False, force_track_values=None):
         """ Return the visitor as sudo from the request.
 
