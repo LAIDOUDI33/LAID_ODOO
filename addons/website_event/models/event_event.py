@@ -242,6 +242,11 @@ class EventEvent(models.Model):
     def copy(self, default=None):
         res = super().copy(default=default)
         res.copy_event_menus(self)
+        field = self._fields['description']
+        stored_translations = field._get_stored_translations(self)
+        if stored_translations:
+            new_record = res.with_context(prefetch_langs=True)
+            field._update_cache(new_record, dict(stored_translations), dirty=True)
         return res
 
     def copy_event_menus(self, old_events):
