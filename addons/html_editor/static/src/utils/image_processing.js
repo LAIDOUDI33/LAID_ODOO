@@ -82,6 +82,9 @@ export async function loadImage(src, img = new Image()) {
         img.addEventListener("load", () => resolve(img), { once: true });
         img.addEventListener("error", reject, { once: true });
         img.src = source;
+        if (img.complete) {
+            resolve(img);
+        }
     });
 }
 
@@ -255,6 +258,7 @@ export async function loadImageInfo(el, attachmentSrc = "") {
         original.image_src &&
         !/\/web\/image\/\d+-redirect\//.test(original.image_src)
     ) {
+        newDataset.attachmentId = original.id;
         newDataset.originalId = original.id;
         newDataset.originalSrc = original.image_src;
         newDataset.mimetypeBeforeConversion = original.mimetype;

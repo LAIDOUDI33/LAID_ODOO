@@ -906,7 +906,7 @@ function enforceImagesResponsivity(element) {
  *                            specificity: number;}>
  */
 export async function toInline(element, cssRules) {
-    await waitUntilImagesLoaded(element);
+    await Promise.all([element.ownerDocument.fonts.ready, waitUntilImagesLoaded(element)]);
     // Fix card-img-top heights (must happen before we transform everything).
     for (const imgTop of element.querySelectorAll(".card-img-top")) {
         imgTop.style.setProperty("height", _getHeight(imgTop) + "px");
@@ -1033,17 +1033,27 @@ function flattenBackgroundImages(element) {
 function fontToImg(element) {
     const { fonts } = odoo.loader.modules.get("@html_editor/utils/fonts");
 
-    for (const font of element.querySelectorAll(".fa")) {
+    for (const font of element.querySelectorAll(".fa,.oi")) {
         let icon, content;
-        fonts.fontIcons.find((fontIcon) =>
-            fonts.getCssSelectors(fontIcon.parser).find((data) => {
-                if (font.matches(data.selector.replace(/::?before/g, ""))) {
-                    icon = data.names[0].split("-").shift();
-                    content = data.css.match(/content:\s*['"]?(.)['"]?/)[1];
-                    return true;
-                }
-            })
-        );
+        if (font.matches(".fa")) {
+            fonts.fontIcons.find((fontIcon) =>
+                fonts.getCssSelectors(fontIcon.parser).find((data) => {
+                    if (font.matches(data.selector.replace(/::?before/g, ""))) {
+                        icon = data.names[0].split("-").shift();
+                        content = data.css.match(/content:\s*['"]?(.)['"]?/)[1];
+                        content = content.charCodeAt(0);
+                        return true;
+                    }
+                })
+            );
+        } else {
+            const beforeStyle = getComputedStyle(font, "::before");
+            content = beforeStyle["content"].trim().replace(/['"]/g, "");
+            if (font.matches("[data-icon^='oi_']")) {
+                content = content.codePointAt(0);
+            }
+            content = "oi_" + content;
+        }
         if (content) {
             const color = _getStylePropertyValue(font, "color").replace(/\s/g, "");
             let backgroundColoredElement = font;
@@ -1084,9 +1094,9 @@ function fontToImg(element) {
             image.setAttribute("height", intrinsicHeight);
             image.setAttribute(
                 "src",
-                `/mail/font_to_img/${content.charCodeAt(0)}/${encodeURIComponent(
-                    color
-                )}/${encodeURIComponent(bg)}/${Math.max(1, Math.round(intrinsicWidth))}x${Math.max(
+                `/mail/font_to_img/${content}/${encodeURIComponent(color)}/${encodeURIComponent(
+                    bg
+                )}/${Math.max(1, Math.round(intrinsicWidth))}x${Math.max(
                     1,
                     Math.round(intrinsicHeight)
                 )}`
@@ -1129,9 +1139,11 @@ function fontToImg(element) {
             wrapper.setAttribute(
                 "class",
                 "oe_unbreakable " + // prevent sanitize from grouping image wrappers
-                    font
-                        .getAttribute("class")
-                        .replace(new RegExp("(^|\\s+)" + icon + "(-[^\\s]+)?", "gi"), "") // remove inline font-awsome style
+                    (!icon
+                        ? [...font.classList].filter((className) => className !== "oi").join(" ") // remove inline oi style
+                        : font
+                              .getAttribute("class")
+                              .replace(new RegExp("(^|\\s+)" + icon + "(-[^\\s]+)?", "gi"), "")) // remove inline font-awsome style
             );
         } else {
             font.remove();
