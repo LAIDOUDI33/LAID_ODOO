@@ -13,4 +13,5 @@ from . import (
     test_schema,
     test_search,
     test_unity_read,
+    test_unlink_blocked,
 )

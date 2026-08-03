@@ -19,6 +19,7 @@ import { browser } from "@web/core/browser/browser";
 import { standardViewProps } from "@web/views/standard_view_props";
 import { MultiSelectionButtons } from "@web/views/view_components/multi_selection_buttons";
 import { getLocalYearAndWeek } from "@web/core/l10n/dates";
+import { computeArchiveEnabled, handleDeleteBlockedError } from "@web/views/view_hook";
 
 import { Component, proxy, t, useProps } from "@odoo/owl";
 import { hasTouch } from "@web/core/browser/feature_detection";
@@ -364,12 +365,30 @@ export class CalendarController extends Component {
         return this.editRecord(record, context);
     }
 
+    get archiveEnabled() {
+        return computeArchiveEnabled(this.props.fields);
+    }
+
     deleteConfirmationDialogProps(record) {
         return {
             title: _t("Bye-bye, record!"),
             body: deleteConfirmationMessage,
-            confirm: () => {
-                this.model.unlinkRecord(record.id);
+            confirm: async () => {
+                try {
+                    await this.model.unlinkRecord(record.id);
+                } catch (e) {
+                    handleDeleteBlockedError(e, {
+                        displayDialog: (Comp, props) => this.displayDialog(Comp, props),
+                        archiveEnabled: this.archiveEnabled,
+                        isMulti: false,
+                        archive: async () => {
+                            await this.orm.call(this.props.resModel, "action_archive", [
+                                [record.id],
+                            ]);
+                            await this.model.load();
+                        },
+                    });
+                }
             },
             confirmLabel: _t("Delete"),
             confirmClass: "btn-danger",
@@ -411,9 +430,21 @@ export class CalendarController extends Component {
         return ids;
     }
 
-    onMultiDelete(selectedCells) {
+    async onMultiDelete(selectedCells) {
         const ids = this.getSelectedRecordIds(selectedCells);
-        return this.model.unlinkRecords(ids);
+        try {
+            await this.model.unlinkRecords(ids);
+        } catch (e) {
+            handleDeleteBlockedError(e, {
+                displayDialog: (Comp, props) => this.displayDialog(Comp, props),
+                archiveEnabled: this.archiveEnabled,
+                isMulti: ids.length > 1,
+                archive: async () => {
+                    await this.orm.call(this.props.resModel, "action_archive", [ids]);
+                    await this.model.load();
+                },
+            });
+        }
     }
 
     setDate(move) {

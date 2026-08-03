@@ -688,18 +688,24 @@ export class FormController extends Component {
     }
 
     get deleteConfirmationDialogProps() {
-        return {
-            confirm: async () => {
-                await this.model.root.delete();
-                if (!this.model.root.resId) {
-                    this.env.config.historyBack();
-                }
-            },
-        };
+        return {};
+    }
+
+    // called after the record has actually been deleted (not archived) by the
+    // shared confirm handler in `useDeleteRecords`
+    onRecordDeleted() {
+        if (!this.model.root.resId) {
+            this.env.config.historyBack();
+        }
     }
 
     async deleteRecord() {
-        this.deleteRecordsWithConfirmation(this.deleteConfirmationDialogProps, [this.model.root]);
+        this.deleteRecordsWithConfirmation(
+            this.deleteConfirmationDialogProps,
+            [this.model.root],
+            this.archiveEnabled,
+            () => this.onRecordDeleted()
+        );
     }
 
     async beforeExecuteActionButton(clickParams) {

@@ -34,7 +34,12 @@ export class AccountMoveFormController extends FormController {
     async deleteRecord() {
         const deleteConfirmationDialogProps = this.deleteConfirmationDialogProps;
         deleteConfirmationDialogProps.body = await this.account_move_service.getDeletionDialogBody(deleteConfirmationMessage, this.model.root.resId);
-        this.deleteRecordsWithConfirmation(deleteConfirmationDialogProps, [this.model.root]);
+        this.deleteRecordsWithConfirmation(
+            deleteConfirmationDialogProps,
+            [this.model.root],
+            this.archiveEnabled,
+            () => this.onRecordDeleted()
+        );
     }
 }
 

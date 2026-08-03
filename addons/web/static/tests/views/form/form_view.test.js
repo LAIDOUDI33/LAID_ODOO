@@ -6331,6 +6331,88 @@ test(`deleting a record`, async () => {
     expect(`.o_field_widget[name=foo] input`).toHaveValue("blip");
 });
 
+test(`deleting a record blocked by a foreign key, archive available`, async () => {
+    Partner._fields.active = fields.Boolean({ default: true });
+    onRpc("unlink", () => {
+        expect.step("unlink");
+        throw makeServerError({
+            type: "ValidationError",
+            context: {
+                unlink_blocked: true,
+                archivable: true,
+                blocked_ids: [1],
+                model_name: "Bar",
+            },
+        });
+    });
+    onRpc("action_archive", ({ args }) => {
+        expect.step("action_archive");
+        expect(args[0]).toEqual([1]);
+        return true;
+    });
+
+    await mountView({
+        resModel: "partner",
+        type: "form",
+        arch: `<form><field name="foo"/><field name="active" invisible="1"/></form>`,
+        actionMenus: {},
+        resId: 1,
+    });
+    await toggleActionMenu();
+    await toggleMenuItem("Delete");
+
+    await contains(`.modal-footer button.btn-danger`).click();
+    await waitFor(`.modal .modal-title:contains(Oops)`);
+    expect(`.modal p:eq(0)`).toHaveText(
+        "Not possible to delete the record because it is used in Bar"
+    );
+    expect(`.modal p:eq(1)`).toHaveText("How about archiving it instead?");
+    expect(`.modal-footer .btn-primary`).toHaveText("Archive");
+    expect(`.modal-footer .btn-secondary`).toHaveText("Discard");
+
+    await contains(`.modal-footer .btn-primary`).click();
+    expect(`.modal`).toHaveCount(0);
+    expect.verifySteps(["unlink", "action_archive"]);
+});
+
+test(`deleting a record blocked by a foreign key, archive not available`, async () => {
+    onRpc("unlink", () => {
+        expect.step("unlink");
+        throw makeServerError({
+            type: "ValidationError",
+            context: {
+                unlink_blocked: true,
+                archivable: false,
+                blocked_ids: [1],
+                model_name: "Bar",
+            },
+        });
+    });
+
+    await mountView({
+        resModel: "partner",
+        type: "form",
+        arch: `<form><field name="foo"/></form>`,
+        actionMenus: {},
+        resId: 1,
+    });
+    await toggleActionMenu();
+    await toggleMenuItem("Delete");
+
+    await contains(`.modal-footer button.btn-danger`).click();
+    await waitFor(`.modal .modal-title:contains(Oops)`);
+    expect(`.modal p:eq(0)`).toHaveText(
+        "Not possible to delete the record because it is used in Bar"
+    );
+    expect(`.modal-footer button`).toHaveCount(1);
+    expect(`.modal-footer button`).toHaveText("Close");
+
+    await contains(`.modal-footer button`).click();
+    expect(`.modal`).toHaveCount(0);
+    expect(`.o_breadcrumb`).toHaveText("first record", { message: "nothing got deleted" });
+    expect.verifySteps(["unlink"]);
+});
+
 test(`[Offline] deleting a record`, async () => {
     onRpc("unlink", () => expect.step(`unlink`));
     Partner._views = {
