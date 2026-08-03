@@ -139,6 +139,7 @@ export class PosStore extends WithLazyGetterTrap {
         this.ticket_screen_mobile_pane = "left";
 
         this.loadingOrderState = false; // used to prevent orders fetched to be put in the update set during the reactive change
+        this.isPrintingReceipt = false; // true while a receipt print started by `printReceiptInBackground` is not finished
         this.screenState = {
             ticketSCreen: {
                 offsetByDomain: {},
@@ -1943,6 +1944,24 @@ export class PosStore extends WithLazyGetterTrap {
         }
         return result;
     }
+    printReceiptInBackground(options = {}) {
+        const order = options.order ?? this.getOrder();
+        this.isPrintingReceipt = true;
+        return this.printReceipt({ ...options, order })
+            .catch((error) => {
+                logPosMessage("Store", "printReceiptInBackground", "Printing failed", false, [
+                    error,
+                ]);
+                this.dialog.add(RetryPrintPopup, {
+                    message: error?.body || error?.message,
+                    canRetry: error?.canRetry ?? false,
+                    retry: () => this.printReceiptInBackground({ ...options, order }),
+                });
+            })
+            .finally(() => {
+                this.isPrintingReceipt = false;
+            });
+    }
     get printOptions() {
         return { webPrintFallback: true };
     }
@@ -3112,7 +3131,7 @@ export class PosStore extends WithLazyGetterTrap {
         this.mobile_pane = "right";
     }
     canEditPayment(order) {
-        return order.nb_print === 0;
+        return order.nb_print === 0 && !this.isPrintingReceipt;
     }
 
     isOrderSyncing(order, notify = true) {
