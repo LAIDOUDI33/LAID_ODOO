@@ -56,7 +56,7 @@ class AccountEdiUBLPintEU(models.AbstractModel):
 
             # Set up SEPA Direct Debit payment means and mandate node if a usable mandate exists
             if self.module_installed('account_sepa_direct_debit'):
-                sdd_mandate = invoice._sdd_get_usable_mandate() or self.env['sdd.mandate']
+                sdd_mandate = invoice._get_usable_mandate(mandate_type='sepa') or self.env['account.direct.debit.mandate']  # noqa: OLS03001
                 # If the group "DIRECT DEBIT" (BG-19) is delivered, the element "Debited account identifier" (BT-91) shall be provided.
                 # If the group "DIRECT DEBIT" (BG-19) is delivered, the element "Bank assigned creditor identifier" (BT-90) shall be provided
                 if (
