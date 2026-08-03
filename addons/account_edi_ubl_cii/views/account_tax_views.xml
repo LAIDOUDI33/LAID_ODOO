@@ -5,14 +5,39 @@
         <field name="model">account.tax</field>
         <field name="inherit_id" ref="account.view_tax_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='country_id']" position="after">
-                <field name="ubl_cii_tax_category_code"/>
-                <field name="ubl_cii_tax_exemption_reason_code"
-                       invisible="not ubl_cii_requires_exemption_reason"
-                       />
-                <field name="ubl_cii_tax_exemption_reason"
-                       invisible="not ubl_cii_requires_exemption_reason"
-                       />
+            <xpath expr="//page[@name='advanced_options']" position="after">
+                <page string="Electronic Invoicing" name="electronic_invoicing">
+                    <group name="ubl_cii_allowance_charge" col="1">
+                        <field name="ubl_cii_type_display"
+                            widget="radio"
+                            string="Type"
+                            options="{'horizontal': True}"/>
+                        <field name="ubl_cii_tax_category_code"
+                            invisible="ubl_cii_type_display != 'tax'"/>
+                        <field name="ubl_cii_tax_exemption_reason_code"
+                            invisible="ubl_cii_type_display != 'tax'
+                                       or not ubl_cii_requires_exemption_reason"/>
+                        <field name="ubl_cii_tax_exemption_reason"
+                            invisible="ubl_cii_type_display != 'tax'
+                                       or not ubl_cii_requires_exemption_reason"/>
+                        <field name="ubl_cii_allowance_reason_code"
+                            invisible="ubl_cii_type_display != 'allowance'"
+                            string="Allowance Code"
+                            required="ubl_cii_type_display == 'allowance'"/>
+                        <field name="ubl_cii_charge_reason_code"
+                            invisible="ubl_cii_type_display != 'charge'"
+                            string="Charge Code"
+                            required="ubl_cii_type_display == 'charge'"/>
+                        <field name="ubl_cii_allowance_charge_reason"
+                            invisible="ubl_cii_type_display != 'allowance'"
+                            string="Allowance Reason"
+                            id="ubl_cii_allowance_reason"/>
+                        <field name="ubl_cii_allowance_charge_reason"
+                            invisible="ubl_cii_type_display != 'charge'"
+                            string="Charge Reason"
+                            id="ubl_cii_charge_reason"/>
+                    </group>
+                </page>
             </xpath>
         </field>
     </record>
