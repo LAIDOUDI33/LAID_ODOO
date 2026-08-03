@@ -19,6 +19,7 @@ class PurchaseOrder(models.Model):
 
     incoming_picking_count = fields.Integer("Incoming Shipment count", compute='_compute_incoming_picking_count')
     picking_ids = fields.Many2many('stock.picking', compute='_compute_picking_ids', string='Receptions', copy=False, store=True)
+    linked_picking_ids = fields.Many2many('stock.picking', compute='_compute_linked_picking_ids', relation="purchase_order_linked_stock_pickings", column1='purchase_order_id', column2='stock_picking_id', string='Linked Receptions', copy=False, store=True)
     dest_address_id = fields.Many2one('res.partner', compute='_compute_dest_address_id', store=True, readonly=False)
     picking_type_id = fields.Many2one('stock.picking.type', 'Deliver To', required=True, index=True, default=_default_picking_type, domain="['|', ('warehouse_id', '=', False), ('warehouse_id.company_id', '=', company_id)]",
         help="This will determine operation type of incoming shipment")
@@ -39,10 +40,20 @@ class PurchaseOrder(models.Model):
         for order in self:
             order.picking_ids = order.order_line.move_ids.picking_id
 
-    @api.depends('picking_ids')
+    @api.depends('linked_picking_ids.move_ids.move_dest_ids')
+    def _compute_linked_picking_ids(self):
+        for order in self:
+            moves = order.order_line.move_ids
+            picking_ids = self.env['stock.picking']
+            while moves:
+                picking_ids |= moves.picking_id
+                moves = moves.move_dest_ids
+            order.linked_picking_ids = picking_ids
+
+    @api.depends('linked_picking_ids')
     def _compute_incoming_picking_count(self):
         for order in self:
-            order.incoming_picking_count = len(order.picking_ids)
+            order.incoming_picking_count = len(order.linked_picking_ids)
 
     @api.depends('picking_ids.date_done')
     def _compute_effective_date(self):
@@ -266,7 +277,7 @@ class PurchaseOrder(models.Model):
         return super().button_cancel()
 
     def action_view_picking(self):
-        return self._get_action_view_picking(self.picking_ids)
+        return self._get_action_view_picking(self.linked_picking_ids)
 
     @api.model
     def retrieve_dashboard(self):
