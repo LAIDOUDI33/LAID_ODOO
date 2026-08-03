@@ -1103,6 +1103,7 @@ SERVICES_MAPPING = {
     "discuss.upgrade": ['DiscussUpgradePlugin', '@mail/core/common/upgrade/upgrade_plugin'],
     "notification": ['NotificationPlugin', '@web/core/notifications/notification_plugin'],
     "mobile": ['MobilePlugin', '@web_mobile/js/mobile_plugin'],
+    "signInfo": ['SignInfoPlugin', '@sign/plugins/sign_info_plugin'],
     "sortable": ['SortablePlugin', '@web/core/util/sortable_plugin'],
 }
 
