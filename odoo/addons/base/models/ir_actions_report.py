@@ -3,6 +3,7 @@ import io
 import json
 import logging
 import typing
+import re
 from ast import literal_eval
 from collections import OrderedDict
 from collections.abc import Sequence
@@ -48,28 +49,51 @@ class IrActionsReport(models.Model):
         ('qweb-html', 'HTML'),
         ('qweb-pdf', 'PDF'),
         ('qweb-text', 'Text'),
-    ], required=True, default='qweb-pdf',
+    ], required=True, default='qweb-pdf', string="Format",
     help='The type of the report that will be rendered, each one having its own'
         ' rendering method. HTML means the report will be opened directly in your'
         ' browser, PDF means the report will be generated and'
         ' downloaded by the user.')
-    report_name = fields.Char(string='Template Name', required=True)
+    report_name = fields.Char(string='Technical Name', required=True)
     group_ids = fields.Many2many('res.groups', 'res_groups_report_rel', 'uid', 'gid', string='Groups')
     multi = fields.Boolean(string='On Multiple Doc.', help="If set to true, the action will not be displayed on the right toolbar of a form view.")
 
-    paperformat_id = fields.Many2one('report.paperformat', 'Paper Format', index='btree_not_null')
+    paperformat_id = fields.Many2one('report.paperformat', 'Paper Size', index='btree_not_null')
     print_report_name = fields.Char('Printed Report Name', translate=True,
                                     help="This is the filename of the report going to download. Keep empty to not change the report filename. You can use a python expression with the 'object' and 'time' variables.")
-    attachment_use = fields.Boolean(string='Reload from Attachment',
+    save_as_attachment = fields.Boolean(help='Whether the report is saved as attachment when it is printed')
+    attachment_use = fields.Boolean(string='Generate new file each time the report is printed',
                                     help='If enabled, then the second time the user prints with same attachment name, it returns the previous report.')
-    attachment = fields.Char(string='Save as Attachment Prefix',
+    attachment = fields.Char(string='Attachment name',
                              help='This is the filename of the attachment used to store the printing result. Keep empty to not save the printed reports. You can use a python expression with the object and time variables.')
-    domain = fields.Char(string='Filter domain', help='If set, the action will only appear on records that matches the domain.')
+    domain = fields.Char(string='Domain', help='If set, the action will only appear on records that matches the domain.')
+    view_count = fields.Integer(compute='_compute_view_count')
+
+
+    @api.depends('report_name')
+    def _compute_view_count(self):
+        for action in self:
+            if action.report_name:
+                action.view_count = self.env['ir.ui.view'].search_count([('name', 'ilike', action.report_name.split('.')[1]), ('type', '=', 'qweb')])
+            else:
+                action.view_count = 0
 
     @api.depends('model')
     def _compute_model_id(self):
         for action in self:
             action.model_id = self.env['ir.model']._get(action.model).id
+
+    @api.onchange('model_id')
+    def _onchange_model_id(self):
+        for action in self:
+            action.model = action.model_id.model
+
+    @api.onchange('name')
+    def _onchange_name(self):
+        for action in self:
+            if action.name:
+                name = re.sub(r'[^a-z0-9_]', '', name.replace(' ', '_').lower())
+                action.report_name = "report_name." + name
 
     def _search_model_id(self, operator, value):
         if operator in Domain.NEGATIVE_OPERATORS:
@@ -111,8 +135,15 @@ class IrActionsReport(models.Model):
         action_ref = self.env.ref('base.action_ui_view')
         if not action_ref or len(self.report_name.split('.')) < 2:
             return False
+
         action_data = action_ref.read()[0]
         action_data['domain'] = [('name', 'ilike', self.report_name.split('.')[1]), ('type', '=', 'qweb')]
+        
+        if self.view_count == 1:
+            action_data['view_mode'] = 'form'
+            action_data['views'] = [[False, 'form']]
+            action_data['res_id'] = self.env['ir.ui.view'].search(action_data['domain']).id
+        
         return action_data
 
     def create_action(self):
