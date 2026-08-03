@@ -802,7 +802,7 @@ class TestApiKeys(UsersCommonCase):
         cls.env['ir.config_parameter'].set_bool('base.enable_programmatic_api_keys', True)
         UsersApiKeys = cls.env['res.users.apikeys'].with_user(cls.user_internal)
         cls.tomorrow = datetime.now() + timedelta(days=1)
-        cls.api_key = UsersApiKeys._generate('scope', 'Key ', cls.tomorrow)
+        cls.api_key = UsersApiKeys._generate('scope', 'Key ', cls.tomorrow)[0]
 
     def test_programmatic_apikey_management_is_deactivated_by_default(self):
         self.env['ir.config_parameter'].set_bool('base.enable_programmatic_api_keys', None)

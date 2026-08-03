@@ -83,7 +83,7 @@ class Authenticate(http.Controller):
             scope,
             auth_message['name'],
             datetime.datetime.now() + datetime.timedelta(days=1)
-        )
+        )[0]
         return {'access_token': api_key}
 
     def _get_auth_code_data(self, auth_code):

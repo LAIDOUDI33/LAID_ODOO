@@ -1556,8 +1556,8 @@ class ResUsersApikeys(models.Model):
         :param str scope: the scope of the key.
         :param str name: the name of the key, mainly intended to be displayed in the UI.
         :param datetime.datetime expiration_date: the expiration date of the key.
-        :returns: the key.
-        :rtype: str
+        :returns: the key and the id of the newly created res.users.apikeys record.
+        :rtype: tuple[str, int]
 
         Note:
         This method must be called in sudo to use a duration
@@ -1573,12 +1573,13 @@ class ResUsersApikeys(models.Model):
         RETURNING id
         """.format(table=self._table),
         [name, self.env.user.id, scope, expiration_date or None, KEY_CRYPT_CONTEXT.hash(k), k[:INDEX_SIZE]])
+        [new_id] = self.env.cr.fetchone()
 
         ip = request.httprequest.environ['REMOTE_ADDR'] if request else 'n/a'
         _logger.info("%s generated: scope: <%s> for '%s' (#%s) from %s",
             self._description, scope, self.env.user.login, self.env.uid, ip)
 
-        return k
+        return k, new_id
 
     def _ensure_can_manage_keys_programmatically(self):
         # Administrators would not be restricted by the ICP check alone,
@@ -1640,7 +1641,7 @@ class ResUsersApikeys(models.Model):
             uid = self.env['res.users.apikeys']._check_credentials(scope=scope, key=key)
             if not uid or uid != self.env.uid:
                 raise AccessDenied(_("The provided API key is invalid or does not belong to the current user."))
-            new_key = self._generate(scope, name, expiration_date)
+            new_key = self._generate(scope, name, expiration_date)[0]
             _logger.info("%s %r generated from %r", self._description, new_key[:INDEX_SIZE], key[:INDEX_SIZE])
 
             return new_key
@@ -1656,21 +1657,30 @@ class ResUsersApikeys(models.Model):
         self._ensure_can_manage_keys_programmatically()
         assert key, "key required"
         with self.env['res.users']._assert_can_auth(user=key[:INDEX_SIZE]):
-            self.env.cr.execute(SQL('''
-                SELECT id, key
-                FROM %(table)s
-                WHERE
-                    index = %(index)s
-                    AND (
-                        expiration_date IS NULL OR
-                        expiration_date >= now() at time zone 'utc'
-                    )
-            ''', table=SQL.identifier(self._table), index=key[:INDEX_SIZE]))
-            for key_id, current_key in self.env.cr.fetchall():
-                if key and KEY_CRYPT_CONTEXT.verify(key, current_key):
-                    self.env['res.users.apikeys'].browse(key_id)._remove()
-                    return True
+            if self._revoke_by_key(key):
+                return True
             raise AccessDenied(_("The provided API key is invalid."))
+
+    def _revoke_by_key(self, key):
+        """Find the api key record matching `key`, not expired, and remove it.
+        :returns: whether a matching record was found and removed.
+        :rtype: bool
+        """
+        self.env.cr.execute(SQL('''
+            SELECT id, key
+            FROM %(table)s
+            WHERE
+                index = %(index)s
+                AND (
+                    expiration_date IS NULL OR
+                    expiration_date >= now() at time zone 'utc'
+                )
+        ''', table=SQL.identifier(self._table), index=key[:INDEX_SIZE]))
+        for key_id, current_key in self.env.cr.fetchall():
+            if key and KEY_CRYPT_CONTEXT.verify(key, current_key):
+                self.env['res.users.apikeys'].browse(key_id)._remove()
+                return True
+        return False
 
     @api.autovacuum
     def _gc_user_apikeys(self):
@@ -1795,7 +1805,7 @@ class ResUsersApikeysDescription(models.TransientModel):
         self.check_access_make_key()
 
         description = self.sudo()
-        k = self.env['res.users.apikeys']._generate(description.scope, description.name, self.expiration_date)
+        k = self.env['res.users.apikeys']._generate(description.scope, description.name, self.expiration_date)[0]
         description.unlink()
 
         return {
