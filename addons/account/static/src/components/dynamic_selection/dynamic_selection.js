@@ -29,6 +29,25 @@ export class DynamicSelectionField extends SelectionField {
     }
 
     /**
+     * Correctly show the current value when it is not part of the available options anymore
+     * @override
+     */
+    get choices() {
+        let choices = super.choices;
+
+        if (this.type === 'selection') {
+            const currentValue = this.value;
+            if (currentValue !== false && !this.options.some((c) => c[0] === currentValue) && choices.length > 0) {
+                choices[0].label = this.props.record.fields[this.props.name].selection.find(
+                    (option) => option[0] === currentValue
+                )[1];
+            }
+        }
+
+        return choices;
+    }
+
+    /**
      * In dynamic selection field, sometimes we can have no options available.
      * This override handles that case by adding optional chaining when accessing the found options.
      * @override
