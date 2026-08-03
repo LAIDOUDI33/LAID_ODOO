@@ -14,6 +14,7 @@ from odoo.exceptions import (
     ValidationError,
 )
 from odoo.tests.common import tagged
+from odoo.tools import mute_logger
 
 from odoo.addons.point_of_sale.tests.common import CommonPosTest
 from odoo.addons.pos_bancontact_pay import const
@@ -143,6 +144,7 @@ class TestModels(TestBancontactPay, CommonPosTest):
             result = self.payment_method_display.create_bancontact_payment({})
             self.assertEqual(result, {"bancontact_id": generated_bancontact_id, "qr_code": generated_qr_code + "&f=SVG"})
 
+    @mute_logger("odoo.addons.pos_bancontact_pay.models.pos_payment_method")
     def test_create_bancontact_payment_api_error(self):
         codes = [(400, MissingError), (401, AccessDenied), (403, AccessDenied),
                  (404, UserError), (422, ValidationError), (429, AccessDenied),
@@ -163,6 +165,7 @@ class TestModels(TestBancontactPay, CommonPosTest):
         with self.mock_bancontact_call():
             self.payment_method_display.cancel_bancontact_payment("bancontact_id")
 
+    @mute_logger("odoo.addons.pos_bancontact_pay.models.pos_payment_method")
     def test_cancel_bancontact_payment_api_error(self):
         codes = [(400, MissingError), (401, AccessDenied), (403, AccessDenied),
                  (404, UserError), (422, ValidationError), (429, AccessDenied),
