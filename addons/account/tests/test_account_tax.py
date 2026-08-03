@@ -496,6 +496,7 @@ class TestAccountTax(AccountTestInvoicingCommon, MailCase):
                 }),
             ],
         })
+        sales_15_perc.invalidate_recordset()
         self.assertTrue(sales_15_perc.is_used)
         with self.assertRaisesRegex(ValidationError, "delete taxes that are currently in use"):
             sales_15_perc.unlink()
