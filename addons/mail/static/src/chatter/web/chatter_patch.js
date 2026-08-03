@@ -13,7 +13,7 @@ import { FollowerList } from "@mail/core/web/follower_list";
 import { useHover, useOnChange } from "@mail/utils/common/hooks";
 import { assignGetter, isDragSourceExternalFile } from "@mail/utils/common/misc";
 
-import { signal, status, t, useProps } from "@odoo/owl";
+import { signal, status, t, untrack, useEffect, useProps } from "@odoo/owl";
 
 import { browser } from "@web/core/browser/browser";
 import { Dropdown } from "@web/core/dropdown/dropdown";
@@ -79,17 +79,14 @@ const chatterPatch = {
         this.highlightMessage ??= this.webChatterProps.record?.context?.highlight_message_id;
         this.orm = useService("orm");
         this.keepLastSuggestedRecipientsUpdate = new KeepLast();
-        useOnChange(
-            () => {
-                const record = this.webChatterProps.record;
-                // Track the record identity + all of its field changes.
-                if (record?.data) {
-                    Object.keys(record.data).forEach((field) => record.data[field]);
-                }
-                return [record];
-            },
-            (record) => this.updateRecipients(record)
-        );
+        useEffect(() => {
+            const record = this.webChatterProps.record;
+            // Track the record identity + all of its field changes.
+            if (record?.data) {
+                Object.keys(record.data).forEach((field) => record.data[field]);
+            }
+            untrack(() => this.updateRecipients(record));
+        });
         this.attachmentPopout = usePopoutAttachment({ thread: this.thread });
         this.CHATTER_PANEL = CHATTER_PANEL;
         Object.assign(this.state, {
@@ -236,7 +233,7 @@ const chatterPatch = {
      * @returns {import("models").Activity[]}
      */
     get activities() {
-        return this.state.thread?.activities ?? [];
+        return this.thread()?.sortedActivities ?? [];
     },
 
     get afterPostRequestList() {
@@ -250,7 +247,7 @@ const chatterPatch = {
     },
 
     get attachments() {
-        return this.state.thread?.attachments ?? [];
+        return this.thread()?.sortedAttachments ?? [];
     },
 
     get childSubEnv() {
@@ -296,7 +293,7 @@ const chatterPatch = {
     },
 
     get scheduledMessages() {
-        return this.state.thread?.scheduledMessages ?? [];
+        return this.thread()?.sortedScheduledMessages ?? [];
     },
 
     get unfollowText() {

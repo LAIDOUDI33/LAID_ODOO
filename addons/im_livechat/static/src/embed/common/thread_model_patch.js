@@ -18,6 +18,15 @@ patch(Thread.prototype, {
         this.readyToSwapPromise = promise;
         this.resolveReadyToSwap = resolve;
         this._prevComposerDisabled = false;
+        this.onChange(
+            () => [this.composerDisabled],
+            function onChangeComposerDisabled(composerDisabled) {
+                if (!composerDisabled && this._prevComposerDisabled) {
+                    this.composer.autofocus++;
+                }
+                this._prevComposerDisabled = composerDisabled;
+            }
+        );
     },
     /** @returns {Promise<import("models").Message} */
     async post(body, postData, extraData = {}) {
@@ -67,26 +76,19 @@ patch(Thread.prototype, {
         return message;
     },
 
-    computeComposerDisabled() {
+    get composerDisabled() {
         if (this.channel?.channel_type !== "livechat") {
-            return super.computeComposerDisabled(...arguments);
+            return super.composerDisabled;
         }
-        if (this.channel?.livechat_agent_history_ids.length && !this.livechat_end_dt) {
+        if (this.channel?.livechat_agent_history_ids.length && !this.channel.livechat_end_dt) {
             return false;
         }
         const step = this.channel?.chatbot?.currentStep;
-        return (
+        return Boolean(
             this.channel?.chatbot?.isProcessingAnswer ||
-            (step &&
-                !step.operatorFound &&
-                (step.completed || !step.expectAnswer || step.answer_ids.length > 0))
+                (step &&
+                    !step.operatorFound &&
+                    (step.completed || !step.expectAnswer || step.answer_ids.length > 0))
         );
-    },
-
-    composerDisabledonUpdate() {
-        if (!this.composerDisabled && this._prevComposerDisabled) {
-            this.composer.autofocus++;
-        }
-        this._prevComposerDisabled = this.composerDisabled;
     },
 });

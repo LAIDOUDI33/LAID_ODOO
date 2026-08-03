@@ -5,11 +5,30 @@ import { _t } from "@web/core/l10n/translation";
 export class Follower extends Record {
     static _name = "mail.followers";
 
+    setup() {
+        super.setup();
+        // a follower follows its thread: it is deleted with it
+        this.onRelationChange(
+            () => this.thread,
+            ({ removed }) => {
+                if (removed.length && !this.thread) {
+                    this.delete();
+                }
+            }
+        );
+    }
+
     thread = fields.One("mail.thread");
+    /** @type {string} */
+    display_name;
+    /** @type {string} */
+    email;
     /** @type {number} */
     id;
     /** @type {boolean} */
     is_active;
+    /** @type {string} */
+    name;
     partner_id = fields.One("res.partner");
     subtype_ids = fields.Many("mail.message.subtype");
 

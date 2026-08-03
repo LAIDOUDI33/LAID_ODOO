@@ -376,11 +376,11 @@ export class Rtc extends Record {
     /** @type {Map<number, number>} timeoutId by sessionId for download pausing delay */
     downloadTimeouts = new Map();
     /** @type {{urls: string[]}[]} */
-    iceServers = fields.Attr(undefined, {
-        compute() {
-            return this.iceServers ? this.iceServers : GET_DEFAULT_ICE_SERVERS();
-        },
-    });
+    /** Raw server-provided ICE servers; read through {@link effectiveIceServers}. */
+    iceServers = undefined;
+    get effectiveIceServers() {
+        return this.iceServers ? this.iceServers : GET_DEFAULT_ICE_SERVERS();
+    }
     /** @type {"granted" | "denied" | "prompt" | undefined} */
     microphonePermission;
     isMicrophonePermissionWarningDismissed = false;
@@ -401,37 +401,25 @@ export class Rtc extends Record {
      * unless you need to access actual connection data (connection stats, streams,...), which can only
      * be accessed from the tab that is hosting the call.
      */
-    selfSession = fields.One("discuss.channel.rtc.session", {
-        compute() {
-            return (
-                this.localSession ||
-                this.store["discuss.channel.rtc.session"].get(this._remotelyHostedSessionId)
-            );
-        },
-        onDelete() {
-            if (this.channel) {
-                this.channel.promoteFullscreen = CALL_PROMOTE_FULLSCREEN.INACTIVE;
-            }
-        },
-    });
+    get selfSession() {
+        return (
+            this.localSession ||
+            this.store["discuss.channel.rtc.session"].get(this._remotelyHostedSessionId)
+        );
+    }
     /**
      * The DiscussChannel of the current user for the call hosted by this tab.
      */
     localChannel = fields.One("discuss.channel");
-    channel = fields.One("discuss.channel", {
-        compute() {
-            if (this.localChannel) {
-                return this.localChannel;
-            }
-            return this._remotelyHostedChannelId;
-        },
-        onUpdate() {
-            if (!this.channel) {
-                return;
-            }
-            this.store["discuss.channel"].getOrFetch(this.channel.id);
-        },
-    });
+    get channel() {
+        if (this.localChannel) {
+            return this.localChannel;
+        }
+        if (this._remotelyHostedChannelId) {
+            return this.store["discuss.channel"].insert(this._remotelyHostedChannelId);
+        }
+        return undefined;
+    }
     /**
      * Html element embedding the rtc service. Used to scope the dialog to the correct
      * document fragment (either the actual document or the active shadow root).
@@ -449,7 +437,7 @@ export class Rtc extends Record {
     /** @type {Object<string, boolean>} The keys are action names and the values are booleans indicating whether each action is active */
     lastActions = {};
     /** @type {Array<string>} Array of action names representing the stack of currently active actions */
-    actionsStack = [];
+    actionsStack = fields.Attr([], { reactiveContent: true });
     /** @type {string|undefined} String representing the last call action activated, or undefined if none are */
     lastSelfCallAction = undefined;
     /** callbacks to be called when cleaning the state up after a call */
@@ -498,45 +486,22 @@ export class Rtc extends Record {
     }
 
     /** @type {CallAction[]} */
-    callActions = fields.Attr([], {
-        /** @this {import("models").Rtc} */
-        compute() {
-            const transformedActions = registry
-                .category("discuss.call/actions")
-                .getEntries()
-                .map(([id, definition]) => new CallAction({ owner: this, id, definition }));
-            for (const action of transformedActions) {
-                action.setup();
-                void action.isActive;
-            }
-            return transformedActions;
-        },
-        /** @this {import("models").Rtc} */
-        onUpdate() {
-            for (const action of this.callActions) {
-                if (action.isActive === this.lastActions[action.id]) {
-                    continue;
-                }
-                if (!action.tags.includes(ACTION_TAGS.CALL_ACTION_TRACKED)) {
-                    continue;
-                }
-                if (action.isActive) {
-                    if (!this.actionsStack.includes(action.id)) {
-                        this.actionsStack.unshift(action.id);
-                    }
-                } else {
-                    const index = this.actionsStack.indexOf(action.id);
-                    if (index !== -1) {
-                        this.actionsStack.splice(index, 1);
-                    }
-                }
-            }
-            this.lastSelfCallAction = this.actionsStack[0];
-            this.lastActions = Object.fromEntries(
-                this.callActions.map((action) => [action.id, action.isActive])
-            );
-        },
-    });
+    get callActions() {
+        if (!this.store.rtc) {
+            // The action definitions read `store.rtc`: return early (and subscribe
+            // to it) until the store's relation to this record is applied.
+            return [];
+        }
+        const transformedActions = registry
+            .category("discuss.call/actions")
+            .getEntries()
+            .map(([id, definition]) => new CallAction({ owner: this, id, definition }));
+        for (const action of transformedActions) {
+            action.setup();
+            void action.isActive;
+        }
+        return transformedActions;
+    }
 
     setup() {
         // the services and the dialog the record holds, assigned when the service starts or
@@ -559,6 +524,67 @@ export class Rtc extends Record {
         this.pttExtService = undefined;
         /** @type {Services["mail.sound_effects"]} */
         this.soundEffectsService = undefined;
+        this.onChange(
+            () => [this.selfSession],
+            function onChangeSelfSession() {
+                // selfSession left (changed away or the record is gone): reset the
+                // promote-fullscreen state on its channel
+                return () => {
+                    if (this.channel) {
+                        this.channel.promoteFullscreen = CALL_PROMOTE_FULLSCREEN.INACTIVE;
+                    }
+                };
+            },
+            { immediate: true }
+        );
+        this.onChange(
+            () => [], // one-shot (no dependencies): cleanup on delete
+            function onChangeBroadcastChannel() {
+                // close on delete: a leaked channel keeps receiving cross-tab
+                // messages on a disposed record (e.g. from a later test in the
+                // same tab)
+                return () => {
+                    this._broadcastChannel.close();
+                    browser.clearTimeout(this._crossTabTimeoutId);
+                };
+            }
+        );
+        this.onChange(
+            () => [this.channel],
+            function onChangeChannel(channel) {
+                if (channel) {
+                    this.store["discuss.channel"].getOrFetch(channel.id);
+                }
+            }
+        );
+        this.onChange(
+            () => [this.callActions],
+            function onChangeCallActions(callActions) {
+                for (const action of callActions) {
+                    if (action.isActive === this.lastActions[action.id]) {
+                        continue;
+                    }
+                    if (!action.tags.includes(ACTION_TAGS.CALL_ACTION_TRACKED)) {
+                        continue;
+                    }
+                    if (action.isActive) {
+                        if (!this.actionsStack.includes(action.id)) {
+                            this.actionsStack.unshift(action.id);
+                        }
+                    } else {
+                        const index = this.actionsStack.indexOf(action.id);
+                        if (index !== -1) {
+                            this.actionsStack.splice(index, 1);
+                        }
+                    }
+                }
+                this.lastSelfCallAction = this.actionsStack[0];
+                this.lastActions = Object.fromEntries(
+                    callActions.map((action) => [action.id, action.isActive])
+                );
+            },
+            { immediate: true }
+        );
         this.linkVoiceActivationDebounce = debounce(this.linkVoiceActivation, 500);
         this.upgradeConnectionDebounce = debounce(this._upgradeConnection, 15000, true);
         this.blurManager = undefined;
@@ -575,43 +601,54 @@ export class Rtc extends Record {
             this._postToTabs({ type: CROSS_TAB_CLIENT_MESSAGE.INIT });
         }
         this.p2pService = services["discuss.p2p"];
-        this.registerOnChange(this.store.settings, "useBlur", () => {
-            if (this.isSendingCamera) {
-                this.toggleVideo("camera", { force: true });
-            }
-        });
-        this.registerOnChange(
-            this.store.settings,
-            ["edgeBlurAmount", "backgroundBlurAmount"],
-            () => {
-                if (this.blurManager) {
-                    this.blurManager.edgeBlur = this.store.settings.edgeBlurAmount;
-                    this.blurManager.backgroundBlur = this.store.settings.backgroundBlurAmount;
+        this.onChange(
+            () => [this.store.settings.useBlur],
+            function onChangeUseBlur(useBlur) {
+                if (this.isSendingCamera) {
+                    this.toggleVideo("camera", { force: true });
                 }
             }
         );
-        this.registerOnChange(
-            this.store.settings,
-            ["voiceActivationThreshold", "usePushToTalk"],
-            () => {
+        this.onChange(
+            () => [this.store.settings.edgeBlurAmount, this.store.settings.backgroundBlurAmount],
+            function onChangeBlurAmounts(edgeBlurAmount, backgroundBlurAmount) {
+                if (this.blurManager) {
+                    this.blurManager.edgeBlur = edgeBlurAmount;
+                    this.blurManager.backgroundBlur = backgroundBlurAmount;
+                }
+            },
+            { immediate: true }
+        );
+        this.onChange(
+            () => [this.store.settings.voiceActivationThreshold, this.store.settings.usePushToTalk],
+            function onChangeVoiceActivation(voiceActivationThreshold, usePushToTalk) {
                 this.linkVoiceActivationDebounce();
             }
         );
-        this.registerOnChange(this.store.settings, "audioInputDeviceId", async () => {
-            if (this.localSession) {
-                await this.resetMicAudioTrack({ force: true });
+        this.onChange(
+            () => [this.store.settings.audioInputDeviceId],
+            function onChangeAudioInputDeviceId(audioInputDeviceId) {
+                if (this.localSession) {
+                    this.resetMicAudioTrack({ force: true });
+                }
             }
-        });
-        this.registerOnChange(this.store.settings, "audioOutputDeviceId", async () => {
-            if (this.localSession) {
-                await this.setOutputDevice(this.store.settings.audioOutputDeviceId);
+        );
+        this.onChange(
+            () => [this.store.settings.audioOutputDeviceId],
+            function onChangeAudioOutputDeviceId(audioOutputDeviceId) {
+                if (this.localSession) {
+                    this.setOutputDevice(audioOutputDeviceId);
+                }
             }
-        });
-        this.registerOnChange(this.store.settings, "cameraInputDeviceId", async () => {
-            if (this.localSession && this.cameraTrack) {
-                await this.toggleVideo("camera", { force: true, refreshStream: true });
+        );
+        this.onChange(
+            () => [this.store.settings.cameraInputDeviceId],
+            function onChangeCameraInputDeviceId(cameraInputDeviceId) {
+                if (this.localSession && this.cameraTrack) {
+                    this.toggleVideo("camera", { force: true, refreshStream: true });
+                }
             }
-        });
+        );
         this.store.env.bus.addEventListener("RTC-SERVICE:PLAY_MEDIA", () => {
             const channel = this.localChannel;
             if (!channel) {
@@ -858,7 +895,7 @@ export class Rtc extends Record {
      */
     setVolume(session, volume) {
         session.volume = volume;
-        this.store.settings.saveVolumeSetting({
+        this.store.self_user.res_users_settings_id.saveVolumeSetting({
             guestId: session?.guest_id?.id,
             partnerId: session?.partner_id?.id,
             volume,
@@ -880,7 +917,7 @@ export class Rtc extends Record {
 
     /**
      * Open the meeting view. By default it opens as a full-window overlay that keeps the browser
-     * header (address bar, tabs, …) visible — this is what switching layouts/modes uses. Pass
+     * header (address bar, tabs, ...) visible, which is what switching layouts/modes uses. Pass
      * `browserFullscreen: true` (only the fullscreen button does) to request true browser
      * fullscreen instead, hiding the browser UI.
      *
@@ -1182,7 +1219,7 @@ export class Rtc extends Record {
         // loading p2p in any case as we may need to receive peer-to-peer connections from users who failed to connect to the SFU.
         this.p2pService.connect(this.localSession.id, this.localChannel.id, {
             info: this.formatInfo(),
-            iceServers: this.iceServers,
+            iceServers: this.effectiveIceServers,
         });
         this.network = new Network(this.p2pService);
         this.updateUpload();
@@ -1420,7 +1457,7 @@ export class Rtc extends Record {
         console.debug(
             `%c${new Date().toLocaleString()} - [${entry}]`,
             "color: #e36f17; font-weight: bold;",
-            toRaw(session)._raw,
+            session,
             param2
         );
         if (!this.logs) {
@@ -1550,7 +1587,7 @@ export class Rtc extends Record {
                     return;
                 }
                 this._p2pRecoveryCount++;
-                if (this._p2pRecoveryCount > 1 || !hasTurn(this.iceServers)) {
+                if (this._p2pRecoveryCount > 1 || !hasTurn(this.effectiveIceServers)) {
                     this.upgradeConnectionDebounce();
                 }
             }
@@ -1670,7 +1707,7 @@ export class Rtc extends Record {
                 }, 10000);
                 await this.sfuClient.connect(this.serverInfo.url, this.serverInfo.jsonWebToken, {
                     channelUUID: this.serverInfo.channelUUID,
-                    iceServers: this.iceServers,
+                    iceServers: this.effectiveIceServers,
                 });
             }
             return;
@@ -1803,7 +1840,7 @@ export class Rtc extends Record {
             channelId: this.localChannel.id,
             selfSessionId: this.localSession.id,
             start: new Date().toISOString(),
-            hasTurn: hasTurn(this.iceServers),
+            hasTurn: hasTurn(this.effectiveIceServers),
             entriesBySessionId: {},
         };
     }
@@ -2006,7 +2043,7 @@ export class Rtc extends Record {
 
     async setOutputDevice(deviceId) {
         const promises = [];
-        for (const session of this.localChannel.rtc_session_ids) {
+        for (const session of this.localChannel?.rtc_session_ids ?? []) {
             if (!session.audioElement) {
                 continue;
             }
@@ -2500,7 +2537,7 @@ export class Rtc extends Record {
             audioElement.srcObject = stream;
             audioElement.load();
             audioElement.muted = mute || session.isLocallyMuted;
-            audioElement.volume = this.store.settings.getVolume(session);
+            audioElement.volume = this.store.self_user.res_users_settings_id.getVolume(session);
             // Using both autoplay and play() as safari may prevent play() outside of user interactions
             // while some browsers may not support or block autoplay.
             audioElement.autoplay = true;
@@ -2684,39 +2721,47 @@ export const rtcService = {
      */
     start(env, services) {
         const store = services["mail.store"];
+        store.rtc ??= {};
         const rtc = store.rtc;
         rtc.pipService = services["discuss.pip_service"];
-        rtc.registerOnChange(rtc.pipService.state, "active", () => {
-            const isPipMode = rtc.pipService.state.active;
-            if (!isPipMode) {
-                if (rtc.viewToRestore !== VIEW_TO_RESTORE.NONE && rtc.channel) {
-                    rtc.enterFullscreen();
+        rtc.onChange(
+            () => [rtc.pipService.state.active],
+            function onChangePipMode(isPipMode) {
+                if (!isPipMode) {
+                    if (rtc.viewToRestore !== VIEW_TO_RESTORE.NONE && rtc.channel) {
+                        rtc.enterFullscreen();
+                    }
+                    rtc.viewToRestore = VIEW_TO_RESTORE.NONE;
+                    rtc.channel?.openChatWindow();
                 }
-                rtc.viewToRestore = VIEW_TO_RESTORE.NONE;
-                rtc.channel?.openChatWindow();
-            }
-            rtc.isPipMode = isPipMode;
-            rtc._postToTabs({
-                type: CROSS_TAB_HOST_MESSAGE.PIP_CHANGE,
-                changes: { isPipMode },
-            });
-        });
+                rtc.isPipMode = isPipMode;
+                rtc._postToTabs({
+                    type: CROSS_TAB_HOST_MESSAGE.PIP_CHANGE,
+                    changes: { isPipMode },
+                });
+            },
+            { immediate: true }
+        );
         rtc.fullscreen = services["mail.fullscreen"];
-        rtc.registerOnChange(rtc.fullscreen, "id", () => {
-            const wasFullscreen = rtc.isFullscreen;
-            rtc.isFullscreen = rtc.fullscreen.id === CALL_FULLSCREEN_ID;
-            if (
-                rtc.screenTrack &&
-                rtc.displaySurface !== "browser" &&
-                rtc.fullscreen.id === CALL_FULLSCREEN_ID
-            ) {
-                rtc.screenTrack.enabled = false;
-            } else if (!rtc.isFullscreen) {
-                if (wasFullscreen && rtc.screenTrack) {
-                    rtc.screenTrack.enabled = true;
+        rtc.onChange(
+            () => [rtc.fullscreen.id],
+            function onChangeFullscreen(fullscreenId) {
+                const wasFullscreen = rtc.isFullscreen;
+                rtc.isFullscreen = fullscreenId === CALL_FULLSCREEN_ID;
+                if (
+                    rtc.screenTrack &&
+                    rtc.displaySurface !== "browser" &&
+                    fullscreenId === CALL_FULLSCREEN_ID
+                ) {
+                    rtc.screenTrack.enabled = false;
+                } else if (!rtc.isFullscreen) {
+                    if (wasFullscreen && rtc.screenTrack) {
+                        rtc.screenTrack.enabled = true;
+                    }
                 }
-            }
-        });
+            },
+            { immediate: true }
+        );
         browser.navigator.permissions?.query({ name: "microphone" }).then((status) => {
             rtc.microphonePermission = status.state;
             status.onchange = () => (rtc.microphonePermission = status.state);
@@ -2755,11 +2800,6 @@ export const rtcService = {
             if (rtc.localSession?.id === sessionId) {
                 rtc.notifyServerDisconnect();
                 rtc.endCall();
-            }
-        });
-        services["bus_service"].subscribe("res.users.settings.volumes", (payload) => {
-            if (payload) {
-                rtc.store.Volume.insert(payload);
             }
         });
         services["bus_service"].subscribe(

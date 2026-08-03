@@ -7,10 +7,14 @@ const { DateTime } = luxon;
 export class ResPartner extends Record {
     static _name = "res.partner";
 
+    /** @type {boolean} */
+    active;
     /** @type {string} */
     avatar_128_access_token;
     /** @type {string} */
     commercial_company_name;
+    /** @type {string} */
+    complete_name;
     country_id = fields.One("res.country");
     /** @type {string} */
     email;
@@ -24,39 +28,54 @@ export class ResPartner extends Record {
     /** @type {number} */
     id;
     /** @type {import("./im_status_mixin").ImStatus} */
-    imStatusUI = fields.Attr(undefined, {
-        compute() {
-            const userStatuses = this.user_ids.map((u) => u.imStatusUI);
-            if (userStatuses.includes("online") || this.isBot) {
-                return "online";
-            } else if (userStatuses.includes("away")) {
-                return "away";
-            } else if (userStatuses.includes("busy")) {
-                return "busy";
-            } else if (userStatuses.includes("offline")) {
-                return "offline";
-            }
-        },
-    });
+    imStatusUI;
     /** @type {boolean | undefined} */
     is_company;
     /** @type {boolean} */
     is_public;
     main_user_id = fields.One("res.users");
+    /** @type {string} token proving the mention right on this partner */
+    mention_token;
     /** @type {string} */
     name;
     /** @type {string} */
     display_name;
+    /** @type {string} */
+    parent_name;
     /** @type {boolean | undefined} */
     partner_share;
     /** @type {string} */
     phone;
-    /** @type {luxon.DateTime} */
-    offline_since = fields.Datetime(undefined, {
-        compute: () => DateTime.max(this.user_ids.map((u) => u.offline_since)),
-    });
+    /** @type {string} */
+    tz;
+    get offline_since() {
+        const dts = this.user_ids.map((u) => u.offline_since).filter((dt) => dt);
+        return dts.length ? DateTime.max(...dts) : undefined;
+    }
     user_ids = fields.Many("res.users", { inverse: "partner_id" });
     write_date = fields.Datetime();
+
+    setup() {
+        super.setup(...arguments);
+        this.onChange(
+            () => {
+                const userStatuses = this.user_ids.map((u) => u.imStatusUI);
+                if (userStatuses.includes("online") || this.isBot) {
+                    return ["online"];
+                } else if (userStatuses.includes("away")) {
+                    return ["away"];
+                } else if (userStatuses.includes("busy")) {
+                    return ["busy"];
+                } else if (userStatuses.includes("offline")) {
+                    return ["offline"];
+                }
+                return [undefined];
+            },
+            function onChangeImStatusUI(imStatusUI) {
+                this.imStatusUI = imStatusUI;
+            }
+        );
+    }
 
     get avatarUrl() {
         const accessTokenParam = {};

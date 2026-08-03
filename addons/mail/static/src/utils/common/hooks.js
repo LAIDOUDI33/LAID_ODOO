@@ -5,6 +5,7 @@ import {
     onPatched,
     onWillUnmount,
     proxy,
+    shallowEqual,
     signal,
     t,
     untrack,
@@ -1012,16 +1013,21 @@ export function useForwardRefsToParent(propName, getRefIdFn, ref) {
 }
 
 /**
+ * Calls `callback` with the returned dependencies whenever one of the values
+ * changes, comparison being `shallowEqual` on the dependency list.
+ *
  * @template {readonly any[]} [T=any[]]
+ * @param {() => T} dependencies
  * @param {(...deps: T) => void} callback
  * @param {Object} [options]
  * @param {boolean} [options.initialRun=true] determine if the hook should skip the first run
  */
 export function useOnChange(dependencies, callback, { initialRun } = { initialRun: true }) {
+    const memoizedDependencies = computed(dependencies, { equals: shallowEqual });
     let firstRun = true;
     useEffect(() => {
         let cleanup;
-        const dep = dependencies();
+        const dep = memoizedDependencies();
         if (initialRun || !firstRun) {
             untrack(() => (cleanup = callback(...dep)));
         }

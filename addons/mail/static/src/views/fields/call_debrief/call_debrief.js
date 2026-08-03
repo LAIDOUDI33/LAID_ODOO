@@ -1,7 +1,9 @@
 import {
     Component,
+    computed,
     onWillUnmount,
     proxy,
+    shallowEqual,
     signal,
     t,
     useEffect,
@@ -56,8 +58,13 @@ export class CallDebrief extends Component {
         // Defer seeking when switching media segments
         this._pendingSeek = null;
 
+        // memoized on content: a save rewrites the field value object, and a
+        // repeat would reload the media and reset the playback
+        const debriefData = computed(() => this.props.record.data[this.props.name], {
+            equals: shallowEqual,
+        });
         useOnChange(
-            () => [this.props.record.resId, this.props.record.data[this.props.name]],
+            () => [this.props.record.resId, debriefData()],
             (resId) => {
                 // Tracks active record ID to bypass this.props update lag during async paging
                 this.activeResId = resId;

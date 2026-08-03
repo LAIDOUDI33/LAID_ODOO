@@ -1,3 +1,5 @@
+import { untrack } from "@odoo/owl";
+
 import { registry } from "@web/core/registry";
 
 /** @typedef {import("./record").Record} Record */
@@ -5,7 +7,7 @@ import { registry } from "@web/core/registry";
 
 export const modelRegistry = registry.category("discuss.model");
 
-export const FIELD_DEFINITION_SYM = Symbol("field_definition");
+const FIELD_DEFINITION_SYM = Symbol("field_definition");
 /** @typedef {ATTR_SYM|MANY_SYM|ONE_SYM} FIELD_SYM */
 export const ATTR_SYM = Symbol("attr");
 export const MANY_SYM = Symbol("many");
@@ -13,8 +15,6 @@ export const ONE_SYM = Symbol("one");
 export const OR_SYM = Symbol("or");
 const AND_SYM = Symbol("and");
 export const IS_RECORD_SYM = Symbol("isRecord");
-export const IS_FIELD_SYM = Symbol("isField");
-export const IS_DELETED_SYM = Symbol("isDeleted");
 export const STORE_SYM = Symbol("store");
 
 export function AND(...args) {
@@ -24,12 +24,14 @@ export function OR(...args) {
     return [OR_SYM, ...args];
 }
 
+const COMMANDS = new Set(["ADD", "DELETE", "ADD.noinv", "DELETE.noinv", "REPLACE"]);
+
 export function isCommandList(data) {
     return Array.isArray(data) && data.length > 0 && data.every((cmd) => isCommand(cmd));
 }
 
 export function isCommand(data) {
-    return ["ADD", "DELETE", "ADD.noinv", "DELETE.noinv", "REPLACE"].includes(data?.[0]);
+    return COMMANDS.has(data?.[0]);
 }
 
 /**
@@ -96,21 +98,7 @@ export const fields = {
      * @template {keyof import("models").Models} M
      * @param {M} targetModel
      * @param {Object} [param1={}]
-     * @param {(this: Record) => any} [param1.compute] if set, the value of this relational field is declarative and
-     *   is computed automatically. All reactive accesses recalls that function. The context of
-     *   the function is the record. Returned value is new value assigned to this field.
-     * @param {boolean} [param1.eager=false] when field is computed, determines whether the computation
-     *   of this field is eager or lazy. By default, fields are computed lazily, which means that
-     *   they are computed when dependencies change AND when this field is being used. In eager mode,
-     *   the field is immediately (re-)computed when dependencies changes, which matches the built-in
-     *   behaviour of OWL reactive.
      * @param {string} [param1.inverse] if set, the name of field in targetModel that acts as the inverse.
-     * @param {(this: Record, r: import("models").Models[M]) => void} [param1.onAdd] function that is called when a record is added
-     *   in the relation.
-     * @param {(this: Record, r: import("models").Models[M]) => void} [param1.onDelete] function that is called when a record is removed
-     *   from the relation.
-     * @param {(this: Record) => void} [param1.onUpdate] function that is called when the field value is updated.
-     *   This is called at least once at record creation.
      * @returns {import("models").Models[M]}
      */
     One(targetModel, param1) {
@@ -120,23 +108,7 @@ export const fields = {
      * @template {keyof import("models").Models} M
      * @param {M} targetModel
      * @param {Object} [param1={}]
-     * @param {(this: Record) => any} [param1.compute] if set, the value of this relational field is declarative and
-     *   is computed automatically. All reactive accesses recalls that function. The context of
-     *   the function is the record. Returned value is new value assigned to this field.
-     * @param {boolean} [param1.eager=false] when field is computed, determines whether the computation
-     *   of this field is eager or lazy. By default, fields are computed lazily, which means that
-     *   they are computed when dependencies change AND when this field is being used. In eager mode,
-     *   the field is immediately (re-)computed when dependencies changes, which matches the built-in
-     *   behaviour of OWL reactive.
      * @param {string} [param1.inverse] if set, the name of field in targetModel that acts as the inverse.
-     * @param {(this: Record, r: import("models").Models[M]) => void} [param1.onAdd] function that is called when a record is added
-     *   in the relation.
-     * @param {(this: Record, r: import("models").Models[M]) => void} [param1.onDelete] function that is called when a record is removed
-     *   from the relation.
-     * @param {(this: Record) => void} [param1.onUpdate] function that is called when the field value is updated.
-     *   This is called at least once at record creation.
-     * @param {(this: Record, r1: import("models").Models[M], r2: import("models").Models[M]) => number} [param1.sort] if defined, this field
-     *   is automatically sorted by this function.
      * @returns {import("models").Models[M][]}
      */
     Many(targetModel, param1) {
@@ -146,18 +118,9 @@ export const fields = {
      * @template T
      * @param {T} def
      * @param {Object} [param1={}]
-     * @param {(this: Record) => any} [param1.compute] if set, the value of this attr field is declarative and
-     *   is computed automatically. All reactive accesses recalls that function. The context of
-     *   the function is the record. Returned value is new value assigned to this field.
-     * @param {boolean} [param1.eager=false] when field is computed, determines whether the computation
-     *   of this field is eager or lazy. By default, fields are computed lazily, which means that
-     *   they are computed when dependencies change AND when this field is being used. In eager mode,
-     *   the field is immediately (re-)computed when dependencies changes, which matches the built-in
-     *   behaviour of OWL reactive.
-     * @param {(this: Record) => void} [param1.onUpdate] function that is called when the field value is updated.
-     *   This is called at least once at record creation.
-     * @param {(this: Record, Object, Object) => number} [param1.sort] if defined, this field is automatically sorted
-     *   by this function.
+     * @param {boolean} [param1.reactiveContent] when the value is an object/array/Map/Set,
+     *   wrap it in a reactive proxy on read so an in-place mutation of its content is
+     *   observed. Off by default: a plain attr only tracks whole-value replacement.
      * @param {'datetime'|'date'} [param1.type] if defined, automatically transform to a
      * specific type.
      * @returns {T}
@@ -170,16 +133,6 @@ export const fields = {
      *
      * @param {string} def
      * @param {Object} [param1={}]
-     * @param {(this: Record) => any} [param1.compute] if set, the value of this html field is declarative and
-     *   is computed automatically. All reactive accesses recalls that function. The context of
-     *   the function is the record. Returned value is new value assigned to this field.
-     * @param {boolean} [param1.eager=false] when field is computed, determines whether the computation
-     *   of this field is eager or lazy. By default, fields are computed lazily, which means that
-     *   they are computed when dependencies change AND when this field is being used. In eager mode,
-     *   the field is immediately (re-)computed when dependencies changes, which matches the built-in
-     *   behaviour of OWL reactive.
-     * @param {(this: Record) => void} [param1.onUpdate] function that is called when the field value is updated.
-     *   This is called at least once at record creation.
      * @returns {string|markup }
      */
     Html(def, param1) {
@@ -194,16 +147,6 @@ export const fields = {
     },
     /**
      * @param {Object} [param0={}]
-     * @param {(this: Record) => any} [param0.compute] if set, the value of this date field is declarative and
-     *   is computed automatically. All reactive accesses recalls that function. The context of
-     *   the function is the record. Returned value is new value assigned to this field.
-     * @param {boolean} [param0.eager=false] when field is computed, determines whether the computation
-     *   of this field is eager or lazy. By default, fields are computed lazily, which means that
-     *   they are computed when dependencies change AND when this field is being used. In eager mode,
-     *   the field is immediately (re-)computed when dependencies changes, which matches the built-in
-     *   behaviour of OWL reactive.
-     * @param {(this: Record) => void} [param0.onUpdate] function that is called when the field value is updated.
-     *   This is called at least once at record creation.
      * @returns {luxon.DateTime}
      */
     Date(param0) {
@@ -216,16 +159,6 @@ export const fields = {
     },
     /**
      * @param {Object} [param0={}]
-     * @param {(this: Record) => any} [param0.compute] if set, the value of this datetime field is declarative and
-     *   is computed automatically. All reactive accesses recalls that function. The context of
-     *   the function is the record. Returned value is new value assigned to this field.
-     * @param {boolean} [param0.eager=false] when field is computed, determines whether the computation
-     *   of this field is eager or lazy. By default, fields are computed lazily, which means that
-     *   they are computed when dependencies change AND when this field is being used. In eager mode,
-     *   the field is immediately (re-)computed when dependencies changes, which matches the built-in
-     *   behaviour of OWL reactive.
-     * @param {(this: Record) => void} [param0.onUpdate] function that is called when the field value is updated.
-     *   This is called at least once at record creation.
      * @returns {luxon.DateTime}
      */
     Datetime(param0) {
@@ -242,4 +175,30 @@ export function makeRecordFieldLocalId(recordLocalId, fieldName) {
     return `${recordLocalId}:${fieldName}`;
 }
 
-export const technicalKeysOnRecords = ["_", "_proxy", "_proxyInternal", "_raw", "env", "Model"];
+export const technicalKeysOnRecords = new Set(["_", "env", "Model", "Models", "recordByLocalId"]);
+
+/**
+ * Wraps the given methods so they run untracked: reactive reads inside them
+ * never subscribe the caller's computation. Applied once at module load on a
+ * class prototype (or the class itself for statics); the wrapper runs on the
+ * call receiver. Defined non-enumerable, like the class methods it shadows.
+ *
+ * @param {Object} object
+ * @param {string[]} names
+ */
+export function untrackFunctions(object, names) {
+    for (const name of names) {
+        const originalFn = object[name];
+        Object.defineProperty(object, name, {
+            configurable: true,
+            enumerable: false,
+            value: function untrackFunctionsValue(...args) {
+                const self = this;
+                return untrack(function untrackFunctionsValueUntracked() {
+                    return originalFn.apply(self, args);
+                });
+            },
+            writable: true,
+        });
+    }
+}

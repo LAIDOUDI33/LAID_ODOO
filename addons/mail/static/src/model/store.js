@@ -1,19 +1,18 @@
 import { PgSnapshot } from "@mail/model/field_version";
 import { Record } from "./record";
-import { STORE_SYM, modelRegistry } from "./misc";
-
-import { immediateEffect, proxy, toRaw, untrack } from "@odoo/owl";
+import { STORE_SYM, untrackFunctions } from "./misc";
 
 /** @typedef {import("./record_list").RecordList} RecordList */
 
 export class Store extends Record {
     static singleton = true;
-    /** @type {import("./store_internal").StoreInternal} */
-    _;
-    [STORE_SYM] = true;
-    /** @type {Map<string, Record>} */
+    /**
+     * All the records of the store, by localId (raw own property of the store
+     * record, @see RecordInternal.setupRecord).
+     *
+     * @type {Map<string, Record>}
+     */
     recordByLocalId;
-    storeReady = false;
     /**
      * @param {string} localId
      * @returns {Record}
@@ -25,8 +24,6 @@ export class Store extends Record {
     handleError(err) {
         this._.ERRORS.push(err);
     }
-
-    warnErrors = true;
 
     /** @param {() => any} fn */
     MAKE_UPDATE(fn) {
@@ -42,153 +39,59 @@ export class Store extends Record {
         if (this._.UPDATE === 0) {
             // pretend an increased update cycle so that nothing in queue creates many small update cycles
             this._.UPDATE++;
-            while (
-                this._.FC_QUEUE.size > 0 ||
-                this._.FS_QUEUE.size > 0 ||
-                this._.FA_QUEUE.size > 0 ||
-                this._.FD_QUEUE.size > 0 ||
-                this._.FU_QUEUE.size > 0 ||
-                this._.RO_QUEUE.size > 0 ||
-                this._.RD_QUEUE.size > 0 ||
-                this._.RHD_QUEUE.size > 0
-            ) {
-                const FC_QUEUE = new Map(this._.FC_QUEUE);
-                const FS_QUEUE = new Map(this._.FS_QUEUE);
-                const FA_QUEUE = new Map(this._.FA_QUEUE);
-                const FD_QUEUE = new Map(this._.FD_QUEUE);
-                const FU_QUEUE = new Map(this._.FU_QUEUE);
-                const RO_QUEUE = new Map(this._.RO_QUEUE);
+            while (this._.RD_QUEUE.size > 0) {
                 const RD_QUEUE = new Map(this._.RD_QUEUE);
-                const RHD_QUEUE = new Map(this._.RHD_QUEUE);
-                this._.FC_QUEUE.clear();
-                this._.FS_QUEUE.clear();
-                this._.FA_QUEUE.clear();
-                this._.FD_QUEUE.clear();
-                this._.FU_QUEUE.clear();
-                this._.RO_QUEUE.clear();
                 this._.RD_QUEUE.clear();
-                this._.RHD_QUEUE.clear();
-                while (FC_QUEUE.size > 0) {
-                    /** @type {[Record, Map<string, true>]} */
-                    const [record, recMap] = FC_QUEUE.entries().next().value;
-                    FC_QUEUE.delete(record);
-                    for (const fieldName of recMap.keys()) {
-                        record._.requestCompute(record, fieldName, { force: true });
-                    }
-                }
-                while (FS_QUEUE.size > 0) {
-                    /** @type {[Record, Map<string, true>]} */
-                    const [record, recMap] = FS_QUEUE.entries().next().value;
-                    FS_QUEUE.delete(record);
-                    for (const fieldName of recMap.keys()) {
-                        record._.requestSort(record, fieldName, { force: true });
-                    }
-                }
-                while (FA_QUEUE.size > 0) {
-                    /** @type {[Record, Map<string, Map<Record, true>>]} */
-                    const [record, recMap] = FA_QUEUE.entries().next().value;
-                    FA_QUEUE.delete(record);
-                    while (recMap.size > 0) {
-                        /** @type {[string, Map<Record, true>]} */
-                        const [fieldName, fieldMap] = recMap.entries().next().value;
-                        recMap.delete(fieldName);
-                        const onAdd = record.Model._.fieldsOnAdd.get(fieldName);
-                        for (const addedRec of fieldMap.keys()) {
-                            try {
-                                onAdd?.call(record._proxy, addedRec._proxy);
-                            } catch (err) {
-                                this.handleError(err);
-                            }
-                        }
-                    }
-                }
-                while (FD_QUEUE.size > 0) {
-                    /** @type {[Record, Map<string, Map<Record, true>>]} */
-                    const [record, recMap] = FD_QUEUE.entries().next().value;
-                    FD_QUEUE.delete(record);
-                    while (recMap.size > 0) {
-                        /** @type {[string, Map<Record, true>]} */
-                        const [fieldName, fieldMap] = recMap.entries().next().value;
-                        recMap.delete(fieldName);
-                        const onDelete = record.Model._.fieldsOnDelete.get(fieldName);
-                        for (const removedRec of fieldMap.keys()) {
-                            try {
-                                onDelete?.call(
-                                    record._proxy,
-                                    removedRec.exists() ? removedRec._proxy : undefined
-                                );
-                            } catch (err) {
-                                this.handleError(err);
-                            }
-                        }
-                    }
-                }
-                while (FU_QUEUE.size > 0) {
-                    /** @type {[Record, Map<string, true>]} */
-                    const [record, map] = FU_QUEUE.entries().next().value;
-                    FU_QUEUE.delete(record);
-                    for (const fieldName of map.keys()) {
-                        record._.onUpdate(record, fieldName);
-                    }
-                }
-                while (RO_QUEUE.size > 0) {
-                    /** @type {Map<Function, true>} */
-                    const cb = RO_QUEUE.keys().next().value;
-                    RO_QUEUE.delete(cb);
-                    try {
-                        cb();
-                    } catch (err) {
-                        this.handleError(err);
-                    }
-                }
+                this._.deletingRecords.set(true);
                 while (RD_QUEUE.size > 0) {
                     /** @type {Record} */
                     const record = RD_QUEUE.keys().next().value;
                     RD_QUEUE.delete(record);
+                    // Dispose the record's effects first (onChange runners and
+                    // their pending cleanups): they must not observe (nor write
+                    // through) the relations being cleared below.
+                    record._runDisposeFns();
+                    // Set before removing the relations below: while true, the
+                    // record's getters return their last value instead of running
+                    // again on a record being deleted (running would read gone
+                    // relations and crash).
+                    record._.deletingSignal.set(true);
                     for (const [localId, names] of record._.uses.data.entries()) {
                         for (const [name2, count] of names.entries()) {
-                            const existingRecordProxyInternal = toRaw(this.recordByLocalId).get(
-                                localId
-                            );
                             const usingRecord =
-                                (existingRecordProxyInternal &&
-                                    toRaw(existingRecordProxyInternal)?._raw) ||
+                                this.recordByLocalId.get(localId) ||
                                 deletingRecordsByLocalId.get(localId);
                             if (!usingRecord) {
                                 // record already deleted, clean inverses
                                 record._.uses.data.delete(localId);
                                 continue;
                             }
+                            // straight from the containing RecordList: reading the
+                            // field would yield the record itself on a One relation
+                            const usingList = usingRecord._.fieldsList.get(name2);
                             for (let c = 0; c < count; c++) {
-                                usingRecord[name2].delete(record);
+                                usingList.delete(record);
                             }
                         }
                     }
-                    for (const lsFieldName of record.Model._.fieldsLocalStorage) {
-                        const { localStorageKeyToRecordFields } = record.store._;
-                        const key = record._.fieldsLocalStorage.get(lsFieldName).key;
-                        const lsKeyMap = localStorageKeyToRecordFields.get(key);
-                        lsKeyMap.delete(record);
-                        if (lsKeyMap.size === 0) {
-                            localStorageKeyToRecordFields.delete(key);
-                        }
-                    }
                     deletingRecordsByLocalId.set(record.localId, record);
+                    // remove from records BEFORE flipping existence: an observer
+                    // woken by the flip must never see a non-existing record in
+                    // Model.records
                     this.recordByLocalId.delete(record.localId);
-                    this._.ADD_QUEUE("hard_delete", toRaw(record));
+                    delete record.Model.records[record.localId];
+                    record._.existsSignal.set(false);
                 }
-                while (RHD_QUEUE.size > 0) {
-                    // effectively delete the record
-                    /** @type {Record} */
-                    const record = RHD_QUEUE.keys().next().value;
-                    record._runDisposeFns();
-                    RHD_QUEUE.delete(record);
-                    deletingRecordsByLocalId.delete(record.localId);
-                }
+                // fully gone: unlinks in a later round (queued by relation
+                // change callbacks during this one) no longer resolve this
+                // round's records - their lists are unreachable and their
+                // effects already disposed
+                deletingRecordsByLocalId.clear();
+                this._.deletingRecords.set(false);
             }
             this._.UPDATE--;
             if (this._.ERRORS.length) {
-                if (this.warnErrors) {
+                if (this._.warnErrors) {
                     console.warn("Store data insert aborted due to following errors:");
                     for (const err of this._.ERRORS) {
                         console.warn(err);
@@ -220,12 +123,12 @@ export class Store extends Record {
             };
         }
         try {
-            Record.MAKE_UPDATE(function storeInsert() {
+            this.MAKE_UPDATE(function storeInsert() {
                 const recordsDataToDelete = [];
                 for (const [modelName, data] of Object.entries(dataByModelName)) {
                     if (!store[modelName]) {
                         console.warn(
-                            `store.insert() received data for unknown model “${modelName}”.`
+                            `store.insert() received data for unknown model "${modelName}".`
                         );
                         continue;
                     }
@@ -252,82 +155,9 @@ export class Store extends Record {
             }
         }
     }
-    onChange(record, name, cb) {
-        return this._onChange(record, name, (observe) => {
-            const fn = () => {
-                observe();
-                untrack(() => {
-                    try {
-                        cb();
-                    } catch (err) {
-                        this.handleError(err);
-                    }
-                });
-            };
-            if (this._.UPDATE !== 0) {
-                if (!this._.RO_QUEUE.has(fn)) {
-                    this._.RO_QUEUE.set(fn, true);
-                }
-            } else {
-                fn();
-            }
-        });
-    }
-    /**
-     * Version of onChange where the callback receives observe function as param.
-     * This is useful when there's desire to postpone calling the callback function,
-     * in which the observe is also intended to have its invocation postponed.
-     *
-     * @param {Record} record
-     * @param {string|string[]} key
-     * @param {(observe: Function) => any} callback
-     * @returns {function} function to call to stop observing changes
-     */
-    _onChange(record, key, callback) {
-        let recordProxy;
-        function _observe() {
-            // access recordProxy[key] only once to avoid triggering reactive get() many times
-            const val = recordProxy[key];
-            if (typeof val === "object" && val !== null) {
-                void Object.keys(val);
-            }
-            if (Array.isArray(val)) {
-                void val.length;
-                void toRaw(val).forEach.call(val, (i) => i);
-            }
-        }
-        if (Array.isArray(key)) {
-            /** @type {Function[]} */
-            const arrayDisposeFns = [];
-            for (const k of key) {
-                arrayDisposeFns.push(this._onChange(record, k, callback));
-            }
-            return () => {
-                arrayDisposeFns.forEach((f) => f());
-                arrayDisposeFns.length = 0;
-            };
-        }
-        let running = false;
-        recordProxy = proxy(record);
-        const disposeFn = untrack(() =>
-            immediateEffect(() => {
-                if (!running) {
-                    _observe();
-                } else {
-                    callback(_observe);
-                }
-            })
-        );
-        running = true;
-        return disposeFn;
-    }
-    _cleanupData(data) {
-        super._cleanupData(data);
-        if (this.Model.getName() === "Store") {
-            delete data.Models;
-            for (const [name] of modelRegistry.getEntries()) {
-                delete data[name];
-            }
-        }
-    }
 }
+// on the prototype, not as a class field: the Record constructor checks it
+// before the class fields initialize, and a class field would go through
+// proxySet (@see Record constructor)
+Store.prototype[STORE_SYM] = true;
+untrackFunctions(Store.prototype, ["handleError", "insert", "onChange"]);

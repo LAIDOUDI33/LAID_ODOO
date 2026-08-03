@@ -2,7 +2,7 @@ import { ActivityListPopoverItem } from "@mail/core/web/activity_list_popover_it
 import { useOnChange } from "@mail/utils/common/hooks";
 import { compareDatetime } from "@mail/utils/common/misc";
 
-import { Component, signal, types, useProps } from "@odoo/owl";
+import { Component, computed, shallowEqual, signal, types, useProps } from "@odoo/owl";
 
 import { useService } from "@web/core/utils/hooks";
 
@@ -25,9 +25,14 @@ export class ActivityListPopover extends Component {
             resModel: types.string(),
         });
         this.store = useService("mail.store");
+        // memoized on content: the ids array is rebuilt by the parent, and a
+        // repeat would fetch again for nothing
+        const activityIds = computed(() => this.props.activityIds, { equals: shallowEqual });
         useOnChange(
-            () => [this.props.activityIds],
-            (activityIds) => this.store.fetchStoreData("mail.activity", { ids: activityIds })
+            () => [activityIds()],
+            (activityIds) => {
+                this.store.fetchStoreData("mail.activity", { ids: activityIds });
+            }
         );
     }
 

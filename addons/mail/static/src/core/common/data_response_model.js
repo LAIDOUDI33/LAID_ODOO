@@ -27,6 +27,25 @@ export class DataResponse extends Record {
 
     /** @type {number} */
     id;
+    setup() {
+        super.setup();
+        this.onChange(
+            () => [this._resolve],
+            function onChangeResolve(_resolve) {
+                if (_resolve) {
+                    // snapshot of the field values: the request record is
+                    // deleted right after, and a record does not spread (its
+                    // fields live in signals, not in own properties)
+                    const data = {};
+                    for (const name of this.Model._.fields.keys()) {
+                        data[name] = this[name];
+                    }
+                    this._resultResolvers.resolve(data);
+                    this.delete();
+                }
+            }
+        );
+    }
     /**
      * When set to true, this data request is resolved as soon as its RPC returns, even if there was
      * no actual data for this request inside it. This is useful for fetch request that only fills
@@ -39,15 +58,7 @@ export class DataResponse extends Record {
      *
      * @type {boolean}
      */
-    _resolve = fields.Attr(undefined, {
-        /** @this {import("models").DataResponse} */
-        onUpdate() {
-            if (this._resolve) {
-                this._resultResolvers.resolve({ ...this });
-                this.delete();
-            }
-        },
-    });
+    _resolve = undefined;
     /**
      * Promise that is resolved with the data when the data request is complete.
      * @type {PromiseWithResolvers<InstanceFields<DataResponse>>}
@@ -64,6 +75,8 @@ export class DataResponse extends Record {
     channels = fields.Many("discuss.channel");
     /** @type {number} */
     count;
+    /** @type {boolean} */
+    is_fully_loaded;
     message = fields.One("mail.message");
     messages = fields.Many("mail.message");
     partners = fields.Many("res.partner");

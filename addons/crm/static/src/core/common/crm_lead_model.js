@@ -1,4 +1,4 @@
-import { fields, Record } from "@mail/model/export";
+import { Record } from "@mail/model/export";
 import { router } from "@web/core/browser/router";
 
 export class CrmLead extends Record {
@@ -8,11 +8,9 @@ export class CrmLead extends Record {
     id;
     /** @type {string} */
     name;
-    href = fields.Attr("", {
-        compute() {
-            return router.stateToUrl({ model: 'crm.lead', resId: this.id });
-        }
-    });
+    get href() {
+        return router.stateToUrl({ model: "crm.lead", resId: this.id });
+    }
 }
 
 CrmLead.register();

@@ -50,8 +50,8 @@ const messagingMenuItemPatch = {
     get actionsDropdownState() {
         return this.channel ? this.channelDropdownState : super.actionsDropdownState;
     },
-    get actionsPartition() {
-        return this.channel ? this.threadActions.partition : super.actionsPartition;
+    _computeActionsPartition() {
+        return this.channel ? this.threadActions.partition : super._computeActionsPartition();
     },
     get actionsTitle() {
         return this.channel?.isChatChannel
@@ -75,7 +75,7 @@ const messagingMenuItemPatch = {
             (this.channel.channel_type === "channel" &&
                 this.channel.needactionMessages.length === 0)
                 ? this.channel.newestPersistentOfAllMessage
-                : this.channel.needactionMessages.at(-1);
+                : this.channel.sortedNeedactionMessages.at(-1);
         const swipeRight = this.channel.isUnread
             ? {
                   action: () => this.channel.thread.markAsRead(),

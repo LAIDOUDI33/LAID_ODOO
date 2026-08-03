@@ -1,10 +1,8 @@
 declare module "models" {
     export interface DiscussChannel {
-        _toggleChatbot: boolean;
         hasWelcomeMessage: Readonly<boolean>;
         isLastMessageFromCustomer: Readonly<unknown>;
         livechatWelcomeMessage: Message;
-        requested_by_operator: boolean;
         storeAsActiveVisitorLivechats: Store;
     }
     export interface Message {

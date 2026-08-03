@@ -12,37 +12,50 @@ export class Chatbot extends Record {
     // completed.
     static MULTILINE_STEP_DEBOUNCE_DELAY = 10000;
 
+    /**
+     * Pair identifying this chatbot for the python store index.
+     *
+     * @type {[number, number]|undefined}
+     */
+    id;
     isTyping = false;
     isProcessingAnswer = false;
+    /** @type {number|undefined} timer id of the next step */
+    nextStepTimeout = undefined;
     script = fields.One("chatbot.script");
     currentStep = fields.One("ChatbotStep");
     steps = fields.Many("ChatbotStep");
-    channel_id = fields.One("discuss.channel", {
-        inverse: "chatbot",
-        onDelete() {
-            this.delete();
-        },
-    });
-    tmpAnswer = "";
-    typingMessage = fields.One("mail.message", {
-        compute() {
-            if (this.isTypingUi && this.channel_id) {
-                return {
-                    id: -0.1 - this.channel_id.id,
-                    thread: this.channel_id.thread,
-                    author_id: this.script.operator_partner_id,
-                };
+    channel_id = fields.One("discuss.channel", { inverse: "chatbot" });
+
+    setup() {
+        super.setup();
+        this.onRelationChange(
+            () => this.channel_id,
+            ({ removed }) => {
+                if (removed.length) {
+                    this.delete();
+                }
             }
-        },
-    });
+        );
+    }
+    tmpAnswer = "";
+    get typingMessage() {
+        if (this.isTypingUi && this.channel_id) {
+            return this.store["mail.message"].insert({
+                id: -0.1 - this.channel_id.id,
+                thread: this.channel_id.thread,
+                author_id: this.script.operator_partner_id,
+            });
+        }
+        return undefined;
+    }
+
     /**
      * @type {(message: import("models").Message) => Promise<void>}
      */
-    _processAnswerDebounced = fields.Attr(null, {
-        compute() {
-            return debounce(this._processAnswer, Chatbot.MULTILINE_STEP_DEBOUNCE_DELAY);
-        },
-    });
+    get _processAnswerDebounced() {
+        return debounce(this._processAnswer, Chatbot.MULTILINE_STEP_DEBOUNCE_DELAY);
+    }
 
     /**
      * Start the chatbot. Either from the beginning if the user just started the

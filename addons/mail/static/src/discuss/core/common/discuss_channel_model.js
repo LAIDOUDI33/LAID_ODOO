@@ -1,10 +1,8 @@
 import { MessagePinDialog } from "@mail/core/common/message_pin_dialog";
 import { fields, Record } from "@mail/model/export";
-import {
-    compareDatetime,
-    effectWithCleanup,
-    nearestGreaterThanOrEqual,
-} from "@mail/utils/common/misc";
+import { compareDatetime, nearestGreaterThanOrEqual } from "@mail/utils/common/misc";
+
+import { computed } from "@odoo/owl";
 
 import { _t } from "@web/core/l10n/translation";
 import { formatList } from "@web/core/l10n/utils";
@@ -21,27 +19,103 @@ export class DiscussChannel extends Record {
     static _name = "discuss.channel";
     static _inherits = { "mail.thread": "thread" };
 
-    static new() {
-        /** @type {import("models").DiscussChannel} */
-        const channel = super.new(...arguments);
+    setup() {
+        super.setup();
+        this.onRelationChange(
+            () => this.chatWindow,
+            ({ added, removed }) => {
+                if (added.length && this.self_member_id && !this.self_member_id.is_pinned) {
+                    this.self_member_id.unpin_dt = undefined;
+                    this.pinRpc({ pinned: true });
+                }
+                if (removed.length) {
+                    this._onDeleteChatWindow();
+                }
+            }
+        );
+        this.onRelationChange(
+            () => this.parent_channel_id,
+            ({ removed }) => {
+                if (removed.length) {
+                    this.delete();
+                }
+            }
+        );
+        this.assignComputed("thread", function computeThread() {
+            return this.store["mail.thread"].insert({ id: this.id, model: "discuss.channel" });
+        });
         // Handles subscriptions for non-members. Subscriptions for channels
         // that the user is a member of are handled by
         // `ir_websocket@_build_bus_channel_list`.
-        channel._registerDisposeFn(
-            effectWithCleanup(() => {
-                const busChannel =
-                    !channel.isTransient &&
-                    !channel.self_member_id &&
-                    channel.shouldSubscribeToBusChannel &&
-                    channel.busChannel;
-                const busService = channel.store.env.services.bus_service;
+        // memoized: a repeat with the same channel would delete and re-add
+        // it, forcing a websocket resubscription
+        const nonMemberBusChannel = computed(
+            () =>
+                !this.isTransient &&
+                !this.self_member_id &&
+                this.shouldSubscribeToBusChannel &&
+                this.busChannel
+        );
+        this.onChange(
+            () => [nonMemberBusChannel(), this.store.env.services.bus_service],
+            function onChangeChannelBusChannel(busChannel, busService) {
                 if (busService && busChannel) {
                     busService.addChannel(busChannel);
                     return () => busService.deleteChannel(busChannel);
                 }
-            })
+            }
         );
-        return channel;
+        this.onChange(
+            () => [this.isDisplayed],
+            function onChangeIsDisplayed(isDisplayed) {
+                if (!this.self_member_id) {
+                    return;
+                }
+                if (!isDisplayed) {
+                    this.self_member_id.new_message_separator_ui =
+                        this.self_member_id.new_message_separator;
+                    this.markedAsUnread = false;
+                }
+            },
+            { immediate: true }
+        );
+        this.onChange(
+            () => [this.memberBusSubscription],
+            function onChangeMemberBusSubscription() {
+                if (this.memberBusSubscription !== "member_before_start") {
+                    this.store.updateBusSubscription();
+                }
+            },
+            // transition listener: only a change requires resubscribing the bus,
+            // running at registration would force a resubscription per channel.
+            // `member_before_start` needs no client resubscription: it is already
+            // covered by the server-side bus channel list. Immediate: a change
+            // landing while the insert data applies must not be missed by the
+            // skipped first batched run.
+            { immediate: true, initialRun: false }
+        );
+        this.onChange(
+            () => [this.id, this.isTransient],
+            function onChangeIsTransient(id, isTransient) {
+                const busService = this.store.env.services.bus_service;
+                if (!busService.isActive && id && !isTransient) {
+                    busService.start();
+                }
+            }
+        );
+        this.onChange(
+            () => [this.open_chat_window],
+            function onChangeOpenChatWindow(open_chat_window) {
+                if (open_chat_window) {
+                    this.open_chat_window = undefined;
+                    this.openChatWindow({ focus: true, highlight: this.chatWindow?.isOpen });
+                }
+            },
+            { immediate: true }
+        );
+        this.assignComputed("storeAsFavoriteChannels", function computeStoreAsFavoriteChannels() {
+            return this.self_member_id?.is_favorite ? this.store : null;
+        });
     }
 
     /**
@@ -65,7 +139,7 @@ export class DiscussChannel extends Record {
             () => {
                 this.store.fetchChannelPromiseByChannelId.delete(channel_id);
                 const channel = this.store["discuss.channel"].get(channel_id);
-                if (channel?.exists()) {
+                if (channel) {
                     channel.fetchChannelInfoState = "fetched";
                     resolveFetch(channel);
                 } else {
@@ -75,7 +149,7 @@ export class DiscussChannel extends Record {
             () => {
                 this.store.fetchChannelPromiseByChannelId.delete(channel_id);
                 const channel = this.store["discuss.channel"].get(channel_id);
-                if (channel?.exists()) {
+                if (channel) {
                     rejectFetch(channel);
                 } else {
                     rejectFetch();
@@ -159,57 +233,29 @@ export class DiscussChannel extends Record {
             !this.is_readonly
         );
     }
-    canHide = fields.Attr(false, {
-        compute() {
-            return this._computeCanHide();
-        },
-    });
-    _computeCanHide() {
+    get canHide() {
         return Boolean(this.self_member_id?.is_pinned);
     }
-    channel_member_ids = fields.Many("discuss.channel.member", {
-        inverse: "channel_id",
-        onDelete: (r) => r?.delete(),
-        sort: (m1, m2) => m1.id - m2.id,
-    });
+    channel_member_ids = fields.Many("discuss.channel.member", { inverse: "channel_id" });
+    get sortedChannelMembers() {
+        return [...this.channel_member_ids].sort((m1, m2) => m1.id - m2.id);
+    }
     channel_name_member_ids = fields.Many("discuss.channel.member");
     /** @type {"chat"|"channel"|"group"|"livechat"|"whatsapp"|"ai_chat"|"ai_composer"} */
     channel_type;
     /** ⚠️ {@link AwaitChatHubInit} */
-    chatWindow = fields.One("ChatWindow", {
-        inverse: "channel",
-        onAdd() {
-            if (this.self_member_id && !this.self_member_id.is_pinned) {
-                this.self_member_id.is_pinned = true;
-                this.pinRpc({ pinned: true });
-            }
-        },
-        onDelete() {
-            this._onDeleteChatWindow();
-        },
-    });
+    chatWindow = fields.One("ChatWindow", { inverse: "channel" });
     get channelNotifications() {
         return (
-            this.self_member_id?.custom_notifications || this.store.settings.channel_notifications
+            this.self_member_id?.custom_notifications ||
+            this.store.self_user?.res_users_settings_id?.channelNotifications
         );
     }
     get chatChannelTypes() {
         return ["chat", "group"];
     }
-    correspondent = fields.One("discuss.channel.member", {
-        /** @this {import("models").Thread} */
-        compute() {
-            return this.computeCorrespondent();
-        },
-    });
-    correspondentCountry = fields.One("res.country", {
-        /** @this {import("models").Thread} */
-        compute() {
-            return this.correspondent?.persona?.country_id ?? this.country_id;
-        },
-    });
     /** @returns {import("models").ChannelMember} */
-    computeCorrespondent() {
+    get correspondent() {
         if (["channel", "group"].includes(this.channel_type)) {
             return undefined;
         }
@@ -223,6 +269,9 @@ export class DiscussChannel extends Record {
             return this.channel_member_ids[0] ?? [];
         }
         return undefined;
+    }
+    get correspondentCountry() {
+        return this.correspondent?.persona?.country_id ?? this.country_id;
     }
     /** @returns {import("models").ChannelMember[]} */
     get correspondents() {
@@ -290,23 +339,17 @@ export class DiscussChannel extends Record {
         return Boolean(this.self_member_id);
     }
     last_interest_dt = fields.Datetime();
-    lastInterestDt = fields.Datetime({
-        /** @this {import("models").Thread} */
-        compute() {
-            return compareDatetime(this.self_member_id?.last_interest_dt, this.last_interest_dt) > 0
-                ? this.self_member_id?.last_interest_dt
-                : this.last_interest_dt;
-        },
-    });
+    get lastInterestDt() {
+        return compareDatetime(this.self_member_id?.last_interest_dt, this.last_interest_dt) > 0
+            ? this.self_member_id?.last_interest_dt
+            : this.last_interest_dt;
+    }
     markedAsUnread = false;
-    onlineMembers = fields.Many("discuss.channel.member", {
-        /** @this {import("models").DiscussChannel} */
-        compute() {
-            return this.channel_member_ids
-                .filter((member) => ["online", "away", "busy"].includes(member.imStatusUI))
-                .sort((m1, m2) => this.store.sortMembers(m1, m2)); // FIXME: sort are prone to infinite loop (see test "Display livechat custom name in typing status")
-        },
-    });
+    get onlineMembers() {
+        return this.channel_member_ids
+            .filter((member) => ["online", "away", "busy"].includes(member.imStatusUI))
+            .sort((m1, m2) => this.store.sortMembers(m1, m2));
+    }
     get hasAttachmentPanel() {
         return true;
     }
@@ -329,38 +372,22 @@ export class DiscussChannel extends Record {
         }
         return message;
     }
-    firstUnreadMessage = fields.One("mail.message", {
-        /** @this {import("models").DiscussChannel} */
-        compute() {
-            return this.getFirstNewerMessage({
-                from_message_id: this.self_member_id?.new_message_separator_ui,
-            });
-        },
-    });
-    hasOtherMembersTyping = fields.Attr(false, {
-        /** @this {import("models").DiscussChannel} */
-        compute() {
-            if (this.self_member_id?.mute_until_dt) {
-                return false;
-            }
-            return this.otherTypingMembers.length > 0;
-        },
-    });
-    hasSeenFeature = fields.Attr(false, {
-        /** @this {import("models").DiscussChannel} */
-        compute() {
-            return this.store.channel_types_with_seen_infos.includes(this.channel_type);
-        },
-    });
+    get firstUnreadMessage() {
+        return this.getFirstNewerMessage({
+            from_message_id: this.self_member_id?.new_message_separator_ui,
+        });
+    }
+    get hasOtherMembersTyping() {
+        if (this.self_member_id?.mute_until_dt) {
+            return false;
+        }
+        return this.otherTypingMembers.length > 0;
+    }
+    get hasSeenFeature() {
+        return this.store.channel_types_with_seen_infos.includes(this.channel_type);
+    }
     /** @type {number} */
-    id = fields.Attr(undefined, {
-        onUpdate() {
-            const busService = this.store.env.services.bus_service;
-            if (!busService.isActive && !this.isTransient) {
-                busService.start();
-            }
-        },
-    });
+    id;
     get importantCounter() {
         if (
             this.isChatChannel &&
@@ -391,61 +418,43 @@ export class DiscussChannel extends Record {
     }
     invited_member_ids = fields.Many("discuss.channel.member");
     /** ⚠️ {@link AwaitChatHubInit} */
-    isDisplayed = fields.Attr(false, {
-        compute() {
-            return this.computeIsDisplayed();
-        },
-        onUpdate() {
-            if (!this.self_member_id) {
-                return;
+    get isDisplayed() {
+        return Boolean(this.chatWindow?.isOpen);
+    }
+    get lastMessageSeenByAllId() {
+        if (!this.hasSeenFeature) {
+            return undefined;
+        }
+        return this.channel_member_ids.reduce((lastMessageSeenByAllId, member) => {
+            if (member.notEq(this.self_member_id) && member.seen_message_id) {
+                return lastMessageSeenByAllId
+                    ? Math.min(lastMessageSeenByAllId, member.seen_message_id.id)
+                    : member.seen_message_id.id;
+            } else {
+                return lastMessageSeenByAllId;
             }
-            if (!this.isDisplayed) {
-                this.self_member_id.new_message_separator_ui =
-                    this.self_member_id.new_message_separator;
-                this.markedAsUnread = false;
+        }, undefined);
+    }
+    get lastSelfMessageSeenByEveryone() {
+        if (!this.lastMessageSeenByAllId) {
+            return false;
+        }
+        let res;
+        // starts from most recent persistent messages to find early
+        for (let i = this.persistentMessages.length - 1; i >= 0; i--) {
+            const message = this.persistentMessages[i];
+            if (
+                !message.isSelfAuthored ||
+                message.isNotification ||
+                message.id > this.lastMessageSeenByAllId
+            ) {
+                continue;
             }
-        },
-    });
-    lastMessageSeenByAllId = fields.Attr(undefined, {
-        /** @this {import("models").DiscussChannel} */
-        compute() {
-            if (!this.hasSeenFeature) {
-                return;
-            }
-            return this.channel_member_ids.reduce((lastMessageSeenByAllId, member) => {
-                if (member.notEq(this.self_member_id) && member.seen_message_id) {
-                    return lastMessageSeenByAllId
-                        ? Math.min(lastMessageSeenByAllId, member.seen_message_id.id)
-                        : member.seen_message_id.id;
-                } else {
-                    return lastMessageSeenByAllId;
-                }
-            }, undefined);
-        },
-    });
-    lastSelfMessageSeenByEveryone = fields.One("mail.message", {
-        /** @this {import("models").DiscussChannel} */
-        compute() {
-            if (!this.lastMessageSeenByAllId) {
-                return false;
-            }
-            let res;
-            // starts from most recent persistent messages to find early
-            for (let i = this.persistentMessages.length - 1; i >= 0; i--) {
-                const message = this.persistentMessages[i];
-                if (
-                    !message.isSelfAuthored ||
-                    message.isNotification ||
-                    message.id > this.lastMessageSeenByAllId
-                ) {
-                    continue;
-                }
-                res = message;
-                break;
-            }
-            return res;
-        },
-    });
+            res = message;
+            break;
+        }
+        return res;
+    }
     /**
      * To be overridden.
      * The purpose is to exclude technical channel_member_ids like bots and avoid
@@ -453,21 +462,20 @@ export class DiscussChannel extends Record {
      * @returns {import("models").ChannelMember[]}
      */
     get membersThatCanSeen() {
-        return this.channel_member_ids;
+        return this.sortedChannelMembers;
     }
     /** @type {Number|undefined} */
     member_count;
+    /** @type {number} number of messages in a sub-channel */
+    message_count;
     /** @type {string} */
     name;
     threadCreationMessages = fields.Many("mail.message", {
         inverse: "channelAsThreadCreationNotification",
     });
-    hasThreadCreationNotification = fields.Attr(false, {
-        /** @this {import("models").DiscussChannel} */
-        compute() {
-            return this.threadCreationMessages.length;
-        },
-    });
+    get hasThreadCreationNotification() {
+        return this.threadCreationMessages.length;
+    }
     /** ⚠️ {@link AwaitChatHubInit} */
     get shouldSubscribeToBusChannel() {
         return (
@@ -481,36 +489,17 @@ export class DiscussChannel extends Record {
     get isUnread() {
         return Boolean(this.self_member_id?.message_unread_counter_ui || this.markedAsUnread);
     }
-    otherTypingMembers = fields.Many("discuss.channel.member", {
-        /** @this {import("models").DiscussChannel} */
-        compute() {
-            return this.typingMembers.filter((member) => !member.persona?.eq(this.store.self));
-        },
-    });
-    offlineMembers = fields.Many("discuss.channel.member", {
-        /** @this {import("models").DiscussChannel} */
-        compute() {
-            return this.channel_member_ids
-                .filter((member) => member.imStatusUI === "offline")
-                .sort((m1, m2) => this.store.sortMembers(m1, m2)); // FIXME: sort are prone to infinite loop (see test "Display livechat custom name in typing status")
-        },
-    });
+    get otherTypingMembers() {
+        return this.typingMembers.filter((member) => !member.persona?.eq(this.store.self));
+    }
+    get offlineMembers() {
+        return this.channel_member_ids
+            .filter((member) => member.imStatusUI === "offline")
+            .sort((m1, m2) => this.store.sortMembers(m1, m2));
+    }
     /** @type {true|undefined} */
-    open_chat_window = fields.Attr(undefined, {
-        /** @this {import("models").Thread} */
-        onUpdate() {
-            if (this.open_chat_window) {
-                this.open_chat_window = undefined;
-                this.openChatWindow({ focus: true, highlight: this.chatWindow?.isOpen });
-            }
-        },
-    });
-    parent_channel_id = fields.One("discuss.channel", {
-        inverse: "sub_channel_ids",
-        onDelete() {
-            this.delete();
-        },
-    });
+    open_chat_window;
+    parent_channel_id = fields.One("discuss.channel", { inverse: "sub_channel_ids" });
     /** @type {"loaded"|"loading"|"error"|undefined} */
     pinnedMessagesState = undefined;
     get showCorrespondentCountry() {
@@ -539,66 +528,36 @@ export class DiscussChannel extends Record {
     get showUnreadBanner() {
         return this.self_member_id?.message_unread_counter_ui > 0;
     }
-    sub_channel_ids = fields.Many("discuss.channel", {
-        inverse: "parent_channel_id",
-        sort: (a, b) => compareDatetime(b.lastInterestDt, a.lastInterestDt) || b.id - a.id,
-    });
-    self_member_id = fields.One("discuss.channel.member", {
-        inverse: "channelAsSelf",
-        onDelete() {
-            this.onPinStateUpdated();
-        },
-    });
-    storeAsFavoriteChannels = fields.One("Store", {
-        compute() {
-            return this.self_member_id?.is_favorite ? this.store : null;
-        },
-        inverse: "favoriteChannels",
-    });
-    thread = fields.One("mail.thread", {
-        compute() {
-            return { id: this.id, model: "discuss.channel" };
-        },
-        inverse: "channel",
-        onDelete: (r) => r?.delete(),
-    });
-    // Start with `not_member` not to trigger a subscription if the user is not a member
-    // initially, only when switching from `member_xxx` to `not_member` following a leave.
-    memberBusSubscription = fields.Attr("not_member", {
-        /** @this {import("models").Thread} */
-        compute() {
-            if (!this.self_member_id) {
-                return "not_member";
-            }
-            return this.self_member_id.memberSince >= this.store.env.services.bus_service.startedAt
-                ? "member_after_start"
-                : "member_before_start";
-        },
-        onUpdate() {
-            if (this.memberBusSubscription !== "member_before_start") {
-                this.store.updateBusSubscription();
-            }
-        },
-    });
-
+    sub_channel_ids = fields.Many("discuss.channel", { inverse: "parent_channel_id" });
+    get sortedSubChannels() {
+        return [...this.sub_channel_ids].sort(
+            (a, b) => compareDatetime(b.lastInterestDt, a.lastInterestDt) || b.id - a.id
+        );
+    }
+    self_member_id = fields.One("discuss.channel.member", { inverse: "channelAsSelf" });
+    storeAsFavoriteChannels = fields.One("Store", { inverse: "favoriteChannels" });
+    thread = fields.One("mail.thread", { inverse: "channel" });
+    // `not_member` when the user is not a member, so leaving (member -> not_member)
+    // is a transition the onChange resubscription listener can act on.
+    get memberBusSubscription() {
+        if (!this.self_member_id) {
+            return "not_member";
+        }
+        return this.self_member_id.memberSince >= this.store.env.services.bus_service.startedAt
+            ? "member_after_start"
+            : "member_before_start";
+    }
     typingMembers = fields.Many("discuss.channel.member", { inverse: "channelAsTyping" });
     get unknownMembersCount() {
         return (this.member_count ?? 0) - (this.channel_member_ids.length ?? 0);
     }
-    unknownStatusMembers = fields.Many("discuss.channel.member", {
-        /** @this {import("models").DiscussChannel} */
-        compute() {
-            return this._computeUnknownStatusMembers().sort(
-                (m1, m2) => this.store.sortMembers(m1, m2) // FIXME: sort are prone to infinite loop (see test "Display livechat custom name in typing status")
-            );
-        },
-    });
+    get unknownStatusMembers() {
+        return this.channel_member_ids
+            .filter((member) => member.imStatusUI === undefined)
+            .sort((m1, m2) => this.store.sortMembers(m1, m2));
+    }
 
     _onDeleteChatWindow() {}
-
-    computeIsDisplayed() {
-        return this.chatWindow?.isOpen;
-    }
 
     delete() {
         this.chatWindow?.close();
@@ -749,8 +708,6 @@ export class DiscussChannel extends Record {
         await rpc("/discuss/channel/update_avatar", { channel_id: this.id, data });
     }
 
-    onPinStateUpdated() {}
-
     /** @param {import("models").Message} message */
     onNewSelfMessage(message) {
         if (!this.self_member_id || message.id < this.self_member_id.seen_message_id?.id) {
@@ -765,7 +722,7 @@ export class DiscussChannel extends Record {
     /** @returns {boolean} true if the channel was opened, false otherwise */
     openChannel() {
         if (this.self_member_id && !this.self_member_id.is_pinned && !this.parent_channel_id) {
-            this.self_member_id.is_pinned = true;
+            this.self_member_id.unpin_dt = undefined;
             this.pinRpc({ pinned: true });
         }
         return this._openChannel();
@@ -865,7 +822,7 @@ export class DiscussChannel extends Record {
         if (this.self_member_id?.is_pinned) {
             undos.push(() => {
                 if (this.self_member_id) {
-                    this.self_member_id.is_pinned = true;
+                    this.self_member_id.unpin_dt = undefined;
                 }
                 this.pinRpc({ pinned: true });
             });
@@ -888,9 +845,6 @@ export class DiscussChannel extends Record {
     }
 
     /** @returns {import("models").ChannelMember[]} */
-    _computeUnknownStatusMembers() {
-        return this.channel_member_ids.filter((member) => member.imStatusUI === undefined);
-    }
     get composerHidden() {
         return !this.canSelfInteractWithChannel;
     }

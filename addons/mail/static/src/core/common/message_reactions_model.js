@@ -11,11 +11,9 @@ export class MessageReactions extends Record {
     guests = fields.Many("mail.guest");
     message = fields.One("mail.message");
     partners = fields.Many("res.partner");
-    personas = fields.Attr([], {
-        compute() {
-            return [...this.partners, ...this.guests];
-        },
-    });
+    get personas() {
+        return [...this.partners, ...this.guests];
+    }
     /** @type {number} */
     sequence;
 

@@ -8,14 +8,13 @@ export const MENU_TABS = { BOOKMARK: "bookmark", NOTIFICATION: "notification" };
 export class MessagingMenu extends Record {
     static singleton = true;
 
-    static new() {
-        /** @type {MessagingMenu} */
-        const menu = super.new(...arguments);
-        menu.initializeCountersFetcher = menu.store.makeCachedFetchData(
+    setup() {
+        super.setup();
+        this.initializeCountersFetcher = this.store.makeCachedFetchData(
             "/mail/messaging_menu/initialize_counters",
             () => {
                 const filter_id_by_tab_id_by_record_type = {};
-                for (const tab of menu.allTabs) {
+                for (const tab of this.allTabs) {
                     if (tab.hidden) {
                         continue;
                     }
@@ -26,15 +25,11 @@ export class MessagingMenu extends Record {
                 return { filter_id_by_tab_id_by_record_type };
             }
         );
-        return menu;
-    }
-
-    bookmarkTab = fields.One("MessagingMenuTab", {
-        compute() {
+        this.assignComputed("bookmarkTab", function computeBookmarkTab() {
             if (this.store.self_user?.share !== false) {
                 return;
             }
-            return {
+            return this.store.MessagingMenuTab.insert({
                 id: MENU_TABS.BOOKMARK,
                 important: false,
                 recordType: "mail.message",
@@ -53,21 +48,13 @@ export class MessagingMenu extends Record {
                         preventDropdownClose: true,
                     },
                 ],
-            };
-        },
-        eager: true,
-    });
-    globalCounter = fields.Attr(0, {
-        compute() {
-            return this._computeGlobalCounter();
-        },
-    });
-    notificationTab = fields.One("MessagingMenuTab", {
-        compute() {
+            });
+        });
+        this.assignComputed("notificationTab", function computeNotificationTab() {
             if (this.store.self_user?.notification_type !== "inbox") {
                 return;
             }
-            return {
+            return this.store.MessagingMenuTab.insert({
                 id: MENU_TABS.NOTIFICATION,
                 recordType: "mail.message",
                 includesMessage: (msg) =>
@@ -98,25 +85,30 @@ export class MessagingMenu extends Record {
                         preventDropdownClose: true,
                     },
                 ],
-            };
-        },
-        eager: true,
-    });
-    allTabs = fields.Many("MessagingMenuTab", {
-        inverse: "messagingMenuAsTab",
-        sort(t1, t2) {
-            return t1.sequence - t2.sequence || t1.id.localeCompare(t2.id);
-        },
-    });
-    visibleTabs = fields.Many("MessagingMenuTab", {
-        inverse: "messagingMenuAsVisibleTabs",
-        sort(t1, t2) {
-            return t1.sequence - t2.sequence || t1.id.localeCompare(t2.id);
-        },
-    });
+            });
+        });
+    }
 
-    _computeGlobalCounter() {
+    bookmarkTab = fields.One("MessagingMenuTab");
+    get globalCounter() {
         return this.visibleTabs.reduce((sum, t) => sum + (t.important ? t.counter ?? 0 : 0), 0);
+    }
+    notificationTab = fields.One("MessagingMenuTab");
+    get allTabs() {
+        return Object.values(this.store.MessagingMenuTab.records);
+    }
+    get sortedAllTabs() {
+        return [...this.allTabs].sort(
+            (t1, t2) => t1.sequence - t2.sequence || t1.id.localeCompare(t2.id)
+        );
+    }
+    get visibleTabs() {
+        return this.allTabs.filter((tab) => tab.isShown);
+    }
+    get sortedVisibleTabs() {
+        return [...this.visibleTabs].sort(
+            (t1, t2) => t1.sequence - t2.sequence || t1.id.localeCompare(t2.id)
+        );
     }
 
     /** Extra membership predicate ANDed into the notification tab. Extended by the

@@ -25,7 +25,9 @@ export class AttachmentPanel extends Component {
         this.attachmentUploadService = useService("mail.attachment_upload");
         useOnChange(
             () => [this.props.channel],
-            (channel) => channel.fetchMoreAttachments()
+            (channel) => {
+                channel.fetchMoreAttachments();
+            }
         );
         useVisible(this.loadOlderRef, (isVisible) => {
             if (isVisible) {
@@ -39,7 +41,7 @@ export class AttachmentPanel extends Component {
      */
     get attachmentsByDate() {
         const attachmentsByDate = {};
-        for (const attachment of this.props.channel.attachments) {
+        for (const attachment of this.props.channel.sortedAttachments) {
             const attachments = attachmentsByDate[attachment.monthYear] ?? [];
             attachments.push(attachment);
             attachmentsByDate[attachment.monthYear] = attachments;

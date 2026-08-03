@@ -13,6 +13,9 @@ import { describe, expect, test } from "@odoo/hoot";
 import { press } from "@odoo/hoot-dom";
 import { markup } from "@odoo/owl";
 
+import { getInnerHtml } from "@mail/utils/common/html";
+import { createDocumentFragmentFromContent } from "@web/core/utils/html";
+
 describe.current.tags("desktop");
 defineMailModels();
 
@@ -241,19 +244,24 @@ test("isSequential doesn't execute intermediate call.", async () => {
     expect.verifySteps(["1", "5"]);
 });
 
+/** htmlToHtmlInline consumes a document its caller owns and returns it. */
+function htmlToHtmlInlineString(content) {
+    return getInnerHtml(htmlToHtmlInline(createDocumentFragmentFromContent(content)).body);
+}
+
 test("htmlToHtmlInline replaces br with spaces", () => {
-    expect(htmlToHtmlInline(markup`a<br/>b`).toString()).toBe("a\u00a0b");
+    expect(htmlToHtmlInlineString(markup`a<br/>b`).toString()).toBe("a\u00a0b");
 });
 
 test("htmlToHtmlInline inserts spaces between adjacent block elements", () => {
-    expect(htmlToHtmlInline(markup`<div>Before</div><p>After</p>`).toString()).toBe(
+    expect(htmlToHtmlInlineString(markup`<div>Before</div><p>After</p>`).toString()).toBe(
         "Before\u00a0After"
     );
 });
 
 test("htmlToHtmlInline copies rel and target attributes from links", () => {
     expect(
-        htmlToHtmlInline(
+        htmlToHtmlInlineString(
             markup`<a href="https://odoo.com" target="_blank" rel="noreferrer noopener" id="link-id">Odoo</a>`
         ).toString()
     ).toBe(

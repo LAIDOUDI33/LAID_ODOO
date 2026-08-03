@@ -2,7 +2,6 @@ import { useChildSubEnv, useLayoutEffect } from "@web/owl2/utils";
 import { DateSection } from "@mail/core/common/date_section";
 import { Message } from "@mail/core/common/message";
 import { NotificationMessage } from "./notification_message";
-import { Record } from "@mail/model/export";
 import {
     useChildRefs,
     useMessageSelection,
@@ -15,9 +14,7 @@ import {
     Component,
     computed,
     onMounted,
-    onWillDestroy,
     onWillPatch,
-    onWillUnmount,
     proxy,
     signal,
     t,
@@ -47,6 +44,7 @@ export class Thread extends Component {
     static components = { Message, NotificationMessage, Transition, DateSection };
     static template = "mail.Thread";
 
+    isFocused = signal(false);
     /** @type {Promise|undefined} */
     smoothScrollingPromise;
     /** @type {number} */
@@ -64,9 +62,14 @@ export class Thread extends Component {
         this.onParentMessageClick = this.onParentMessageClick.bind(this);
         this.startMessageAvatarRef = signal.ref(HTMLDivElement);
         this.messageRefs = useChildRefs();
+        // memoized: one message unmounting while another mounts keeps the
+        // size equal, and a repeat would scroll against the user
+        const messageRefsCount = computed(() => this.messageRefs.size);
         useOnChange(
-            () => [this.messageRefs.size],
-            () => this.scrollToHighlighted()
+            () => [messageRefsCount()],
+            () => {
+                this.scrollToHighlighted();
+            }
         );
         this.store = useService("mail.store");
         this.props = useProps({
@@ -205,11 +208,15 @@ export class Thread extends Component {
                 this.fetchInitialMessages();
             }
         });
-        onWillUnmount(() => {
-            if (this.props.thread.isFocusedByThread) {
-                this.props.thread.isFocusedByThread = false;
+        useOnChange(
+            () => [this.props.thread, this.isFocused()],
+            function onChangeIsFocused(thread, isFocused) {
+                if (isFocused) {
+                    thread.isFocusedCounter++;
+                    return () => thread.isFocusedCounter--;
+                }
             }
-        });
+        );
         useLayoutEffect(
             (isLoaded) => {
                 this.state.mountedAndLoaded = isLoaded;
@@ -359,24 +366,15 @@ export class Thread extends Component {
          * that the value quickly changes and then back again before there is
          * any mounting/patching, and the change would therefore be undetected.
          */
-        let stopOnChange = Record.onChange(this.props.thread, "isLoaded", () => {
-            if (!this.props.thread.isLoaded || !this.state.mountedAndLoaded) {
-                this.reset();
-            }
-        });
         useOnChange(
-            () => [this.props.thread],
-            (thread) => {
-                stopOnChange();
-                stopOnChange = Record.onChange(thread, "isLoaded", () => {
-                    if (!thread.isLoaded || !this.state.mountedAndLoaded) {
-                        this.reset();
-                    }
-                });
+            () => [this.props.thread.isLoaded],
+            (isLoaded) => {
+                if (!isLoaded || !this.state.mountedAndLoaded) {
+                    this.reset();
+                }
             },
             { initialRun: false }
         );
-        onWillDestroy(() => stopOnChange());
         onWillPatch(() => {
             if (!this.loadedAndPatched) {
                 return;
@@ -565,14 +563,14 @@ export class Thread extends Component {
     }
 
     onFocusin() {
-        this.props.thread.isFocusedByThread = true;
+        this.isFocused.set(true);
         if (this.props.thread.shouldMarkAsReadOnFocus) {
             this.props.thread.markAsRead();
         }
     }
 
     onFocusout() {
-        this.props.thread.isFocusedByThread = false;
+        this.isFocused.set(false);
     }
 
     /**

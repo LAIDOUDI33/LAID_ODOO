@@ -20,6 +20,7 @@ export class ResUsers extends ImStatusMixin {
     /** @type {"email" | "inbox"} */
     notification_type;
     partner_id = fields.One("res.partner", { inverse: "user_ids" });
+    res_users_settings_id = fields.One("res.users.settings");
     /** @type {boolean} false when the user is an internal user, true otherwise */
     share;
     /** @type {boolean} */
@@ -51,8 +52,8 @@ export class ResUsers extends ImStatusMixin {
         return getOuterHtml(divElement);
     }
 
-    _computeMonitorPresence() {
-        return super._computeMonitorPresence() && !this.is_public;
+    get monitorPresence() {
+        return super.monitorPresence && !this.is_public;
     }
 }
 

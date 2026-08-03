@@ -8,18 +8,7 @@ import { patch } from "@web/core/utils/patch";
 const messagingMenuTabPatch = {
     setup() {
         super.setup(...arguments);
-        this.channels = fields.Many("discuss.channel", {
-            inverse: "messagingMenuTabs",
-            sort(c1, c2) {
-                for (const fn of threadCompareRegistry.getAll()) {
-                    const result = fn(c1.thread, c2.thread);
-                    if (result !== undefined) {
-                        return result;
-                    }
-                }
-                return c2.id - c1.id;
-            },
-        });
+        this.channels = fields.Many("discuss.channel", { inverse: "messagingMenuTabs" });
         this.channelsWithCounter = fields.Many("discuss.channel", {
             inverse: "messagingMenuTabsWithCounter",
         });
@@ -33,11 +22,22 @@ const messagingMenuTabPatch = {
          */
         this.includesChannel = () => false;
     },
+    get sortedChannels() {
+        return [...this.channels].sort((c1, c2) => {
+            for (const fn of threadCompareRegistry.getAll()) {
+                const result = fn(c1.thread, c2.thread);
+                if (result !== undefined) {
+                    return result;
+                }
+            }
+            return c2.id - c1.id;
+        });
+    },
 
     /** @override */
-    _computeCounter() {
+    get counter() {
         if (this.recordType !== "discuss.channel") {
-            return super._computeCounter();
+            return super.counter;
         }
         const unloadedUnreadCount = this.init_counter_ids.filter((id) => {
             const channel = this.store["discuss.channel"].get(id);
@@ -46,10 +46,10 @@ const messagingMenuTabPatch = {
         return this.channelsWithCounter.length + unloadedUnreadCount + this.extraCounter;
     },
 
-    _computeLoadMoreExcludeIds() {
+    get loadMoreExcludeIds() {
         return this.recordType === "discuss.channel"
             ? this.channels.map((c) => c.id)
-            : super._computeLoadMoreExcludeIds();
+            : super.loadMoreExcludeIds;
     },
 };
 patch(MessagingMenuTab.prototype, messagingMenuTabPatch);

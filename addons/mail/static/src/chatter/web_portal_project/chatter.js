@@ -49,7 +49,9 @@ export class Chatter extends Component {
 
         useOnChange(
             () => [this.threadId(), this.threadModel()],
-            (threadId, threadModel) => this.changeThread(threadModel, threadId),
+            (threadId, threadModel) => {
+                this.changeThread(threadModel, threadId);
+            },
             { initialRun: false }
         );
         useOnChange(
