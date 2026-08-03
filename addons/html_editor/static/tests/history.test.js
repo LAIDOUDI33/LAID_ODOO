@@ -1314,3 +1314,64 @@ describe("grouped undo/redo", () => {
         expect(getContent(el)).toBe(abc_def_ghi_);
     });
 });
+
+describe("Invisible character (FEFF) history filters", () => {
+    test("cleaning up invisible characters is not tracked in history", async () => {
+        const { el, editor, plugins } = await setupEditor(
+            '<p>a <a href="http://test.com">[]test</a></p>'
+        );
+        const history = plugins.get("history");
+
+        expect(getContent(el)).toBe(
+            `<p>a \ufeff<a href="http://test.com" class="o_link_in_selection">\ufeff[]test\ufeff</a>\ufeff</p>`
+        );
+
+        const link = editor.editable.querySelector("a");
+        const prependFeff = link.firstChild;
+
+        // Simulate merging text with an invisible character (e.g., "\uFEFFtest")
+        prependFeff.textContent = "\ufefftest";
+        history.commit();
+
+        // Simulate the editor cleaning up the invisible character ("\uFEFFtest" -> "test")
+        prependFeff.textContent = "test";
+        history.commit();
+
+        const lastCommit = history.commits.at(-1);
+        const feffCharDataMutations = (lastCommit?.data?.mutations || []).filter(
+            (m) =>
+                m.type === "characterData" &&
+                typeof m.oldValue === "string" &&
+                m.oldValue.includes("\ufeff") &&
+                m.oldValue.replaceAll("\ufeff", "").length > 0
+        );
+
+        // Verify that this text cleanup didn't get saved to history
+        expect(feffCharDataMutations.length).toBe(0);
+    });
+
+    test("browser replacing invisible characters is not tracked in history", async () => {
+        const { el, editor, plugins } = await setupEditor(
+            '<p>a <a href="http://test.com" class="o_link_in_selection">[]test</a></p>'
+        );
+        const history = plugins.get("history");
+
+        expect(getContent(el)).toBe(
+            `<p>a \ufeff<a href="http://test.com" class="o_link_in_selection">\ufeff[]test\ufeff</a>\ufeff</p>`
+        );
+
+        const link = editor.editable.querySelector("a");
+        const existingFeff = link.firstChild;
+        const initialCommitCount = history.commits.length;
+
+        // Simulate a browser replacing one invisible character with two invisible characters
+        const newFeff = document.createTextNode("\ufeff\ufeff");
+        existingFeff.replaceWith(newFeff);
+        history.commit();
+
+        const commitsCreated = history.commits.length - initialCommitCount;
+
+        // Verify that this browser native replacement was ignored and not saved to history
+        expect(commitsCreated).toBe(0);
+    });
+});
