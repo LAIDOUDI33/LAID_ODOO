@@ -7,6 +7,7 @@ from odoo.addons.base.tests.test_ir_actions import TestServerActionsBase
 from odoo.addons.mail.tests.common import MailCommon
 from odoo.tests import Form, RecordCapturer, tagged
 from odoo.tools import mute_logger
+from odoo import Command
 
 
 @tagged('ir_actions')
@@ -379,3 +380,21 @@ class TestServerActionsEmail(MailCommon, TestServerActionsBase):
             }
         )
         self.assertNotIn('Powered by', mail.body_html, 'Body should contain the notification layout')
+
+    def test_action_followers_subtypes(self):
+        new_partner = self.env['res.partner'].create({'name': 'Test Buddy'})
+        mt_note = self.env.ref('mail.mt_note')
+
+        self.action.write({
+            'state': 'followers',
+            'partner_ids': [Command.set(new_partner.ids)],
+            'subscription_ids': [Command.set(mt_note.ids)],
+        })
+
+        self.action.with_context(self.context).run()
+
+        follower = self.test_partner.message_follower_ids.filtered(
+            lambda f: f.partner_id == new_partner
+        )
+        self.assertTrue(follower, "Partner should have been added as a follower")
+        self.assertEqual(follower.subtype_ids, mt_note, "Partner should only follow the 'Notes' subtype")
