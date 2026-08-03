@@ -15,7 +15,7 @@ from odoo.addons.payment_iyzico.tests.common import IyzicoCommon
 @tagged("post_install", "-at_install")
 class TestProcessingFlows(IyzicoCommon, PaymentHttpCommon):
     @mute_logger("odoo.addons.payment_iyzico.controllers.main")
-    def test_redirect_notification_triggers_processing(self):
+    def test_returning_from_payment_triggers_processing(self):
         """Test that receiving a valid redirect notification triggers the processing of the
         payment data."""
         tx = self._create_transaction("redirect")
@@ -23,10 +23,7 @@ class TestProcessingFlows(IyzicoCommon, PaymentHttpCommon):
             f"{const.PAYMENT_RETURN_ROUTE}?{url_encode({'tx_ref': tx.reference})}"
         )
         with (
-            patch(
-                "odoo.addons.payment.models.payment_provider.PaymentProvider._send_api_request",
-                return_value=self.payment_data,
-            ),
+            self._mock_send_api_request(return_value=self.payment_data),
             patch(
                 "odoo.addons.payment.models.payment_transaction.PaymentTransaction._record"
             ) as record_mock,
@@ -41,10 +38,7 @@ class TestProcessingFlows(IyzicoCommon, PaymentHttpCommon):
         self._create_transaction("redirect")
         url = self._build_url(const.WEBHOOK_ROUTE)
         with (
-            patch(
-                "odoo.addons.payment.models.payment_provider.PaymentProvider._send_api_request",
-                return_value=self.payment_data,
-            ),
+            self._mock_send_api_request(return_value=self.payment_data),
             patch(
                 "odoo.addons.payment.models.payment_transaction.PaymentTransaction._record"
             ) as record_mock,

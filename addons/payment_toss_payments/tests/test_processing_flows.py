@@ -13,7 +13,7 @@ from odoo.addons.payment_toss_payments.tests.common import TossPaymentsCommon
 @tagged("post_install", "-at_install")
 class TestProcessingFlows(TossPaymentsCommon, PaymentHttpCommon):
     @mute_logger("odoo.addons.payment_toss_payments.controllers.main")
-    def test_returning_from_successful_payment_initiation_triggers_processing(self):
+    def test_returning_from_payment_triggers_processing(self):
         """Test that successfully initiating a payment triggers the processing of the payment
         data."""
         tx = self._create_transaction("direct")
