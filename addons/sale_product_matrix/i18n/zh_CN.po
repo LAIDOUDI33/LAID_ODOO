@@ -23,6 +23,27 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: sale_product_matrix
+#: model:ir.module.module,description:base.module_sale_product_matrix
+msgid ""
+"\n"
+"This module allows to fill Sales Order rapidly\n"
+"by choosing product variants quantity through a Grid Entry.\n"
+msgstr ""
+"\n"
+"该模块可通过网格输入选择产品数量，快速填写销售订单\n"
+"通过网格输入选择产品变体数量。\n"
+
+#. module: sale_product_matrix
+#: model:ir.module.module,summary:base.module_sale_product_matrix
+msgid "Add variants to Sales Order through a grid entry."
+msgstr "通过表单网格条目在销售订单中添加变体。"
+
+#. module: sale_product_matrix
+#: model:ir.module.module,shortdesc:base.module_sale_product_matrix
+msgid "Sale Matrix"
+msgstr "销售矩阵"
+
+#. module: sale_product_matrix
 #: model:ir.model.fields.selection,name:sale_product_matrix.selection__product_template__product_add_mode__configurator
 msgid "Configurator"
 msgstr ""

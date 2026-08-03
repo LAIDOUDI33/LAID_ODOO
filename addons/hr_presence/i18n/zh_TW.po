@@ -25,6 +25,36 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: hr_presence
+#: model:ir.module.module,description:base.module_hr_presence
+msgid ""
+"\n"
+"Control Employees Presence\n"
+"==========================\n"
+"\n"
+"Based on:\n"
+"    * The IP Address\n"
+"    * The User's Session\n"
+"    * The Sent Emails\n"
+"\n"
+"Allows to contact directly the employee in case of unjustified absence.\n"
+msgstr ""
+"\n"
+"控制員工狀態\n"
+"==========================\n"
+"\n"
+"基於:\n"
+"    • IP 位址\n"
+"    • 使用者作業階段\n"
+"    • 已發送的電子郵件\n"
+"\n"
+"允許在無理由缺勤的情況下直接聯繫員工.\n"
+
+#. module: hr_presence
+#: model:ir.module.module,shortdesc:base.module_hr_presence
+msgid "Employee Presence Control"
+msgstr "員工出勤控制"
+
+#. module: hr_presence
 #: model:mail.template,body_html:hr_presence.mail_template_presence
 msgid ""
 "<div>\n"

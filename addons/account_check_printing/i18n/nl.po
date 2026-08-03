@@ -25,6 +25,34 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: account_check_printing
+#: model:ir.module.module,description:base.module_account_check_printing
+msgid ""
+"\n"
+"This module offers the basic functionalities to make payments by printing "
+"checks.\n"
+"It must be used as a dependency for modules that provide country-specific "
+"check templates.\n"
+"The check settings are located in the accounting journals configuration "
+"page.\n"
+msgstr ""
+"\n"
+"Deze module bied de basisfunctionaliteiten aan om betalingen te maken via "
+"afdrukbare cheque's.\n"
+"Het moet gebruikt worden als een afhankelijkheid van modules die land-"
+"specifieke cheque sjablonen gebruikt.\n"
+"De cheque instellingen bevinden zich in de dagboek configuratie pagina.\n"
+
+#. module: account_check_printing
+#: model:ir.module.module,shortdesc:base.module_account_check_printing
+msgid "Check Printing Base"
+msgstr "Afdrukbasis voor cheques"
+
+#. module: account_check_printing
+#: model:ir.module.module,summary:base.module_account_check_printing
+msgid "Check printing basic features"
+msgstr "Basisfuncties voor afdrukken cheques"
+
+#. module: account_check_printing
 #. odoo-python
 #: code:addons/account_check_printing/models/account_journal.py:0
 msgid "%(journal)s: Check Number Sequence"

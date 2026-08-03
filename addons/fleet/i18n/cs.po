@@ -34,6 +34,57 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: fleet
+#: model:ir.module.module,description:base.module_fleet
+msgid ""
+"\n"
+"Vehicle, leasing, insurances, cost\n"
+"==================================\n"
+"With this module, Odoo helps you managing all your vehicles, the\n"
+"contracts associated to those vehicle as well as services, costs\n"
+"and many other features necessary to the management of your fleet\n"
+"of vehicle(s)\n"
+"\n"
+"Main Features\n"
+"-------------\n"
+"* Add vehicles to your fleet\n"
+"* Manage contracts for vehicles\n"
+"* Reminder when a contract reach its expiration date\n"
+"* Add services, odometer values for all vehicles\n"
+"* Show all costs associated to a vehicle or to a type of service\n"
+"* Analysis graph for costs\n"
+msgstr ""
+"\n"
+"Vozidlo, leasing, pojištění, náklady\n"
+"===================================\n"
+"S tímto modulem vám Odoo pomáhá spravovat firemní vozidlo (všechna vaše "
+"vozidla), smlouvy spojené s tímto vozidlem, jakož i služby, náklady a mnoho "
+"dalších funkcí nezbytných pro správu vašeho vozového parku.\n"
+"\n"
+"Hlavní rysy\n"
+"-------------\n"
+"* Přidejte do svého vozového parku vozidla\n"
+"* Spravujte smlouvy na vozidla\n"
+"* Připomenutí, když smlouva dosáhne data vypršení platnosti\n"
+"* Přidejte služby, hodnoty počítadla kilometrů pro všechna vozidla\n"
+"* Zobrazit všechny náklady spojené s vozidlem nebo s typem služby\n"
+"* Analýza nákladů\n"
+
+#. module: fleet
+#: model:ir.module.module,shortdesc:base.module_fleet
+#: model:ir.ui.menu,name:fleet.fleet_vehicle_menu
+#: model:ir.ui.menu,name:fleet.fleet_vehicles
+#: model:ir.ui.menu,name:fleet.menu_root
+#: model:res.groups.privilege,name:fleet.res_groups_privilege_fleet
+#: model_terms:ir.ui.view,arch_db:fleet.res_config_settings_view_form
+msgid "Fleet"
+msgstr "Vozový park"
+
+#. module: fleet
+#: model:ir.module.module,summary:base.module_fleet
+msgid "Manage your fleet and track car costs"
+msgstr "Spravujte svůj vozový park a sledujte náklady na vozidlo"
+
+#. module: fleet
 #: model_terms:ir.ui.view,arch_db:fleet.fleet_vehicle_view_kanban
 msgid "<i class=\"oi\" data-icon=\"location_on\" title=\"Location\"/>"
 msgstr "<i class=\"oi\" data-icon=\"location_on\" title=\"Umístění\"/>"
@@ -1104,15 +1155,6 @@ msgstr "Datum první smlouvy"
 #: model_terms:ir.ui.view,arch_db:fleet.fleet_vehicle_view_form
 msgid "Fiscality"
 msgstr ""
-
-#. module: fleet
-#: model:ir.ui.menu,name:fleet.fleet_vehicle_menu
-#: model:ir.ui.menu,name:fleet.fleet_vehicles
-#: model:ir.ui.menu,name:fleet.menu_root
-#: model:res.groups.privilege,name:fleet.res_groups_privilege_fleet
-#: model_terms:ir.ui.view,arch_db:fleet.res_config_settings_view_form
-msgid "Fleet"
-msgstr "Vozový park"
 
 #. module: fleet
 #: model:ir.model,name:fleet.model_fleet_vehicle_cost_report

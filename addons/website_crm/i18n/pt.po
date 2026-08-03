@@ -26,6 +26,36 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_crm
+#: model:ir.module.module,description:base.module_website_crm
+msgid ""
+"\n"
+"Add capability to your website forms to generate leads or opportunities in "
+"the CRM app.\n"
+"Forms has to be customized inside the *Website Builder* in order to generate "
+"leads.\n"
+"\n"
+"This module includes contact phone and mobile numbers validation."
+msgstr ""
+"\n"
+"Adicione recursos aos formulários do seu site para gerar leads ou "
+"oportunidades no aplicativo CRM.\n"
+"Os formulários devem ser personalizados dentro do *Criador de Sites* para "
+"gerar leads.\n"
+"\n"
+"Este módulo inclui a validação de números de telefone de contato e de "
+"celular."
+
+#. module: website_crm
+#: model:ir.module.module,shortdesc:base.module_website_crm
+msgid "Contact Form"
+msgstr "Formulário de Contacto"
+
+#. module: website_crm
+#: model:ir.module.module,summary:base.module_website_crm
+msgid "Generate leads from a contact form"
+msgstr "Gere leads a partir de um formulário de contato"
+
+#. module: website_crm
 #: model:ir.model.fields,field_description:website_crm.field_website_visitor__lead_count
 msgid "# Leads"
 msgstr "Nº de leads"

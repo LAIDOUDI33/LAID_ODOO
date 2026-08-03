@@ -28,6 +28,61 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: lunch
+#: model:ir.module.module,description:base.module_lunch
+msgid ""
+"\n"
+"The base module to manage lunch.\n"
+"================================\n"
+"\n"
+"Many companies order sandwiches, pizzas and other, from usual vendors, for "
+"their employees to offer them more facilities.\n"
+"\n"
+"However lunches management within the company requires proper administration "
+"especially when the number of employees or vendors is important.\n"
+"\n"
+"The “Lunch Order” module has been developed to make this management easier "
+"but also to offer employees more tools and usability.\n"
+"\n"
+"In addition to a full meal and vendor management, this module offers the "
+"possibility to display warning and provides quick order selection based on "
+"employee’s preferences.\n"
+"\n"
+"If you want to save your employees' time and avoid them to always have coins "
+"in their pockets, this module is essential.\n"
+msgstr ""
+"\n"
+"โมดูลหลักในการจัดการอาหารกลางวัน\n"
+"================================\n"
+"\n"
+"บริษัทหลายแห่งสั่งอาหารแซนวิช พิซซ่า และอื่นๆ จากผู้ขายทั่วไป เพื่อให้พนักงานได้รับสิ่งอำนวยความสะด"
+"วกมากขึ้น\n"
+"\n"
+"อย่างไรก็ตามการจัดการอาหารกลางวันภายในบริษัทต้องการการบริหารงานที่เหมาะสมโดยเฉพาะอย่างยิ่ง"
+"เมื่อจำนวนพนักงานหรือผู้ขายมีความสำคัญ\n"
+"\n"
+"โมดูล \"การสั่งอาหารกลางวัน\" ได้รับการพัฒนาขึ้นเพื่อทำให้การจัดการนี้ง่ายขึ้น และยังมีเครื่องมือและ"
+"ความสะดวกสบายมากขึ้นสำหรับพนักงาน\n"
+"\n"
+"นอกจากการจัดการอาหารเต็มมื้อและผู้ขาย โมดูลนี้ยังมีความสามารถในการแสดงคำเตือนและให้คำสั่งเลือ"
+"กออร์เดอร์ได้อย่างรวดเร็วโดยอิงตามความชอบของพนักงาน\n"
+"\n"
+"หากคุณต้องการประหยัดเวลาของพนักงานของคุณและหลีกเลี่ยงให้พวกเขาต้องมีเงินสดอยู่ตลอดเวลา ซึ่งทำ"
+"ให้โมดูลนี้เป็นสิ่งที่สำคัญ\n"
+
+#. module: lunch
+#: model:ir.module.module,summary:base.module_lunch
+msgid "Handle lunch orders of your employees"
+msgstr "จัดการออเดอร์อาหารกลางวันของพนักงานของคุณ"
+
+#. module: lunch
+#: model:ir.module.module,shortdesc:base.module_lunch
+#: model:ir.ui.menu,name:lunch.menu_lunch
+#: model:res.groups.privilege,name:lunch.res_groups_privilege_lunch
+#: model_terms:ir.ui.view,arch_db:lunch.res_config_settings_view_form
+msgid "Lunch"
+msgstr "อาหารเที่ยง"
+
+#. module: lunch
 #: model_terms:lunch.product,description:lunch.product_temaki
 msgid "1 Avocado - 1 Salmon - 1 Eggs - 1 Tuna"
 msgstr "1 อะโวคาโด - 1 แซลมอน - 1 ฟอง - 1 ทูน่า"
@@ -1044,13 +1099,6 @@ msgstr "ชื่อตำแหน่ง"
 #: model:ir.ui.menu,name:lunch.lunch_location_menu
 msgid "Locations"
 msgstr "ตำแหน่ง"
-
-#. module: lunch
-#: model:ir.ui.menu,name:lunch.menu_lunch
-#: model:res.groups.privilege,name:lunch.res_groups_privilege_lunch
-#: model_terms:ir.ui.view,arch_db:lunch.res_config_settings_view_form
-msgid "Lunch"
-msgstr "อาหารเที่ยง"
 
 #. module: lunch
 #: model:ir.model,name:lunch.model_lunch_alert

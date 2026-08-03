@@ -22,6 +22,29 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: sale_project
+#: model:ir.module.module,description:base.module_sale_project
+msgid ""
+"\n"
+"Allows to create task from your sales order\n"
+"=============================================\n"
+"This module allows to generate a project/task from sales orders.\n"
+msgstr ""
+"\n"
+"Mungkinkan pembuatan tugas dari sales order Anda\n"
+"=============================================\n"
+"Modul ini memungkinkan pembuatan project/tugas dari sales order.\n"
+
+#. module: sale_project
+#: model:ir.module.module,shortdesc:base.module_sale_project
+msgid "Sales - Project"
+msgstr "Sales - Project"
+
+#. module: sale_project
+#: model:ir.module.module,summary:base.module_sale_project
+msgid "Task Generation from Sales Orders"
+msgstr "Pembuatan Task dari Sales Order"
+
+#. module: sale_project
 #. odoo-python
 #: code:addons/sale_project/models/sale_order.py:0
 msgid ""

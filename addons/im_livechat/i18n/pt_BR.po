@@ -28,6 +28,45 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: im_livechat
+#: model:ir.module.module,description:base.module_im_livechat
+msgid ""
+"\n"
+"Live Chat Support\n"
+"==========================\n"
+"\n"
+"Allow to drop instant messaging widgets on any web page that will "
+"communicate\n"
+"with the current server and dispatch visitors request amongst several live\n"
+"chat operators.\n"
+"Help your customers with this chat, and analyse their feedback.\n"
+"\n"
+msgstr ""
+"\n"
+"Suporte por chat ao vivo\n"
+"==========================\n"
+"\n"
+"Permite colocar widgets de mensagens instantâneas em qualquer página da Web "
+"que se comunicarão com o servidor atual e enviarão a solicitação dos "
+"visitantes entre vários operadores de chat ao vivo.\n"
+"Ajude seus clientes através do chat e analise o feedback deles.\n"
+"\n"
+
+#. module: im_livechat
+#: model:ir.module.module,summary:base.module_im_livechat
+msgid "Chat with your website visitors"
+msgstr "Converse com visitantes do seu site"
+
+#. module: im_livechat
+#: model:ir.model.fields.selection,name:im_livechat.selection__discuss_channel__channel_type__livechat
+#: model:ir.module.module,shortdesc:base.module_im_livechat
+#: model:ir.ui.menu,name:im_livechat.livechat_technical
+#: model:ir.ui.menu,name:im_livechat.menu_livechat_root
+#: model:res.groups.privilege,name:im_livechat.res_groups_privilege_live_chat
+#: model_terms:ir.ui.view,arch_db:im_livechat.digest_digest_view_form_inherit
+msgid "Live Chat"
+msgstr "Chat ao Vivo"
+
+#. module: im_livechat
 #: model:ir.model.constraint,message:im_livechat.constraint_discuss_channel_livechat_rating_constraint
 msgid ""
 "\n"
@@ -1592,15 +1631,6 @@ msgstr "Deixe-me ver se consigo encaminhá-lo ao especialista certo..."
 #: model:ir.model.fields.selection,name:im_livechat.selection__im_livechat_channel__max_sessions_mode__limited
 msgid "Limited"
 msgstr "Limitado"
-
-#. module: im_livechat
-#: model:ir.model.fields.selection,name:im_livechat.selection__discuss_channel__channel_type__livechat
-#: model:ir.ui.menu,name:im_livechat.livechat_technical
-#: model:ir.ui.menu,name:im_livechat.menu_livechat_root
-#: model:res.groups.privilege,name:im_livechat.res_groups_privilege_live_chat
-#: model_terms:ir.ui.view,arch_db:im_livechat.digest_digest_view_form_inherit
-msgid "Live Chat"
-msgstr "Chat ao Vivo"
 
 #. module: im_livechat
 #: model:ir.model.fields,field_description:im_livechat.field_im_livechat_channel_rule__action

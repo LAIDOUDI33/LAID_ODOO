@@ -24,6 +24,40 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: purchase_requisition
+#: model:ir.module.module,description:base.module_purchase_requisition
+msgid ""
+"\n"
+"This module allows you to manage your Purchase Agreements.\n"
+"===========================================================\n"
+"\n"
+"Manage calls for tenders and blanket orders. Calls for tenders are used to "
+"get\n"
+"competing offers from different vendors and select the best ones. Blanket "
+"orders\n"
+"are agreements you have with vendors to benefit from a predetermined "
+"pricing.\n"
+msgstr ""
+"\n"
+"Dette modul gør dig istand til at administrere købsaftaler.\n"
+"===========================================================\n"
+"\n"
+"Administrer indkaldelse af bud og ordret ordre. Indkaldelse af bud bruges "
+"til at få\n"
+"konkurrerende tilbud fra forskellige sælgere, og vælge de bedste. Ordret "
+"ordre er aftaler du har med sælgere, for at drage fordel af en forudbestemt "
+"pris.\n"
+
+#. module: purchase_requisition
+#: model:ir.actions.act_window,name:purchase_requisition.action_purchase_requisition
+#: model:ir.actions.report,name:purchase_requisition.action_report_purchase_requisitions
+#: model:ir.module.module,shortdesc:base.module_purchase_requisition
+#: model:ir.ui.menu,name:purchase_requisition.menu_purchase_requisition_pro_mgt
+#: model_terms:ir.ui.view,arch_db:purchase_requisition.view_purchase_requisition_form
+#: model_terms:ir.ui.view,arch_db:purchase_requisition.view_purchase_requisition_tree
+msgid "Purchase Agreements"
+msgstr "Købsaftaler"
+
+#. module: purchase_requisition
 #: model:ir.actions.report,print_report_name:purchase_requisition.action_report_purchase_requisitions
 msgid "'Purchase Agreement - %s' % (object.name)"
 msgstr "'Købsaftale – %s' % (object.name)"
@@ -577,15 +611,6 @@ msgstr "Indkøbsaftale"
 #: model_terms:ir.ui.view,arch_db:purchase_requisition.report_purchaserequisition_document
 msgid "Purchase Agreement:"
 msgstr "Indkøbsaftale:"
-
-#. module: purchase_requisition
-#: model:ir.actions.act_window,name:purchase_requisition.action_purchase_requisition
-#: model:ir.actions.report,name:purchase_requisition.action_report_purchase_requisitions
-#: model:ir.ui.menu,name:purchase_requisition.menu_purchase_requisition_pro_mgt
-#: model_terms:ir.ui.view,arch_db:purchase_requisition.view_purchase_requisition_form
-#: model_terms:ir.ui.view,arch_db:purchase_requisition.view_purchase_requisition_tree
-msgid "Purchase Agreements"
-msgstr "Købsaftaler"
 
 #. module: purchase_requisition
 #: model:ir.model,name:purchase_requisition.model_purchase_order

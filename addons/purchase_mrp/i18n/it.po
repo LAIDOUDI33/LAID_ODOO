@@ -24,6 +24,32 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: purchase_mrp
+#: model:ir.module.module,description:base.module_purchase_mrp
+msgid ""
+"\n"
+"This module provides facility to the user to install mrp and purchase "
+"modules at a time.\n"
+"========================================================================================\n"
+"\n"
+"It is basically used when we want to keep track of production orders "
+"generated\n"
+"from purchase order.\n"
+msgstr ""
+"\n"
+"Modulo che offre all'utente la possibilità di installare contemporaneamente "
+"i moduli MRP e acquisti.\n"
+"========================================================================================\n"
+"\n"
+"Viene sostanzialmente utilizzato quando si vuole tenere traccia di ordini di "
+"produzione generati\n"
+"da un ordine di acquisto.\n"
+
+#. module: purchase_mrp
+#: model:ir.module.module,shortdesc:base.module_purchase_mrp
+msgid "Purchase and MRP Management"
+msgstr "Gestione acquisti e produzione"
+
+#. module: purchase_mrp
 #: model_terms:ir.ui.view,arch_db:purchase_mrp.purchase_order_form_mrp
 msgid "<span class=\"o_stat_text\">Manufacturing</span>"
 msgstr "<span class=\"o_stat_text\">Produzione</span>"

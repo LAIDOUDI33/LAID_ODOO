@@ -25,6 +25,28 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: mass_mailing_slides
+#: model:ir.module.module,description:base.module_mass_mailing_slides
+msgid ""
+"\n"
+"Mass mail course members\n"
+"========================\n"
+"\n"
+"Bridge module adding UX requirements to ease mass mailing of course "
+"members.\n"
+msgstr ""
+"\n"
+"Massmails aux membres du cours\n"
+"========================\n"
+"\n"
+"Module passerelle qui ajoute les éléments d'interface nécessaires pour "
+"envoyer des massmails aux membres d'un cours.\n"
+
+#. module: mass_mailing_slides
+#: model:ir.module.module,shortdesc:base.module_mass_mailing_slides
+msgid "Mass mailing on course members"
+msgstr "Envois de massmails aux membres d'un cours"
+
+#. module: mass_mailing_slides
 #: model_terms:ir.ui.view,arch_db:mass_mailing_slides.slide_channel_view_form
 #: model_terms:ir.ui.view,arch_db:mass_mailing_slides.slide_channel_view_kanban
 msgid "Contact Attendees"

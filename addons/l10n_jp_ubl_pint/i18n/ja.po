@@ -21,6 +21,22 @@ msgstr ""
 "X-Generator: Weblate 5.14.3\n"
 
 #. module: l10n_jp_ubl_pint
+#: model:ir.module.module,description:base.module_l10n_jp_ubl_pint
+msgid ""
+"\n"
+"The UBL PINT e-invoicing format for Japan is based on the Peppol "
+"International (PINT) model for Billing.\n"
+msgstr ""
+"\n"
+"日本向けのUBL PINT電子請求書フォーマットは、請求書のPeppol International（"
+"PINT）モデルに基づいています。\n"
+
+#. module: l10n_jp_ubl_pint
+#: model:ir.module.module,shortdesc:base.module_l10n_jp_ubl_pint
+msgid "Japan - UBL PINT"
+msgstr "日本 - UBL PINT"
+
+#. module: l10n_jp_ubl_pint
 #: model:ir.model,name:l10n_jp_ubl_pint.model_res_partner
 msgid "Contact"
 msgstr "連絡先"

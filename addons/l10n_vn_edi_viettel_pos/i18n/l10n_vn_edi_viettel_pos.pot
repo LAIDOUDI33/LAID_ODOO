@@ -16,6 +16,25 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_vn_edi_viettel_pos
+#: model:ir.module.module,description:base.module_l10n_vn_edi_viettel_pos
+msgid ""
+"\n"
+"Vietnam - POS E-invoicing\n"
+"=========================\n"
+"Using SInvoice by Viettel\n"
+msgstr ""
+
+#. module: l10n_vn_edi_viettel_pos
+#: model:ir.module.module,summary:base.module_l10n_vn_edi_viettel_pos
+msgid "POS E-invoicing using SInvoice by Viettel"
+msgstr ""
+
+#. module: l10n_vn_edi_viettel_pos
+#: model:ir.module.module,shortdesc:base.module_l10n_vn_edi_viettel_pos
+msgid "Vietnam - POS E-invoicing"
+msgstr ""
+
+#. module: l10n_vn_edi_viettel_pos
 #: model:ir.model.fields,field_description:l10n_vn_edi_viettel_pos.field_pos_config__l10n_vn_auto_send_to_sinvoice
 #: model:ir.model.fields,field_description:l10n_vn_edi_viettel_pos.field_res_config_settings__pos_l10n_vn_auto_send_to_sinvoice
 msgid "Auto-send to SInvoice"

@@ -24,6 +24,29 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: product_margin
+#: model:ir.module.module,description:base.module_product_margin
+msgid ""
+"\n"
+"Adds a reporting menu in products that computes sales, purchases, margins "
+"and other interesting indicators based on invoices.\n"
+"=============================================================================================================================\n"
+"\n"
+"The wizard to launch the report has several options to help you get the data "
+"you need.\n"
+msgstr ""
+"\n"
+"เพิ่มเมนูการรายงานในผลิตภัณฑ์ที่คำนวณยอดขาย การซื้อ อัตรากำไร และตัวชี้วัดที่น่าสนใจอื่นๆ ตามใบแจ้"
+"งหนี้\n"
+"=============================================================================================================================\n"
+"\n"
+"ตัวช่วยสร้างในการเปิดรายงานมีหลายตัวเลือกที่จะช่วยให้คุณได้รับข้อมูลที่คุณต้องการ\n"
+
+#. module: product_margin
+#: model:ir.module.module,shortdesc:base.module_product_margin
+msgid "Margins by Products"
+msgstr "อัตรากำไรขั้นต้นตามผลิตภัณฑ์"
+
+#. module: product_margin
 #: model:ir.model.fields,field_description:product_margin.field_product_product__purchase_num_invoiced
 msgid "# Invoiced in Purchase"
 msgstr "# ออกใบแจ้งหนี้ในการจัดซื้อ"

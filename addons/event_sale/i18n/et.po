@@ -35,6 +35,41 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: event_sale
+#: model:ir.module.module,description:base.module_event_sale
+msgid ""
+"\n"
+"Creating registration with sales orders.\n"
+"========================================\n"
+"\n"
+"This module allows you to automate and connect your registration creation "
+"with\n"
+"your main sale flow and therefore, to enable the invoicing feature of "
+"registrations.\n"
+"\n"
+"It defines a new kind of service products that offers you the possibility "
+"to\n"
+"choose an event category associated with it. When you encode a sales order "
+"for\n"
+"that product, you will be able to choose an existing event of that category "
+"and\n"
+"when you confirm your sales order it will automatically create a "
+"registration for\n"
+"this event.\n"
+msgstr ""
+"\n"
+"Müügitellimuste registreerimise loomine.\n"
+"========================================\n"
+"\n"
+"See moodul võimaldab teil automatiseerida ja ühendada registreerimise "
+"loomise teie peamise müügivooga ja seega annab arve registreerimise "
+"võimaluse.\n"
+
+#. module: event_sale
+#: model:ir.module.module,shortdesc:base.module_event_sale
+msgid "Events Sales"
+msgstr "Ürituste müük"
+
+#. module: event_sale
 #: model_terms:ir.ui.view,arch_db:event_sale.event_registration_change_exception
 msgid ""
 ".\n"

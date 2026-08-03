@@ -21,6 +21,44 @@ msgstr ""
 "X-Generator: Weblate 5.12.2\n"
 
 #. module: l10n_eg
+#: model:ir.module.module,description:base.module_l10n_eg
+msgid ""
+"\n"
+"Egypt Accounting Module\n"
+"==============================================================================\n"
+"Egypt Accounting Basic Charts and Localization.\n"
+"\n"
+"Activates:\n"
+"\n"
+"- Chart of Accounts\n"
+"- Taxes\n"
+"- VAT Return\n"
+"- Withholding Tax Report\n"
+"- Schedule Tax Report\n"
+"- Other Taxes Report\n"
+"- Fiscal Positions\n"
+msgstr ""
+"\n"
+"تطبيق المحاسبة في مصر\n"
+"===========================================================\n"
+"شجرة الحسابات الأساسية للمحاسبة في مصر وتوطينها\n"
+"\n"
+"يقوم بتفعيل كل من: \n"
+"\n"
+"- شجرة الحسابات\n"
+"- الضرائب\n"
+"- الإقرار الضريبي\n"
+"- تقرير الضريبة المستقطعة\n"
+"- تقرير الجدول الضريبي\n"
+"- تقرير الضرائب الأخرى\n"
+"- الأوضاع المالية\n"
+
+#. module: l10n_eg
+#: model:ir.module.module,shortdesc:base.module_l10n_eg
+msgid "Egypt - Accounting"
+msgstr "مصر - المحاسبة"
+
+#. module: l10n_eg
 #: model:account.report.line,name:l10n_eg.tax_report_withholding_tax_contract_supply
 msgid "1. 1% Contracting and Supplying"
 msgstr ""

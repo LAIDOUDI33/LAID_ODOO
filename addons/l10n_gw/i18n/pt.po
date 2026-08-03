@@ -20,6 +20,22 @@ msgstr ""
 "X-Generator: Weblate 5.12.2\n"
 
 #. module: l10n_gw
+#: model:ir.module.module,description:base.module_l10n_gw
+msgid ""
+"\n"
+"This module implements the tax for Guinea-Bissau.\n"
+"=================================================================\n"
+"\n"
+"The Chart of Accounts is from SYSCOHADA.\n"
+"\n"
+msgstr ""
+
+#. module: l10n_gw
+#: model:ir.module.module,shortdesc:base.module_l10n_gw
+msgid "Guinea-Bissau - Accounting"
+msgstr ""
+
+#. module: l10n_gw
 #: model:ir.model,name:l10n_gw.model_account_chart_template
 msgid "Account Chart Template"
 msgstr "Modelo de Plano de Contas"

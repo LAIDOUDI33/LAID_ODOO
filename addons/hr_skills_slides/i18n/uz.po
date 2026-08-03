@@ -27,6 +27,34 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: hr_skills_slides
+#: model:ir.module.module,description:base.module_hr_skills_slides
+#, fuzzy
+msgid ""
+"\n"
+"E-learning and Skills for HR\n"
+"============================\n"
+"\n"
+"This module add completed courses to resume for employees.\n"
+msgstr ""
+"HR uchun elektron ta'lim va ko‘nikmalar\n"
+"============================\n"
+"\n"
+"Ushbu modul xodimlarning rezyumesiga yakunlangan kurslarni qo‘shish imkonini "
+"beradi."
+
+#. module: hr_skills_slides
+#: model:ir.module.module,summary:base.module_hr_skills_slides
+#, fuzzy
+msgid "Add completed courses to resume of your employees"
+msgstr "Xodimlaringiz rezyumesiga yakunlangan kurslarni qo‘shing"
+
+#. module: hr_skills_slides
+#: model:ir.module.module,shortdesc:base.module_hr_skills_slides
+#, fuzzy
+msgid "Skills e-learning"
+msgstr "Ko‘nikmalar bo‘yicha elektron ta'lim"
+
+#. module: hr_skills_slides
 #. odoo-python
 #: code:addons/hr_skills_slides/models/hr_employee.py:0
 #, fuzzy

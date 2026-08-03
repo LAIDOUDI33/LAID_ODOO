@@ -26,6 +26,16 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: purchase_stock
+#: model:ir.module.module,summary:base.module_purchase_stock
+msgid "Purchase Orders, Receipts, Vendor Bills for Stock"
+msgstr "Đơn mua hàng, biên lai, hóa đơn mua hàng cho tồn kho"
+
+#. module: purchase_stock
+#: model:ir.module.module,shortdesc:base.module_purchase_stock
+msgid "Purchase Stock"
+msgstr "Mua hàng về kho"
+
+#. module: purchase_stock
 #: model_terms:ir.ui.view,arch_db:purchase_stock.purchase_order_view_form_inherit
 msgid "% On Time"
 msgstr ""

@@ -26,6 +26,35 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_links
+#: model:ir.module.module,description:base.module_website_links
+msgid ""
+"\n"
+"Generate short links with analytics trackers (UTM) to share your pages "
+"through marketing campaigns.\n"
+"Those trackers can be used in Google Analytics to track clicks and visitors, "
+"or in Odoo reports to analyze the efficiency of those campaigns in terms of "
+"lead generation, related revenues (sales orders), recruitment, etc.\n"
+msgstr ""
+"\n"
+"สร้างลิงก์สั้นๆ พร้อมเครื่องมือติดตามการวิเคราะห์ (UTM) เพื่อแชร์เพจของคุณผ่านแคมเปญการตลาด\n"
+"เครื่องมือติดตามเหล่านั้นสามารถใช้ใน Google Analytics เพื่อติดตามการคลิกและผู้เยี่ยมชม หรือในร"
+"ายงาน Odoo เพื่อวิเคราะห์ประสิทธิภาพของแคมเปญเหล่านั้นในแง่ของการสร้างลูกค้าเป้าหมาย รายได้ที่"
+"เกี่ยวข้อง (คำสั่งขาย) การสรรหาบุคลากร และอื่นๆ\n"
+
+#. module: website_links
+#: model:ir.module.module,summary:base.module_website_links
+msgid "Generate trackable & short URLs"
+msgstr "สร้าง URL ที่ติดตามได้แบบสั้น"
+
+#. module: website_links
+#: model:ir.model,name:website_links.model_link_tracker
+#: model:ir.module.module,shortdesc:base.module_website_links
+#: model:ir.ui.menu,name:website_links.menu_link_tracker
+#: model_terms:ir.ui.view,arch_db:website_links.graphs
+msgid "Link Tracker"
+msgstr "ตัวติดตามลิงก์"
+
+#. module: website_links
 #. odoo-javascript
 #: code:addons/website_links/static/src/interactions/website_links_charts.js:0
 msgid "# of clicks"
@@ -195,13 +224,6 @@ msgstr "สัปดาห์ที่แล้ว"
 #: code:addons/website_links/static/src/interactions/website_links_code_editor.js:0
 msgid "Link Copied!"
 msgstr "คัดลอกลิงก์แล้ว!"
-
-#. module: website_links
-#: model:ir.model,name:website_links.model_link_tracker
-#: model:ir.ui.menu,name:website_links.menu_link_tracker
-#: model_terms:ir.ui.view,arch_db:website_links.graphs
-msgid "Link Tracker"
-msgstr "ตัวติดตามลิงก์"
 
 #. module: website_links
 #: model_terms:ir.ui.view,arch_db:website_links.create_shorten_url

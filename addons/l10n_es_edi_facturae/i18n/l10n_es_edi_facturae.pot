@@ -16,6 +16,22 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_es_edi_facturae
+#: model:ir.module.module,description:base.module_l10n_es_edi_facturae
+msgid ""
+"\n"
+"This module create the Facturae file required to send the invoices information to the General State Administrations.\n"
+"It allows the export and signature of the signing of Facturae files.\n"
+"The current version of Facturae supported is the 3.2.2\n"
+"\n"
+"for more informations, see https://www.facturae.gob.es/face/Paginas/FACE.aspx\n"
+msgstr ""
+
+#. module: l10n_es_edi_facturae
+#: model:ir.module.module,shortdesc:base.module_l10n_es_edi_facturae
+msgid "Spain - Facturae EDI"
+msgstr ""
+
+#. module: l10n_es_edi_facturae
 #: model:ir.model.fields.selection,name:l10n_es_edi_facturae.selection__uom_uom__l10n_es_edi_facturae_uom_code__27
 msgid "6-Packs"
 msgstr ""

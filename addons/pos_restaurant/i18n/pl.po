@@ -46,6 +46,44 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: pos_restaurant
+#: model:ir.module.module,description:base.module_pos_restaurant
+msgid ""
+"\n"
+"\n"
+"This module adds several features to the Point of Sale that are specific to "
+"restaurant management:\n"
+"- Bill Printing: Allows you to print a receipt before the order is paid\n"
+"- Bill Splitting: Allows you to split an order into different orders\n"
+"- Kitchen Order Printing: allows you to print orders updates to kitchen or "
+"bar printers\n"
+"\n"
+msgstr ""
+"\n"
+"\n"
+"Ten moduł dodaje kilka funkcji do punktu sprzedaży, które są specyficzne dla "
+"zarządzania restauracją:\n"
+"- Drukowanie rachunków: Umożliwia wydrukowanie paragonu przed opłaceniem "
+"zamówienia.\n"
+"- Dzielenie rachunków: Umożliwia podzielenie zamówienia na różne "
+"zamówienia.\n"
+"- Drukowanie zamówień kuchennych: umożliwia drukowanie aktualizacji zamówień "
+"na drukarkach kuchennych lub barowych.\n"
+"\n"
+
+#. module: pos_restaurant
+#. odoo-python
+#: code:addons/pos_restaurant/models/pos_config.py:0
+#: model:ir.module.module,shortdesc:base.module_pos_restaurant
+#: model_terms:ir.ui.view,arch_db:pos_restaurant.view_pos_preset_form_inherit_pos_restaurant
+msgid "Restaurant"
+msgstr "Restauracja"
+
+#. module: pos_restaurant
+#: model:ir.module.module,summary:base.module_pos_restaurant
+msgid "Restaurant extensions for the Point of Sale "
+msgstr "Rozszerzenia restauracji dla Punktu Sprzedaży "
+
+#. module: pos_restaurant
 #. odoo-python
 #: code:addons/pos_restaurant/models/pos_course.py:0
 #: code:addons/pos_restaurant/models/pos_restaurant.py:0
@@ -1154,13 +1192,6 @@ msgstr ""
 #: code:addons/pos_restaurant/static/src/app/screens/product_screen/actionpad_widget/actionpad_widget.xml:0
 msgid "Reprint"
 msgstr ""
-
-#. module: pos_restaurant
-#. odoo-python
-#: code:addons/pos_restaurant/models/pos_config.py:0
-#: model_terms:ir.ui.view,arch_db:pos_restaurant.view_pos_preset_form_inherit_pos_restaurant
-msgid "Restaurant"
-msgstr "Restauracja"
 
 #. module: pos_restaurant
 #: model:ir.model,name:pos_restaurant.model_restaurant_floor

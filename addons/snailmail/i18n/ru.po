@@ -24,6 +24,23 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: snailmail
+#: model:ir.module.module,description:base.module_snailmail
+msgid ""
+"\n"
+"Allows users to send documents by post\n"
+"=====================================================\n"
+msgstr ""
+"\n"
+"Разрешить пользователям отправлять документы по почте\n"
+"=====================================================\n"
+
+#. module: snailmail
+#: model:iap.service,name:snailmail.iap_service_snailmail
+#: model:ir.module.module,shortdesc:base.module_snailmail
+msgid "Snail Mail"
+msgstr "Почта"
+
+#. module: snailmail
 #: model:ir.model.fields.selection,name:snailmail.selection__snailmail_letter__error_code__attachment_error
 msgid "ATTACHMENT_ERROR"
 msgstr "ОШИБКА_ПРИКРЕПЛЕНИЯ"
@@ -392,11 +409,6 @@ msgstr "Отправлено"
 #: model:ir.model.fields,field_description:snailmail.field_snailmail_letter__user_id
 msgid "Sent by"
 msgstr "Отправлено от"
-
-#. module: snailmail
-#: model:iap.service,name:snailmail.iap_service_snailmail
-msgid "Snail Mail"
-msgstr ""
 
 #. module: snailmail
 #. odoo-python

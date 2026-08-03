@@ -35,6 +35,116 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: hr_recruitment
+#: model:ir.module.module,description:base.module_hr_recruitment
+msgid ""
+"Manage Recruitment and Job applications\n"
+"---------------------------------------\n"
+"\n"
+"Publish, promote and organize your job offers with the Odoo\n"
+"<a href=\"https://www.odoo.com/app/recruitment\">Open Source Recruitment "
+"Application</a>.\n"
+"\n"
+"Organize your job board, promote your job announces and keep track of\n"
+"application submissions easily. Follow every applicant and build up a "
+"database\n"
+"of skills and profiles with indexed documents.\n"
+"\n"
+"Post Your Jobs on Best Job Boards\n"
+"---------------------------------\n"
+"\n"
+"Connect automatically to most famous job board websites; linkedIn, Monster,\n"
+"Craigslist, ... Every job position has a new email address automatically\n"
+"assigned to route applications automatically to the right job position.\n"
+"\n"
+"Whether applicants contact you by email or using an online form, you get "
+"all\n"
+"the data indexed automatically (resumes, motivation letter) and you can "
+"answer\n"
+"in just a click, reusing templates of answers.\n"
+"\n"
+"Customize Your Recruitment Process\n"
+"----------------------------------\n"
+"\n"
+"Use the kanban view and customize the steps of your recruitments process;\n"
+"pre-qualification, first interview, second interview, negociaiton, ...\n"
+"\n"
+"Get accurate statistics on your recruitment pipeline. Get reports to "
+"compare\n"
+"the performance of your different investments on external job boards.\n"
+"\n"
+"Streamline Your Recruitment Process\n"
+"-----------------------------------\n"
+"\n"
+"Follow applicants in your recruitment process with the smart kanban view. "
+"Save\n"
+"time by automating some communications with email templates.\n"
+"\n"
+"Documents like resumes and motivation letters are indexed automatically,\n"
+"allowing you to easily find for specific skills and build up a database of\n"
+"profiles.\n"
+msgstr ""
+"Spravujte nábor a žádosti uchazečů\n"
+"---------------------------------------\n"
+"\n"
+"Publikute, podporujte a organizujte vaše pracovní nabídky pomocí Odoo\n"
+"<a href=\"https://www.odoo.com/app/recruitment\">Otevřete aplikaci Nábor</a>"
+".\n"
+"\n"
+"Organizujte svou pracovní nástěnku, zveřejněte pracovní pozice a mějte\n"
+"přehled o podávání žádostí. Sledujte každého uchazeče a vytvářejte databázi\n"
+"dovedností a profilů včetně indexovaných dokumentů.\n"
+"\n"
+"Zveřejněte své pozice na nejlepších pracovních portálech\n"
+"---------------------------------\n"
+"\n"
+"Automaticky se propojte na nejslavnější pracovní weby; linkedIn, Monster,\n"
+"Craigslist... Každá pracovní pozice má automaticky přidělenou e-mail "
+"adresu,\n"
+"což umožní přiřadit žádosti automaticky ke správné pozici.\n"
+"\n"
+"Je jedno, zda vás uchazeči kontaktují e-mailem nebo přes on-line formulář, "
+"vždy\n"
+"získáte všechna data (resumé, motivační dopis) indexována, a s pomocí \n"
+"znovupoužitelných odpovědních šablon můžete odpovědět jedním klikem.\n"
+"\n"
+"Přizpůsobte si svůj náborový proces\n"
+"----------------------------------\n"
+"\n"
+"Použijte kanbanové zobrazení a upravte si kroky vašeho náborového procesu;\n"
+"před-kvalifikace,  první interview, druhé interview, vyjednávání...\n"
+"\n"
+"Získejte přesné statistiky vašeho náborového procesu. Použijte sestavy k "
+"porovnání \n"
+"výkonu různých investicí na externích webových portálech.\n"
+"\n"
+"Zefektivněte váš náborový proces\n"
+"-----------------------------------\n"
+"\n"
+"Sledujte uchazeče v procesu náboru pomocí chytrého kanbanového zobrazení. "
+"Ušetřete\n"
+"čas automatizací vybraných zpráv pomocí e-mail šablon.\n"
+"\n"
+"Dokumenty, jakou jsou resumé a motivační dopisy, jsou automaticky "
+"indexovány,\n"
+"což umožňuje jednoduché vyhledávání požadovaných dovedností a vytvářet\n"
+"databázi profilů.\n"
+
+#. module: hr_recruitment
+#: model:ir.module.module,shortdesc:base.module_hr_recruitment
+#: model:ir.ui.menu,name:hr_recruitment.menu_hr_recruitment_root
+#: model:res.groups.privilege,name:hr_recruitment.res_groups_privilege_recruitment
+#: model_terms:ir.ui.view,arch_db:hr_recruitment.digest_digest_view_form
+#: model_terms:ir.ui.view,arch_db:hr_recruitment.hr_department_view_kanban
+#: model_terms:ir.ui.view,arch_db:hr_recruitment.res_config_settings_view_form
+msgid "Recruitment"
+msgstr "Nábor"
+
+#. module: hr_recruitment
+#: model:ir.module.module,summary:base.module_hr_recruitment
+msgid "Track your recruitment pipeline"
+msgstr "Sledovat svůj náborový plán"
+
+#. module: hr_recruitment
 #: model:ir.model.fields,field_description:hr_recruitment.field_hr_talent_pool__no_of_talents
 msgid "# Talents"
 msgstr "# Talenty"
@@ -2776,15 +2886,6 @@ msgstr "Náborář"
 #: model:ir.model.fields,field_description:hr_recruitment.field_hr_applicant__recruiter_email
 msgid "Recruiter Work Email"
 msgstr ""
-
-#. module: hr_recruitment
-#: model:ir.ui.menu,name:hr_recruitment.menu_hr_recruitment_root
-#: model:res.groups.privilege,name:hr_recruitment.res_groups_privilege_recruitment
-#: model_terms:ir.ui.view,arch_db:hr_recruitment.digest_digest_view_form
-#: model_terms:ir.ui.view,arch_db:hr_recruitment.hr_department_view_kanban
-#: model_terms:ir.ui.view,arch_db:hr_recruitment.res_config_settings_view_form
-msgid "Recruitment"
-msgstr "Nábor"
 
 #. module: hr_recruitment
 #: model:ir.actions.act_window,name:hr_recruitment.hr_job_stage_act

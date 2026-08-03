@@ -20,6 +20,25 @@ msgstr ""
 "X-Generator: Weblate 5.12.2\n"
 
 #. module: l10n_gr_edi
+#: model:ir.module.module,description:base.module_l10n_gr_edi
+msgid ""
+"\n"
+"myDATA is a platform created by Greece's tax authority,\n"
+"The Independent Authority for Public Revenue (IAPR),\n"
+"to digitize business tax and accounting information declaration.\n"
+msgstr ""
+
+#. module: l10n_gr_edi
+#: model:ir.module.module,summary:base.module_l10n_gr_edi
+msgid "Connect to myDATA API implementation for Greece"
+msgstr ""
+
+#. module: l10n_gr_edi
+#: model:ir.module.module,shortdesc:base.module_l10n_gr_edi
+msgid "Greece - myDATA"
+msgstr ""
+
+#. module: l10n_gr_edi
 #: model:ir.model.fields.selection,name:l10n_gr_edi.selection__account_move__l10n_gr_edi_payment_method__1
 msgid "1 - Domestic Payments Account Number"
 msgstr ""

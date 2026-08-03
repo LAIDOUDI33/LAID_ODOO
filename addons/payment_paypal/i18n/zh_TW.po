@@ -23,6 +23,16 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: payment_paypal
+#: model:ir.module.module,summary:base.module_payment_paypal
+msgid "An American payment provider for online payments all over the world."
+msgstr "美國支付服務提供商，提供全球在線支付服務。"
+
+#. module: payment_paypal
+#: model:ir.module.module,shortdesc:base.module_payment_paypal
+msgid "Payment Provider: Paypal"
+msgstr "付款服務商：PayPal"
+
+#. module: payment_paypal
 #: model_terms:ir.ui.view,arch_db:payment_paypal.payment_provider_form
 msgid "Client ID"
 msgstr "客戶端 ID"

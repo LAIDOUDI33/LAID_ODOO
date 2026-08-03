@@ -28,6 +28,35 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: calendar
+#: model:ir.module.module,description:base.module_calendar
+msgid ""
+"\n"
+"This is a full-featured calendar system.\n"
+"========================================\n"
+"\n"
+"It supports:\n"
+"------------\n"
+"    - Calendar of events\n"
+"    - Recurring events\n"
+"\n"
+"If you need to manage your meetings, you should install the CRM module.\n"
+msgstr ""
+
+#. module: calendar
+#: model:ir.module.module,shortdesc:base.module_calendar
+#: model:ir.ui.menu,name:calendar.calendar_event_menu
+#: model:ir.ui.menu,name:calendar.mail_menu_calendar
+#: model:ir.ui.menu,name:calendar.menu_calendar_configuration
+#: model_terms:ir.ui.view,arch_db:calendar.res_config_settings_view_form
+msgid "Calendar"
+msgstr "Kalender"
+
+#. module: calendar
+#: model:ir.module.module,summary:base.module_calendar
+msgid "Schedule employees' meetings"
+msgstr "Planlæg ansattes møder"
+
+#. module: calendar
 #: model:ir.model.fields,field_description:calendar.field_res_partner__meeting_count
 #: model:ir.model.fields,field_description:calendar.field_res_users__meeting_count
 msgid "# Meetings"
@@ -1194,14 +1223,6 @@ msgstr "Hele dagen"
 #: code:addons/calendar/static/src/views/attendee_calendar/attendee_calendar_model.js:0
 msgid "Bye-bye, record!"
 msgstr "Farvel, record!"
-
-#. module: calendar
-#: model:ir.ui.menu,name:calendar.calendar_event_menu
-#: model:ir.ui.menu,name:calendar.mail_menu_calendar
-#: model:ir.ui.menu,name:calendar.menu_calendar_configuration
-#: model_terms:ir.ui.view,arch_db:calendar.res_config_settings_view_form
-msgid "Calendar"
-msgstr "Kalender"
 
 #. module: calendar
 #: model:ir.actions.act_window,name:calendar.action_calendar_alarm

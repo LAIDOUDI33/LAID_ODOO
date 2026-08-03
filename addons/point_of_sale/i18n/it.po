@@ -30,6 +30,303 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: point_of_sale
+#: model:ir.module.module,summary:base.module_point_of_sale
+msgid "Handle checkouts and payments for shops and restaurants."
+msgstr "Gestisci check-out e pagamenti in negozi e ristoranti."
+
+#. module: point_of_sale
+#: model:ir.module.module,description:base.module_point_of_sale
+msgid ""
+"Odoo Point of Sale\n"
+"-----------------------------\n"
+"\n"
+"Odoo's <a href=\"https://www.odoo.com/app/point-of-sale-shop\">Point of "
+"Sale</a>\n"
+"introduces a super clean interface with no installation required that runs\n"
+"online and offline on modern hardwares.\n"
+"\n"
+"It's full integration with the company inventory and accounting, gives you "
+"real\n"
+"time statistics and consolidations amongst all shops without the hassle of\n"
+"integrating several applications.\n"
+"\n"
+"Work with the hardware you already have\n"
+"---------------------------------------\n"
+"\n"
+"### In your web browser\n"
+"\n"
+"Odoo's POS is a web application that can run on any device that can display\n"
+"websites with little to no setup required.\n"
+"\n"
+"### Touchscreen or Keyboard?\n"
+"\n"
+"The Point of Sale works perfectly on any kind of touch enabled device, "
+"whether\n"
+"it's multi-touch tablets like an iPad or keyboardless resistive touchscreen\n"
+"terminals.\n"
+"\n"
+"### Scales and Printers\n"
+"\n"
+"Barcode scanners and printers are supported out of the box with no setup\n"
+"required. Scales, cashboxes, and other peripherals can be used with the "
+"proxy\n"
+"API.\n"
+"\n"
+"Online and Offline\n"
+"------------------\n"
+"\n"
+"### Odoo's POS stays reliable even if your connection isn't\n"
+"\n"
+"Deploy new stores with just an internet connection: **no installation, no\n"
+"specific hardware required**. It works with any **iPad, Tablet PC, laptop** "
+"or\n"
+"industrial POS machine.\n"
+"\n"
+"While an internet connection is required to start the Point of Sale, it "
+"will\n"
+"stay operational even after a complete disconnection.\n"
+"\n"
+"\n"
+"A super clean user interface\n"
+"----------------------------\n"
+"\n"
+"### Simple and beautiful\n"
+"\n"
+"Say goodbye to ugly, outdated POS software and enjoy the Odoo web interface\n"
+"designed for modern retailer.\n"
+"\n"
+"### Designed for Productivity\n"
+"\n"
+"Whether it's for a restaurant or a shop, you can activate the multiple "
+"orders\n"
+"in parallel to not make your customers wait.\n"
+"\n"
+"### Blazing fast search\n"
+"\n"
+"Scan products, browse through hierarchical categories, or get quick "
+"information\n"
+"about products with the blasting fast filter across all your products.\n"
+"\n"
+"Integrated Inventory Management\n"
+"-------------------------------\n"
+"\n"
+"Consolidate all your Sales Teams in real time: stores, ecommerce, sales\n"
+"teams. Get real time control of the inventory and accurate forecasts to "
+"manage\n"
+"procurements.\n"
+"\n"
+"A full warehouse management system at your fingertips: get information "
+"about\n"
+"products availabilities, trigger procurement requests, etc.\n"
+"\n"
+"Deliver in-store customer services\n"
+"----------------------------------\n"
+"\n"
+"Give your shopper a strong experience by integrating in-store customer\n"
+"services. Handle reparations, track warantees, follow customer claims, plan\n"
+"delivery orders, etc.\n"
+"\n"
+"Invoicing & Accounting Integration\n"
+"----------------------------------\n"
+"\n"
+"Produce customer invoices in just a few clicks. Control sales and cash in "
+"real\n"
+"time and use Odoo's powerful reporting to make smarter decisions to improve\n"
+"your store's efficiency.\n"
+"\n"
+"No more hassle of having to integrate softwares: get all your sales and\n"
+"inventory operations automatically posted in your G/L.\n"
+"\n"
+"Unified Data Amongst All Shops\n"
+"------------------------------\n"
+"\n"
+"Get new products, pricing strategies and promotions applied automatically "
+"to\n"
+"selected stores. Work on a unified customer base. No complex interface is\n"
+"required to pilot a global strategy amongst all your stores.\n"
+"\n"
+"With Odoo as a backend, you have a system proven to be perfectly suitable "
+"for\n"
+"small stores or large multinationals.\n"
+"\n"
+"Know your customers - in store and out\n"
+"--------------------------------------\n"
+"\n"
+"Successful brands integrates all their customer relationship accross all "
+"their\n"
+"channels to develop accurate customer profile and communicate with shoppers "
+"as\n"
+"they make buying decisions, in store or online.\n"
+"\n"
+"With Odoo, you get a 360° customer view, including cross-channel sales,\n"
+"interaction history, profiles, and more.\n"
+"\n"
+msgstr ""
+"Odoo Punto Vendita\n"
+"-----------------------------\n"
+"\n"
+"Odoo <a href=\"https://www.odoo.com/app/point-of-sale-shop\">Punto Vendita</"
+"a>\n"
+"introduce un'interfaccia super chiara senza alcuna installazione richiesta "
+"che funziona\n"
+"online e offline sugli hardware moderni.\n"
+"\n"
+"La completa integrazione con i moduli Magazzino e Contabilità dell'azienda "
+"ti fornisce statistiche\n"
+"in tempo reale e consolidazioni tra tutti i negozi senza la seccatura di\n"
+"integrare diverse applicazioni.\n"
+"\n"
+"Lavora con il tuo hardware\n"
+"---------------------------------------\n"
+"\n"
+"### Nel tuo browser\n"
+"\n"
+"Odoo POS è un'applicazione web che può funzionare su qualsiasi dispositivo "
+"che può visualizzare\n"
+"siti web con una piccola quantità di operazioni di configurazione richieste "
+"o addirittura nessuna.\n"
+"\n"
+"### Touchscreen o tastiera?\n"
+"\n"
+"Il Punto Vendita funziona perfettamente su qualsiasi tipo di dispositivo "
+"tattile che sia\n"
+"un tablet multi-touch come un iPad o terminali con touchscreen privi di "
+"tastiera e\n"
+"resistenti.\n"
+"\n"
+"### Bilance e stampanti\n"
+"\n"
+"I lettori di codici a barre e le stampanti sono supportate senza alcun "
+"bisogno di configurazione\n"
+"Le bilance, le casse e altre periferiche possono essere utilizzate con "
+"l'API\n"
+"della proxy.\n"
+"\n"
+"Online e offline\n"
+"------------------\n"
+"\n"
+"### Il POS di Odoo è affidabile anche se la connessione non lo è\n"
+"\n"
+"Implementa nuovi negozi grazie alla sola connessione internet: **nessuna "
+"installazione, nessun\n"
+"hardware specifico richiesto**. Funziona con qualsiasi **iPad, Tablet PC, "
+"laptop** o\n"
+"macchina POS industriale.\n"
+"\n"
+"La connessione internet è richiesta per avviare il Punto Vendita ma\n"
+"rimane in funzione anche dopo una completa disconnessione.\n"
+"\n"
+"\n"
+"Un'interfaccia utente super chiara\n"
+"----------------------------\n"
+"\n"
+"### Semplice e bellissima\n"
+"\n"
+"Di addio ai software POS brutti e obsoleti e divertiti con l'interfaccia web "
+"Odoo\n"
+"progettata per i rivenditori moderni.\n"
+"\n"
+"### Progettato per la produttività\n"
+"\n"
+"Non importa se si tratta di un ristorante o di un negozio, è possibile "
+"inviare più ordini insieme\n"
+"per non far aspettare il cliente.\n"
+"\n"
+"### Ricerca velocissima\n"
+"\n"
+"Scansiona i prodotti, naviga tra categorie specifiche oppure ottieni "
+"informazioni rapide\n"
+"sui prodotti con il fantastico filtro veloce.\n"
+"\n"
+"Gestione del magazzino integrata\n"
+"-------------------------------\n"
+"\n"
+"Consolida tutti i team di vendita in tempo reale: negozi, e-commerce, team\n"
+"vendite. Controlla il magazzino in tempo reale e ottieni previsioni accurate "
+"per gestire\n"
+"gli approviggionamenti.\n"
+"\n"
+"Un sistema di gestione del magazzino completo a portata di mano: ottieni "
+"informazioni sulle\n"
+"disponibilità dei prodotti, attiva le richieste di approvvigionamento, ecc.\n"
+"\n"
+"Deliver in-store customer services\n"
+"----------------------------------\n"
+"\n"
+"Permetti ai clienti di vivere un'esperienza di acquisto unica grazie "
+"all'integrazione di servizi in-store.\n"
+"Gestisci le riparazioni, traccia le garanzie, segui le lamentele dei "
+"clienti, pianifica\n"
+"ordini di consegna, ecc.\n"
+"\n"
+"Integrazione Fatturazione e Contabilità\n"
+"----------------------------------\n"
+"\n"
+"Crea fatture per i clienti in pochi clic. Controlla le vendite  e la cassa "
+"in tempo\n"
+"reale e utilizza i rendiconti di Odoo per prendere decisioni più accurate e "
+"migliorare\n"
+"l'efficienza del negozio.\n"
+"\n"
+"Non avrai più la seccatura di integrare software: registra automaticamente "
+"nel bilancio\n"
+"tutte le operazioni relative alle vendite e all'inventario.\n"
+"\n"
+"Dati unificati tra tutti i negozi\n"
+"------------------------------\n"
+"\n"
+"Crea nuovi prodotti, strategie di prezzo e applica automaticamente le "
+"promozioni\n"
+"ai negozi selezionati. Lavorare su una base clienti unificata. Non è "
+"necessaria un'interfaccia complessa\n"
+"per adottare una strategia globale per tutti i tuoi negozi.\n"
+"\n"
+"Con Odoo come backend, hai un sistema che è dimostrato essere perfettamente "
+"adatto a\n"
+"piccoli negozi o grandi multinazionali.\n"
+"\n"
+"Conosci i tuoi clienti - in negozio e al di fuori\n"
+"--------------------------------------\n"
+"\n"
+"I brand di successo integrano tutte le relazioni con i clienti attraverso i\n"
+"canali per sviluppare profili accurati e comunicare con loro in quanto\n"
+"prendono decisioni relative agli acquisti, in negozio oppure online.\n"
+"\n"
+"Con Odoo, ottieni una vista a 360° del cliente, compre vendite cross-"
+"channel,\n"
+"cronologia delle interazioni, profili e molto altro.\n"
+"\n"
+
+#. module: point_of_sale
+#. odoo-javascript
+#. odoo-python
+#: code:addons/point_of_sale/models/account_journal.py:0
+#: code:addons/point_of_sale/static/src/app/screens/ticket_screen/order_details_dialog/order_details_dialog.js:0
+#: model:ir.actions.act_window,name:point_of_sale.action_pos_config_kanban
+#: model:ir.model.fields,field_description:point_of_sale.field_pos_config__name
+#: model:ir.model.fields,field_description:point_of_sale.field_pos_order__config_id
+#: model:ir.model.fields,field_description:point_of_sale.field_pos_payment_method__config_ids
+#: model:ir.model.fields,field_description:point_of_sale.field_pos_printer__pos_config_ids
+#: model:ir.model.fields,field_description:point_of_sale.field_pos_session__config_id
+#: model:ir.model.fields,field_description:point_of_sale.field_report_pos_order__config_id
+#: model:ir.model.fields,field_description:point_of_sale.field_res_config_settings__pos_config_id
+#: model:ir.model.fields.selection,name:point_of_sale.selection__pos_order__source__pos
+#: model:ir.module.module,shortdesc:base.module_point_of_sale
+#: model:ir.ui.menu,name:point_of_sale.menu_point_root
+#: model:res.groups.privilege,name:point_of_sale.res_groups_privilege_point_of_sale
+#: model_terms:ir.ui.view,arch_db:point_of_sale.digest_digest_view_form
+#: model_terms:ir.ui.view,arch_db:point_of_sale.pos_payment_method_view_search
+#: model_terms:ir.ui.view,arch_db:point_of_sale.product_tag_form_view_inherit_point_of_sale
+#: model_terms:ir.ui.view,arch_db:point_of_sale.product_template_form_view
+#: model_terms:ir.ui.view,arch_db:point_of_sale.product_template_search_view_pos
+#: model_terms:ir.ui.view,arch_db:point_of_sale.res_config_settings_view_form
+#: model_terms:ir.ui.view,arch_db:point_of_sale.view_pos_order_filter
+#: model_terms:ir.ui.view,arch_db:point_of_sale.view_pos_session_search
+#: model_terms:ir.ui.view,arch_db:point_of_sale.view_report_pos_order_search
+msgid "Point of Sale"
+msgstr "Punto vendita"
+
+#. module: point_of_sale
 #. odoo-javascript
 #: code:addons/point_of_sale/static/src/app/models/pos_order.js:0
 msgid " (Refund)"
@@ -7160,34 +7457,6 @@ msgstr "Categoria prodotto POS"
 #: model:ir.model,name:point_of_sale.model_pos_load_mixin
 msgid "PoS data loading mixin"
 msgstr "Dati POS in caricamento mixin"
-
-#. module: point_of_sale
-#. odoo-javascript
-#. odoo-python
-#: code:addons/point_of_sale/models/account_journal.py:0
-#: code:addons/point_of_sale/static/src/app/screens/ticket_screen/order_details_dialog/order_details_dialog.js:0
-#: model:ir.actions.act_window,name:point_of_sale.action_pos_config_kanban
-#: model:ir.model.fields,field_description:point_of_sale.field_pos_config__name
-#: model:ir.model.fields,field_description:point_of_sale.field_pos_order__config_id
-#: model:ir.model.fields,field_description:point_of_sale.field_pos_payment_method__config_ids
-#: model:ir.model.fields,field_description:point_of_sale.field_pos_printer__pos_config_ids
-#: model:ir.model.fields,field_description:point_of_sale.field_pos_session__config_id
-#: model:ir.model.fields,field_description:point_of_sale.field_report_pos_order__config_id
-#: model:ir.model.fields,field_description:point_of_sale.field_res_config_settings__pos_config_id
-#: model:ir.model.fields.selection,name:point_of_sale.selection__pos_order__source__pos
-#: model:ir.ui.menu,name:point_of_sale.menu_point_root
-#: model:res.groups.privilege,name:point_of_sale.res_groups_privilege_point_of_sale
-#: model_terms:ir.ui.view,arch_db:point_of_sale.digest_digest_view_form
-#: model_terms:ir.ui.view,arch_db:point_of_sale.pos_payment_method_view_search
-#: model_terms:ir.ui.view,arch_db:point_of_sale.product_tag_form_view_inherit_point_of_sale
-#: model_terms:ir.ui.view,arch_db:point_of_sale.product_template_form_view
-#: model_terms:ir.ui.view,arch_db:point_of_sale.product_template_search_view_pos
-#: model_terms:ir.ui.view,arch_db:point_of_sale.res_config_settings_view_form
-#: model_terms:ir.ui.view,arch_db:point_of_sale.view_pos_order_filter
-#: model_terms:ir.ui.view,arch_db:point_of_sale.view_pos_session_search
-#: model_terms:ir.ui.view,arch_db:point_of_sale.view_report_pos_order_search
-msgid "Point of Sale"
-msgstr "Punto vendita"
 
 #. module: point_of_sale
 #: model_terms:ir.ui.view,arch_db:point_of_sale.report_pos_order_view_tree

@@ -27,6 +27,58 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: fleet
+#: model:ir.module.module,description:base.module_fleet
+msgid ""
+"\n"
+"Vehicle, leasing, insurances, cost\n"
+"==================================\n"
+"With this module, Odoo helps you managing all your vehicles, the\n"
+"contracts associated to those vehicle as well as services, costs\n"
+"and many other features necessary to the management of your fleet\n"
+"of vehicle(s)\n"
+"\n"
+"Main Features\n"
+"-------------\n"
+"* Add vehicles to your fleet\n"
+"* Manage contracts for vehicles\n"
+"* Reminder when a contract reach its expiration date\n"
+"* Add services, odometer values for all vehicles\n"
+"* Show all costs associated to a vehicle or to a type of service\n"
+"* Analysis graph for costs\n"
+msgstr ""
+"\n"
+"المركبة، الإيجار، التأمين، التكلفة\n"
+"==================================\n"
+"باستخدام هذا التطبيق، سيساعدك أودو على إدارة كافة مركباتك،\n"
+"والعقود المرتبطة بتلك المركبات، بالإضافة إى الخدمات والتكاليف\n"
+"والعديد من الخصائص الأخرى الضرورية لإدارة أسطول\n"
+"مركباتك\n"
+"\n"
+"الخصائص الرئيسية\n"
+"-------------\n"
+"* إضافة مركبات إلى أسطولك\n"
+"* إدارة عقود المركبات\n"
+"* تذكير عندما يبلغ العقد تاريخ انتهاء صلاحيته\n"
+"* إضافة الخدمات، قيم عداد المسافات لكافة المركبات\n"
+"* إظهار كافة التكاليف المرتبطة بمركبة أو نوع خدمة\n"
+"* المخطط البياني التحليلي للتكاليف\n"
+
+#. module: fleet
+#: model:ir.module.module,shortdesc:base.module_fleet
+#: model:ir.ui.menu,name:fleet.fleet_vehicle_menu
+#: model:ir.ui.menu,name:fleet.fleet_vehicles
+#: model:ir.ui.menu,name:fleet.menu_root
+#: model:res.groups.privilege,name:fleet.res_groups_privilege_fleet
+#: model_terms:ir.ui.view,arch_db:fleet.res_config_settings_view_form
+msgid "Fleet"
+msgstr "الأسطول"
+
+#. module: fleet
+#: model:ir.module.module,summary:base.module_fleet
+msgid "Manage your fleet and track car costs"
+msgstr "قم بإدارة أسطولك وتتبع تكاليف السيارات"
+
+#. module: fleet
 #: model_terms:ir.ui.view,arch_db:fleet.fleet_vehicle_view_kanban
 msgid "<i class=\"oi\" data-icon=\"location_on\" title=\"Location\"/>"
 msgstr "<i class=\"oi\" data-icon=\"location_on\" title=\"الموقع \"/>"
@@ -1105,15 +1157,6 @@ msgstr "تاريخ أول عقد"
 #: model_terms:ir.ui.view,arch_db:fleet.fleet_vehicle_view_form
 msgid "Fiscality"
 msgstr "الشؤون المالية"
-
-#. module: fleet
-#: model:ir.ui.menu,name:fleet.fleet_vehicle_menu
-#: model:ir.ui.menu,name:fleet.fleet_vehicles
-#: model:ir.ui.menu,name:fleet.menu_root
-#: model:res.groups.privilege,name:fleet.res_groups_privilege_fleet
-#: model_terms:ir.ui.view,arch_db:fleet.res_config_settings_view_form
-msgid "Fleet"
-msgstr "الأسطول"
 
 #. module: fleet
 #: model:ir.model,name:fleet.model_fleet_vehicle_cost_report

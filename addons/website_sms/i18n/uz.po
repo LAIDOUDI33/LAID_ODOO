@@ -27,6 +27,27 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_sms
+#: model:ir.module.module,summary:base.module_website_sms
+#, fuzzy
+msgid "Allows to send sms to website visitor"
+msgstr "Veb-sayt tashrif buyuruvchisiga SMS yuborish imkonini beradi"
+
+#. module: website_sms
+#: model:ir.module.module,description:base.module_website_sms
+#, fuzzy
+msgid ""
+"Allows to send sms to website visitor if the visitor is linked to a partner."
+msgstr ""
+"Agar tashrif buyuruvchi hamkorga bog‘langan bo‘lsa, unga SMS yuborish "
+"imkonini beradi"
+
+#. module: website_sms
+#: model:ir.module.module,shortdesc:base.module_website_sms
+#, fuzzy
+msgid "Send SMS to Visitor"
+msgstr "Tashrif buyuruvchiga SMS yuborish"
+
+#. module: website_sms
 #: model:ir.model.fields,field_description:website_sms.field_website_visitor__display_name
 #, fuzzy
 msgid "Display Name"

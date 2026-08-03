@@ -17,6 +17,22 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_ae_pos
+#: model:ir.module.module,description:base.module_l10n_ae_pos
+msgid ""
+"\n"
+"United Arab Emirates POS Localization\n"
+"===========================================================\n"
+msgstr ""
+"\n"
+"أقلمة نقطة بيع الإمارات العربية المتحدة\n"
+"===========================================================\n"
+
+#. module: l10n_ae_pos
+#: model:ir.module.module,shortdesc:base.module_l10n_ae_pos
+msgid "United Arab Emirates - Point of Sale"
+msgstr "الإمارات العربية المتحدة - نقطة البيع"
+
+#. module: l10n_ae_pos
 #: model:ir.model.fields,field_description:l10n_ae_pos.field_pos_order_receipt__display_name
 msgid "Display Name"
 msgstr ""

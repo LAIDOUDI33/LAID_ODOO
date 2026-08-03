@@ -27,6 +27,18 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: auth_password_policy
+#: model:ir.module.module,summary:base.module_auth_password_policy
+msgid "Implement basic password policy configuration & check"
+msgstr ""
+"Implementar la configuració bàsica de la política de contrasenyes i "
+"comprovar-ho"
+
+#. module: auth_password_policy
+#: model:ir.module.module,shortdesc:base.module_auth_password_policy
+msgid "Password Policy"
+msgstr "Política de contrasenyes"
+
+#. module: auth_password_policy
 #: model:ir.model,name:auth_password_policy.model_res_config_settings
 msgid "Config Settings"
 msgstr "Paràmetres de configuració"

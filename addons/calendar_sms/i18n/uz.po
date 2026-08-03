@@ -27,6 +27,19 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: calendar_sms
+#: model:ir.module.module,shortdesc:base.module_calendar_sms
+#, fuzzy
+msgid "Calendar - SMS"
+msgstr "Taqvim - SMS"
+
+#. module: calendar_sms
+#: model:ir.module.module,description:base.module_calendar_sms
+#: model:ir.module.module,summary:base.module_calendar_sms
+#, fuzzy
+msgid "Send text messages as event reminders"
+msgstr "Tadbir eslatmalari sifatida matnli xabarlar yuborish"
+
+#. module: calendar_sms
 #: model:ir.model,name:calendar_sms.model_calendar_event
 #, fuzzy
 msgid "Calendar Event"

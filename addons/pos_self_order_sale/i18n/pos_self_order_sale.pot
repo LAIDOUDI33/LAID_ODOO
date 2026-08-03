@@ -16,6 +16,11 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: pos_self_order_sale
+#: model:ir.module.module,shortdesc:base.module_pos_self_order_sale
+msgid "POS Self Order Sale"
+msgstr ""
+
+#. module: pos_self_order_sale
 #: model:ir.model,name:pos_self_order_sale.model_res_config_settings
 msgid "Config Settings"
 msgstr ""

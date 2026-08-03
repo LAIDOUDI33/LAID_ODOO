@@ -27,6 +27,18 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: auth_timeout
+#: model:ir.module.module,summary:base.module_auth_timeout
+#, fuzzy
+msgid "Ask for authentication after user inactivity"
+msgstr "Foydalanuvchi faolsizligidan so‘ng autentifikatsiyani so‘rash"
+
+#. module: auth_timeout
+#: model:ir.module.module,shortdesc:base.module_auth_timeout
+#, fuzzy
+msgid "Auth Timeout"
+msgstr "Autentifikatsiya vaqti"
+
+#. module: auth_timeout
 #: model:ir.model,name:auth_timeout.model_res_groups
 #, fuzzy
 msgid "Access Groups"

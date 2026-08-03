@@ -19,6 +19,36 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: portal_address_extended
+#: model:ir.module.module,description:base.module_portal_address_extended
+msgid ""
+"\n"
+"Extended Addresses Management (Customer Portal)\n"
+"===============================================\n"
+"\n"
+"This bridge module adds support for city dropdowns\n"
+"in the customer portal for the countries where cities are enforced.\n"
+"\n"
+msgstr ""
+"\n"
+"Quản lý địa chỉ mở rộng (Cổng thông tin khách hàng)\n"
+"===============================================\n"
+"\n"
+"Phân hệ trung gian này bổ sung hỗ trợ danh sách chọn thành phố\n"
+"trong cổng thông tin khách hàng đối với các quốc gia có yêu cầu bắt buộc về "
+"thành phố.\n"
+"\n"
+
+#. module: portal_address_extended
+#: model:ir.module.module,summary:base.module_portal_address_extended
+msgid "Add extra fields on addresses for Customer Portal"
+msgstr "Thêm các trường bổ sung trên địa chỉ cho Cổng thông tin khách hàng"
+
+#. module: portal_address_extended
+#: model:ir.module.module,shortdesc:base.module_portal_address_extended
+msgid "Extended Addresses - Customer portal"
+msgstr ""
+
+#. module: portal_address_extended
 #: model_terms:ir.ui.view,arch_db:portal_address_extended.address_extended_form_fields
 msgid "City"
 msgstr ""

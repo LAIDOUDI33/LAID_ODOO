@@ -17,6 +17,11 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_us
+#: model:ir.module.module,shortdesc:base.module_l10n_us
+msgid "United States - Localizations"
+msgstr "Estados Unidos - Localizaciones"
+
+#. module: l10n_us
 #: model:ir.model,name:l10n_us.model_res_partner_bank
 msgid "Bank Account"
 msgstr ""

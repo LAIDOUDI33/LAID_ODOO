@@ -20,6 +20,32 @@ msgstr ""
 "X-Generator: Weblate 5.12.2\n"
 
 #. module: l10n_hn
+#: model:ir.module.module,description:base.module_l10n_hn
+msgid ""
+"\n"
+"This is the base module to manage the accounting chart for Honduras.\n"
+"====================================================================\n"
+"\n"
+"Agrega una nomenclatura contable para Honduras. También incluye impuestos y "
+"la\n"
+"moneda Lempira. -- Adds accounting chart for Honduras. It also includes "
+"taxes\n"
+"and the Lempira currency."
+msgstr ""
+"\n"
+"Este es el módulo base para gestionar el plan de cuentas de Honduras.\n"
+"====================================================================\n"
+"\n"
+"Agrega una nomenclatura contable para Honduras. También incluye impuestos y "
+"la\n"
+"divisa Lempira."
+
+#. module: l10n_hn
+#: model:ir.module.module,shortdesc:base.module_l10n_hn
+msgid "Honduras - Accounting"
+msgstr "Honduras - Contabilidad"
+
+#. module: l10n_hn
 #: model:ir.model,name:l10n_hn.model_account_chart_template
 msgid "Account Chart Template"
 msgstr "Plantilla del plan de cuentas"

@@ -27,6 +27,21 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: crm_iap_mine
+#: model:ir.module.module,summary:base.module_crm_iap_mine
+#, fuzzy
+msgid "Generate Leads/Opportunities based on country, industries, size, etc."
+msgstr ""
+"Mamlakat, sanoat, hajm va boshqalar asosida potensial mijozlar/imkoniyatlar "
+"yaratish"
+
+#. module: crm_iap_mine
+#: model:ir.module.module,shortdesc:base.module_crm_iap_mine
+#: model:ir.ui.menu,name:crm_iap_mine.crm_menu_lead_generation
+#, fuzzy
+msgid "Lead Generation"
+msgstr "Mijoz topish"
+
+#. module: crm_iap_mine
 #. odoo-python
 #: code:addons/crm_iap_mine/models/crm_iap_lead_mining_request.py:0
 #, fuzzy
@@ -669,12 +684,6 @@ msgstr "Mijoz"
 #, fuzzy
 msgid "Lead Credits"
 msgstr "Mijoz krediti"
-
-#. module: crm_iap_mine
-#: model:ir.ui.menu,name:crm_iap_mine.crm_menu_lead_generation
-#, fuzzy
-msgid "Lead Generation"
-msgstr "Mijoz topish"
 
 #. module: crm_iap_mine
 #: model:ir.model.fields,field_description:crm_iap_mine.field_crm_lead__lead_mining_request_id

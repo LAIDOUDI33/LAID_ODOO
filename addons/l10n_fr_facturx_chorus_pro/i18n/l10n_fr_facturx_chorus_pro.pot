@@ -16,6 +16,18 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_fr_facturx_chorus_pro
+#: model:ir.module.module,description:base.module_l10n_fr_facturx_chorus_pro
+msgid ""
+"\n"
+"Add support to fill three fields used when using Chorus Pro, especially when invoicing public services.\n"
+msgstr ""
+
+#. module: l10n_fr_facturx_chorus_pro
+#: model:ir.module.module,shortdesc:base.module_l10n_fr_facturx_chorus_pro
+msgid "France - BIS3 integration for Chorus Pro"
+msgstr ""
+
+#. module: l10n_fr_facturx_chorus_pro
 #: model:ir.model.fields,help:l10n_fr_facturx_chorus_pro.field_account_bank_statement_line__buyer_reference
 #: model:ir.model.fields,help:l10n_fr_facturx_chorus_pro.field_account_move__buyer_reference
 msgid "'Code de Service' in Chorus PRO."

@@ -23,6 +23,17 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: payment_worldline
+#: model:ir.module.module,summary:base.module_payment_worldline
+msgid "A French payment provider covering several European countries."
+msgstr ""
+"Francuski dostawca usług płatniczych działający w kilku krajach europejskich."
+
+#. module: payment_worldline
+#: model:ir.module.module,shortdesc:base.module_payment_worldline
+msgid "Payment Provider: Worldline"
+msgstr "Operator płatności: Worldline"
+
+#. module: payment_worldline
 #: model_terms:ir.ui.view,arch_db:payment_worldline.payment_provider_form
 msgid "API Key"
 msgstr "Klucz API"

@@ -20,6 +20,22 @@ msgstr ""
 "X-Generator: Weblate 5.14.3\n"
 
 #. module: l10n_tr_nilvera
+#: model:ir.module.module,description:base.module_l10n_tr_nilvera
+msgid ""
+"\n"
+"Base module containing core functionalities required by other Nilvera "
+"modules.\n"
+msgstr ""
+"\n"
+"Diğer Nilvera modülleri tarafından gerekli çekirdek işlevleri içeren temel "
+"modül.\n"
+
+#. module: l10n_tr_nilvera
+#: model:ir.module.module,shortdesc:base.module_l10n_tr_nilvera
+msgid "Türkiye - Nilvera"
+msgstr "Türkiye - Nilvera"
+
+#. module: l10n_tr_nilvera
 #: model_terms:ir.ui.view,arch_db:l10n_tr_nilvera.res_config_settings_view_form
 msgid ""
 "<i title=\"Go to Nilvera portal\" role=\"img\" aria-label=\"Go to Nilvera "

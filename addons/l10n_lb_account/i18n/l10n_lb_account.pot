@@ -16,6 +16,24 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_lb_account
+#: model:ir.module.module,description:base.module_l10n_lb_account
+msgid ""
+"\n"
+"This is the base module to manage the accounting chart for Lebanon in Odoo.\n"
+"==============================================================================\n"
+"Lebanon accounting basic charts,taxes and localization.\n"
+"Activates:\n"
+"* Chart of Accounts\n"
+"* Taxes\n"
+"* Fiscal Positions\n"
+msgstr ""
+
+#. module: l10n_lb_account
+#: model:ir.module.module,shortdesc:base.module_l10n_lb_account
+msgid "Lebanon - Accounting"
+msgstr ""
+
+#. module: l10n_lb_account
 #: model:ir.model,name:l10n_lb_account.model_account_chart_template
 msgid "Account Chart Template"
 msgstr ""

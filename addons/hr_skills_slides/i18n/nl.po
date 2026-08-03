@@ -26,6 +26,31 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: hr_skills_slides
+#: model:ir.module.module,description:base.module_hr_skills_slides
+msgid ""
+"\n"
+"E-learning and Skills for HR\n"
+"============================\n"
+"\n"
+"This module add completed courses to resume for employees.\n"
+msgstr ""
+"\n"
+"E-learning en Vaardigheden voor Personeelszaken\n"
+"============================\n"
+"\n"
+"Deze module voegt voltooide cursussen toe aan het CV van werknemers.\n"
+
+#. module: hr_skills_slides
+#: model:ir.module.module,summary:base.module_hr_skills_slides
+msgid "Add completed courses to resume of your employees"
+msgstr "Voltooide cursussen toevoegen aan het CV van je werknemers"
+
+#. module: hr_skills_slides
+#: model:ir.module.module,shortdesc:base.module_hr_skills_slides
+msgid "Skills e-learning"
+msgstr "Vaardigheden e-learning"
+
+#. module: hr_skills_slides
 #. odoo-python
 #: code:addons/hr_skills_slides/models/hr_employee.py:0
 msgid "%(completed)s / %(total)s"

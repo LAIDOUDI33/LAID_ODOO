@@ -25,6 +25,16 @@ msgstr ""
 "X-Generator: Weblate 5.14.3\n"
 
 #. module: l10n_fr_hr_holidays
+#: model:ir.module.module,shortdesc:base.module_l10n_fr_hr_holidays
+msgid "France - Time Off"
+msgstr "France - Congés"
+
+#. module: l10n_fr_hr_holidays
+#: model:ir.module.module,summary:base.module_l10n_fr_hr_holidays
+msgid "Management of leaves for part-time workers in France"
+msgstr "Gestion des congés pour des travailleurs à temps partiel"
+
+#. module: l10n_fr_hr_holidays
 #. odoo-python
 #: code:addons/l10n_fr_hr_holidays/models/hr_leave.py:0
 msgid ""

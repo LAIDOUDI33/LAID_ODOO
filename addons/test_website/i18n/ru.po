@@ -1,0 +1,56 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# * base
+#
+# Translators:
+# "Dylan Kiss (dyki)" <dyki@odoo.com>, 2025.
+# "Anastasiia Koroleva (koan)" <koan@odoo.com>, 2025.
+# Weblate <noreply-mt-weblate@weblate.org>, 2025.
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 17.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-05-12 08:36+0000\n"
+"PO-Revision-Date: 2026-06-20 08:28+0000\n"
+"Last-Translator: Anonymous <noreply@weblate.org>\n"
+"Language-Team: Russian <https://translate.odoo.com/projects/odoo-master/base/"
+"ru/>\n"
+"Language: ru\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || "
+"(n%100>=11 && n%100<=14)? 2 : 3);\n"
+"X-Generator: Weblate 2026.6.1\n"
+
+#. module: test_website
+#: model:ir.module.module,description:base.module_test_website
+msgid ""
+"This module contains tests related to website. Those are\n"
+"present in a separate module as we are testing module install/uninstall/"
+"upgrade\n"
+"and we don't want to reload the website module every time, including it's "
+"possible\n"
+"dependencies. Neither we want to add in website module some routes, views "
+"and\n"
+"models which only purpose is to run tests."
+msgstr ""
+"Этот модуль содержит тесты, связанные с веб-сайтом. Они\n"
+"представлены в отдельном модуле, так как мы тестируем установку/удаление/"
+"обновление модуля,\n"
+"и мы не хотим каждый раз перезагружать модуль веб-сайта, включая его "
+"возможные\n"
+"зависимости. Также мы не хотим добавлять в модуль веб-сайта маршруты, виды "
+"и\n"
+"модели, единственная цель которых — выполнение тестов."
+
+#. module: test_website
+#: model:ir.module.module,shortdesc:base.module_test_website
+msgid "Website Test"
+msgstr "Тест веб-сайта"
+
+#. module: test_website
+#: model:ir.module.module,summary:base.module_test_website
+msgid "Website Test, mainly for module install/uninstall tests"
+msgstr "Тест веб-сайта, в основном для тестов установки/удаления модулей"

@@ -26,6 +26,36 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_links
+#: model:ir.module.module,description:base.module_website_links
+msgid ""
+"\n"
+"Generate short links with analytics trackers (UTM) to share your pages "
+"through marketing campaigns.\n"
+"Those trackers can be used in Google Analytics to track clicks and visitors, "
+"or in Odoo reports to analyze the efficiency of those campaigns in terms of "
+"lead generation, related revenues (sales orders), recruitment, etc.\n"
+msgstr ""
+"\n"
+"分析トラッカー(UTM)との短いリンクを生成して、マーケティングキャンペーンを通じ"
+"てページを共有します。\n"
+"これらのトラッカーは、Google Analyticsでクリックと訪問者を追跡するために使用"
+"できます。また、Odooレポートで使用して、リード生成、関連する収益(販売注文)、"
+"採用などの観点からこれらのキャンペーンの効率を分析できます。\n"
+
+#. module: website_links
+#: model:ir.module.module,summary:base.module_website_links
+msgid "Generate trackable & short URLs"
+msgstr "追跡可能で短いURLを生成する"
+
+#. module: website_links
+#: model:ir.model,name:website_links.model_link_tracker
+#: model:ir.module.module,shortdesc:base.module_website_links
+#: model:ir.ui.menu,name:website_links.menu_link_tracker
+#: model_terms:ir.ui.view,arch_db:website_links.graphs
+msgid "Link Tracker"
+msgstr "リンクトラッカー"
+
+#. module: website_links
 #. odoo-javascript
 #: code:addons/website_links/static/src/interactions/website_links_charts.js:0
 msgid "# of clicks"
@@ -213,13 +243,6 @@ msgstr "先週"
 #: code:addons/website_links/static/src/interactions/website_links_code_editor.js:0
 msgid "Link Copied!"
 msgstr "リンクをコピーしました!"
-
-#. module: website_links
-#: model:ir.model,name:website_links.model_link_tracker
-#: model:ir.ui.menu,name:website_links.menu_link_tracker
-#: model_terms:ir.ui.view,arch_db:website_links.graphs
-msgid "Link Tracker"
-msgstr "リンクトラッカー"
 
 #. module: website_links
 #: model_terms:ir.ui.view,arch_db:website_links.create_shorten_url

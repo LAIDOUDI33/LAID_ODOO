@@ -22,6 +22,38 @@ msgstr ""
 "X-Generator: Weblate 5.16.2\n"
 
 #. module: l10n_bh
+#: model:ir.module.module,description:base.module_l10n_bh
+msgid ""
+"\n"
+"This is the base module to manage the accounting chart for Bahrain in Odoo.\n"
+"===========================================================================\n"
+"Bahrain accounting basic charts and localization.\n"
+"\n"
+"Activates:\n"
+" - Chart of Accounts\n"
+" - Taxes\n"
+" - Tax reports\n"
+" - Fiscal Positions\n"
+" - States\n"
+msgstr ""
+"\n"
+"هذا هو التطبيق الأساسي لإدارة شجرة الحسابات للبحرين في أودو.\n"
+"===========================================================================\n"
+"شجرة الحسابات الأساسية والأقلمة للمحاسبة البحرينية.\n"
+"\n"
+"تؤدي إلى تنشيط كل من:\n"
+" - شجرة الحسابات\n"
+" - الضرائب\n"
+" - التقارير الضريبية\n"
+" - الأوضاع المالية\n"
+" - الحالات\n"
+
+#. module: l10n_bh
+#: model:ir.module.module,shortdesc:base.module_l10n_bh
+msgid "Bahrain - Accounting"
+msgstr "البحرين - المحاسبة"
+
+#. module: l10n_bh
 #: model:account.report.line,name:l10n_bh.l10n_bh_tax_report_simplified_15
 msgid "15. Total VAT due for current period"
 msgstr "15. إجمالي ضريبة القيمة المضافة المستحقة عن الفترة الحالية"

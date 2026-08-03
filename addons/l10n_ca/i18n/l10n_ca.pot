@@ -16,6 +16,42 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_ca
+#: model:ir.module.module,description:base.module_l10n_ca
+msgid ""
+"\n"
+"This is the module to manage the Canadian accounting chart in Odoo.\n"
+"===========================================================================================\n"
+"\n"
+"Canadian accounting charts and localizations.\n"
+"\n"
+"Fiscal positions\n"
+"----------------\n"
+"\n"
+"When considering taxes to be applied, it is the province where the delivery occurs that matters.\n"
+"Therefore we decided to implement the most common case in the fiscal positions: delivery is the\n"
+"responsibility of the vendor and done at the customer location.\n"
+"\n"
+"Some examples:\n"
+"\n"
+"1) You have a customer from another province and you deliver to his location.\n"
+"On the customer, set the fiscal position to his province.\n"
+"\n"
+"2) You have a customer from another province. However this customer comes to your location\n"
+"with their truck to pick up products. On the customer, do not set any fiscal position.\n"
+"\n"
+"3) An international vendor doesn't charge you any tax. Taxes are charged at customs\n"
+"by the customs broker. On the vendor, set the fiscal position to International.\n"
+"\n"
+"4) An international vendor charge you your provincial tax. They are registered with your\n"
+"position.\n"
+msgstr ""
+
+#. module: l10n_ca
+#: model:ir.module.module,shortdesc:base.module_l10n_ca
+msgid "Canada - Accounting"
+msgstr ""
+
+#. module: l10n_ca
 #: model:account.report.line,name:l10n_ca.l10n_ca_tr_pst_mb_2
 msgid "2 - Commission"
 msgstr ""

@@ -25,6 +25,31 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: sale
+#: model:ir.module.module,description:base.module_sale
+msgid ""
+"\n"
+"This module contains all the common features of Sales Management and "
+"eCommerce.\n"
+msgstr ""
+
+#. module: sale
+#: model:ir.module.module,shortdesc:base.module_sale
+#: model:ir.ui.menu,name:sale.menu_reporting_sales
+#: model:ir.ui.menu,name:sale.sale_menu_root
+#: model_terms:ir.ui.view,arch_db:sale.crm_team_view_kanban_dashboard
+#: model_terms:ir.ui.view,arch_db:sale.product_document_form
+#: model_terms:ir.ui.view,arch_db:sale.res_config_settings_view_form
+#: model_terms:ir.ui.view,arch_db:sale.res_partner_view_buttons
+#: model_terms:ir.ui.view,arch_db:sale.view_order_form
+msgid "Sales"
+msgstr "Prodaja"
+
+#. module: sale
+#: model:ir.module.module,summary:base.module_sale
+msgid "Sales internal machinery"
+msgstr ""
+
+#. module: sale
 #. odoo-javascript
 #: code:addons/sale/static/src/views/sale_file_upload_kanban/sale_file_upload_kanban_renderer.js:0
 #: code:addons/sale/static/src/views/sale_file_upload_list/sale_file_upload_list_renderer.js:0
@@ -4302,17 +4327,6 @@ msgstr ""
 #: model:ir.model.fields,field_description:sale.field_sale_mass_cancel_orders__sale_order_ids
 msgid "Sale orders to cancel"
 msgstr ""
-
-#. module: sale
-#: model:ir.ui.menu,name:sale.menu_reporting_sales
-#: model:ir.ui.menu,name:sale.sale_menu_root
-#: model_terms:ir.ui.view,arch_db:sale.crm_team_view_kanban_dashboard
-#: model_terms:ir.ui.view,arch_db:sale.product_document_form
-#: model_terms:ir.ui.view,arch_db:sale.res_config_settings_view_form
-#: model_terms:ir.ui.view,arch_db:sale.res_partner_view_buttons
-#: model_terms:ir.ui.view,arch_db:sale.view_order_form
-msgid "Sales"
-msgstr "Prodaja"
 
 #. module: sale
 #: model:ir.model,name:sale.model_sale_advance_payment_inv

@@ -16,6 +16,30 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_es
+#: model:ir.module.module,description:base.module_l10n_es
+msgid ""
+"\n"
+"Spanish charts of accounts (PGCE 2008).\n"
+"========================================\n"
+"\n"
+"    * Defines the following chart of account templates:\n"
+"        * Spanish general chart of accounts 2008\n"
+"        * Spanish general chart of accounts 2008 for small and medium companies\n"
+"        * Spanish general chart of accounts 2008 for associations\n"
+"    * Defines templates for sale and purchase VAT\n"
+"    * Defines tax templates\n"
+"    * Defines fiscal positions for spanish fiscal legislation\n"
+"    * Defines tax reports mod 111, 115, 130 and 303\n"
+"\n"
+"5.3: Update taxes starting Q4 2024 according to BOE-A-2024-12944 (Royal Decree 4/2024) https://www.boe.es/buscar/act.php?id=BOE-A-2024-12944\n"
+msgstr ""
+
+#. module: l10n_es
+#: model:ir.module.module,shortdesc:base.module_l10n_es
+msgid "Spain - Accounting (PGCE 2008)"
+msgstr ""
+
+#. module: l10n_es
 #: model_terms:ir.ui.view,arch_db:l10n_es.res_config_settings_view_form
 msgid "Above this limit the simplified invoice won't be made"
 msgstr ""

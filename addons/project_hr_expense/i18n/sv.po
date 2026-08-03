@@ -20,6 +20,25 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: project_hr_expense
+#: model:ir.module.module,description:base.module_project_hr_expense
+msgid ""
+"Bridge created to add the number of expenses linked to an AA to a project "
+"form"
+msgstr ""
+"Brygga skapad för att lägga till antalet utgifter kopplade till en AA i ett "
+"projektformulär"
+
+#. module: project_hr_expense
+#: model:ir.module.module,shortdesc:base.module_project_hr_expense
+msgid "Project Expenses"
+msgstr "Kostnader för tjänst"
+
+#. module: project_hr_expense
+#: model:ir.module.module,summary:base.module_project_hr_expense
+msgid "Project expenses"
+msgstr "Projektkostnader"
+
+#. module: project_hr_expense
 #: model:ir.model.fields,field_description:project_hr_expense.field_hr_expense__display_name
 #: model:ir.model.fields,field_description:project_hr_expense.field_project_project__display_name
 msgid "Display Name"

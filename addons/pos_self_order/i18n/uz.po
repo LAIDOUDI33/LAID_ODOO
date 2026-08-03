@@ -27,6 +27,22 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: pos_self_order
+#: model:ir.module.module,summary:base.module_pos_self_order
+#, fuzzy
+msgid ""
+"Addon for the POS App that allows customers to view the menu on their "
+"smartphone."
+msgstr ""
+"Mijozlarga smartfonlarida menyuni ko‘rish imkonini beruvchi POS ilovasi "
+"uchun qo‘shimcha"
+
+#. module: pos_self_order
+#: model:ir.module.module,shortdesc:base.module_pos_self_order
+#, fuzzy
+msgid "POS Self Order"
+msgstr "POS o‘z-o‘ziga xizmat"
+
+#. module: pos_self_order
 #: model:ir.actions.report,print_report_name:pos_self_order.report_self_order_qr_codes_page
 #, fuzzy
 msgid "\"QR codes\""

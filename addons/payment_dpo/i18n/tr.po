@@ -22,6 +22,16 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: payment_dpo
+#: model:ir.module.module,summary:base.module_payment_dpo
+msgid "A Kenyan payment provider covering several African countries."
+msgstr "Birçok Afrika ülkesini kapsayan Kenyalı bir ödeme sağlayıcısı."
+
+#. module: payment_dpo
+#: model:ir.module.module,shortdesc:base.module_payment_dpo
+msgid "Payment Provider: DPO"
+msgstr "Ödeme Sağlayıcı: DPO"
+
+#. module: payment_dpo
 #: model:payment.method,name:payment_dpo.payment_method_amex
 msgid "American Express"
 msgstr ""

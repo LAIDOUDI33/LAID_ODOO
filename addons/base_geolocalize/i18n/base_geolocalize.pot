@@ -16,6 +16,19 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: base_geolocalize
+#: model:ir.module.module,description:base.module_base_geolocalize
+msgid ""
+"\n"
+"Partners Geolocation\n"
+"========================\n"
+msgstr ""
+
+#. module: base_geolocalize
+#: model:ir.module.module,shortdesc:base.module_base_geolocalize
+msgid "Partners Geolocation"
+msgstr ""
+
+#. module: base_geolocalize
 #: model:ir.model.fields,field_description:base_geolocalize.field_res_config_settings__geoloc_provider_id
 msgid "API"
 msgstr ""

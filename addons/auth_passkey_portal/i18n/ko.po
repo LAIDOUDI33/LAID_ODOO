@@ -21,6 +21,33 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: auth_passkey_portal
+#: model:ir.module.module,description:base.module_auth_passkey_portal
+msgid ""
+"\n"
+"The implementation of Passkeys using the webauthn protocol.\n"
+"===========================================================\n"
+"\n"
+"Passkeys are a secure alternative to a username and a password.\n"
+"When a user logs in with a Passkey, MFA will not be required.\n"
+msgstr ""
+"\n"
+"웹인증 프로토콜을 사용하여 패스키를 구현합니다.\n"
+"===========================================================\n"
+"\n"
+"패스키는 기존 사용자 아이디와 비밀번호에 대한 안전한 대안을 제공합니다.\n"
+"패스키로 로그인할 때는 2단계 인증(MFA)이 필요하지 않습니다.\n"
+
+#. module: auth_passkey_portal
+#: model:ir.module.module,summary:base.module_auth_passkey_portal
+msgid "Passkeys for portal users"
+msgstr "포털 사용자 패스키"
+
+#. module: auth_passkey_portal
+#: model:ir.module.module,shortdesc:base.module_auth_passkey_portal
+msgid "Passkeys Portal"
+msgstr "Passkeys 포털"
+
+#. module: auth_passkey_portal
 #: model_terms:ir.ui.view,arch_db:auth_passkey_portal.passkeys_portal_hook
 msgid "Add Passkey"
 msgstr "패스키 추가"

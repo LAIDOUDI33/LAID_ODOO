@@ -16,6 +16,23 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_my_edi_pos
+#: model:ir.module.module,description:base.module_l10n_my_edi_pos
+msgid ""
+"\n"
+"This modules allows the user to send consolidated invoices to the MyInvois system when using the POS app.\n"
+msgstr ""
+
+#. module: l10n_my_edi_pos
+#: model:ir.module.module,summary:base.module_l10n_my_edi_pos
+msgid "Consolidated E-invoicing using MyInvois"
+msgstr ""
+
+#. module: l10n_my_edi_pos
+#: model:ir.module.module,shortdesc:base.module_l10n_my_edi_pos
+msgid "Malaysia - E-invoicing (POS)"
+msgstr ""
+
+#. module: l10n_my_edi_pos
 #: model_terms:ir.ui.view,arch_db:l10n_my_edi_pos.view_partner_form_pos_ui_inherit_l10n_my_edi_pos
 msgid ""
 "<span class=\"text-success oi\" data-icon=\"check\" title=\"Validation Successful\" invisible=\"not l10n_my_edi_display_tin_warning or l10n_my_tin_validation_state != 'valid'\"/>\n"

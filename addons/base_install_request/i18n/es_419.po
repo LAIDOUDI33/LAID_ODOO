@@ -22,6 +22,22 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: base_install_request
+#: model:ir.module.module,description:base.module_base_install_request
+msgid ""
+"\n"
+"Allow internal users requesting a module installation\n"
+"=====================================================\n"
+msgstr ""
+"\n"
+"Permita que los usuarios internos soliciten la instalación de un módulo\n"
+"=====================================================\n"
+
+#. module: base_install_request
+#: model:ir.module.module,shortdesc:base.module_base_install_request
+msgid "Base - Module Install Request"
+msgstr "Base - Solicitud de instalación de modulo"
+
+#. module: base_install_request
 #: model_terms:ir.ui.view,arch_db:base_install_request.mail_installation_request_template
 msgid ""
 ",\n"

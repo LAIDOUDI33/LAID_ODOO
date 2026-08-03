@@ -20,6 +20,27 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_timesheet
+#: model:ir.module.module,description:base.module_website_timesheet
+msgid ""
+"\n"
+"When hiding the timesheets in the portal, this module allows also hiding "
+"timesheet information on other records.\n"
+msgstr ""
+"\n"
+"Bu modül, portaldaki Çalışma Çizelgelerini gizlerken, diğer kayıtlardaki "
+"Çalışma Çizelgesi bilgilerinin de gizlenmesini sağlar.\n"
+
+#. module: website_timesheet
+#: model:ir.module.module,summary:base.module_website_timesheet
+msgid "Allow hiding timesheet information in the portal"
+msgstr "Portalda Çalışma Çizelgeleri bilgilerinin gizlenmesine izin verin"
+
+#. module: website_timesheet
+#: model:ir.module.module,shortdesc:base.module_website_timesheet
+msgid "Hide Portal Timesheet Information"
+msgstr "Portal Çalışma Çizelgesi Bilgilerini Gizle"
+
+#. module: website_timesheet
 #: model:ir.model,name:website_timesheet.model_account_analytic_line
 msgid "Analytic Line"
 msgstr "Analitik Satırı"

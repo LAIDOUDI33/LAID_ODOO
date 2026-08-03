@@ -16,6 +16,18 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_ke
+#: model:ir.module.module,description:base.module_l10n_ke
+msgid ""
+"\n"
+"This provides a base chart of accounts and taxes template for use in Odoo.\n"
+msgstr ""
+
+#. module: l10n_ke
+#: model:ir.module.module,shortdesc:base.module_l10n_ke
+msgid "Kenya - Accounting"
+msgstr ""
+
+#. module: l10n_ke
 #: model:account.report.line,name:l10n_ke.tax_report_line_general_rate_sales
 msgid "1. Taxable Sales (General Rate 16%)"
 msgstr ""

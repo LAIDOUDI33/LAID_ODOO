@@ -16,6 +16,22 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_qa
+#: model:ir.module.module,description:base.module_l10n_qa
+msgid ""
+"\n"
+"This is the base module to manage the accounting chart for Qatar in Odoo.\n"
+"==============================================================================\n"
+"Qatar accounting basic charts and localization.\n"
+"Activates:\n"
+"- Chart of accounts\n"
+msgstr ""
+
+#. module: l10n_qa
+#: model:ir.module.module,shortdesc:base.module_l10n_qa
+msgid "Qatar - Accounting"
+msgstr ""
+
+#. module: l10n_qa
 #: model:ir.model,name:l10n_qa.model_account_chart_template
 msgid "Account Chart Template"
 msgstr ""

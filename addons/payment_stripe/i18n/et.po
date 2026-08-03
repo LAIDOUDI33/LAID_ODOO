@@ -25,6 +25,17 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: payment_stripe
+#: model:ir.module.module,summary:base.module_payment_stripe
+msgid "An Irish-American payment provider covering the US and many others."
+msgstr ""
+"Iiri-Ameerika makseteenuse pakkuja, mis katab USAd ja paljusid teisi riike."
+
+#. module: payment_stripe
+#: model:ir.module.module,shortdesc:base.module_payment_stripe
+msgid "Payment Provider: Stripe"
+msgstr "Makseteenuse pakkuja: Stripe"
+
+#. module: payment_stripe
 #: model:payment.method,name:payment_stripe.payment_method_ach_direct_debit
 msgid "ACH Direct Debit"
 msgstr ""

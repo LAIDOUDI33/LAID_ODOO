@@ -23,6 +23,29 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_project
+#: model:ir.module.module,description:base.module_website_project
+msgid ""
+"\n"
+"Generate tasks in Project app from a form published on your website. This "
+"module requires the use of the *Form Builder* module in order to build the "
+"form.\n"
+msgstr ""
+"\n"
+"Genere tareas en la aplicación Proyecto a partir de un formulario publicado "
+"en su sitio web. Este módulo requiere el uso del módulo *Creador de "
+"formularios* para crear el formulario.\n"
+
+#. module: website_project
+#: model:ir.module.module,summary:base.module_website_project
+msgid "Add a task suggestion form to your website"
+msgstr "Añada un formulario de sugerencia de tareas a su sitio web"
+
+#. module: website_project
+#: model:ir.module.module,shortdesc:base.module_website_project
+msgid "Online Task Submission"
+msgstr "Envío de tareas en línea"
+
+#. module: website_project
 #. odoo-javascript
 #: code:addons/website_project/static/src/js/website_project_editor.js:0
 msgid "Ask Your Question"

@@ -31,6 +31,22 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: web_tour
+#: model:ir.module.module,description:base.module_web_tour
+msgid ""
+"\n"
+"Odoo Web tours.\n"
+"========================\n"
+"\n"
+msgstr ""
+
+#. module: web_tour
+#: model:ir.actions.act_window,name:web_tour.tour_action
+#: model:ir.module.module,shortdesc:base.module_web_tour
+#: model:ir.ui.menu,name:web_tour.menu_tour_action
+msgid "Tours"
+msgstr "Turai"
+
+#. module: web_tour
 #. odoo-javascript
 #: code:addons/web_tour/static/src/js/tour_recorder/tour_recorder.js:0
 msgid "'%s' created"
@@ -356,12 +372,6 @@ msgstr "Turas"
 #: model:ir.model,name:web_tour.model_web_tour_tour_step
 msgid "Tour's step"
 msgstr ""
-
-#. module: web_tour
-#: model:ir.actions.act_window,name:web_tour.tour_action
-#: model:ir.ui.menu,name:web_tour.menu_tour_action
-msgid "Tours"
-msgstr "Turai"
 
 #. module: web_tour
 #. odoo-javascript

@@ -21,6 +21,27 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: sale_timesheet_margin
+#: model:ir.module.module,description:base.module_sale_timesheet_margin
+msgid ""
+"\n"
+"Allows to compute accurate margin for Service sales.\n"
+"======================================================\n"
+msgstr ""
+"\n"
+"Permite calcular un margen preciso para la venta de servicios.\n"
+"======================================================\n"
+
+#. module: sale_timesheet_margin
+#: model:ir.module.module,summary:base.module_sale_timesheet_margin
+msgid "Bridge module between Sales Margin and Sales Timesheet"
+msgstr "Módulo de enlace entre Margen de Ventas y Hoja de horas de Ventas"
+
+#. module: sale_timesheet_margin
+#: model:ir.module.module,shortdesc:base.module_sale_timesheet_margin
+msgid "Service Margins in Sales Orders"
+msgstr "Márgenes de servicio en órdenes de venta"
+
+#. module: sale_timesheet_margin
 #: model:ir.model.fields,field_description:sale_timesheet_margin.field_sale_order_line__display_name
 msgid "Display Name"
 msgstr "Mostrar nombre"

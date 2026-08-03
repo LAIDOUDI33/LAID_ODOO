@@ -21,6 +21,43 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: pos_razorpay
+#: model:ir.module.module,description:base.module_pos_razorpay
+msgid ""
+"\n"
+"Allow Razorpay POS payments\n"
+"==============================\n"
+"\n"
+"This module allows customers to pay for their orders with debit/credit\n"
+"cards and UPI. The transactions are processed by Razorpay POS. A Razorpay "
+"merchant account is necessary. It allows the\n"
+"following:\n"
+"\n"
+"* Fast payment by just swiping/scanning a credit/debit card or a QR code "
+"while on the payment screen\n"
+"* Supported cards: Visa, MasterCard, Rupay, UPI\n"
+msgstr ""
+"\n"
+"อนุญาตการชำระเงิน Razorpay POS\n"
+"==============================\n"
+"\n"
+"โมดูลนี้ช่วยให้ลูกค้าชำระเงินสำหรับคำสั่งซื้อด้วยบัตรเดบิต/เครดิต และ UPI\n"
+"ธุรกรรมได้รับการประมวลผลโดย Razorpay POS จำเป็นต้องมีบัญชีผู้ค้า Razorpay \n"
+"มีการอนุญาตต่อไปนี้:\n"
+"\n"
+"* ชำระเงินรวดเร็วเพียงรูด/สแกนบัตรเครดิต/เดบิต หรือ QR โค้ดขณะอยู่บนหน้าจอการชำระเงิน\n"
+"* บัตรที่รองรับ: Visa, MasterCard, Rupay, UPI\n"
+
+#. module: pos_razorpay
+#: model:ir.module.module,summary:base.module_pos_razorpay
+msgid "Integrate your POS with a Razorpay payment terminal"
+msgstr "รวม POS ของคุณเข้ากับเครื่องชำระเงิน Razorpay"
+
+#. module: pos_razorpay
+#: model:ir.module.module,shortdesc:base.module_pos_razorpay
+msgid "POS Razorpay"
+msgstr "POS Razorpay"
+
+#. module: pos_razorpay
 #. odoo-javascript
 #: code:addons/pos_razorpay/static/src/app/utls/payment/payment_razorpay.js:0
 #, fuzzy

@@ -20,6 +20,18 @@ msgstr ""
 "X-Generator: Weblate 5.12.2\n"
 
 #. module: l10n_bg
+#: model:ir.module.module,description:base.module_l10n_bg
+msgid ""
+"\n"
+"Chart accounting and taxes for Bulgaria\n"
+msgstr ""
+
+#. module: l10n_bg
+#: model:ir.module.module,shortdesc:base.module_l10n_bg
+msgid "Bulgaria - Accounting"
+msgstr ""
+
+#. module: l10n_bg
 #: model:ir.model,name:l10n_bg.model_account_chart_template
 msgid "Account Chart Template"
 msgstr "Шаблон за схема на сметката"

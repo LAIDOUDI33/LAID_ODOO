@@ -16,6 +16,26 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: test_mail_full
+#: model:ir.module.module,shortdesc:base.module_test_mail_full
+msgid "Mail Tests (Full)"
+msgstr ""
+
+#. module: test_mail_full
+#: model:ir.module.module,summary:base.module_test_mail_full
+msgid ""
+"Mail Tests: performances and tests specific to mail with all sub-modules"
+msgstr ""
+
+#. module: test_mail_full
+#: model:ir.module.module,description:base.module_test_mail_full
+msgid ""
+"This module contains tests related to various mail features\n"
+"and mail-related sub modules. Those tests are present in a separate module as it\n"
+"contains models used only to perform tests independently to functional aspects of\n"
+"real applications. "
+msgstr ""
+
+#. module: test_mail_full
 #: model:ir.model.fields,field_description:test_mail_full.field_mail_test_sms__message_needaction
 #: model:ir.model.fields,field_description:test_mail_full.field_mail_test_sms_bl__message_needaction
 #: model:ir.model.fields,field_description:test_mail_full.field_mail_test_sms_partner__message_needaction

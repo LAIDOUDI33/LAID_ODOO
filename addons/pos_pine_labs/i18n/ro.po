@@ -21,6 +21,49 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: pos_pine_labs
+#: model:ir.module.module,description:base.module_pos_pine_labs
+msgid ""
+"\n"
+"Allow Pine Labs POS payments\n"
+"==============================\n"
+"\n"
+"This module is available only for companies that use INR currency.\n"
+"It enables customers to pay for their orders using debit/credit cards and "
+"UPI through Pine Labs POS terminals.\n"
+"A Pine Labs merchant account is required to process transactions.\n"
+"Features include:\n"
+"\n"
+"* Quick payments by swiping, scanning, or tapping your credit/debit card or "
+"UPI QR code at the payment terminal.\n"
+"* Supported cards: Visa, MasterCard, RuPay.\n"
+msgstr ""
+"\n"
+"Permite plăți POS Pine Labs\n"
+"==============================\n"
+"\n"
+"Acest modul este disponibil doar pentru companiile care folosesc moneda "
+"INR.\n"
+"Permite clienților să plătească comenzile cu carduri de debit/credit și UPI "
+"prin terminale POS Pine Labs.\n"
+"Este necesar un cont de comerciant Pine Labs pentru procesarea "
+"tranzacțiilor.\n"
+"Caracteristici:\n"
+"\n"
+"* Plăți rapide prin trecerea, scanarea sau atingerea cardului sau codului QR "
+"UPI la terminalul de plată.\n"
+"* Carduri suportate: Visa, MasterCard, RuPay.\n"
+
+#. module: pos_pine_labs
+#: model:ir.module.module,summary:base.module_pos_pine_labs
+msgid "Integrate your POS with Pine Labs payment terminals"
+msgstr "Integrează POS-ul cu terminalele de plată Pine Labs"
+
+#. module: pos_pine_labs
+#: model:ir.module.module,shortdesc:base.module_pos_pine_labs
+msgid "POS Pine Labs"
+msgstr "POS Pine Labs"
+
+#. module: pos_pine_labs
 #: model:ir.model.fields,help:pos_pine_labs.field_pos_payment_method__pine_labs_client
 msgid "A client id issued directly to the merchant by Pine Labs."
 msgstr "Un ID de client emis direct comerciantului de către Pine Labs."

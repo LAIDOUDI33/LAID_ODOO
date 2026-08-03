@@ -27,6 +27,20 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: payment_mollie
+#: model:ir.module.module,summary:base.module_payment_mollie
+#, fuzzy
+msgid "A Dutch payment provider covering several European countries."
+msgstr ""
+"Yevropaning bir nechta mamlakatlarini qamrab olgan Gollandiya to‘lov "
+"provayderi."
+
+#. module: payment_mollie
+#: model:ir.module.module,shortdesc:base.module_payment_mollie
+#, fuzzy
+msgid "Payment Provider: Mollie"
+msgstr "To‘lov provayderi: Mollie"
+
+#. module: payment_mollie
 #: model_terms:ir.ui.view,arch_db:payment_mollie.payment_provider_form
 #, fuzzy
 msgid "API Key"

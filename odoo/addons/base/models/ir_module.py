@@ -1002,6 +1002,24 @@ class IrModuleModule(models.Model):
         translation_importer.save(overwrite=overwrite)
 
     @api.model
+    def _load_manifest_terms(self, langs):
+        """Load module manifest translations for all non-installed modules."""
+
+        if not langs or (len(langs) == 1 and langs[0] in ('en_US', 'en')):
+            return
+
+        uninstalled_modules = self.search([('state', '!=', 'installed')])
+
+        for module in uninstalled_modules:
+            manifest = Manifest.for_addon(module.name, display_warning=False)
+            if not manifest:
+                continue
+            translations_by_field = manifest.get_translations(langs)
+            if not translations_by_field:
+                continue
+            module.write(translations_by_field)
+
+    @api.model
     def _extract_resource_attachment_translations(self, module, lang):
         yield from ()
 

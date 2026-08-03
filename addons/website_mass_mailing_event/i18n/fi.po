@@ -19,6 +19,31 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_mass_mailing_event
+#: model:ir.module.module,description:base.module_website_mass_mailing_event
+msgid ""
+"\n"
+"Add pre-filled event snippets for the mass_mailing html builder, with links "
+"to the matching website event page.\n"
+"The snippet is linked to specified events and will load a snapshot of their "
+"data to be sent by email.\n"
+msgstr ""
+"\n"
+"Lisää mass_mailing html-rakennustyökalulle valmiiksi täytetyt "
+"tapahtumakatkelmat sekä linkit verkkosivuston tapahtumasivulle.\n"
+"Katkelma on linkitetty määritettyihin tapahtumiin, joiden tiedoista se lataa "
+"tilannekuvan sähköpostitse lähetettäväksi.\n"
+
+#. module: website_mass_mailing_event
+#: model:ir.module.module,summary:base.module_website_mass_mailing_event
+msgid "Add pre-filled snippets in mass_mailing with an event snapshot"
+msgstr ""
+
+#. module: website_mass_mailing_event
+#: model:ir.module.module,shortdesc:base.module_website_mass_mailing_event
+msgid "Mass mailing on website events"
+msgstr ""
+
+#. module: website_mass_mailing_event
 #: model_terms:ir.ui.view,arch_db:website_mass_mailing_event.s_event_aside
 #: model_terms:ir.ui.view,arch_db:website_mass_mailing_event.s_event_card
 #: model_terms:ir.ui.view,arch_db:website_mass_mailing_event.s_event_columns

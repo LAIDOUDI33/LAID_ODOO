@@ -1,0 +1,55 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# * base
+#
+# Translators:
+# "Dylan Kiss (dyki)" <dyki@odoo.com>, 2025.
+# "Anastasiia Koroleva (koan)" <koan@odoo.com>, 2025.
+# Weblate <noreply-mt-weblate@weblate.org>, 2025.
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 17.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-05-12 08:36+0000\n"
+"PO-Revision-Date: 2026-06-20 08:28+0000\n"
+"Last-Translator: Anonymous <noreply@weblate.org>\n"
+"Language-Team: Russian <https://translate.odoo.com/projects/odoo-master/base/"
+"ru/>\n"
+"Language: ru\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || "
+"(n%100>=11 && n%100<=14)? 2 : 3);\n"
+"X-Generator: Weblate 2026.6.1\n"
+
+#. module: test_mail_full
+#: model:ir.module.module,shortdesc:base.module_test_mail_full
+msgid "Mail Tests (Full)"
+msgstr "Тесты почты (полные)"
+
+#. module: test_mail_full
+#: model:ir.module.module,summary:base.module_test_mail_full
+msgid ""
+"Mail Tests: performances and tests specific to mail with all sub-modules"
+msgstr ""
+"Тесты почты: производительность и тесты, специфичные для почты с всеми "
+"подмодулями"
+
+#. module: test_mail_full
+#: model:ir.module.module,description:base.module_test_mail_full
+msgid ""
+"This module contains tests related to various mail features\n"
+"and mail-related sub modules. Those tests are present in a separate module "
+"as it\n"
+"contains models used only to perform tests independently to functional "
+"aspects of\n"
+"real applications. "
+msgstr ""
+"Этот модуль содержит тесты, связанные с различными функциями почты\n"
+"и связанными с почтой подмодулями. Эти тесты представлены в отдельном "
+"модуле, так как он\n"
+"содержит модели, используемые только для выполнения тестов независимо от "
+"функциональных аспектов\n"
+"реальных приложений. "

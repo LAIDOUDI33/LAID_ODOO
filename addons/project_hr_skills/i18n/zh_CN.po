@@ -21,6 +21,25 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: project_hr_skills
+#: model:ir.module.module,description:base.module_project_hr_skills
+msgid ""
+"\n"
+"Search project tasks according to the assignees' skills\n"
+msgstr ""
+"\n"
+"根据被指派人员的技能搜索项目任务\n"
+
+#. module: project_hr_skills
+#: model:ir.module.module,shortdesc:base.module_project_hr_skills
+msgid "Project - Skills"
+msgstr "项目 - 技能"
+
+#. module: project_hr_skills
+#: model:ir.module.module,summary:base.module_project_hr_skills
+msgid "Project skills"
+msgstr "项目技能"
+
+#. module: project_hr_skills
 #: model:ir.model,website_form_label:project_hr_skills.model_project_task
 msgid "Create a Task"
 msgstr "创建任务"

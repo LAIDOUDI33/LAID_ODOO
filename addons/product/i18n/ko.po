@@ -27,6 +27,55 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: product
+#: model:ir.module.module,description:base.module_product
+msgid ""
+"\n"
+"This is the base module for managing products and pricelists in Odoo.\n"
+"========================================================================\n"
+"\n"
+"Products support variants, different pricing methods, vendors information,\n"
+"make to stock/order, different units of measure, packaging and properties.\n"
+"\n"
+"Pricelists support:\n"
+"-------------------\n"
+"    * Multiple-level of discount (by product, category, quantities)\n"
+"    * Compute price based on different criteria:\n"
+"        * Other pricelist\n"
+"        * Cost price\n"
+"        * List price\n"
+"        * Vendor price\n"
+"\n"
+"Pricelists preferences by product and/or partners.\n"
+"\n"
+"Print product labels with barcode.\n"
+msgstr ""
+"\n"
+"제품 및 가격표를 관리하는 Odoo의 기본 모듈입니다.\n"
+"========================================================================\n"
+"\n"
+"제품의 다양한 변종, 다양한 가격 책정 방법, 공급업체 정보, 재고/주문, 다양한 "
+"단위, 포장 및 속성을 지원합니다.\n"
+"재고/주문, 다양한 단위, 포장 및 속성을 지원합니다.\n"
+"\n"
+"가격표 지원:\n"
+"-------------------\n"
+"    * 다단계 할인(제품, 범주, 수량별)\n"
+"    * 다양한 기준에 따라 가격을 계산:\n"
+"        * 다른 가격표\n"
+"        * 원가\n"
+"        * 판매가\n"
+"        * 공급업체 가격\n"
+"\n"
+"제품 및 거래처별 가격표 설정.\n"
+"\n"
+"바코드가 있는 제품 꼬리표를 인쇄합니다.\n"
+
+#. module: product
+#: model:ir.module.module,shortdesc:base.module_product
+msgid "Products & Pricelists"
+msgstr "제품 및 가격표"
+
+#. module: product
 #: model:ir.model.fields,field_description:product.field_product_pricelist_item__product_variant_count
 #: model:ir.model.fields,field_description:product.field_product_product__product_variant_count
 #: model:ir.model.fields,field_description:product.field_product_template__product_variant_count

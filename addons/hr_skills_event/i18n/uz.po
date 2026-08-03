@@ -27,6 +27,31 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: hr_skills_event
+#: model:ir.module.module,description:base.module_hr_skills_event
+#, fuzzy
+msgid ""
+"\n"
+"Events and Skills for HR\n"
+"============================\n"
+"\n"
+"This module add completed course events to resume for employees.\n"
+msgstr ""
+"HR uchun tadbirlar va ko‘nikmalar ============================ Ushbu modul "
+"xodimlar uchun yakunlangan kurs tadbirlarini rezyumega qo‘shadi."
+
+#. module: hr_skills_event
+#: model:ir.module.module,summary:base.module_hr_skills_event
+#, fuzzy
+msgid "Link training events to resume of your employees"
+msgstr "Xodimlaringiz rezyumesiga o‘quv tadbirlarini bog‘lang"
+
+#. module: hr_skills_event
+#: model:ir.module.module,shortdesc:base.module_hr_skills_event
+#, fuzzy
+msgid "Skills Events"
+msgstr "Ko‘nikmalar tadbirlari"
+
+#. module: hr_skills_event
 #: model:ir.model.fields,field_description:hr_skills_event.field_hr_resume_line__course_type
 #, fuzzy
 msgid "Course Type"

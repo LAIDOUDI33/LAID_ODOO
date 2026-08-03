@@ -26,6 +26,49 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: stock_account
+#: model:ir.module.module,description:base.module_stock_account
+msgid ""
+"\n"
+"WMS Accounting module\n"
+"======================\n"
+"This module makes the link between the 'stock' and 'account' modules and "
+"allows you to create accounting entries to value your stock movements\n"
+"\n"
+"Key Features\n"
+"------------\n"
+"* Stock Valuation (periodical or automatic)\n"
+"* Invoice from Picking\n"
+"\n"
+"Dashboard / Reports for Warehouse Management includes:\n"
+"------------------------------------------------------\n"
+"* Stock Inventory Value at given date (support dates in the past)\n"
+msgstr ""
+"\n"
+"Phân hệ kế toán kho\n"
+"===================\n"
+"Phân hệ này tạo một liên kết giữa phân hệ 'Kho' và 'Kế toán' và cho phép bạn "
+"tạo bút toán để xác định giá trị các lần điều chuyển tồn kho\n"
+"\n"
+"Tính năng Chính\n"
+"---------------------------\n"
+"* Định giá tồn kho (định kỳ hoặc tự động)\n"
+"* Xuất hóa đơn khi Lấy hàng\n"
+"\n"
+"Báo cáo tổng quan/Báo cáo cho Quản lý Kho bao gồm:\n"
+"-------------------------------------------------------------\n"
+"* Định giá Tồn kho theo ngày xác định (hỗ trợ cả ngày trong quá khứ)\n"
+
+#. module: stock_account
+#: model:ir.module.module,summary:base.module_stock_account
+msgid "Inventory, Logistic, Valuation, Accounting"
+msgstr "Tồn kho, Logistics, Định giá, Kế toán kho"
+
+#. module: stock_account
+#: model:ir.module.module,shortdesc:base.module_stock_account
+msgid "WMS Accounting"
+msgstr "Kế toán kho"
+
+#. module: stock_account
 #. odoo-python
 #: code:addons/stock_account/models/stock_quant.py:0
 msgid " [Accounted on %s]"

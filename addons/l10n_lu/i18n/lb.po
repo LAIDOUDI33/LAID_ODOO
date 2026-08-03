@@ -20,6 +20,31 @@ msgstr ""
 "X-Generator: Weblate 5.12.2\n"
 
 #. module: l10n_lu
+#: model:ir.module.module,description:base.module_l10n_lu
+msgid ""
+"\n"
+"This is the base module to manage the accounting chart for Luxembourg.\n"
+"======================================================================\n"
+"\n"
+"    * the Luxembourg Official Chart of Accounts (law of June 2009 + 2015 "
+"chart and Taxes),\n"
+"    * the Tax Code Chart for Luxembourg\n"
+"    * the main taxes used in Luxembourg\n"
+"    * default fiscal position for local, intracom, extracom\n"
+"\n"
+"Notes:\n"
+"    * the 2015 chart of taxes is implemented to a large extent,\n"
+"      see the first sheet of tax.xls for details of coverage\n"
+"    * to update the chart of tax template, update tax.xls and run "
+"tax2csv.py\n"
+msgstr ""
+
+#. module: l10n_lu
+#: model:ir.module.module,shortdesc:base.module_l10n_lu
+msgid "Luxembourg - Accounting"
+msgstr ""
+
+#. module: l10n_lu
 #: model:account.account.tag,name:l10n_lu.account_tag_001
 msgid "001 - Supply of inhouse manufactured goods"
 msgstr "001 - Versuergung vun intern fabrizéierte Wueren"

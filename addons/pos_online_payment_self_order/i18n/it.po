@@ -21,6 +21,16 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: pos_online_payment_self_order
+#: model:ir.module.module,shortdesc:base.module_pos_online_payment_self_order
+msgid "POS Self-Order / Online Payment"
+msgstr "Ordine fai da te POS/pagamento online"
+
+#. module: pos_online_payment_self_order
+#: model:ir.module.module,summary:base.module_pos_online_payment_self_order
+msgid "Support online payment in self-order"
+msgstr "Supporto pagamento online per gli ordini fai da te"
+
+#. module: pos_online_payment_self_order
 #: model:ir.model,name:pos_online_payment_self_order.model_res_config_settings
 msgid "Config Settings"
 msgstr "Impostazioni di configurazione"

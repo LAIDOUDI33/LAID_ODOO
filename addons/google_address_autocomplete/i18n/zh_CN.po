@@ -22,6 +22,25 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: google_address_autocomplete
+#: model:ir.module.module,description:base.module_google_address_autocomplete
+msgid ""
+"\n"
+"This module Auto complete the address data.\n"
+msgstr ""
+"\n"
+"该模块自动完成地址数据。\n"
+
+#. module: google_address_autocomplete
+#: model:ir.module.module,summary:base.module_google_address_autocomplete
+msgid "Assist with automatic completion & suggestions when filling address"
+msgstr "填写地址时协助自动完成和建议"
+
+#. module: google_address_autocomplete
+#: model:ir.module.module,shortdesc:base.module_google_address_autocomplete
+msgid "Google Address Autocomplete"
+msgstr "Google 地址自动完成"
+
+#. module: google_address_autocomplete
 #: model_terms:ir.ui.view,arch_db:google_address_autocomplete.res_config_settings_view_form
 msgid ""
 "<i class=\"oi\" data-icon=\"east\"/>\n"

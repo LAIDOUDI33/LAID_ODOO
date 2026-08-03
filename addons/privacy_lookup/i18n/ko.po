@@ -21,6 +21,12 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: privacy_lookup
+#: model:ir.module.module,shortdesc:base.module_privacy_lookup
+#: model:ir.ui.menu,name:privacy_lookup.privacy_menu
+msgid "Privacy"
+msgstr "비공개"
+
+#. module: privacy_lookup
 #: model:ir.model.fields,field_description:privacy_lookup.field_privacy_log__additional_note
 msgid "Additional Note"
 msgstr "추가 메모"
@@ -210,11 +216,6 @@ msgstr "이름"
 #: model_terms:ir.ui.view,arch_db:privacy_lookup.privacy_lookup_wizard_line_view_tree
 msgid "Open Record"
 msgstr "레코드 열기"
-
-#. module: privacy_lookup
-#: model:ir.ui.menu,name:privacy_lookup.privacy_menu
-msgid "Privacy"
-msgstr "비공개"
 
 #. module: privacy_lookup
 #: model:ir.model,name:privacy_lookup.model_privacy_log

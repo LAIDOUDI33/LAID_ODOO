@@ -21,6 +21,26 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: purchase_edi_ubl_bis3
+#: model:ir.module.module,description:base.module_purchase_edi_ubl_bis3
+msgid ""
+"\n"
+"Allows to export and import formats: UBL Bis 3.\n"
+"When generating the PDF on the order, the PDF will be embedded inside the "
+"xml for all UBL formats. This allows the\n"
+"receiver to retrieve the PDF with only the xml file.\n"
+msgstr ""
+"\n"
+"Permet d'exporter et d'importer des formats : UBL Bis 3.\n"
+"Lors de la génération du PDF sur la commande, le PDF sera intégré dans le "
+"xml pour tous les formats UBL. Cela permet au\n"
+"destinataire de récupérer le PDF avec seulement le fichier xml.\n"
+
+#. module: purchase_edi_ubl_bis3
+#: model:ir.module.module,shortdesc:base.module_purchase_edi_ubl_bis3
+msgid "Import/Export electronic orders with UBL"
+msgstr "Importer/exporter des commandes électroniques avec UBL"
+
+#. module: purchase_edi_ubl_bis3
 #. odoo-python
 #: code:addons/purchase_edi_ubl_bis3/models/purchase_edi_xml_ubl_bis3.py:0
 msgid "Could not retrieve the product named: %(name)s"

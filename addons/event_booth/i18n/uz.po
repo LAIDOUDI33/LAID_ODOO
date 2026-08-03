@@ -27,6 +27,26 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: event_booth
+#: model:ir.module.module,description:base.module_event_booth
+#, fuzzy
+msgid ""
+"\n"
+"Create booths for your favorite event.\n"
+msgstr "O‘zingiz yoqtirgan tadbir uchun ko‘rgazma stendlarini tayyorlang."
+
+#. module: event_booth
+#: model:ir.module.module,shortdesc:base.module_event_booth
+#, fuzzy
+msgid "Events Booths"
+msgstr "Tadbir stendlari"
+
+#. module: event_booth
+#: model:ir.module.module,summary:base.module_event_booth
+#, fuzzy
+msgid "Manage event booths"
+msgstr "Tadbir stendlarini boshqarish"
+
+#. module: event_booth
 #: model_terms:ir.ui.view,arch_db:event_booth.event_booth_booked_template
 #, fuzzy
 msgid "<b>Renter Email</b>:"

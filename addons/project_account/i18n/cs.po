@@ -21,6 +21,32 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: project_account
+#: model:ir.module.module,description:base.module_project_account
+msgid ""
+"\n"
+"Allows the computation of some section for the project profitability\n"
+"==================================================================================================\n"
+"This module allows the computation of the 'Vendor Bills', 'Other Costs' and "
+"'Other Revenues' section for the project profitability, in the project "
+"update view.\n"
+msgstr ""
+"\n"
+"Umořní výpočet některých částí v ziskovosti projektu\n"
+"==================================================================================================\n"
+"Tento modul umožňuje vypočítat sekce ''Přijaté faktury', 'Jiné náklady' a "
+"'Jiné výnosy' v ziskovosti projektu, v zobrazení Projektový zápis.\n"
+
+#. module: project_account
+#: model:ir.module.module,shortdesc:base.module_project_account
+msgid "Project - Account"
+msgstr "Projekt - Účetnictví"
+
+#. module: project_account
+#: model:ir.module.module,summary:base.module_project_account
+msgid "project profitability items computation"
+msgstr "výpočet položek ziskovosti projektu"
+
+#. module: project_account
 #: model:ir.embedded.actions,name:project_account.project_embedded_action_analytic_items
 #: model:ir.embedded.actions,name:project_account.project_embedded_action_analytic_items_dashboard
 msgid "Analytic Items"

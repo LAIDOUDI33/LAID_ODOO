@@ -25,6 +25,36 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: base_address_extended
+#: model:ir.module.module,description:base.module_base_address_extended
+msgid ""
+"\n"
+"Extended Addresses Management\n"
+"=============================\n"
+"\n"
+"This module provides the ability to choose a city from a list (in specific "
+"countries).\n"
+"\n"
+"It is primarily used for EDIs that might need a special city code.\n"
+msgstr ""
+"\n"
+"拡張住所管理\n"
+"=============================\n"
+"\n"
+"このモジュールは、(特定の国の)リストから市町村を選択する機能を提供します。\n"
+"\n"
+"これは主に、特別な市町村コードを必要とするEDIに使用されます。\n"
+
+#. module: base_address_extended
+#: model:ir.module.module,summary:base.module_base_address_extended
+msgid "Add extra fields on addresses"
+msgstr "アドレスにフィールドを追加する"
+
+#. module: base_address_extended
+#: model:ir.module.module,shortdesc:base.module_base_address_extended
+msgid "Extended Addresses"
+msgstr "拡張アドレス"
+
+#. module: base_address_extended
 #: model_terms:ir.ui.view,arch_db:base_address_extended.view_res_country_city_extended_form
 msgid "<span class=\"o_stat_text\">Cities</span>"
 msgstr "<span class=\"o_stat_text\">都市</span>"

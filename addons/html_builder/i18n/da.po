@@ -22,6 +22,25 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: html_builder
+#: model:ir.module.module,description:base.module_html_builder
+msgid ""
+"\n"
+"This addon contains a generic html builder application. It is designed to "
+"be\n"
+"used by the website builder and mass mailing editor.\n"
+msgstr ""
+
+#. module: html_builder
+#: model:ir.module.module,summary:base.module_html_builder
+msgid "Generic html builder"
+msgstr ""
+
+#. module: html_builder
+#: model:ir.module.module,shortdesc:base.module_html_builder
+msgid "HTML Builder"
+msgstr ""
+
+#. module: html_builder
 #. odoo-javascript
 #: code:addons/html_builder/static/src/plugins/image/image_format_option_plugin.js:0
 msgid "%spx"

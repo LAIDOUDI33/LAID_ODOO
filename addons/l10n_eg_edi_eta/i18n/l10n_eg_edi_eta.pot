@@ -16,6 +16,25 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_eg_edi_eta
+#: model:ir.module.module,description:base.module_l10n_eg_edi_eta
+msgid ""
+"\n"
+"Egypt Tax Authority Invoice Integration\n"
+"==============================================================================\n"
+"Integrates with the ETA portal to automatically send and sign the Invoices to the Tax Authority.\n"
+msgstr ""
+
+#. module: l10n_eg_edi_eta
+#: model:ir.module.module,shortdesc:base.module_l10n_eg_edi_eta
+msgid "Egypt E-Invoicing"
+msgstr ""
+
+#. module: l10n_eg_edi_eta
+#: model:ir.module.module,summary:base.module_l10n_eg_edi_eta
+msgid "Egypt Tax Authority Invoice Integration"
+msgstr ""
+
+#. module: l10n_eg_edi_eta
 #: model_terms:ir.ui.view,arch_db:l10n_eg_edi_eta.egyptian_invoice
 msgid "<strong class=\"text-center\">ETA QR Code</strong>"
 msgstr ""

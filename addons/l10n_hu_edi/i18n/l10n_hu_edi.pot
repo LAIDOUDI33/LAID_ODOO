@@ -16,6 +16,19 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_hu_edi
+#: model:ir.module.module,description:base.module_l10n_hu_edi
+msgid ""
+"\n"
+"* Electronically report invoices to the NAV (Hungarian Tax Agency) when issuing physical (paper) invoices.\n"
+"* Perform the Tax Audit Export (Adóhatósági Ellenőrzési Adatszolgáltatás) in NAV 3.0 format.\n"
+msgstr ""
+
+#. module: l10n_hu_edi
+#: model:ir.module.module,shortdesc:base.module_l10n_hu_edi
+msgid "Hungary - E-invoicing"
+msgstr ""
+
+#. module: l10n_hu_edi
 #: model:ir.model.fields,help:l10n_hu_edi.field_res_company__l10n_hu_edi_server_mode
 #: model:ir.model.fields,help:l10n_hu_edi.field_res_config_settings__l10n_hu_edi_server_mode
 msgid ""

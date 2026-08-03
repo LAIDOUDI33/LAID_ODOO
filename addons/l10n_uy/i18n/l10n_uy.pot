@@ -16,6 +16,42 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_uy
+#: model:ir.module.module,description:base.module_l10n_uy
+msgid ""
+"\n"
+"General Chart of Accounts.\n"
+"==========================\n"
+"\n"
+"This module adds accounting functionalities for the Uruguayan localization, representing the minimum required configuration for a company to operate in Uruguay under the regulations and guidelines provided by the DGI (Dirección General Impositiva).\n"
+"\n"
+"Among the functionalities are:\n"
+"\n"
+"* Uruguayan Generic Chart of Account\n"
+"* Pre-configured VAT Taxes and Tax Groups.\n"
+"* Legal document types in Uruguay.\n"
+"* Valid contact identification types in Uruguay.\n"
+"* Configuration and activation of Uruguayan Currencies  (UYU, UYI - Unidad Indexada Uruguaya).\n"
+"* Frequently used default contacts already configured: DGI, Consumidor Final Uruguayo.\n"
+"\n"
+"Configuration\n"
+"-------------\n"
+"\n"
+"Demo data for testing:\n"
+"\n"
+"* Uruguayan company named \"UY Company\" with the Uruguayan chart of accounts already installed, pre configured taxes, document types and identification types.\n"
+"* Uruguayan contacts for testing:\n"
+"\n"
+"   * IEB Internacional\n"
+"   * Consumidor Final Anónimo Uruguayo.\n"
+"\n"
+msgstr ""
+
+#. module: l10n_uy
+#: model:ir.module.module,shortdesc:base.module_l10n_uy
+msgid "Uruguay - Accounting"
+msgstr ""
+
+#. module: l10n_uy
 #. odoo-python
 #: code:addons/l10n_uy/models/l10n_latam_document_type.py:0
 msgid ""

@@ -22,6 +22,26 @@ msgstr ""
 "X-Generator: Weblate 5.14.3\n"
 
 #. module: l10n_sa_edi
+#: model:ir.module.module,description:base.module_l10n_sa_edi
+msgid ""
+"\n"
+"E-invoice implementation for Saudi Arabia; Integration with ZATCA\n"
+msgstr ""
+"\n"
+"تطبيق نظام الفواتير الإلكترونية في المملكة العربية السعودية؛ التكامل مع هيئة "
+"الزكاة والضريبة والجمارك\n"
+
+#. module: l10n_sa_edi
+#: model:ir.module.module,summary:base.module_l10n_sa_edi
+msgid "E-Invoicing, Universal Business Language"
+msgstr ""
+
+#. module: l10n_sa_edi
+#: model:ir.module.module,shortdesc:base.module_l10n_sa_edi
+msgid "Saudi Arabia - E-invoicing"
+msgstr "المملكة العربية السعودية - الفوترة الإلكترونية"
+
+#. module: l10n_sa_edi
 #. odoo-python
 #: code:addons/l10n_sa_edi/models/account_move.py:0
 msgid ""

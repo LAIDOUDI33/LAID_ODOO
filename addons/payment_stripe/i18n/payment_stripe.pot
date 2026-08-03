@@ -16,6 +16,16 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: payment_stripe
+#: model:ir.module.module,summary:base.module_payment_stripe
+msgid "An Irish-American payment provider covering the US and many others."
+msgstr ""
+
+#. module: payment_stripe
+#: model:ir.module.module,shortdesc:base.module_payment_stripe
+msgid "Payment Provider: Stripe"
+msgstr ""
+
+#. module: payment_stripe
 #: model:payment.method,name:payment_stripe.payment_method_ach_direct_debit
 msgid "ACH Direct Debit"
 msgstr ""

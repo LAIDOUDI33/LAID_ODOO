@@ -21,6 +21,22 @@ msgstr ""
 "X-Generator: Weblate 5.14.3\n"
 
 #. module: l10n_it_edi_doi
+#: model:ir.module.module,description:base.module_l10n_it_edi_doi
+msgid ""
+"\n"
+"Add support for the Declaration of Intent (Dichiarazione di Intento) to the "
+"Italian localization.\n"
+msgstr ""
+"\n"
+"Aggiungi il supporto della Dichiarazione di Intento alla localizzazione "
+"italiana.\n"
+
+#. module: l10n_it_edi_doi
+#: model:ir.module.module,shortdesc:base.module_l10n_it_edi_doi
+msgid "Italy - Declaration of Intent"
+msgstr "Italia - Dichiarazione di intenti"
+
+#. module: l10n_it_edi_doi
 #: model_terms:ir.ui.view,arch_db:l10n_it_edi_doi.view_l10n_it_edi_doi_form
 msgid "<span class=\"o_form_label mx-3\"> to </span>"
 msgstr "<span class=\"o_form_label mx-3\"> al </span>"

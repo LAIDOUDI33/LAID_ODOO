@@ -22,6 +22,38 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 
 #. module: account_test
+#: model:ir.module.module,description:base.module_account_test
+msgid ""
+"\n"
+"Asserts on accounting.\n"
+"======================\n"
+"With this module you can manually check consistencies and inconsistencies of "
+"accounting module from menu Reporting/Accounting/Accounting Tests.\n"
+"\n"
+"You can write a query in order to create Consistency Test and you will get "
+"the result of the test\n"
+"in PDF format which can be accessed by Menu Reporting -> Accounting Tests, "
+"then select the test\n"
+"and print the report from Print button in header area.\n"
+msgstr ""
+"\n"
+"会計の整合性チェック\n"
+"======================\n"
+"このモジュールを使用すると、レポーティング/会計/会計テストメニューから、会計"
+"モジュールの整合性および不整合を手動で確認できます。\n"
+"\n"
+"独自のクエリを作成して整合性テストを定義することができ、テスト結果は PDF形式"
+"のレポートとして出力されます。\n"
+"出力されたテスト結果は、レポーティング -> 会計テストメニューから、該当する"
+"テストを選択して\n"
+"画面上部の 「印刷」ボタンをクリックすることで確認できます。\n"
+
+#. module: account_test
+#: model:ir.module.module,shortdesc:base.module_account_test
+msgid "Accounting Consistency Tests"
+msgstr "会計の整合性テスト"
+
+#. module: account_test
 #: model_terms:ir.ui.view,arch_db:account_test.report_accounttest
 msgid ""
 "<br/>\n"

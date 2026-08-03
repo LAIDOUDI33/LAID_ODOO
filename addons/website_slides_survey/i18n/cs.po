@@ -27,6 +27,23 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_slides_survey
+#: model:ir.module.module,summary:base.module_website_slides_survey
+msgid "Add certification capabilities to your courses"
+msgstr "Přidejte do svých kurzů certifikační schopnosti"
+
+#. module: website_slides_survey
+#: model:ir.module.module,shortdesc:base.module_website_slides_survey
+msgid "Course Certifications"
+msgstr "Certifikace kurzu"
+
+#. module: website_slides_survey
+#: model:ir.module.module,description:base.module_website_slides_survey
+msgid ""
+"This module lets you use the full power of certifications within your "
+"courses."
+msgstr "Tento modul vám umožňuje plně využívat certifikací ve vašich kurzech."
+
+#. module: website_slides_survey
 #: model:ir.model.fields,field_description:website_slides_survey.field_slide_channel__members_certified_count
 msgid "# Certified Attendees"
 msgstr ""

@@ -16,6 +16,23 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_mu_account
+#: model:ir.module.module,description:base.module_l10n_mu_account
+msgid ""
+"\n"
+"This is the base module to manage the accounting chart for the Republic of Mauritius in Odoo.\n"
+"==============================================================================================\n"
+"    - Chart of accounts\n"
+"    - Taxes\n"
+"    - Fiscal positions\n"
+"    - Default settings\n"
+msgstr ""
+
+#. module: l10n_mu_account
+#: model:ir.module.module,shortdesc:base.module_l10n_mu_account
+msgid "Mauritius - Accounting"
+msgstr ""
+
+#. module: l10n_mu_account
 #: model:account.report.line,name:l10n_mu_account.mu_tr_T1
 msgid "1. Taxable supplies"
 msgstr ""

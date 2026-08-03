@@ -27,6 +27,37 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: account_tax_python
+#: model:ir.module.module,description:base.module_account_tax_python
+#, fuzzy
+msgid ""
+"\n"
+"A tax defined as python code consists of two snippets of python code which "
+"are executed in a local environment containing data such as the unit price, "
+"product or partner.\n"
+"\n"
+"\"Applicable Code\" defines if the tax is to be applied.\n"
+"\n"
+"\"Python Code\" defines the amount of the tax.\n"
+msgstr ""
+"Python kodi sifatida belgilangan soliq, birlik narxi, mahsulot yoki hamkor "
+"kabi ma'lumotlarni o‘z ichiga olgan mahalliy muhitda bajariladigan ikkita "
+"Python kodi parchalaridan iborat.  \"Qo‘llanilishi mumkin bo‘lgan kod\" "
+"soliq qo‘llanilishi kerakligini aniqlaydi.  \"Python kodi\" esa soliq "
+"miqdorini belgilaydi."
+
+#. module: account_tax_python
+#: model:ir.module.module,shortdesc:base.module_account_tax_python
+#, fuzzy
+msgid "Define Taxes as Python Code"
+msgstr "Soliqlarni Python kodi sifatida belgilash"
+
+#. module: account_tax_python
+#: model:ir.module.module,summary:base.module_account_tax_python
+#, fuzzy
+msgid "Use python code to define taxes"
+msgstr "Soliqlarni belgilash uchun Python kodidan foydalaning"
+
+#. module: account_tax_python
 #: model:ir.model.fields,help:account_tax_python.field_account_tax__amount_type
 #, fuzzy
 msgid ""

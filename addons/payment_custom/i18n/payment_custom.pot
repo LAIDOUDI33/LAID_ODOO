@@ -16,6 +16,16 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: payment_custom
+#: model:ir.module.module,summary:base.module_payment_custom
+msgid "A payment provider for custom flows like wire transfers."
+msgstr ""
+
+#. module: payment_custom
+#: model:ir.module.module,shortdesc:base.module_payment_custom
+msgid "Payment Provider: Custom Payment Modes"
+msgstr ""
+
+#. module: payment_custom
 #: model_terms:ir.ui.view,arch_db:payment_custom.custom_payment_transfer_details
 msgid "<b>Amount:</b>"
 msgstr ""

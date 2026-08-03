@@ -20,6 +20,18 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_event_track_live_quiz
+#: model:ir.module.module,summary:base.module_website_event_track_live_quiz
+msgid "Bridge module to support quiz features during \"live\" tracks. "
+msgstr ""
+"Module passerelle pour prendre en charge des fonctionnalités de quiz pendant "
+"les sessions \"live\". "
+
+#. module: website_event_track_live_quiz
+#: model:ir.module.module,shortdesc:base.module_website_event_track_live_quiz
+msgid "Quiz on Live Event Tracks"
+msgstr "Quiz sur les sessions d'événement en direct"
+
+#. module: website_event_track_live_quiz
 #. odoo-javascript
 #: code:addons/website_event_track_live_quiz/static/src/xml/website_event_track_quiz_templates.xml:0
 msgid "Next Track"

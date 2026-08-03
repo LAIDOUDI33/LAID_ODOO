@@ -21,6 +21,21 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: sale_loyalty_delivery
+#: model:ir.module.module,summary:base.module_sale_loyalty_delivery
+msgid "Adds free shipping mechanism in sales orders"
+msgstr "在销售订单中添加免费送货机制"
+
+#. module: sale_loyalty_delivery
+#: model:ir.module.module,description:base.module_sale_loyalty_delivery
+msgid "Integrate free shipping in sales orders."
+msgstr "在销售订单中整合免运费功能。"
+
+#. module: sale_loyalty_delivery
+#: model:ir.module.module,shortdesc:base.module_sale_loyalty_delivery
+msgid "Sale Loyalty - Delivery"
+msgstr "销售忠诚度 - 交货"
+
+#. module: sale_loyalty_delivery
 #. odoo-python
 #: code:addons/sale_loyalty_delivery/models/loyalty_reward.py:0
 msgid " (Max %s)"

@@ -24,6 +24,40 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: stock_dropshipping
+#: model:ir.module.module,description:base.module_stock_dropshipping
+msgid ""
+"\n"
+"Manage drop shipping orders\n"
+"===========================\n"
+"\n"
+"This module adds a pre-configured Drop Shipping operation type\n"
+"as well as a procurement route that allow configuring Drop\n"
+"Shipping products and orders.\n"
+"\n"
+"When drop shipping is used the goods are directly transferred\n"
+"from vendors to customers (direct delivery) without\n"
+"going through the retailer's warehouse. In this case no\n"
+"internal transfer document is needed.\n"
+"\n"
+msgstr ""
+"\n"
+"直运订单管理\n"
+"===========================\n"
+"\n"
+"此模块增加了预配置的直运类型以及补货路线，允许配置直运产品和订单。\n"
+"\n"
+"使用直运时，直接将货物从供应商调拨至客户(直接发货)，而无需通过经销商的仓库进"
+"行周转。\n"
+"在这种情况下，无需内部传输文档。\n"
+"\n"
+
+#. module: stock_dropshipping
+#: model:ir.module.module,shortdesc:base.module_stock_dropshipping
+#: model:ir.module.module,summary:base.module_stock_dropshipping
+msgid "Drop Shipping"
+msgstr "直运"
+
+#. module: stock_dropshipping
 #: model:ir.model,name:stock_dropshipping.model_res_company
 msgid "Company"
 msgstr "公司"

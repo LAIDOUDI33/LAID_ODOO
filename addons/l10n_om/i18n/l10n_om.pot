@@ -16,6 +16,26 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_om
+#: model:ir.module.module,description:base.module_l10n_om
+msgid ""
+"\n"
+"Oman Accounting Module\n"
+"=================================================================\n"
+"Oman accounting basic charts and localization.\n"
+"Activates:\n"
+"- Chart of Accounts\n"
+"- Taxes\n"
+"- VAT Return\n"
+"- Fiscal Positions\n"
+"- States\n"
+msgstr ""
+
+#. module: l10n_om
+#: model:ir.module.module,shortdesc:base.module_l10n_om
+msgid "Oman - Accounting"
+msgstr ""
+
+#. module: l10n_om
 #: model:ir.model,name:l10n_om.model_account_chart_template
 msgid "Account Chart Template"
 msgstr ""

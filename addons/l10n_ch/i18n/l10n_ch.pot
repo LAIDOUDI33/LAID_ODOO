@@ -16,6 +16,30 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_ch
+#: model:ir.module.module,description:base.module_l10n_ch
+msgid ""
+"\n"
+"Swiss localization\n"
+"==================\n"
+"This module defines a chart of account for Switzerland (Swiss PME/KMU 2015), taxes and enables the generation of a QR-bill when you print an invoice or send it by mail.\n"
+"The QR bill is attached to the invoice and eases its payment.\n"
+"\n"
+"A QR-bill will be generated if:\n"
+"    - The partner set on your invoice has a complete address (street, city, postal code and country) in Switzerland\n"
+"    - The option to generate the Swiss QR-code is selected on the invoice (done by default)\n"
+"    - A correct account number/QR IBAN is set on your bank journal\n"
+"    - (when using a QR-IBAN): the payment reference of the invoice is a QR-reference\n"
+"\n"
+"The generation of the QR-bill is automatic if you meet the previous criteria. The QR-bill will be appended after the invoice when printing or sending by mail.\n"
+"\n"
+msgstr ""
+
+#. module: l10n_ch
+#: model:ir.module.module,shortdesc:base.module_l10n_ch
+msgid "Switzerland - Accounting"
+msgstr ""
+
+#. module: l10n_ch
 #. odoo-python
 #: code:addons/l10n_ch/wizard/qr_invoice_wizard.py:0
 msgid "%(amount)s invoices could be printed in the %(format)s format."

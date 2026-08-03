@@ -27,6 +27,34 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_mass_mailing
+#: model:ir.module.module,description:base.module_website_mass_mailing
+#, fuzzy
+msgid ""
+"\n"
+"This module brings a new building block with a mailing list widget to drop "
+"on any page of your website.\n"
+"On a simple click, your visitors can subscribe to mailing lists managed in "
+"the Email Marketing app.\n"
+msgstr ""
+"Ushbu modul veb-saytingizning istalgan sahifasiga joylashtirishingiz mumkin "
+"bo‘lgan yangi qurilish blokini pochta ro‘yxati vidjeti bilan birga taqdim "
+"etadi. Tashrif buyuruvchilar oddiy bosish orqali Email Marketing ilovasida "
+"boshqariladigan pochta ro‘yxatlariga obuna bo‘lishlari mumkin."
+
+#. module: website_mass_mailing
+#: model:ir.module.module,summary:base.module_website_mass_mailing
+#, fuzzy
+msgid "Attract visitors to subscribe to mailing lists"
+msgstr ""
+"Tashrif buyuruvchilarni pochta ro‘yxatlariga obuna bo‘lishga jalb qilish"
+
+#. module: website_mass_mailing
+#: model:ir.module.module,shortdesc:base.module_website_mass_mailing
+#, fuzzy
+msgid "Newsletter Subscribe Button"
+msgstr "Axborot byulleteniga obuna bo‘lish tugmasi"
+
+#. module: website_mass_mailing
 #: model_terms:ir.ui.view,arch_db:website_mass_mailing.s_newsletter_benefits_popup
 msgid ""
 "<i class=\"oi text-o-color-1\" data-icon=\"check\" role=\"img\"/>  Curated "

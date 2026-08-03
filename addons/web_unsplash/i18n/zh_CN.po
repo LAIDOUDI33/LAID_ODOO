@@ -24,6 +24,26 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: web_unsplash
+#: model:ir.module.module,description:base.module_web_unsplash
+msgid ""
+"Explore the free high-resolution image library of Unsplash.com and find "
+"images to use in Odoo. An Unsplash search bar is added to the image library "
+"modal."
+msgstr ""
+"浏览 Unsplash.com 的免费高分辨率图像库，找到可在Odoo中使用的图像。将 "
+"Unsplash 搜索栏添加到图像库模式中。"
+
+#. module: web_unsplash
+#: model:ir.module.module,summary:base.module_web_unsplash
+msgid "Find free high-resolution images from Unsplash"
+msgstr "从 Unsplash 查找免费的高分辨率图像"
+
+#. module: web_unsplash
+#: model:ir.module.module,shortdesc:base.module_web_unsplash
+msgid "Unsplash Image Library"
+msgstr "Unsplash 图像库"
+
+#. module: web_unsplash
 #: model:ir.model.fields,field_description:web_unsplash.field_res_config_settings__unsplash_access_key
 msgid "Access Key"
 msgstr "访问秘钥"

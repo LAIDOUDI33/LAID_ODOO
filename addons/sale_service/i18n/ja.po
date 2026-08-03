@@ -21,6 +21,31 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: sale_service
+#: model:ir.module.module,description:base.module_sale_service
+msgid ""
+"\n"
+"Allows to display sale information in the SOL services apps\n"
+"===========================================================\n"
+"Additional information is displayed in the name of the SOL when it is used "
+"in services apps (project and planning). \n"
+msgstr ""
+"\n"
+"SOLサービスアプリで販売情報を表示できます。\n"
+"===========================================================\n"
+"サービスアプリ(プロジェクト、プランニング)で使用する場合、SOLの名前に追加情報"
+"が表示されます。 \n"
+
+#. module: sale_service
+#: model:ir.module.module,summary:base.module_sale_service
+msgid "Interaction between Sales and services apps (project and planning)"
+msgstr "営業アプリとサービスアプリの相互作用 (プロジェクトと計画)"
+
+#. module: sale_service
+#: model:ir.module.module,shortdesc:base.module_sale_service
+msgid "Sales - Service"
+msgstr "販売 - サービス"
+
+#. module: sale_service
 #. odoo-javascript
 #: code:addons/sale_service/static/src/components/so_line_create_button/so_line_create_button.xml:0
 msgid "Create Sales Order"

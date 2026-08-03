@@ -22,6 +22,25 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: iap
+#: model:ir.module.module,description:base.module_iap
+msgid ""
+"\n"
+"This module provides standard tools (account model, context manager and "
+"helpers)\n"
+"to support In-App Purchase inside Odoo. "
+msgstr ""
+
+#. module: iap
+#: model:ir.module.module,summary:base.module_iap
+msgid "Basic models and helpers to support In-App Purchase."
+msgstr ""
+
+#. module: iap
+#: model:ir.module.module,shortdesc:base.module_iap
+msgid "In-App Purchase"
+msgstr ""
+
+#. module: iap
 #: model_terms:ir.ui.view,arch_db:iap.iap_account_view_form
 msgid "Account Information"
 msgstr ""

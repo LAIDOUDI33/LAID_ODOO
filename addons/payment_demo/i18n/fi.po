@@ -22,6 +22,18 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: payment_demo
+#: model:ir.module.module,summary:base.module_payment_demo
+msgid "A payment provider for running fake payment flows for demo purposes."
+msgstr ""
+"Maksupalveluntarjoaja väärennettyjen maksuvirtojen tekemiseen "
+"testaustarkoituksessa."
+
+#. module: payment_demo
+#: model:ir.module.module,shortdesc:base.module_payment_demo
+msgid "Payment Provider: Demo"
+msgstr "Maksupalveluntarjoaja: Demo"
+
+#. module: payment_demo
 #: model_terms:ir.ui.view,arch_db:payment_demo.express_inline_form
 msgid "<small><b>City</b></small>"
 msgstr "<small><b>Kaupunki</b></small>"

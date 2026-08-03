@@ -27,6 +27,36 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: account_edi
+#: model:ir.module.module,description:base.module_account_edi
+#, fuzzy
+msgid ""
+"\n"
+"Electronic Data Interchange\n"
+"=======================================\n"
+"EDI is the electronic interchange of business information using a "
+"standardized format.\n"
+"\n"
+"This is the base module for import and export of invoices in various EDI "
+"formats, and the\n"
+"the transmission of said documents to various parties involved in the "
+"exchange (other company,\n"
+"governements, etc.)\n"
+msgstr ""
+"Elektron ma'lumotlar almashinuvi\n"
+"=======================================\n"
+"EDI - bu standartlashtirilgan formatda biznes ma'lumotlarini elektron tarzda "
+"almashish usulidir.  Bu modul turli EDI formatlaridagi hisob-fakturalarni "
+"import va eksport qilish uchun asos bo‘lib xizmat qiladi, shuningdek, ushbu "
+"hujjatlarni almashinuvda ishtirok etuvchi turli tomonlarga (boshqa "
+"kompaniyalar, hukumatlar va hokazo) uzatish imkonini beradi."
+
+#. module: account_edi
+#: model:ir.module.module,shortdesc:base.module_account_edi
+#, fuzzy
+msgid "Import/Export Invoices From XML/PDF"
+msgstr "XML/PDF fayllaridan hisob-fakturalarni import/eksport qilish"
+
+#. module: account_edi
 #. odoo-python
 #: code:addons/account_edi/models/account_move.py:0
 #, fuzzy

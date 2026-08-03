@@ -27,6 +27,18 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: payment_paypal
+#: model:ir.module.module,summary:base.module_payment_paypal
+#, fuzzy
+msgid "An American payment provider for online payments all over the world."
+msgstr "Butun dunyo bo‘ylab onlayn to‘lovlar uchun Amerika to‘lov provayderi."
+
+#. module: payment_paypal
+#: model:ir.module.module,shortdesc:base.module_payment_paypal
+#, fuzzy
+msgid "Payment Provider: Paypal"
+msgstr "To‘lov provayderi: PayPal"
+
+#. module: payment_paypal
 #: model_terms:ir.ui.view,arch_db:payment_paypal.payment_provider_form
 #, fuzzy
 msgid "Client ID"

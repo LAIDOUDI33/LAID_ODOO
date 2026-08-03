@@ -29,6 +29,29 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: base_setup
+#: model:ir.module.module,description:base.module_base_setup
+msgid ""
+"\n"
+"This module helps to configure the system at the installation of a new "
+"database.\n"
+"================================================================================\n"
+"\n"
+"Shows you a list of applications features to install from.\n"
+"\n"
+msgstr ""
+"\n"
+"Tento modul umožňuje konfiguraci systému při instalaci nové databáze.\n"
+"================================================================================\n"
+"\n"
+"Zobrazuje seznam funkcí aplikací pro instalaci.\n"
+"\n"
+
+#. module: base_setup
+#: model:ir.module.module,shortdesc:base.module_base_setup
+msgid "Initial Setup Tools"
+msgstr "Nástroje pro počáteční nastavení"
+
+#. module: base_setup
 #: model_terms:ir.ui.view,arch_db:base_setup.res_config_settings_view_form
 msgid ""
 "<span class=\"o_form_label\" invisible=\"active_user_count &gt; 1\">\n"

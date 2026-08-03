@@ -27,6 +27,23 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: snailmail_account
+#: model:ir.module.module,description:base.module_snailmail_account
+#, fuzzy
+msgid ""
+"\n"
+"Allows users to send invoices by post\n"
+"=====================================================\n"
+msgstr ""
+"Foydalanuvchilarga hisob-fakturalarni pochta orqali yuborish imkonini beradi "
+"======================================================="
+
+#. module: snailmail_account
+#: model:ir.module.module,shortdesc:base.module_snailmail_account
+#, fuzzy
+msgid "Snail Mail - Account"
+msgstr "Oddiy pochta - Hisob"
+
+#. module: snailmail_account
 #. odoo-python
 #: code:addons/snailmail_account/wizard/account_move_send_batch_wizard.py:0
 #, fuzzy

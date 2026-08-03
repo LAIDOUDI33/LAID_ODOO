@@ -16,6 +16,11 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_fr
+#: model:ir.module.module,shortdesc:base.module_l10n_fr
+msgid "France - Localizations"
+msgstr ""
+
+#. module: l10n_fr
 #: model:ir.model.fields,field_description:l10n_fr.field_res_company__ape
 msgid "APE"
 msgstr ""

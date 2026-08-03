@@ -26,6 +26,42 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: auth_totp
+#: model:ir.module.module,description:base.module_auth_totp
+msgid ""
+"\n"
+"Two-Factor Authentication (TOTP)\n"
+"================================\n"
+"Allows users to configure two-factor authentication on their user account\n"
+"for extra security, using time-based one-time passwords (TOTP).\n"
+"\n"
+"Once enabled, the user will need to enter a 6-digit code as provided\n"
+"by their authenticator app before being granted access to the system.\n"
+"All popular authenticator apps are supported.\n"
+"\n"
+"Note: logically, two-factor prevents password-based RPC access for users\n"
+"where it is enabled. In order to be able to execute RPC scripts, the user\n"
+"can setup API keys to replace their main password.\n"
+msgstr ""
+"\n"
+"兩階段身份驗證 (TOTP)\n"
+"================================\n"
+"允許使用者使用基於時間的一次性密碼 (TOTP) 在其使用者帳戶上設定雙重身份驗證以"
+"提高安全性.\n"
+"\n"
+"啟用後，使用者將需要輸入其身份驗證器應用程式提供的 6 位數代碼，然後才能被授予"
+"存取系統的權限.\n"
+"支援所有流行的身份驗證器應用程式.\n"
+"\n"
+"注意: 從邏輯上講，兩個階段會阻止使用者進行基於密碼的 RPC 存取\n"
+"它被啟用的地方. 為了能夠執行 RPC 指令集，使用者可以設定 API 密鑰來替換他們的"
+"主密碼.\n"
+
+#. module: auth_totp
+#: model:ir.module.module,shortdesc:base.module_auth_totp
+msgid "Two-Factor Authentication (TOTP)"
+msgstr "兩階段身份驗證 (TOTP)"
+
+#. module: auth_totp
 #. odoo-python
 #: code:addons/auth_totp/controllers/home.py:0
 msgid "%(browser)s on %(platform)s"

@@ -18,6 +18,22 @@ msgstr ""
 "&& n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
 
 #. module: l10n_tn
+#: model:ir.module.module,description:base.module_l10n_tn
+msgid ""
+"\n"
+"This is the module to manage the accounting chart for Tunisia in Odoo.\n"
+"=======================================================================\n"
+msgstr ""
+"\n"
+"This is the module to manage the accounting chart for Tunisia in Odoo.\n"
+"=======================================================================\n"
+
+#. module: l10n_tn
+#: model:ir.module.module,shortdesc:base.module_l10n_tn
+msgid "Tunisia - Accounting"
+msgstr "Tunisia - Accounting"
+
+#. module: l10n_tn
 #: model:ir.model,name:l10n_tn.model_account_chart_template
 msgid "Account Chart Template"
 msgstr ""

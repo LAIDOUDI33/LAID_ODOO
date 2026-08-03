@@ -24,6 +24,25 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: mass_mailing_themes
+#: model:ir.module.module,description:base.module_mass_mailing_themes
+msgid ""
+"\n"
+"Design gorgeous mails\n"
+msgstr ""
+"\n"
+"Thiết kế các email tuyệt đẹp\n"
+
+#. module: mass_mailing_themes
+#: model:ir.module.module,summary:base.module_mass_mailing_themes
+msgid "Design gorgeous mails"
+msgstr "Thiết kế các email tuyệt đẹp"
+
+#. module: mass_mailing_themes
+#: model:ir.module.module,shortdesc:base.module_mass_mailing_themes
+msgid "Mass Mailing Themes"
+msgstr "Giao diện Gửi thư Hàng loạt"
+
+#. module: mass_mailing_themes
 #: model_terms:ir.ui.view,arch_db:mass_mailing_themes.theme_newsletter_template
 msgid "&amp;nbsp;&amp;nbsp;"
 msgstr "&amp;nbsp;&amp;nbsp;"

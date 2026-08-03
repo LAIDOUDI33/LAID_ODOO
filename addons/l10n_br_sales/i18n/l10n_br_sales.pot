@@ -16,6 +16,16 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_br_sales
+#: model:ir.module.module,shortdesc:base.module_l10n_br_sales
+msgid "Brazil - Sale"
+msgstr ""
+
+#. module: l10n_br_sales
+#: model:ir.module.module,description:base.module_l10n_br_sales
+msgid "Sale modifications for Brazil"
+msgstr ""
+
+#. module: l10n_br_sales
 #: model:ir.model.fields,field_description:l10n_br_sales.field_sale_order__display_name
 msgid "Display Name"
 msgstr ""

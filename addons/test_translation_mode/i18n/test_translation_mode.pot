@@ -1,0 +1,38 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* base
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.4a1+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-05-12 08:36+0000\n"
+"PO-Revision-Date: 2026-05-12 08:36+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: test_translation_mode
+#: model:ir.module.module,description:base.module_test_translation_mode
+msgid ""
+"\n"
+"The translation mode is available when several languages are installed. Select the language to translate,\n"
+"enable the interactive translation mode from the command palette then browse the screens to translate.\n"
+"By default, the translate feature redirects to the Odoo official translation project powered by Weblate.\n"
+"In the settings, a custom Weblate project can be targeted."
+msgstr ""
+
+#. module: test_translation_mode
+#: model:ir.module.module,summary:base.module_test_translation_mode
+msgid ""
+"In-context and interactive translation mode to streamline the module "
+"translation process using Weblate"
+msgstr ""
+
+#. module: test_translation_mode
+#: model:ir.module.module,shortdesc:base.module_test_translation_mode
+msgid "Translation Mode"
+msgstr ""

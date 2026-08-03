@@ -27,6 +27,62 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: fleet
+#: model:ir.module.module,description:base.module_fleet
+#, fuzzy
+msgid ""
+"\n"
+"Vehicle, leasing, insurances, cost\n"
+"==================================\n"
+"With this module, Odoo helps you managing all your vehicles, the\n"
+"contracts associated to those vehicle as well as services, costs\n"
+"and many other features necessary to the management of your fleet\n"
+"of vehicle(s)\n"
+"\n"
+"Main Features\n"
+"-------------\n"
+"* Add vehicles to your fleet\n"
+"* Manage contracts for vehicles\n"
+"* Reminder when a contract reach its expiration date\n"
+"* Add services, odometer values for all vehicles\n"
+"* Show all costs associated to a vehicle or to a type of service\n"
+"* Analysis graph for costs\n"
+msgstr ""
+"Transport vositasi, ijara, sug‘urta, xarajatlar "
+"==================================\n"
+"\n"
+"Ushbu modul yordamida Odoo sizning barcha transport vositalaringizni, ularga "
+"tegishli shartnomalarni, shuningdek, xizmatlar, xarajatlar va transport "
+"vositalar parkini boshqarish uchun zarur bo‘lgan boshqa ko‘plab "
+"xususiyatlarni samarali boshqarishingizga yordam beradi. Asosiy "
+"xususiyatlar\n"
+"-------------\n"
+"* Parkingizga yangi transport vositalarini qo‘shish\n"
+"* Transport vositalari uchun shartnomalarni boshqarish\n"
+"* Shartnoma muddati tugashidan oldin eslatma berish\n"
+"* Barcha transport vositalari uchun xizmatlar va odometr ko‘rsatkichlarini "
+"kiritish\n"
+"* Transport vositasi yoki xizmat turi bilan bog‘liq barcha xarajatlarni "
+"ko‘rsatish\n"
+"* Xarajatlarni tahlil qilish uchun grafiklar yaratish"
+
+#. module: fleet
+#: model:ir.module.module,shortdesc:base.module_fleet
+#: model:ir.ui.menu,name:fleet.fleet_vehicle_menu
+#: model:ir.ui.menu,name:fleet.fleet_vehicles
+#: model:ir.ui.menu,name:fleet.menu_root
+#: model:res.groups.privilege,name:fleet.res_groups_privilege_fleet
+#: model_terms:ir.ui.view,arch_db:fleet.res_config_settings_view_form
+#, fuzzy
+msgid "Fleet"
+msgstr "Avtoparklar"
+
+#. module: fleet
+#: model:ir.module.module,summary:base.module_fleet
+#, fuzzy
+msgid "Manage your fleet and track car costs"
+msgstr "Avtoparkni boshqarish va avtomobil xarajatlarini kuzatish"
+
+#. module: fleet
 #: model_terms:ir.ui.view,arch_db:fleet.fleet_vehicle_view_kanban
 #, fuzzy
 msgid "<i class=\"fa fa-map-marker\" title=\"Location\"/>"
@@ -1275,16 +1331,6 @@ msgstr "Birinchi shartnoma sanasi"
 #, fuzzy
 msgid "Fiscality"
 msgstr "Soliq tizimi"
-
-#. module: fleet
-#: model:ir.ui.menu,name:fleet.fleet_vehicle_menu
-#: model:ir.ui.menu,name:fleet.fleet_vehicles
-#: model:ir.ui.menu,name:fleet.menu_root
-#: model:res.groups.privilege,name:fleet.res_groups_privilege_fleet
-#: model_terms:ir.ui.view,arch_db:fleet.res_config_settings_view_form
-#, fuzzy
-msgid "Fleet"
-msgstr "Avtoparklar"
 
 #. module: fleet
 #: model:ir.model,name:fleet.model_fleet_vehicle_cost_report

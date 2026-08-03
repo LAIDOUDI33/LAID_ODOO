@@ -16,6 +16,16 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_id_pos
+#: model:ir.module.module,shortdesc:base.module_l10n_id_pos
+msgid "Indonesia - Point of Sale"
+msgstr ""
+
+#. module: l10n_id_pos
+#: model:ir.module.module,description:base.module_l10n_id_pos
+msgid "Indonesian Point of Sale"
+msgstr ""
+
+#. module: l10n_id_pos
 #: model:ir.model.fields,field_description:l10n_id_pos.field_l10n_id_qris_transaction__display_name
 #: model:ir.model.fields,field_description:l10n_id_pos.field_pos_order__display_name
 #: model:ir.model.fields,field_description:l10n_id_pos.field_pos_payment_method__display_name

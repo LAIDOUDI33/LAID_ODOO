@@ -19,6 +19,27 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. module: account_test
+#: model:ir.module.module,description:base.module_account_test
+msgid ""
+"\n"
+"Asserts on accounting.\n"
+"======================\n"
+"With this module you can manually check consistencies and inconsistencies of "
+"accounting module from menu Reporting/Accounting/Accounting Tests.\n"
+"\n"
+"You can write a query in order to create Consistency Test and you will get "
+"the result of the test\n"
+"in PDF format which can be accessed by Menu Reporting -> Accounting Tests, "
+"then select the test\n"
+"and print the report from Print button in header area.\n"
+msgstr ""
+
+#. module: account_test
+#: model:ir.module.module,shortdesc:base.module_account_test
+msgid "Accounting Consistency Tests"
+msgstr "Санхүүгийн Цогц байдлын Тестүүд"
+
+#. module: account_test
 #: model_terms:ir.ui.view,arch_db:account_test.report_accounttest
 msgid ""
 "<br/>\n"

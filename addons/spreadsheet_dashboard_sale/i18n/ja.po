@@ -21,6 +21,17 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: spreadsheet_dashboard_sale
+#: model:ir.module.module,description:base.module_spreadsheet_dashboard_sale
+#: model:ir.module.module,summary:base.module_spreadsheet_dashboard_sale
+msgid "Spreadsheet"
+msgstr "スプレッドシート"
+
+#. module: spreadsheet_dashboard_sale
+#: model:ir.module.module,shortdesc:base.module_spreadsheet_dashboard_sale
+msgid "Spreadsheet dashboard for sales"
+msgstr "スプレッドシートダッシュボード 販売用"
+
+#. module: spreadsheet_dashboard_sale
 #. odoo-javascript
 #: code:addons/spreadsheet_dashboard_sale/data/files/sales_dashboard.json:0
 #: code:addons/spreadsheet_dashboard_sale/data/files/sales_sample_dashboard.json:0

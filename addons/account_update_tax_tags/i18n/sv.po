@@ -21,6 +21,37 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: account_update_tax_tags
+#: model:ir.module.module,description:base.module_account_update_tax_tags
+msgid ""
+"\n"
+"This module allows updating tax grids on existing accounting entries.\n"
+"In debug mode a button to update your entries' tax grids will be available\n"
+"in Accounting settings.\n"
+"This is typically useful after some legal changes were done on the tax "
+"report,\n"
+"requiring a new tax configuration.\n"
+msgstr ""
+"\n"
+"Denna modul gör det möjligt att uppdatera skattetabeller på befintliga "
+"bokföringsposter.\n"
+"I felsökningsläge kommer en knapp för att uppdatera dina posters "
+"skattetabeller att vara tillgänglig\n"
+"i bokföringsinställningarna.\n"
+"Detta är vanligtvis användbart efter att vissa juridiska ändringar har "
+"gjorts i skatterapporten,\n"
+"vilket kräver en ny skattekonfiguration.\n"
+
+#. module: account_update_tax_tags
+#: model:ir.module.module,shortdesc:base.module_account_update_tax_tags
+msgid "Account - Allow updating tax grids"
+msgstr "Konto - Tillåt uppdatering av skattetabeller"
+
+#. module: account_update_tax_tags
+#: model:ir.module.module,summary:base.module_account_update_tax_tags
+msgid "Allow updating tax grids on existing entries"
+msgstr "Tillåt uppdatering av skattetabeller på befintliga poster"
+
+#. module: account_update_tax_tags
 #: model:ir.model.fields,field_description:account_update_tax_tags.field_account_update_tax_tags_wizard__company_id
 msgid "Company"
 msgstr "Företag"

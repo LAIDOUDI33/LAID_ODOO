@@ -27,6 +27,46 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: survey
+#: model:ir.module.module,description:base.module_survey
+msgid ""
+"\n"
+"Create beautiful surveys and visualize answers\n"
+"==============================================\n"
+"\n"
+"It depends on the answers or reviews of some questions by different users. "
+"A\n"
+"survey may have multiple pages. Each page may contain multiple questions "
+"and\n"
+"each question may have multiple answers. Different users may give different\n"
+"answers of question and according to that survey is done. Partners are also\n"
+"sent mails with personal token for the invitation of the survey.\n"
+msgstr ""
+"\n"
+"创建精美的调查问卷并将答案可视化\n"
+"==============================================\n"
+"\n"
+"这取决于不同用户对某些问题的回答或评论。A\n"
+"调查问卷可能有多个页面。每个页面可能包含多个问题，每个问题可能有多个答案。\n"
+"每个问题可能有多个答案。不同的用户可能会给出不同的\n"
+"不同的用户可能会给出不同的问题答案，调查就是根据这些答案完成的。合作伙伴也会"
+"收到\n"
+"还会向合作伙伴发送带有个人标记的邮件，以邀请他们参与调查。\n"
+
+#. module: survey
+#: model:ir.module.module,summary:base.module_survey
+msgid "Send your surveys or share them live."
+msgstr "发送调查问卷或实时分享。"
+
+#. module: survey
+#: model:ir.actions.act_window,name:survey.action_survey_form
+#: model:ir.module.module,shortdesc:base.module_survey
+#: model:ir.ui.menu,name:survey.menu_survey_form
+#: model:ir.ui.menu,name:survey.menu_surveys
+#: model:res.groups.privilege,name:survey.res_groups_privilege_surveys
+msgid "Surveys"
+msgstr "调查"
+
+#. module: survey
 #: model:ir.model.fields,field_description:survey.field_survey_survey__question_count
 msgid "# Questions"
 msgstr "# 问题"
@@ -4296,14 +4336,6 @@ msgstr "调查：认证成功"
 #: model:mail.template,name:survey.mail_template_user_input_invite
 msgid "Survey: Invite"
 msgstr "调查。邀请"
-
-#. module: survey
-#: model:ir.actions.act_window,name:survey.action_survey_form
-#: model:ir.ui.menu,name:survey.menu_survey_form
-#: model:ir.ui.menu,name:survey.menu_surveys
-#: model:res.groups.privilege,name:survey.res_groups_privilege_surveys
-msgid "Surveys"
-msgstr "调查"
 
 #. module: survey
 #: model:survey.question.answer,value:survey.survey_demo_burger_quiz_p4_q1_sug3

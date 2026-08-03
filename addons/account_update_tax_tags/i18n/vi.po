@@ -20,6 +20,35 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: account_update_tax_tags
+#: model:ir.module.module,description:base.module_account_update_tax_tags
+msgid ""
+"\n"
+"This module allows updating tax grids on existing accounting entries.\n"
+"In debug mode a button to update your entries' tax grids will be available\n"
+"in Accounting settings.\n"
+"This is typically useful after some legal changes were done on the tax "
+"report,\n"
+"requiring a new tax configuration.\n"
+msgstr ""
+"\n"
+"Phân hệ này cho phép cập nhật lưới thuế trên các bút toán kế toán hiện có.\n"
+"Ở chế độ gỡ lỗi, nút cập nhật lưới thuế của bút toán sẽ có trong\n"
+"cài đặt Kế toán.\n"
+"Tính năng này hữu ích sau khi một số thay đổi về mặt pháp lý được thực hiện "
+"trên báo cáo thuế,\n"
+"yêu cầu cấu hình thuế mới.\n"
+
+#. module: account_update_tax_tags
+#: model:ir.module.module,shortdesc:base.module_account_update_tax_tags
+msgid "Account - Allow updating tax grids"
+msgstr "Kế toán - Cho phép cập nhật lưới thuế"
+
+#. module: account_update_tax_tags
+#: model:ir.module.module,summary:base.module_account_update_tax_tags
+msgid "Allow updating tax grids on existing entries"
+msgstr "Cho phép cập nhật lưới thuế trên các bút toán hiện có"
+
+#. module: account_update_tax_tags
 #: model:ir.model.fields,field_description:account_update_tax_tags.field_account_update_tax_tags_wizard__company_id
 msgid "Company"
 msgstr "Công ty"

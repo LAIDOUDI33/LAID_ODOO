@@ -16,6 +16,25 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_vn_edi_viettel
+#: model:ir.module.module,description:base.module_l10n_vn_edi_viettel
+msgid ""
+"\n"
+"Vietnam - E-invoicing\n"
+"=====================\n"
+"Using SInvoice by Viettel\n"
+msgstr ""
+
+#. module: l10n_vn_edi_viettel
+#: model:ir.module.module,summary:base.module_l10n_vn_edi_viettel
+msgid "E-invoicing using SInvoice by Viettel"
+msgstr ""
+
+#. module: l10n_vn_edi_viettel
+#: model:ir.module.module,shortdesc:base.module_l10n_vn_edi_viettel
+msgid "Vietnam - E-invoicing"
+msgstr ""
+
+#. module: l10n_vn_edi_viettel
 #. odoo-python
 #: code:addons/l10n_vn_edi_viettel/models/sinvoice.py:0
 msgid "%(company)s: %(error)s"

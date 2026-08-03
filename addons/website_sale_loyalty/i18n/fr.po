@@ -20,6 +20,33 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_sale_loyalty
+#: model:ir.module.module,description:base.module_website_sale_loyalty
+msgid ""
+"\n"
+"Create coupons, promotion codes, gift cards and loyalty programs to boost "
+"your sales (free products,\n"
+"discounts, etc.). Shoppers can use them in the eCommerce checkout.\n"
+"\n"
+"Coupon & promotion programs can be edited in the Catalog menu of the Website "
+"app.\n"
+msgstr ""
+
+#. module: website_sale_loyalty
+#: model:ir.module.module,shortdesc:base.module_website_sale_loyalty
+msgid "Coupons, Promotions, Gift Card and Loyalty for eCommerce"
+msgstr ""
+"Bons de réduction, promotions, cartes-cadeaux et fidélité pour l'eCommerce"
+
+#. module: website_sale_loyalty
+#: model:ir.module.module,summary:base.module_website_sale_loyalty
+msgid ""
+"Use coupon, promotion, gift cards and loyalty programs in your eCommerce "
+"store"
+msgstr ""
+"Utilisez des bons de réduction, des promotions, des cartes-cadeaux et des "
+"programmes de fidélité dans votre eCommerce"
+
+#. module: website_sale_loyalty
 #. odoo-python
 #: code:addons/website_sale_loyalty/wizard/coupon_share.py:0
 msgid "A coupon is needed for coupon programs."

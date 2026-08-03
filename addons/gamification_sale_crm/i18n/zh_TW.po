@@ -22,6 +22,18 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: gamification_sale_crm
+#: model:ir.module.module,shortdesc:base.module_gamification_sale_crm
+msgid "CRM Gamification"
+msgstr "CRM遊戲化"
+
+#. module: gamification_sale_crm
+#: model:ir.module.module,description:base.module_gamification_sale_crm
+msgid ""
+"Example of goal definitions and challenges that can be used related to the "
+"usage of the CRM Sale module."
+msgstr "可以用來關聯到CRM銷售模組使用的規定目標與挑戰的範例."
+
+#. module: gamification_sale_crm
 #: model:gamification.goal.definition,name:gamification_sale_crm.definition_crm_nbr_customer_refunds
 msgid "Customer Credit Notes"
 msgstr "客戶貸記單"

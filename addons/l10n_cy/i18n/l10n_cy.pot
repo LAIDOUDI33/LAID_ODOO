@@ -16,6 +16,18 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_cy
+#: model:ir.module.module,description:base.module_l10n_cy
+msgid ""
+"\n"
+"Basic package for Cyprus that contains the chart of accounts, taxes, tax reports,...\n"
+msgstr ""
+
+#. module: l10n_cy
+#: model:ir.module.module,shortdesc:base.module_l10n_cy
+msgid "Cyprus - Accounting"
+msgstr ""
+
+#. module: l10n_cy
 #: model:ir.model,name:l10n_cy.model_account_chart_template
 msgid "Account Chart Template"
 msgstr ""

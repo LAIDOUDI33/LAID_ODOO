@@ -29,6 +29,54 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: product
+#: model:ir.module.module,description:base.module_product
+msgid ""
+"\n"
+"This is the base module for managing products and pricelists in Odoo.\n"
+"========================================================================\n"
+"\n"
+"Products support variants, different pricing methods, vendors information,\n"
+"make to stock/order, different units of measure, packaging and properties.\n"
+"\n"
+"Pricelists support:\n"
+"-------------------\n"
+"    * Multiple-level of discount (by product, category, quantities)\n"
+"    * Compute price based on different criteria:\n"
+"        * Other pricelist\n"
+"        * Cost price\n"
+"        * List price\n"
+"        * Vendor price\n"
+"\n"
+"Pricelists preferences by product and/or partners.\n"
+"\n"
+"Print product labels with barcode.\n"
+msgstr ""
+"\n"
+"这是 Odoo 中管理产品和价格表的基本模块。\n"
+"========================================================================\n"
+"\n"
+"产品支持变体、不同定价方法、供应商信息、\n"
+"库存/订单、不同计量单位、包装和属性。\n"
+"\n"
+"支持价格表：\n"
+"-------------------\n"
+"    * 多级折扣（按产品、类别、数量计算）\n"
+"    * 根据不同标准计算价格：\n"
+"        * 其他价格表\n"
+"        * 成本价格\n"
+"        * 清单价格\n"
+"        * 供应商价格\n"
+"\n"
+"按产品和/或合作伙伴分列的优惠价格表。\n"
+"\n"
+"打印带条形码的产品标签。\n"
+
+#. module: product
+#: model:ir.module.module,shortdesc:base.module_product
+msgid "Products & Pricelists"
+msgstr "产品 & 价格列表"
+
+#. module: product
 #: model:ir.model.fields,field_description:product.field_product_pricelist_item__product_variant_count
 #: model:ir.model.fields,field_description:product.field_product_product__product_variant_count
 #: model:ir.model.fields,field_description:product.field_product_template__product_variant_count

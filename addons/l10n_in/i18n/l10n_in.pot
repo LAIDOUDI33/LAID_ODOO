@@ -16,6 +16,27 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_in
+#: model:ir.module.module,description:base.module_l10n_in
+msgid ""
+"\n"
+"Indian Accounting: Chart of Account.\n"
+"====================================\n"
+"\n"
+"Indian accounting chart and localization.\n"
+"\n"
+"Odoo allows to manage Indian Accounting by providing Two Formats Of Chart of Accounts i.e Indian Chart Of Accounts - Standard and Indian Chart Of Accounts - Schedule VI.\n"
+"\n"
+"Note: The Schedule VI has been revised by MCA and is applicable for all Balance Sheet made after\n"
+"31st March, 2011. The Format has done away with earlier two options of format of Balance\n"
+"Sheet, now only Vertical format has been permitted Which is Supported By Odoo.\n"
+msgstr ""
+
+#. module: l10n_in
+#: model:ir.module.module,shortdesc:base.module_l10n_in
+msgid "Indian - Accounting"
+msgstr ""
+
+#. module: l10n_in
 #: model:ir.model.fields,help:l10n_in.field_account_bank_statement_line__l10n_in_journal_type
 #: model:ir.model.fields,help:l10n_in.field_account_move__l10n_in_journal_type
 msgid ""

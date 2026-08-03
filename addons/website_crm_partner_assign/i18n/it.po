@@ -25,6 +25,47 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_crm_partner_assign
+#: model:ir.module.module,description:base.module_website_crm_partner_assign
+msgid ""
+"\n"
+"This module allows to forward incoming leads/opportunities to your resellers/"
+"partners.\n"
+"\n"
+"Forwarding leads can be done for one or several leads at a time. The action "
+"is available in the *Assigned Partner* section of the lead/opportunity form "
+"view and in the *Action* menu of the list view.\n"
+"\n"
+"The automatic assignment is figured from the weight of partner levels and "
+"the geolocalization. Partners get leads that are located around them.\n"
+"\n"
+msgstr ""
+"\n"
+"Questo modulo consente di inoltrare i lead/le opportunità in arrivo ai tuoi "
+"rivenditori/partner.\n"
+"\n"
+"L'inoltro dei lead può essere effettuato per uno o più lead alla volta. "
+"L'azione è disponibile nella sezione *Partner assegnato* della vista del "
+"modulo lead/opportunità e nel menu *Azioni* della vista elenco.\n"
+"\n"
+"L'assegnazione automatica viene calcolata in base al peso dei livelli dei "
+"partner e alla geolocalizzazione. I partner ricevono i lead che si trovano "
+"nelle loro vicinanze.\n"
+"\n"
+
+#. module: website_crm_partner_assign
+#: model:ir.module.module,summary:base.module_website_crm_partner_assign
+msgid "Publish your resellers/partners and forward leads to them"
+msgstr "Pubblica i rivenditori/partner e inviagli lead"
+
+#. module: website_crm_partner_assign
+#. odoo-python
+#: code:addons/website_crm_partner_assign/models/website.py:0
+#: model:ir.module.module,shortdesc:base.module_website_crm_partner_assign
+#: model_terms:ir.ui.view,arch_db:website_crm_partner_assign.index
+msgid "Resellers"
+msgstr "Partner"
+
+#. module: website_crm_partner_assign
 #: model:ir.model.fields,field_description:website_crm_partner_assign.field_crm_partner_report_assign__nbr_opportunities
 msgid "# of Opportunity"
 msgstr "N. di opportunità"
@@ -1045,13 +1086,6 @@ msgstr "Valutazione: {{0}} su 4"
 #: model_terms:ir.ui.view,arch_db:website_crm_partner_assign.references_block
 msgid "References"
 msgstr "Referenze"
-
-#. module: website_crm_partner_assign
-#. odoo-python
-#: code:addons/website_crm_partner_assign/models/website.py:0
-#: model_terms:ir.ui.view,arch_db:website_crm_partner_assign.index
-msgid "Resellers"
-msgstr "Partner"
 
 #. module: website_crm_partner_assign
 #: model_terms:ir.ui.view,arch_db:website_crm_partner_assign.portal_my_lead

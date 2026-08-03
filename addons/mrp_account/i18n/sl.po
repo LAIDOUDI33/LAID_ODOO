@@ -28,6 +28,46 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: mrp_account
+#: model:ir.module.module,description:base.module_mrp_account
+msgid ""
+"\n"
+"Analytic Accounting in MRP\n"
+"==========================\n"
+"\n"
+"* Cost structure report\n"
+"\n"
+"Also, allows to compute the cost of the product based on its BoM, using the "
+"costs of its components and work center operations.\n"
+"It adds a button on the product itself but also an action in the list view "
+"of the products.\n"
+"If the automated inventory valuation is active, the necessary accounting "
+"entries will be created.\n"
+"\n"
+msgstr ""
+"\n"
+"Analitično računovodstvo v MRP\n"
+"==========================\n"
+"\n"
+"* Poročilo o strukturi stroškov\n"
+"\n"
+"Omogoča tudi izračun stroškov izdelka na podlagi njegove kosovnice, z "
+"uporabo stroškov njegovih komponent in delovanja delovnega centra.\n"
+"Doda gumb na sam izdelek, pa tudi dejanje v pogledu seznama izdelkov.\n"
+"Če je avtomatizirano vrednotenje zalog aktivno, bodo ustvarjeni potrebni "
+"računovodski vpisi.\n"
+"\n"
+
+#. module: mrp_account
+#: model:ir.module.module,shortdesc:base.module_mrp_account
+msgid "Accounting - MRP"
+msgstr "Računovodstvo - MRP proizvodnja"
+
+#. module: mrp_account
+#: model:ir.module.module,summary:base.module_mrp_account
+msgid "Analytic accounting in Manufacturing"
+msgstr "Analitično knjigovodstvo proizvodnje"
+
+#. module: mrp_account
 #. odoo-python
 #: code:addons/mrp_account/models/stock_move.py:0
 msgid "%(value)s for %(quantity)s %(unit)s from %(production)s"

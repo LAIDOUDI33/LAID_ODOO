@@ -22,6 +22,16 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: event_crm
+#: model:ir.module.module,description:base.module_event_crm
+msgid "Create leads from event registrations."
+msgstr "Buat lead dari pendaftaran acara."
+
+#. module: event_crm
+#: model:ir.module.module,shortdesc:base.module_event_crm
+msgid "Event CRM"
+msgstr "CRM Acara"
+
+#. module: event_crm
 #: model:ir.model.fields,field_description:event_crm.field_event_event__lead_count
 #: model:ir.model.fields,field_description:event_crm.field_event_registration__lead_count
 msgid "# Leads"

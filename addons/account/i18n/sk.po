@@ -38,6 +38,38 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: account
+#: model:ir.module.module,description:base.module_account
+msgid ""
+"\n"
+"Invoicing & Payments\n"
+"====================\n"
+"The specific and easy-to-use Invoicing system in Odoo allows you to keep "
+"track of your accounting, even when you are not an accountant. It provides "
+"an easy way to follow up on your vendors and customers.\n"
+"\n"
+"You could use this simplified accounting in case you work with an (external) "
+"account to keep your books, and you still want to keep track of payments. "
+"This module also offers you an easy method of registering payments, without "
+"having to encode complete abstracts of account.\n"
+msgstr ""
+
+#. module: account
+#: model:ir.module.module,summary:base.module_account
+msgid "Invoices & Payments"
+msgstr "Faktúry & platby"
+
+#. module: account
+#: model:ir.module.module,shortdesc:base.module_account
+#: model:ir.ui.menu,name:account.account_invoicing_menu
+#: model:ir.ui.menu,name:account.menu_finance
+#: model:res.groups,name:account.group_account_invoice
+#: model_terms:ir.ui.view,arch_db:account.digest_digest_view_form
+#: model_terms:ir.ui.view,arch_db:account.res_config_settings_view_form
+#: model_terms:ir.ui.view,arch_db:account.view_partner_property_form
+msgid "Invoicing"
+msgstr "Fakturácia"
+
+#. module: account
 #: model:ir.model.fields,help:account.field_account_journal__type
 #, fuzzy
 msgid ""
@@ -11833,16 +11865,6 @@ msgstr "Faktúry, platby a základné fakturačné prehľady."
 #, fuzzy
 msgid "Invoices/Bills/Mandates"
 msgstr "Faktúry prijaté/vydané/mandáty"
-
-#. module: account
-#: model:ir.ui.menu,name:account.account_invoicing_menu
-#: model:ir.ui.menu,name:account.menu_finance
-#: model:res.groups,name:account.group_account_invoice
-#: model_terms:ir.ui.view,arch_db:account.digest_digest_view_form
-#: model_terms:ir.ui.view,arch_db:account.res_config_settings_view_form
-#: model_terms:ir.ui.view,arch_db:account.view_partner_property_form
-msgid "Invoicing"
-msgstr "Fakturácia"
 
 #. module: account
 #: model:ir.model.fields.selection,name:account.selection__account_invoice_report__payment_state__invoicing_legacy

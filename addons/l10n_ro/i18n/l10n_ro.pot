@@ -16,6 +16,22 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_ro
+#: model:ir.module.module,description:base.module_l10n_ro
+msgid ""
+"\n"
+"This is the module to manage the Accounting Chart, VAT structure, Fiscal Position and Tax Mapping.\n"
+"It also adds the Registration Number for Romania in Odoo.\n"
+"================================================================================================================\n"
+"\n"
+"Romanian accounting chart and localization.\n"
+msgstr ""
+
+#. module: l10n_ro
+#: model:ir.module.module,shortdesc:base.module_l10n_ro
+msgid "Romania - Accounting"
+msgstr ""
+
+#. module: l10n_ro
 #: model:ir.model,name:l10n_ro.model_account_chart_template
 msgid "Account Chart Template"
 msgstr ""

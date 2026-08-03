@@ -24,6 +24,27 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: mass_mailing_event_track
+#: model:ir.module.module,description:base.module_mass_mailing_event_track
+msgid ""
+"\n"
+"Mass mail event track speakers\n"
+"==============================\n"
+"\n"
+"Bridge module adding UX requirements to ease mass mailing of event track "
+"speakers.\n"
+msgstr ""
+"\n"
+"邮件群发活动轨道发言人\n"
+"==============================\n"
+"\n"
+"桥接模块增加了用户体验要求，以方便群发活动轨道发言人的邮件。\n"
+
+#. module: mass_mailing_event_track
+#: model:ir.module.module,shortdesc:base.module_mass_mailing_event_track
+msgid "Mass mailing on track speakers"
+msgstr "群发邮件跟踪演讲者"
+
+#. module: mass_mailing_event_track
 #: model_terms:ir.ui.view,arch_db:mass_mailing_event_track.event_event_view_form_inherit_mass_mailing_track
 msgid "Contact Speakers"
 msgstr "联络演讲者"

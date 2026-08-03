@@ -16,6 +16,22 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_cd
+#: model:ir.module.module,description:base.module_l10n_cd
+msgid ""
+"\n"
+"This module implements the tax for the Democratic Republic of the Congo.\n"
+"===========================================================================\n"
+"\n"
+"The Chart of Accounts is from SYSCOHADA.\n"
+"\n"
+msgstr ""
+
+#. module: l10n_cd
+#: model:ir.module.module,shortdesc:base.module_l10n_cd
+msgid "Democratic Republic of the Congo - Accounting"
+msgstr ""
+
+#. module: l10n_cd
 #: model:ir.model,name:l10n_cd.model_account_chart_template
 msgid "Account Chart Template"
 msgstr ""

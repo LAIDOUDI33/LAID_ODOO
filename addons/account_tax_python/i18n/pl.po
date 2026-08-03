@@ -28,6 +28,37 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: account_tax_python
+#: model:ir.module.module,description:base.module_account_tax_python
+msgid ""
+"\n"
+"A tax defined as python code consists of two snippets of python code which "
+"are executed in a local environment containing data such as the unit price, "
+"product or partner.\n"
+"\n"
+"\"Applicable Code\" defines if the tax is to be applied.\n"
+"\n"
+"\"Python Code\" defines the amount of the tax.\n"
+msgstr ""
+"\n"
+"Podatek zdefiniowany jako kod Python składa się z dwóch fragmentów kodu "
+"Python, które są wykonywane w środowisku lokalnym zawierającym dane takie "
+"jak cena jednostki, produkt lub partner.\n"
+"\n"
+"\"Obowiązujący kod\" określa, czy podatek ma być zastosowany.\n"
+"\n"
+"\"Kod Python\" określa kwotę podatku.\n"
+
+#. module: account_tax_python
+#: model:ir.module.module,shortdesc:base.module_account_tax_python
+msgid "Define Taxes as Python Code"
+msgstr "Zdefiniuj Podatki jako Kod Python"
+
+#. module: account_tax_python
+#: model:ir.module.module,summary:base.module_account_tax_python
+msgid "Use python code to define taxes"
+msgstr "Użyj kodu Pythona do zdefiniowania podatków"
+
+#. module: account_tax_python
 #: model:ir.model.fields,help:account_tax_python.field_account_tax__amount_type
 msgid ""
 "\n"

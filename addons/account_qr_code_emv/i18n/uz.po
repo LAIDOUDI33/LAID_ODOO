@@ -27,6 +27,23 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: account_qr_code_emv
+#: model:ir.module.module,description:base.module_account_qr_code_emv
+#, fuzzy
+msgid ""
+"\n"
+"Bridge module addings support for EMV Merchant-Presented QR-code generation "
+"for Payment System.\n"
+msgstr ""
+"Ko‘prik moduli To‘lov tizimi uchun EMV savdogar tomonidan taqdim etiladigan "
+"QR-kod yaratishni qo‘llab-quvvatlaydi."
+
+#. module: account_qr_code_emv
+#: model:ir.module.module,shortdesc:base.module_account_qr_code_emv
+#, fuzzy
+msgid "account_qr_code_emv"
+msgstr "account_qr_code_emv"
+
+#. module: account_qr_code_emv
 #. odoo-python
 #: code:addons/account_qr_code_emv/models/res_bank.py:0
 #, fuzzy

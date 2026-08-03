@@ -21,6 +21,38 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: account_edi
+#: model:ir.module.module,description:base.module_account_edi
+msgid ""
+"\n"
+"Electronic Data Interchange\n"
+"=======================================\n"
+"EDI is the electronic interchange of business information using a "
+"standardized format.\n"
+"\n"
+"This is the base module for import and export of invoices in various EDI "
+"formats, and the\n"
+"the transmission of said documents to various parties involved in the "
+"exchange (other company,\n"
+"governements, etc.)\n"
+msgstr ""
+"\n"
+"Elektronische gegevensuitwisseling\n"
+"==========================================\n"
+"EDI is de elektronische uitwisseling van bedrijfsinformatie in een "
+"gestandaardiseerd formaat.\n"
+"\n"
+"Dit is de basismodule voor het importeren en exporteren van facturen in "
+"verschillende EDI-formaten, en de\n"
+"de overdracht van genoemde documenten aan verschillende partijen die bij de "
+"uitwisseling betrokken zijn (ander bedrijf,\n"
+"regeringen, etc.)\n"
+
+#. module: account_edi
+#: model:ir.module.module,shortdesc:base.module_account_edi
+msgid "Import/Export Invoices From XML/PDF"
+msgstr "Import/Export facturen van XML/PDF"
+
+#. module: account_edi
 #. odoo-python
 #: code:addons/account_edi/models/account_move.py:0
 msgid "%(count)s Electronic invoicing error(s)"

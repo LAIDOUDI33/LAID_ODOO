@@ -20,6 +20,11 @@ msgstr ""
 "X-Generator: Weblate 5.14.3\n"
 
 #. module: l10n_din5008_sale
+#: model:ir.module.module,shortdesc:base.module_l10n_din5008_sale
+msgid "DIN 5008 - Sale"
+msgstr "DIN 5008 - Verkauf"
+
+#. module: l10n_din5008_sale
 #: model_terms:ir.ui.view,arch_db:l10n_din5008_sale.report_saleorder_document
 msgid "<span class=\"fw-bold\">Beneficiary:</span>"
 msgstr "<span class=\"fw-bold\">Leistungsempfänger:</span>"

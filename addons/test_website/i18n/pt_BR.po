@@ -1,0 +1,65 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# * base
+#
+# Translators:
+# grazziano <gra.negocia@gmail.com>, 2022
+# Marcos Rodrigues, 2022
+# Mateus Lopes <mateus1@gmail.com>, 2022
+# Marcel Savegnago <marcel.savegnago@gmail.com>, 2022
+# Ruani Lazzarotto <ruanilazzarotto@gmail.com>, 2023
+# douglas custodio <douglascstd@yahoo.com>, 2023
+# Martin Trigaux, 2023
+# Kevilyn Rosa, 2023
+# Éder Brito <britoederr@gmail.com>, 2023
+# Layna Nascimento, 2023
+# "Dylan Kiss (dyki)" <dyki@odoo.com>, 2025.
+# "Maitê Dietze (madi)" <madi@odoo.com>, 2025, 2026.
+# Weblate <noreply-mt-weblate@weblate.org>, 2025.
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 16.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-05-12 08:36+0000\n"
+"PO-Revision-Date: 2026-06-18 23:26+0000\n"
+"Last-Translator: Anonymous <noreply@weblate.org>\n"
+"Language-Team: Portuguese (Brazil) <https://translate.odoo.com/projects/odoo-"
+"master/base/pt_BR/>\n"
+"Language: pt_BR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=3; plural=(n == 0 || n == 1) ? 0 : ((n != 0 && n % "
+"1000000 == 0) ? 1 : 2);\n"
+"X-Generator: Weblate 2026.6.1\n"
+
+#. module: test_website
+#: model:ir.module.module,description:base.module_test_website
+msgid ""
+"This module contains tests related to website. Those are\n"
+"present in a separate module as we are testing module install/uninstall/"
+"upgrade\n"
+"and we don't want to reload the website module every time, including it's "
+"possible\n"
+"dependencies. Neither we want to add in website module some routes, views "
+"and\n"
+"models which only purpose is to run tests."
+msgstr ""
+"Esse módulo contém testes relacionados ao site. Eles estão presentes em um "
+"módulo separado, pois estamos testando a instalação/desinstalação/upgrade do "
+"módulo e não queremos recarregar o módulo do site todas as vezes, incluindo "
+"suas possíveis dependências. Também não queremos adicionar ao módulo do site "
+"algumas rotas, visualizações e modelos cuja única finalidade é executar "
+"testes."
+
+#. module: test_website
+#: model:ir.module.module,shortdesc:base.module_test_website
+msgid "Website Test"
+msgstr "Teste de site"
+
+#. module: test_website
+#: model:ir.module.module,summary:base.module_test_website
+msgid "Website Test, mainly for module install/uninstall tests"
+msgstr ""
+"Teste de site, principalmente para testes de instalação/desinstalação de "
+"módulos"

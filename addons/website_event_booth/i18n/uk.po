@@ -20,6 +20,26 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_event_booth
+#: model:ir.module.module,description:base.module_website_event_booth
+msgid ""
+"\n"
+"Display your booths on your website for the users to register.\n"
+msgstr ""
+"\n"
+"Розмістіть свої стенди на своєму веб-сайті, щоб користувачі могли "
+"зареєструватися.\n"
+
+#. module: website_event_booth
+#: model:ir.module.module,summary:base.module_website_event_booth
+msgid "Events, display your booths on your website"
+msgstr "Події, відображайте стенди на вашому веб-сайті"
+
+#. module: website_event_booth
+#: model:ir.module.module,shortdesc:base.module_website_event_booth
+msgid "Online Event Booths"
+msgstr "Стенди онлайн-подій"
+
+#. module: website_event_booth
 #: model_terms:ir.ui.view,arch_db:website_event_booth.event_booth_registration_details
 msgid ""
 "<i class=\"fa fa-exclamation-triangle me-2\" role=\"img\" aria-"

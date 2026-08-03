@@ -21,6 +21,22 @@ msgstr ""
 "X-Generator: Weblate 5.14.3\n"
 
 #. module: l10n_ch_pos
+#: model:ir.module.module,description:base.module_l10n_ch_pos
+msgid ""
+"\n"
+"Swiss POS Localization\n"
+"=======================================================\n"
+msgstr ""
+"\n"
+"Localisation du point de vente suisse\n"
+"=======================================================\n"
+
+#. module: l10n_ch_pos
+#: model:ir.module.module,shortdesc:base.module_l10n_ch_pos
+msgid "Swiss - Point of Sale"
+msgstr "Suisse - Point de Vente"
+
+#. module: l10n_ch_pos
 #: model:ir.model.fields,field_description:l10n_ch_pos.field_pos_order__display_name
 msgid "Display Name"
 msgstr "Nom affiché"

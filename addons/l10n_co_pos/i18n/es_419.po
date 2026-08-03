@@ -20,6 +20,12 @@ msgstr ""
 "X-Generator: Weblate 5.12.2\n"
 
 #. module: l10n_co_pos
+#: model:ir.module.module,description:base.module_l10n_co_pos
+#: model:ir.module.module,shortdesc:base.module_l10n_co_pos
+msgid "Colombian - Point of Sale"
+msgstr "Colombia - Punto de venta"
+
+#. module: l10n_co_pos
 #: model:ir.model.fields,field_description:l10n_co_pos.field_pos_order__display_name
 #: model:ir.model.fields,field_description:l10n_co_pos.field_pos_order_receipt__display_name
 msgid "Display Name"

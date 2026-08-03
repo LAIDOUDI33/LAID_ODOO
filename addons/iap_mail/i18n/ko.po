@@ -21,6 +21,17 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: iap_mail
+#: model:ir.module.module,description:base.module_iap_mail
+#: model:ir.module.module,summary:base.module_iap_mail
+msgid "Bridge between IAP and mail"
+msgstr "IAP와 메일을 서로 연결"
+
+#. module: iap_mail
+#: model:ir.module.module,shortdesc:base.module_iap_mail
+msgid "IAP / Mail"
+msgstr "IAP / 메일"
+
+#. module: iap_mail
 #: model_terms:ir.ui.view,arch_db:iap_mail.enrich_company_by_dnb
 msgid ""
 "<i class=\"oi oi-fw me-2 mt-1 text-primary\" data-icon=\"payments\"/>\n"

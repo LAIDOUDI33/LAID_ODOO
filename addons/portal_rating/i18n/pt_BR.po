@@ -25,6 +25,23 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: portal_rating
+#: model:ir.module.module,description:base.module_portal_rating
+msgid ""
+"\n"
+"Bridge module adding rating capabilities on portal. It includes notably\n"
+"inclusion of rating directly within the customer portal discuss widget.\n"
+msgstr ""
+"\n"
+"Módulo ponte que adiciona recursos de avaliação no portal. Ele inclui, "
+"principalmente, a inclusão de avaliações diretamente no widget de Mensagens "
+"no portal do cliente.\n"
+
+#. module: portal_rating
+#: model:ir.module.module,shortdesc:base.module_portal_rating
+msgid "Portal Rating"
+msgstr "Avaliação no portal"
+
+#. module: portal_rating
 #: model_terms:ir.ui.view,arch_db:portal_rating.rating_rating_view_form
 msgid "<span> on </span>"
 msgstr "<span> em </span>"

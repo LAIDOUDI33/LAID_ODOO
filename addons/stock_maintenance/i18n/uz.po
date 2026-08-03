@@ -27,6 +27,31 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: stock_maintenance
+#: model:ir.module.module,description:base.module_stock_maintenance
+#, fuzzy
+msgid ""
+"\n"
+"Stock in Maintenance\n"
+"====================\n"
+"Open the record of the serial number from an equipment form\n"
+msgstr ""
+"Texnik xizmat ko‘rsatishdagi inventar ====================\n"
+"\n"
+"Jihozlar shaklidan seriya raqamini qayd etish yozuvini oching"
+
+#. module: stock_maintenance
+#: model:ir.module.module,summary:base.module_stock_maintenance
+#, fuzzy
+msgid "See lots used in maintenance"
+msgstr "Texnik xizmat ko‘rsatishda foydalanilgan partiyalarni ko‘rish"
+
+#. module: stock_maintenance
+#: model:ir.module.module,shortdesc:base.module_stock_maintenance
+#, fuzzy
+msgid "Stock - Maintenance"
+msgstr "Zaxira - Texnik xizmat ko‘rsatish"
+
+#. module: stock_maintenance
 #: model_terms:ir.ui.view,arch_db:stock_maintenance.stock_location_form_maintenance_equipments
 #, fuzzy
 msgid ""

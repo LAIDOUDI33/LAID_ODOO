@@ -20,6 +20,36 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: auth_passkey
+#: model:ir.module.module,description:base.module_auth_passkey
+msgid ""
+"\n"
+"The implementation of Passkeys using the webauthn protocol.\n"
+"===========================================================\n"
+"\n"
+"Passkeys are a secure alternative to a username and a password.\n"
+"When a user logs in with a Passkey, MFA will not be required.\n"
+msgstr ""
+"\n"
+"Pääsuvõtmete rakendamine webauthn protokolli abil.\n"
+"===========================================================\n"
+"\n"
+"Pääsuvõti on turvaline alternatiiv kasutajanimele ja paroolile.\n"
+"Kui kasutaja logib sisse Pääsuvõtmega, ei nõuta mitme faktori autentimist "
+"(MFA).\n"
+
+#. module: auth_passkey
+#: model:ir.module.module,summary:base.module_auth_passkey
+msgid "Log in with a Passkey"
+msgstr "Logi sisse pääsuvõtmega"
+
+#. module: auth_passkey
+#: model:ir.module.module,shortdesc:base.module_auth_passkey
+#: model_terms:ir.ui.view,arch_db:auth_passkey.auth_passkey_users_form
+#: model_terms:ir.ui.view,arch_db:auth_passkey.auth_passkey_users_preferences
+msgid "Passkeys"
+msgstr "Paroolid"
+
+#. module: auth_passkey
 #: model_terms:ir.ui.view,arch_db:auth_passkey.auth_passkey_users_form
 #: model_terms:ir.ui.view,arch_db:auth_passkey.auth_passkey_users_preferences
 msgid ""
@@ -157,12 +187,6 @@ msgstr "Või vali teine meetod:"
 #: model:ir.model.fields.selection,name:auth_passkey.selection__res_users_identitycheck__auth_method__webauthn
 msgid "Passkey"
 msgstr "Pääsuvõti"
-
-#. module: auth_passkey
-#: model_terms:ir.ui.view,arch_db:auth_passkey.auth_passkey_users_form
-#: model_terms:ir.ui.view,arch_db:auth_passkey.auth_passkey_users_preferences
-msgid "Passkeys"
-msgstr "Paroolid"
 
 #. module: auth_passkey
 #: model:ir.model,name:auth_passkey.model_res_users_identitycheck

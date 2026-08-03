@@ -16,6 +16,16 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: project_purchase
+#: model:ir.module.module,summary:base.module_project_purchase
+msgid "Monitor purchase in project"
+msgstr ""
+
+#. module: project_purchase
+#: model:ir.module.module,shortdesc:base.module_project_purchase
+msgid "Project Purchase"
+msgstr ""
+
+#. module: project_purchase
 #: model:product.template,name:project_purchase.product_product_bricks_product_template
 msgid "Bricks"
 msgstr ""

@@ -16,6 +16,20 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: marketing_card
+#: model:ir.module.module,summary:base.module_marketing_card
+msgid "Generate dynamic shareable cards"
+msgstr ""
+
+#. module: marketing_card
+#: model:ir.model,name:marketing_card.model_card_card
+#: model:ir.module.module,shortdesc:base.module_marketing_card
+#: model:ir.ui.menu,name:marketing_card.card_menu
+#: model:ir.ui.menu,name:marketing_card.marketing_card_menu_technical
+#: model:res.groups.privilege,name:marketing_card.res_groups_privilege_marketing_card
+msgid "Marketing Card"
+msgstr ""
+
+#. module: marketing_card
 #. odoo-python
 #: code:addons/marketing_card/models/card_campaign.py:0
 msgid "%(card_campaign_name)s Mailings"
@@ -604,14 +618,6 @@ msgstr ""
 #. module: marketing_card
 #: model:ir.model.fields,field_description:marketing_card.field_card_campaign__mailing_count
 msgid "Mailing Count"
-msgstr ""
-
-#. module: marketing_card
-#: model:ir.model,name:marketing_card.model_card_card
-#: model:ir.ui.menu,name:marketing_card.card_menu
-#: model:ir.ui.menu,name:marketing_card.marketing_card_menu_technical
-#: model:res.groups.privilege,name:marketing_card.res_groups_privilege_marketing_card
-msgid "Marketing Card"
 msgstr ""
 
 #. module: marketing_card

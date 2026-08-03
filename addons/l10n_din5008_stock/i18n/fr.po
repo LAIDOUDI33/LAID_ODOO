@@ -17,6 +17,11 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_din5008_stock
+#: model:ir.module.module,shortdesc:base.module_l10n_din5008_stock
+msgid "DIN 5008 - Stock"
+msgstr "DIN 5008 - Stock"
+
+#. module: l10n_din5008_stock
 #: model_terms:ir.ui.view,arch_db:l10n_din5008_stock.report_delivery_document
 msgid "<span class=\"fw-bold\">Beneficiary:</span>"
 msgstr "<span class=\"fw-bold\">Beneficiary:</span>"

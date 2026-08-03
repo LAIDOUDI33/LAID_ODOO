@@ -16,6 +16,18 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_mr
+#: model:ir.module.module,description:base.module_l10n_mr
+msgid ""
+"\n"
+"Mauritania basic package that contains the chart of accounts, the taxes, tax reports, etc.\n"
+msgstr ""
+
+#. module: l10n_mr
+#: model:ir.module.module,shortdesc:base.module_l10n_mr
+msgid "Mauritania - Accounting"
+msgstr ""
+
+#. module: l10n_mr
 #: model:ir.model,name:l10n_mr.model_account_chart_template
 msgid "Account Chart Template"
 msgstr ""

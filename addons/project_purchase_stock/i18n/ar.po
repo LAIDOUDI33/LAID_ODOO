@@ -22,6 +22,17 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: project_purchase_stock
+#: model:ir.module.module,description:base.module_project_purchase_stock
+msgid "Add a project link between POs and their generated stock pickings."
+msgstr ""
+"قم بإضافة رابط للمشروع بين أوامر الشراء وعمليات انتقاء المخزون الناتجة عنها."
+
+#. module: project_purchase_stock
+#: model:ir.module.module,shortdesc:base.module_project_purchase_stock
+msgid "Project - Purchase - Stock"
+msgstr "المشاريع - المشتريات - المخزون"
+
+#. module: project_purchase_stock
 #: model:ir.model.fields,field_description:project_purchase_stock.field_purchase_order_line__display_name
 #: model:ir.model.fields,field_description:project_purchase_stock.field_stock_move__display_name
 #: model:ir.model.fields,field_description:project_purchase_stock.field_stock_rule__display_name

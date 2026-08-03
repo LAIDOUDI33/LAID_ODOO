@@ -16,6 +16,16 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_co
+#: model:ir.module.module,shortdesc:base.module_l10n_co
+msgid "Colombia - Accounting"
+msgstr ""
+
+#. module: l10n_co
+#: model:ir.module.module,description:base.module_l10n_co
+msgid "Colombian Accounting and Tax Preconfiguration"
+msgstr ""
+
+#. module: l10n_co
 #: model:ir.model,name:l10n_co.model_account_chart_template
 msgid "Account Chart Template"
 msgstr ""

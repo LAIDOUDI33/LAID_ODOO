@@ -26,6 +26,25 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_slides_survey
+#: model:ir.module.module,summary:base.module_website_slides_survey
+msgid "Add certification capabilities to your courses"
+msgstr "Thêm chứng nhận cho các khóa học của bạn"
+
+#. module: website_slides_survey
+#: model:ir.module.module,shortdesc:base.module_website_slides_survey
+msgid "Course Certifications"
+msgstr "Chứng nhận Khóa học"
+
+#. module: website_slides_survey
+#: model:ir.module.module,description:base.module_website_slides_survey
+msgid ""
+"This module lets you use the full power of certifications within your "
+"courses."
+msgstr ""
+"Phân hệ này cho phép bạn sử dụng toàn bộ chứng nhận trong các khóa học của "
+"mình."
+
+#. module: website_slides_survey
 #: model:ir.model.fields,field_description:website_slides_survey.field_slide_channel__members_certified_count
 msgid "# Certified Attendees"
 msgstr "# Học viên đã được chứng nhận"

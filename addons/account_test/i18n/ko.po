@@ -23,6 +23,37 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 
 #. module: account_test
+#: model:ir.module.module,description:base.module_account_test
+msgid ""
+"\n"
+"Asserts on accounting.\n"
+"======================\n"
+"With this module you can manually check consistencies and inconsistencies of "
+"accounting module from menu Reporting/Accounting/Accounting Tests.\n"
+"\n"
+"You can write a query in order to create Consistency Test and you will get "
+"the result of the test\n"
+"in PDF format which can be accessed by Menu Reporting -> Accounting Tests, "
+"then select the test\n"
+"and print the report from Print button in header area.\n"
+msgstr ""
+"\n"
+"회계 시스템 검증.\n"
+"======================\n"
+"이 모듈을 통해 보고서/회계/회계 테스트 메뉴에서 회계 모듈이 일관적으로 "
+"작동하고 있는지 혹은 불일치 사항이 있는지 여부를 수동으로 확인할 수 "
+"있습니다.\n"
+"\n"
+"일관성 테스트를 생성하기 위해 쿼리를 작성할 수 있으며,\n"
+"보고서 -> 회계 테스트 메뉴에서 PDF형식의 테스트 결과를 확인할 수 있습니다.\n"
+"보고서를 인쇄하려면 테스트를 선택하고 머리글 영역의 인쇄 버튼을 누르세요.\n"
+
+#. module: account_test
+#: model:ir.module.module,shortdesc:base.module_account_test
+msgid "Accounting Consistency Tests"
+msgstr "회계 일관성 검사"
+
+#. module: account_test
 #: model_terms:ir.ui.view,arch_db:account_test.report_accounttest
 msgid ""
 "<br/>\n"

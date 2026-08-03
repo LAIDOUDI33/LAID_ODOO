@@ -27,6 +27,50 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: repair
+#: model:ir.module.module,description:base.module_repair
+msgid ""
+"\n"
+"The aim is to have a complete module to manage all products repairs.\n"
+"====================================================================\n"
+"\n"
+"The following topics are covered by this module:\n"
+"------------------------------------------------------\n"
+"    * Add/remove products in the reparation\n"
+"    * Impact for stocks\n"
+"    * Warranty concept\n"
+"    * Repair quotation report\n"
+"    * Notes for the technician and for the final customer\n"
+msgstr ""
+"\n"
+"The aim is to have a complete module to manage all products repairs.\n"
+"====================================================================\n"
+"\n"
+"The following topics are covered by this module:\n"
+"------------------------------------------------------\n"
+"    * Add/remove products in the reparation\n"
+"    * Impact for stocks\n"
+"    * Warranty concept\n"
+"    * Repair quotation report\n"
+"    * Notes for the technician and for the final customer\n"
+
+#. module: repair
+#: model:ir.module.module,summary:base.module_repair
+msgid "Repair damaged products"
+msgstr "Reparați produsele deteriorate"
+
+#. module: repair
+#. odoo-python
+#: code:addons/repair/models/stock_warehouse.py:0
+#: model:ir.module.module,shortdesc:base.module_repair
+#: model:ir.ui.menu,name:repair.menu_repair_order
+#: model:ir.ui.menu,name:repair.repair_menu
+#: model:stock.picking.type,name:repair.picking_type_warehouse0_repair
+#: model_terms:ir.ui.view,arch_db:repair.view_partner_form
+#: model_terms:ir.ui.view,arch_db:repair.view_sale_order_form_inherit_repair
+msgid "Repairs"
+msgstr "Reparații"
+
+#. module: repair
 #. odoo-python
 #: code:addons/repair/models/stock_warehouse.py:0
 msgid "%(name)s Sequence repair"
@@ -1222,17 +1266,6 @@ msgstr "Reparat"
 #: model:ir.model.fields,field_description:repair.field_stock_lot__repaired_count
 msgid "Repaired count"
 msgstr "Număr reparat"
-
-#. module: repair
-#. odoo-python
-#: code:addons/repair/models/stock_warehouse.py:0
-#: model:ir.ui.menu,name:repair.menu_repair_order
-#: model:ir.ui.menu,name:repair.repair_menu
-#: model:stock.picking.type,name:repair.picking_type_warehouse0_repair
-#: model_terms:ir.ui.view,arch_db:repair.view_partner_form
-#: model_terms:ir.ui.view,arch_db:repair.view_sale_order_form_inherit_repair
-msgid "Repairs"
-msgstr "Reparații"
 
 #. module: repair
 #: model_terms:ir.ui.view,arch_db:repair.view_repair_order_form

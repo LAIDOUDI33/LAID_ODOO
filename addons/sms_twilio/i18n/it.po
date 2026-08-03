@@ -21,6 +21,32 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: sms_twilio
+#: model:ir.module.module,description:base.module_sms_twilio
+msgid ""
+"\n"
+"This module allows using Twilio as a provider for SMS messaging.\n"
+"The user has to create an account on twilio.com and top\n"
+"up their account to start sending SMS messages.\n"
+msgstr ""
+"\n"
+"Questo modulo consente di utilizzare Twilio come fornitore per la "
+"messaggistica SMS.\n"
+"L'utente deve creare un account su twilio.com e ricaricarlo\n"
+"per iniziare a inviare messaggi SMS.\n"
+
+#. module: sms_twilio
+#: model:ir.module.module,summary:base.module_sms_twilio
+msgid "Send SMS messages using Twilio"
+msgstr "Invia messaggi SMS con Twilio"
+
+#. module: sms_twilio
+#. odoo-python
+#: code:addons/sms_twilio/wizard/sms_twilio_account_manage.py:0
+#: model:ir.module.module,shortdesc:base.module_sms_twilio
+msgid "Twilio SMS"
+msgstr "SMS Twilio"
+
+#. module: sms_twilio
 #. odoo-python
 #: code:addons/sms_twilio/wizard/sms_twilio_account_manage.py:0
 msgid "%(failure_type)s: %(failure_reason)s"
@@ -367,12 +393,6 @@ msgstr "Errore di autenticazione Twilio"
 #: model:ir.model.fields,field_description:sms_twilio.field_sms_twilio_number__number
 msgid "Twilio Number"
 msgstr "Numero Twilio"
-
-#. module: sms_twilio
-#. odoo-python
-#: code:addons/sms_twilio/wizard/sms_twilio_account_manage.py:0
-msgid "Twilio SMS"
-msgstr "SMS Twilio"
 
 #. module: sms_twilio
 #: model_terms:ir.ui.view,arch_db:sms_twilio.sms_twilio_account_manage_view_form

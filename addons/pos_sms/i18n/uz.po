@@ -27,6 +27,18 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: pos_sms
+#: model:ir.module.module,shortdesc:base.module_pos_sms
+#, fuzzy
+msgid "POS - SMS"
+msgstr "POS - SMS"
+
+#. module: pos_sms
+#: model:ir.module.module,description:base.module_pos_sms
+#, fuzzy
+msgid "This module integrates the Point of Sale with SMS"
+msgstr "Ushbu modul Sotuv nuqtasini SMS bilan integratsiya qiladi"
+
+#. module: pos_sms
 #: model:sms.template,body:pos_sms.sms_template_data_point_of_sale
 #, fuzzy
 msgid ""

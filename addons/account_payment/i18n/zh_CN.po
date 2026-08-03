@@ -26,6 +26,18 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: account_payment
+#: model:ir.module.module,summary:base.module_account_payment
+msgid ""
+"Enable customers to pay invoices on the portal and post payments when "
+"transactions are processed."
+msgstr "让客户能够在门户网站上支付发票，并在交易处理完毕后过账。"
+
+#. module: account_payment
+#: model:ir.module.module,shortdesc:base.module_account_payment
+msgid "Payment - Account"
+msgstr "付款 - 会计"
+
+#. module: account_payment
 #. odoo-python
 #: code:addons/account_payment/wizards/payment_link_wizard.py:0
 msgid ""

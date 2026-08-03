@@ -21,6 +21,38 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 
 #. module: account_test
+#: model:ir.module.module,description:base.module_account_test
+msgid ""
+"\n"
+"Asserts on accounting.\n"
+"======================\n"
+"With this module you can manually check consistencies and inconsistencies of "
+"accounting module from menu Reporting/Accounting/Accounting Tests.\n"
+"\n"
+"You can write a query in order to create Consistency Test and you will get "
+"the result of the test\n"
+"in PDF format which can be accessed by Menu Reporting -> Accounting Tests, "
+"then select the test\n"
+"and print the report from Print button in header area.\n"
+msgstr ""
+"\n"
+"Tính chính xác trong Kế toán.\n"
+"=======================\n"
+"Với module này, bạn có thể tự kiểm tra tính nhất quán và không nhất quán của "
+"module kế toán từ menu Báo cáo/Kế toán/Kiểm thử Kế toán.\n"
+"\n"
+"Bạn có thể viết một câu truy vấn để tạo Kiểm thử  Tính nhất quán và sẽ nhận "
+"được kết quả kiểm thử\n"
+"ở định dạng PDF có thể được truy cập bằng Menu Báo cáo -> Kiểm thử Kế toán, "
+"sau đó chọn kiểm thử\n"
+"và in báo cáo từ nút In trong vùng tiêu đề.\n"
+
+#. module: account_test
+#: model:ir.module.module,shortdesc:base.module_account_test
+msgid "Accounting Consistency Tests"
+msgstr "Bản Kiểm thử Tính nhất quán Kế toán"
+
+#. module: account_test
 #: model_terms:ir.ui.view,arch_db:account_test.report_accounttest
 msgid ""
 "<br/>\n"

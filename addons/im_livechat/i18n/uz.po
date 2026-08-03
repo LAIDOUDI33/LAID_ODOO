@@ -27,6 +27,46 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: im_livechat
+#: model:ir.module.module,description:base.module_im_livechat
+#, fuzzy
+msgid ""
+"\n"
+"Live Chat Support\n"
+"==========================\n"
+"\n"
+"Allow to drop instant messaging widgets on any web page that will "
+"communicate\n"
+"with the current server and dispatch visitors request amongst several live\n"
+"chat operators.\n"
+"Help your customers with this chat, and analyse their feedback.\n"
+"\n"
+msgstr ""
+"Jonli chat yordami ==========================\n"
+"\n"
+"Har qanday veb-sahifaga tezkor xabar almashish vidjetlarini joylashtirishga "
+"ruxsat bering. Bu vidjetlar joriy server bilan aloqa o‘rnatib, tashrif "
+"buyuruvchilarning so‘rovlarini bir nechta jonli chat operatorlari orasida "
+"taqsimlaydi. Ushbu chat orqali mijozlaringizga yordam ko‘rsating va ularning "
+"fikr-mulohazalarini tahlil qiling."
+
+#. module: im_livechat
+#: model:ir.module.module,summary:base.module_im_livechat
+#, fuzzy
+msgid "Chat with your website visitors"
+msgstr "Veb-saytingiz tashrif buyuruvchilari bilan suhbatlashing"
+
+#. module: im_livechat
+#: model:ir.model.fields.selection,name:im_livechat.selection__discuss_channel__channel_type__livechat
+#: model:ir.module.module,shortdesc:base.module_im_livechat
+#: model:ir.ui.menu,name:im_livechat.livechat_technical
+#: model:ir.ui.menu,name:im_livechat.menu_livechat_root
+#: model:res.groups.privilege,name:im_livechat.res_groups_privilege_live_chat
+#: model_terms:ir.ui.view,arch_db:im_livechat.digest_digest_view_form_inherit
+#, fuzzy
+msgid "Live Chat"
+msgstr "Jonli muloqot"
+
+#. module: im_livechat
 #: model:ir.model.constraint,message:im_livechat.constraint_discuss_channel_livechat_rating_constraint
 msgid ""
 "\n"
@@ -1785,16 +1825,6 @@ msgstr ""
 #, fuzzy
 msgid "Limited"
 msgstr "Cheklangan"
-
-#. module: im_livechat
-#: model:ir.model.fields.selection,name:im_livechat.selection__discuss_channel__channel_type__livechat
-#: model:ir.ui.menu,name:im_livechat.livechat_technical
-#: model:ir.ui.menu,name:im_livechat.menu_livechat_root
-#: model:res.groups.privilege,name:im_livechat.res_groups_privilege_live_chat
-#: model_terms:ir.ui.view,arch_db:im_livechat.digest_digest_view_form_inherit
-#, fuzzy
-msgid "Live Chat"
-msgstr "Jonli muloqot"
 
 #. module: im_livechat
 #: model:ir.model.fields,field_description:im_livechat.field_im_livechat_channel_rule__action

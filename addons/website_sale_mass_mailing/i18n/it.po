@@ -21,6 +21,30 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_sale_mass_mailing
+#: model:ir.module.module,description:base.module_website_sale_mass_mailing
+msgid ""
+"\n"
+"Allows anonymous shoppers of your eCommerce to sign up for a newsletter "
+"during the checkout\n"
+"process.\n"
+msgstr ""
+"\n"
+"Consente ai clienti anonimi dell'e-commerce di iscriversi alla newsletter "
+"durante il processo\n"
+"di pagamento.\n"
+
+#. module: website_sale_mass_mailing
+#: model:ir.module.module,shortdesc:base.module_website_sale_mass_mailing
+msgid "Checkout Newsletter"
+msgstr "Newsletter al checkout"
+
+#. module: website_sale_mass_mailing
+#: model:ir.module.module,summary:base.module_website_sale_mass_mailing
+msgid "Let new customers sign up for a newsletter during checkout"
+msgstr ""
+"Consenti ai nuovi clienti di iscriversi alla newsletter durante il checkout"
+
+#. module: website_sale_mass_mailing
 #: model:ir.model,name:website_sale_mass_mailing.model_res_config_settings
 msgid "Config Settings"
 msgstr "Impostazioni di configurazione"

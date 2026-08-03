@@ -28,6 +28,48 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: account
+#: model:ir.module.module,description:base.module_account
+msgid ""
+"\n"
+"Invoicing & Payments\n"
+"====================\n"
+"The specific and easy-to-use Invoicing system in Odoo allows you to keep "
+"track of your accounting, even when you are not an accountant. It provides "
+"an easy way to follow up on your vendors and customers.\n"
+"\n"
+"You could use this simplified accounting in case you work with an (external) "
+"account to keep your books, and you still want to keep track of payments. "
+"This module also offers you an easy method of registering payments, without "
+"having to encode complete abstracts of account.\n"
+msgstr ""
+"\n"
+"청구서 발행 및 결제\n"
+"====================\n"
+"Odoo의 정교하면서도 간편한 청구서 발행 시스템을 사용하면 회계 담당자가 아닌 "
+"경우에도 회계 내역을 쉽게 관리할 수 있습니다. 공급업체 및 고객 정보에 대한 "
+"후속 작업을 편리하게 진행할 수 있습니다.\n"
+"\n"
+"간편한 회계 시스템을 활용하여 (외부)계정을 사용하는 경우에도 장부를 관리하고 "
+"결제 내역을 추적할 수 있습니다. 또한 이 모듈을 통해 전체 계좌 명세를 일일이 "
+"입력해 두지 않아도 간단하게 결제를 등록할 수 있습니다.\n"
+
+#. module: account
+#: model:ir.module.module,summary:base.module_account
+msgid "Invoices & Payments"
+msgstr "청구서 및 결제"
+
+#. module: account
+#: model:ir.module.module,shortdesc:base.module_account
+#: model:ir.ui.menu,name:account.account_invoicing_menu
+#: model:ir.ui.menu,name:account.menu_finance
+#: model:res.groups,name:account.group_account_invoice
+#: model_terms:ir.ui.view,arch_db:account.digest_digest_view_form
+#: model_terms:ir.ui.view,arch_db:account.res_config_settings_view_form
+#: model_terms:ir.ui.view,arch_db:account.view_partner_property_form
+msgid "Invoicing"
+msgstr "청구서 발행"
+
+#. module: account
 #: model:ir.model.fields,help:account.field_account_journal__type
 msgid ""
 "\n"
@@ -11058,16 +11100,6 @@ msgstr "청구서, 결제 및 기본 청구서 보고서입니다."
 #: code:addons/account/models/partner.py:0
 msgid "Invoices/Bills/Mandates"
 msgstr "청구서/업체청구서/위임장"
-
-#. module: account
-#: model:ir.ui.menu,name:account.account_invoicing_menu
-#: model:ir.ui.menu,name:account.menu_finance
-#: model:res.groups,name:account.group_account_invoice
-#: model_terms:ir.ui.view,arch_db:account.digest_digest_view_form
-#: model_terms:ir.ui.view,arch_db:account.res_config_settings_view_form
-#: model_terms:ir.ui.view,arch_db:account.view_partner_property_form
-msgid "Invoicing"
-msgstr "청구서 발행"
 
 #. module: account
 #: model:ir.model.fields.selection,name:account.selection__account_invoice_report__payment_state__invoicing_legacy

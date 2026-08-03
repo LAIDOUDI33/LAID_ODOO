@@ -27,6 +27,47 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: event_sale
+#: model:ir.module.module,description:base.module_event_sale
+#, fuzzy
+msgid ""
+"\n"
+"Creating registration with sales orders.\n"
+"========================================\n"
+"\n"
+"This module allows you to automate and connect your registration creation "
+"with\n"
+"your main sale flow and therefore, to enable the invoicing feature of "
+"registrations.\n"
+"\n"
+"It defines a new kind of service products that offers you the possibility "
+"to\n"
+"choose an event category associated with it. When you encode a sales order "
+"for\n"
+"that product, you will be able to choose an existing event of that category "
+"and\n"
+"when you confirm your sales order it will automatically create a "
+"registration for\n"
+"this event.\n"
+msgstr ""
+"Savdo buyurtmalari orqali ro‘yxatga olishni yaratish\n"
+"===========================================\n"
+"\n"
+"Ushbu modul sizning ro‘yxatga olish jarayoningizni avtomatlashtirish va "
+"asosiy savdo oqimingiz bilan bog‘lash imkonini beradi, shu bilan birga "
+"ro‘yxatga olishning hisob-faktura xususiyatini faollashtiradi. U siz bilan "
+"bog‘liq tadbir toifasini tanlash imkoniyatini beradigan yangi turdagi xizmat "
+"mahsulotlarini belgilaydi.  Ushbu mahsulot uchun savdo buyurtmasini "
+"kiritganingizda, siz ushbu toifadagi mavjud tadbirni tanlashingiz mumkin. "
+"Savdo buyurtmangizni tasdiqlaganingizda esa, tizim avtomatik ravishda ushbu "
+"tadbir uchun ro‘yxatdan o‘tishni yaratadi."
+
+#. module: event_sale
+#: model:ir.module.module,shortdesc:base.module_event_sale
+#, fuzzy
+msgid "Events Sales"
+msgstr "Tadbirlar savdosi"
+
+#. module: event_sale
 #: model_terms:ir.ui.view,arch_db:event_sale.event_registration_change_exception
 #, fuzzy
 msgid ""

@@ -26,6 +26,41 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_forum
+#: model:ir.module.module,description:base.module_website_forum
+msgid ""
+"\n"
+"Ask questions, get answers, no distractions\n"
+msgstr ""
+"\n"
+"방해받지 않고 질문을 던지고 답변을 받을 수 있습니다.\n"
+
+#. module: website_forum
+#. odoo-python
+#: code:addons/website_forum/controllers/website_forum.py:0
+#: code:addons/website_forum/models/forum_forum.py:0
+#: code:addons/website_forum/models/website.py:0
+#: model:ir.actions.act_url,name:website_forum.action_open_forum
+#: model:ir.model,name:website_forum.model_forum_forum
+#: model:ir.model.fields,field_description:website_forum.field_forum_post__forum_id
+#: model:ir.model.fields,field_description:website_forum.field_forum_post_comment__forum_id
+#: model:ir.model.fields,field_description:website_forum.field_forum_post_vote__forum_id
+#: model:ir.model.fields,field_description:website_forum.field_forum_tag__forum_id
+#: model:ir.module.module,shortdesc:base.module_website_forum
+#: model:ir.ui.menu,name:website_forum.menu_website_forum_global
+#: model:website.menu,name:website_forum.menu_website_forums
+#: model_terms:ir.ui.view,arch_db:website_forum.forum_forum_view_form
+#: model_terms:ir.ui.view,arch_db:website_forum.forum_forum_view_search
+#: model_terms:ir.ui.view,arch_db:website_forum.forum_post_view_search
+#: model_terms:ir.ui.view,arch_db:website_forum.gamification_karma_tracking_view_search
+msgid "Forum"
+msgstr "게시판"
+
+#. module: website_forum
+#: model:ir.module.module,summary:base.module_website_forum
+msgid "Manage a forum with FAQ and Q&A"
+msgstr "FAQ 및 Q&A가 포함된 게시판 관리"
+
+#. module: website_forum
 #. odoo-javascript
 #: code:addons/website_forum/static/src/interactions/website_forum.js:0
 msgid " Flag"
@@ -1972,26 +2007,6 @@ msgstr ""
 "점이 차감됩니다. 각각의 질문 또는 답변에 대해 누적되는 포인트는 하루 총 200점"
 "으로 제한되어 있습니다. 마지막에 제시된 표에서 각 유형에 대한 점수 요건을 확"
 "인할 수 있습니다."
-
-#. module: website_forum
-#. odoo-python
-#: code:addons/website_forum/controllers/website_forum.py:0
-#: code:addons/website_forum/models/forum_forum.py:0
-#: code:addons/website_forum/models/website.py:0
-#: model:ir.actions.act_url,name:website_forum.action_open_forum
-#: model:ir.model,name:website_forum.model_forum_forum
-#: model:ir.model.fields,field_description:website_forum.field_forum_post__forum_id
-#: model:ir.model.fields,field_description:website_forum.field_forum_post_comment__forum_id
-#: model:ir.model.fields,field_description:website_forum.field_forum_post_vote__forum_id
-#: model:ir.model.fields,field_description:website_forum.field_forum_tag__forum_id
-#: model:ir.ui.menu,name:website_forum.menu_website_forum_global
-#: model:website.menu,name:website_forum.menu_website_forums
-#: model_terms:ir.ui.view,arch_db:website_forum.forum_forum_view_form
-#: model_terms:ir.ui.view,arch_db:website_forum.forum_forum_view_search
-#: model_terms:ir.ui.view,arch_db:website_forum.forum_post_view_search
-#: model_terms:ir.ui.view,arch_db:website_forum.gamification_karma_tracking_view_search
-msgid "Forum"
-msgstr "게시판"
 
 #. module: website_forum
 #: model:ir.model.fields,field_description:website_forum.field_website__forum_count

@@ -21,6 +21,45 @@ msgstr ""
 "X-Generator: Weblate 5.14.3\n"
 
 #. module: l10n_at
+#: model:ir.module.module,description:base.module_l10n_at
+msgid ""
+"\n"
+"\n"
+"Austrian charts of accounts (Einheitskontenrahmen 2010).\n"
+"==========================================================\n"
+"\n"
+"    * Defines the following chart of account templates:\n"
+"        * Austrian General Chart of accounts 2010\n"
+"    * Defines templates for VAT on sales and purchases\n"
+"    * Defines tax templates\n"
+"    * Defines fiscal positions for Austrian fiscal legislation\n"
+"    * Defines tax reports U1/U30\n"
+"\n"
+msgstr ""
+"\n"
+"\n"
+"Österreichischer Kontenplan (Einheitskontenrahmen 2010).\n"
+"==========================================================\n"
+"\n"
+"* Definiert die folgenden Kontenplanvorlagen:\n"
+"* Österreichischer Einheitskontenrahmen 2010\n"
+"* Definiert Vorlagen für die Umsatzsteuer bei Verkäufen und Einkäufen\n"
+"* Definiert Steuer-Vorlagen\n"
+"* Definiert Steuergruppen für die österreichische Steuergesetzgebung\n"
+"* Definiert die Steuerberichte U1/U30\n"
+"\n"
+
+#. module: l10n_at
+#: model:ir.module.module,shortdesc:base.module_l10n_at
+msgid "Austria - Accounting"
+msgstr "Österreich - Buchhaltung"
+
+#. module: l10n_at
+#: model:ir.module.module,summary:base.module_l10n_at
+msgid "Austrian Standardized Charts & Tax"
+msgstr "Österreichische Standardisierte Pläne & Steuern"
+
+#. module: l10n_at
 #: model:ir.model,name:l10n_at.model_account_chart_template
 msgid "Account Chart Template"
 msgstr "Kontenplanvorlage"

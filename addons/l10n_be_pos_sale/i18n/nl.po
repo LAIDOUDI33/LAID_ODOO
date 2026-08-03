@@ -21,6 +21,16 @@ msgstr ""
 "X-Generator: Weblate 5.16.2\n"
 
 #. module: l10n_be_pos_sale
+#: model:ir.module.module,shortdesc:base.module_l10n_be_pos_sale
+msgid "l10n_be_pos_sale"
+msgstr "l10n_be_pos_sale"
+
+#. module: l10n_be_pos_sale
+#: model:ir.module.module,summary:base.module_l10n_be_pos_sale
+msgid "Link module between pos_sale and l10n_be"
+msgstr "Koppelmodule tussen pos_sale en l10n_be"
+
+#. module: l10n_be_pos_sale
 #: model:ir.model.fields,field_description:l10n_be_pos_sale.field_pos_config__display_name
 msgid "Display Name"
 msgstr "Schermnaam"

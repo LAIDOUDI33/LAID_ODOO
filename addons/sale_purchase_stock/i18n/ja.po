@@ -21,6 +21,27 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: sale_purchase_stock
+#: model:ir.module.module,description:base.module_sale_purchase_stock
+msgid ""
+"\n"
+"Add relation information between Sale Orders and Purchase Orders if Make to "
+"Order (MTO) is activated on one sold product.\n"
+msgstr ""
+"\n"
+"1つの販売済みプロダクトで受注生産（MTO）が有効化された場合、受注と発注書の間"
+"に関係情報を追加します。\n"
+
+#. module: sale_purchase_stock
+#: model:ir.module.module,shortdesc:base.module_sale_purchase_stock
+msgid "MTO Sale <-> Purchase"
+msgstr "MTOセール&lt;-&gt;購入"
+
+#. module: sale_purchase_stock
+#: model:ir.module.module,summary:base.module_sale_purchase_stock
+msgid "SO/PO relation in case of MTO"
+msgstr "MTOの場合のSO /PO関係"
+
+#. module: sale_purchase_stock
 #: model:ir.model.fields,field_description:sale_purchase_stock.field_purchase_order__display_name
 #: model:ir.model.fields,field_description:sale_purchase_stock.field_purchase_order_line__display_name
 #: model:ir.model.fields,field_description:sale_purchase_stock.field_sale_order__display_name

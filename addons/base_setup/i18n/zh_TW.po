@@ -26,6 +26,29 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: base_setup
+#: model:ir.module.module,description:base.module_base_setup
+msgid ""
+"\n"
+"This module helps to configure the system at the installation of a new "
+"database.\n"
+"================================================================================\n"
+"\n"
+"Shows you a list of applications features to install from.\n"
+"\n"
+msgstr ""
+"\n"
+"此模組有助於在安裝新資料庫時配置系統.\n"
+"================================================================================\n"
+"\n"
+"顯示要安裝的應用程式功能列表.\n"
+"\n"
+
+#. module: base_setup
+#: model:ir.module.module,shortdesc:base.module_base_setup
+msgid "Initial Setup Tools"
+msgstr "初始化設定工具"
+
+#. module: base_setup
 #: model_terms:ir.ui.view,arch_db:base_setup.res_config_settings_view_form
 msgid ""
 "<span class=\"o_form_label\" invisible=\"active_user_count &gt; 1\">\n"

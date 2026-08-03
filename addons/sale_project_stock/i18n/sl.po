@@ -21,6 +21,18 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: sale_project_stock
+#: model:ir.module.module,description:base.module_sale_project_stock
+#: model:ir.module.module,summary:base.module_sale_project_stock
+msgid ""
+"Adds a full traceability of inventory operations on the profitability report."
+msgstr "V poročilo o dobičkonosnosti doda popolno sledljivost operacij zalog."
+
+#. module: sale_project_stock
+#: model:ir.module.module,shortdesc:base.module_sale_project_stock
+msgid "Sale Project - Sale Stock"
+msgstr "Projekt prodaje - Zaloga v prodaji"
+
+#. module: sale_project_stock
 #: model:ir.model,name:sale_project_stock.model_account_analytic_line
 msgid "Analytic Line"
 msgstr ""

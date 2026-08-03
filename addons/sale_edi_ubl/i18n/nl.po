@@ -21,6 +21,34 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: sale_edi_ubl
+#: model:ir.module.module,description:base.module_sale_edi_ubl
+msgid ""
+"\n"
+"Electronic ordering module\n"
+"===========================\n"
+"\n"
+"Allows to import formats: UBL Bis 3.\n"
+"When uploading or pasting Files in order list view with order related data "
+"inside XML file or PDF\n"
+"File with embedded xml data will allow seller to retrieve Order data from "
+"Files.\n"
+msgstr ""
+"\n"
+"Elektronische bestelmodule\n"
+"===========================\n"
+"\n"
+"Hiermee kunnen formaten worden geïmporteerd: UBL Bis 3.\n"
+"Bij het uploaden of plakken van Bestanden in bestellijstweergave met "
+"bestelgerelateerde gegevens in XML-bestand of PDF\n"
+"Bestand met ingesloten XML-gegevens stelt verkoper in staat om ordergegevens "
+"uit Bestanden op te halen.\n"
+
+#. module: sale_edi_ubl
+#: model:ir.module.module,shortdesc:base.module_sale_edi_ubl
+msgid "Import electronic orders with UBL"
+msgstr "Elektronische orders importeren met UBL"
+
+#. module: sale_edi_ubl
 #. odoo-python
 #: code:addons/sale_edi_ubl/models/sale_edi_xml_ubl_bis3.py:0
 msgid "Could not retrieve the product named: %(name)s"

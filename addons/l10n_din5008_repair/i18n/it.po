@@ -20,6 +20,11 @@ msgstr ""
 "X-Generator: Weblate 5.12.2\n"
 
 #. module: l10n_din5008_repair
+#: model:ir.module.module,shortdesc:base.module_l10n_din5008_repair
+msgid "DIN 5008 - Repair"
+msgstr "DIN 5008-Riparazione"
+
+#. module: l10n_din5008_repair
 #: model:ir.model.fields,field_description:l10n_din5008_repair.field_repair_order__display_name
 msgid "Display Name"
 msgstr "Nome visualizzato"

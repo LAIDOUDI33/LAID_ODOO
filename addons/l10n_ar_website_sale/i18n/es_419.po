@@ -20,6 +20,16 @@ msgstr ""
 "X-Generator: Weblate 5.14.3\n"
 
 #. module: l10n_ar_website_sale
+#: model:ir.module.module,shortdesc:base.module_l10n_ar_website_sale
+msgid "Argentinean eCommerce"
+msgstr "Comercio electrónico de Argentina"
+
+#. module: l10n_ar_website_sale
+#: model:ir.module.module,description:base.module_l10n_ar_website_sale
+msgid "Bridge Website Sale for Argentina"
+msgstr "Enlace para ventas en sitio web para Argentina"
+
+#. module: l10n_ar_website_sale
 #: model:ir.model,name:l10n_ar_website_sale.model_res_config_settings
 msgid "Config Settings"
 msgstr "Ajustes de configuración"

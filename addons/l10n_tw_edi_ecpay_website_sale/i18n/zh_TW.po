@@ -20,6 +20,27 @@ msgstr ""
 "X-Generator: Weblate 5.16.1\n"
 
 #. module: l10n_tw_edi_ecpay_website_sale
+#: model:ir.module.module,description:base.module_l10n_tw_edi_ecpay_website_sale
+msgid ""
+"\n"
+"This bridge module allows the user to input Ecpay information in ecommerce "
+"for sending their invoices to the Ecpay system\n"
+msgstr ""
+"\n"
+"此橋接模組讓使用者可在電子商務系統中輸入 ECPay 資料，以便將發票傳送至 ECPay "
+"系統。\n"
+
+#. module: l10n_tw_edi_ecpay_website_sale
+#: model:ir.module.module,summary:base.module_l10n_tw_edi_ecpay_website_sale
+msgid "ECpay E-invoice bridge module for Ecommerce"
+msgstr "電子商務 ECPay 電子發票橋接模組"
+
+#. module: l10n_tw_edi_ecpay_website_sale
+#: model:ir.module.module,shortdesc:base.module_l10n_tw_edi_ecpay_website_sale
+msgid "Taiwan - E-invoicing Ecommerce"
+msgstr "台灣 - 電子商務電子發票"
+
+#. module: l10n_tw_edi_ecpay_website_sale
 #. odoo-javascript
 #: code:addons/l10n_tw_edi_ecpay_website_sale/static/src/js/edi_invoicing_info.js:0
 msgid "Card hidden code"

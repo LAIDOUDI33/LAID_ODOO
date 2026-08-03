@@ -21,6 +21,39 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: account_edi_proxy_client
+#: model:ir.module.module,description:base.module_account_edi_proxy_client
+msgid ""
+"\n"
+"This module adds generic features to register an Odoo DB on the proxy "
+"responsible for receiving data (via requests from web-services).\n"
+"- An edi_proxy_user has a unique identification on a specific proxy type "
+"(e.g. l10n_it_edi, peppol) which\n"
+"allows to identify him when receiving a document addressed to him. It is "
+"linked to a specific company on a specific\n"
+"Odoo database.\n"
+"- Encryption features allows to decrypt all the user's data when receiving "
+"it from the proxy.\n"
+"- Authentication offers an additionnal level of security to avoid "
+"impersonification, in case someone gains to the user's database.\n"
+msgstr ""
+"\n"
+"이 모듈을 통해 데이터 수신용 프록시에 Odoo DB를 등록하는 일반 기능이 "
+"추가되었습니다(웹 서비스를 통해 요청하는 경우).\n"
+"- edi_proxy_user 는 특정 프록시 유형(예: l10n_it_edi, peppol)에 고유 "
+"식별자가 부여되어 있으므로 여기에 전달되는 문서를 수신할 때 사용자를 식별할 "
+"수 있습니다. 이를 통해 특정 Odoo 데이터베이스를 특정 회사로 연결하게\n"
+"됩니다.\n"
+"- 암호화 기능을 통해 사용자 데이터를 .프록시에서 수신할 경우 전체 해독이 "
+"가능합니다.\n"
+"- 인증 기능을 통해 타인이 사용자 데이터베이스에 접근할 경우 오용을 방지하기 "
+"위해 추가적으로 보안을 강화할 수 있습니다.\n"
+
+#. module: account_edi_proxy_client
+#: model:ir.module.module,shortdesc:base.module_account_edi_proxy_client
+msgid "Proxy features for account_edi"
+msgstr "account_edi 프록시 기능"
+
+#. module: account_edi_proxy_client
 #. odoo-python
 #: code:addons/account_edi_proxy_client/models/account_edi_proxy_user.py:0
 msgid ""

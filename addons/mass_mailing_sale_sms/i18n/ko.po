@@ -21,6 +21,17 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: mass_mailing_sale_sms
+#: model:ir.module.module,summary:base.module_mass_mailing_sale_sms
+msgid "Add sale order info on mass mailing sms"
+msgstr "대량 문자 전송에 판매주문서 정보 추가"
+
+#. module: mass_mailing_sale_sms
+#: model:ir.module.module,description:base.module_mass_mailing_sale_sms
+#: model:ir.module.module,shortdesc:base.module_mass_mailing_sale_sms
+msgid "Mass mailing sms on sale orders"
+msgstr "판매 주문 고나련 대량 문자 발송"
+
+#. module: mass_mailing_sale_sms
 #: model:ir.model.fields,field_description:mass_mailing_sale_sms.field_utm_campaign__display_name
 msgid "Display Name"
 msgstr "표시명"

@@ -21,6 +21,24 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_slides_survey
+#: model:ir.module.module,summary:base.module_website_slides_survey
+msgid "Add certification capabilities to your courses"
+msgstr "Lägg till certifieringsfunktioner i dina kurser"
+
+#. module: website_slides_survey
+#: model:ir.module.module,shortdesc:base.module_website_slides_survey
+msgid "Course Certifications"
+msgstr "Kursdiplom"
+
+#. module: website_slides_survey
+#: model:ir.module.module,description:base.module_website_slides_survey
+msgid ""
+"This module lets you use the full power of certifications within your "
+"courses."
+msgstr ""
+"Med den här modulen kan du använda certifieringars fulla kraft i dina kurser."
+
+#. module: website_slides_survey
 #: model:ir.model.fields,field_description:website_slides_survey.field_slide_channel__members_certified_count
 msgid "# Certified Attendees"
 msgstr "# Certifierade deltagare"

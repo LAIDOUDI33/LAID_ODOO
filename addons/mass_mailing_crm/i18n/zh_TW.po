@@ -23,6 +23,21 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: mass_mailing_crm
+#: model:ir.module.module,summary:base.module_mass_mailing_crm
+msgid "Add lead / opportunities UTM info on mass mailing"
+msgstr "在群發郵件中增加UTM的主要或機會資訊"
+
+#. module: mass_mailing_crm
+#: model:ir.module.module,shortdesc:base.module_mass_mailing_crm
+msgid "Mass mailing on lead / opportunities"
+msgstr "批次郵寄潛在商機"
+
+#. module: mass_mailing_crm
+#: model:ir.module.module,description:base.module_mass_mailing_crm
+msgid "UTM and mass mailing on lead / opportunities"
+msgstr "潛在客戶/銷售機會 UTM 及群發郵件"
+
+#. module: mass_mailing_crm
 #: model_terms:ir.ui.view,arch_db:mass_mailing_crm.mailing_mailing_view_form
 msgid ""
 "<span class=\"o_stat_text\" invisible=\"not use_leads\">Leads</span>\n"

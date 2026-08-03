@@ -19,6 +19,38 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 #. module: account_test
+#: model:ir.module.module,description:base.module_account_test
+msgid ""
+"\n"
+"Asserts on accounting.\n"
+"======================\n"
+"With this module you can manually check consistencies and inconsistencies of "
+"accounting module from menu Reporting/Accounting/Accounting Tests.\n"
+"\n"
+"You can write a query in order to create Consistency Test and you will get "
+"the result of the test\n"
+"in PDF format which can be accessed by Menu Reporting -> Accounting Tests, "
+"then select the test\n"
+"and print the report from Print button in header area.\n"
+msgstr ""
+"\n"
+"Contrôles de cohérence en comptabilité.\n"
+"======================\n"
+"Avec ce module, vous pouvez vérifier manuellement les cohérences et "
+"incohérences du module Comptabilité depuis le menu Rapports/Comptabilité/"
+"Tests comptables.\n"
+"Vous pouvez écrire une requête afin de créer un test de cohérence et vous "
+"obtiendrez le résultat du test\n"
+"au format PDF, accessible via le menu Rapports -> Tests comptables. "
+"Sélectionnez ensuite le test\n"
+"et imprimez le rapport via le bouton \"Imprimer\" dans l'en-tête.\n"
+
+#. module: account_test
+#: model:ir.module.module,shortdesc:base.module_account_test
+msgid "Accounting Consistency Tests"
+msgstr "Tests de cohérence comptable"
+
+#. module: account_test
 #: model_terms:ir.ui.view,arch_db:account_test.report_accounttest
 msgid ""
 "<br/>\n"

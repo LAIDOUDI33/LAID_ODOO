@@ -27,6 +27,18 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: payment_redsys
+#: model:ir.module.module,summary:base.module_payment_redsys
+#, fuzzy
+msgid "A payment provider covering the Spanish market."
+msgstr "Ispaniya bozorini qamrab oluvchi to‘lov provayderi."
+
+#. module: payment_redsys
+#: model:ir.module.module,shortdesc:base.module_payment_redsys
+#, fuzzy
+msgid "Payment Provider: Redsys"
+msgstr "To‘lov provayderi: Redsys"
+
+#. module: payment_redsys
 #: model:payment.method,name:payment_redsys.payment_method_amex
 msgid "American Express"
 msgstr ""

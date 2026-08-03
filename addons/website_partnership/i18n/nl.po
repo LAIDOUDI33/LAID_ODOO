@@ -20,6 +20,31 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_partnership
+#: model:ir.module.module,description:base.module_website_partnership
+msgid ""
+"\n"
+"This module allows to publish your members/partners on your website.\n"
+"\n"
+"To publish a member, set a *Level* in their contact form and click the "
+"*Publish* button.\n"
+msgstr ""
+"\n"
+"Met deze module kun je je leden/partners op je website publiceren.\n"
+"\n"
+"Om een lid te publiceren, stel je een *Niveau* in op hun contactformulier en "
+"klik je op de knop *Publiceren*.\n"
+
+#. module: website_partnership
+#: model:ir.module.module,summary:base.module_website_partnership
+msgid "Publish your partners on your website"
+msgstr "Publiceer je partners op je website"
+
+#. module: website_partnership
+#: model:ir.module.module,shortdesc:base.module_website_partnership
+msgid "Website Partnership"
+msgstr "Websitepartnerschap"
+
+#. module: website_partnership
 #: model_terms:ir.ui.view,arch_db:website_partnership.categories_setting
 msgid "&amp;nbsp;&amp;nbsp;"
 msgstr "&amp;nbsp;&amp;nbsp;"

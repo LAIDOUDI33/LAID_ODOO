@@ -24,6 +24,36 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: account_tax_python
+#: model:ir.module.module,description:base.module_account_tax_python
+msgid ""
+"\n"
+"A tax defined as python code consists of two snippets of python code which "
+"are executed in a local environment containing data such as the unit price, "
+"product or partner.\n"
+"\n"
+"\"Applicable Code\" defines if the tax is to be applied.\n"
+"\n"
+"\"Python Code\" defines the amount of the tax.\n"
+msgstr ""
+"\n"
+"تتكون الضريبة المعرفة ككود Python من قصاصتين من أكواد Python التي يتم "
+"تنفيذها في بيئة محلية  تحتوي على بيانات مثل سعر الوحدة، المنتج، أو الشريك.\n"
+"\n"
+"\"الكود القابل للتطبيق\" يحدد إذا ما كان يجب تطبيق الضريبة.\n"
+"\n"
+"\"كود Python\" يحدد مبلغ الضريبة.\n"
+
+#. module: account_tax_python
+#: model:ir.module.module,shortdesc:base.module_account_tax_python
+msgid "Define Taxes as Python Code"
+msgstr "تعريف الضرائب ككود بايثون"
+
+#. module: account_tax_python
+#: model:ir.module.module,summary:base.module_account_tax_python
+msgid "Use python code to define taxes"
+msgstr "استخدم كود بايثون لتحديد الضرائب"
+
+#. module: account_tax_python
 #: model:ir.model.fields,help:account_tax_python.field_account_tax__amount_type
 msgid ""
 "\n"

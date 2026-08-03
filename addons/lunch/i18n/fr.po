@@ -26,6 +26,65 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: lunch
+#: model:ir.module.module,description:base.module_lunch
+msgid ""
+"\n"
+"The base module to manage lunch.\n"
+"================================\n"
+"\n"
+"Many companies order sandwiches, pizzas and other, from usual vendors, for "
+"their employees to offer them more facilities.\n"
+"\n"
+"However lunches management within the company requires proper administration "
+"especially when the number of employees or vendors is important.\n"
+"\n"
+"The “Lunch Order” module has been developed to make this management easier "
+"but also to offer employees more tools and usability.\n"
+"\n"
+"In addition to a full meal and vendor management, this module offers the "
+"possibility to display warning and provides quick order selection based on "
+"employee’s preferences.\n"
+"\n"
+"If you want to save your employees' time and avoid them to always have coins "
+"in their pockets, this module is essential.\n"
+msgstr ""
+"\n"
+"Module de base pour gérer les déjeuners.\n"
+"================================\n"
+"\n"
+"Beaucoup d'entreprises commandent des sandwichs, des pizzas et autres, "
+"provenant des fournisseurs habituels, pour leurs employés afin de leur "
+"offrir plus de facilités.\n"
+"\n"
+"Cependant, la gestion des déjeuners sein de l'entreprise exige une bonne "
+"administration en particulier lorsque le nombre d'employés ou de "
+"fournisseurs est important.\n"
+"\n"
+"Le module “Commande de déjeuner” a été développé pour faciliter cette "
+"gestion, mais aussi pour offrir aux employés davantage d'outils et de "
+"convivialité.\n"
+"\n"
+"En plus de la gestion du repas complet et des fournisseurs, ce module peut "
+"afficher avertissement et il permet la sélection rapide de la commande "
+"fondée sur les préférences des employés.\n"
+"\n"
+"Ce module est essentiel pour éviter aux employés de perdre du temps et "
+"d'être obligés de toujours avoir des pièces de monnaie dans leurs poches.\n"
+
+#. module: lunch
+#: model:ir.module.module,summary:base.module_lunch
+msgid "Handle lunch orders of your employees"
+msgstr "Gérez les commandes lunch pour vos employés"
+
+#. module: lunch
+#: model:ir.module.module,shortdesc:base.module_lunch
+#: model:ir.ui.menu,name:lunch.menu_lunch
+#: model:res.groups.privilege,name:lunch.res_groups_privilege_lunch
+#: model_terms:ir.ui.view,arch_db:lunch.res_config_settings_view_form
+msgid "Lunch"
+msgstr "Déjeuner"
+
+#. module: lunch
 #: model_terms:lunch.product,description:lunch.product_temaki
 msgid "1 Avocado - 1 Salmon - 1 Eggs - 1 Tuna"
 msgstr "1 Avocat - 1 Saumon - 1 Œufs - 1 Thon"
@@ -1141,13 +1200,6 @@ msgstr "Nom du lieu"
 #: model:ir.ui.menu,name:lunch.lunch_location_menu
 msgid "Locations"
 msgstr "Lieux"
-
-#. module: lunch
-#: model:ir.ui.menu,name:lunch.menu_lunch
-#: model:res.groups.privilege,name:lunch.res_groups_privilege_lunch
-#: model_terms:ir.ui.view,arch_db:lunch.res_config_settings_view_form
-msgid "Lunch"
-msgstr "Déjeuner"
 
 #. module: lunch
 #: model:ir.model,name:lunch.model_lunch_alert

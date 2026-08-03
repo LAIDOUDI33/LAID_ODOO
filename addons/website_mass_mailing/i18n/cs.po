@@ -28,6 +28,31 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_mass_mailing
+#: model:ir.module.module,description:base.module_website_mass_mailing
+msgid ""
+"\n"
+"This module brings a new building block with a mailing list widget to drop "
+"on any page of your website.\n"
+"On a simple click, your visitors can subscribe to mailing lists managed in "
+"the Email Marketing app.\n"
+msgstr ""
+"\n"
+"Tento modul přináší nový stavební blok s widgetem mailingového seznamu, "
+"který lze umístit na libovolnou stránku vašeho webu. \n"
+"Na jednoduché kliknutí se mohou vaši návštěvníci přihlásit k odběru e-"
+"mailových konferencí spravovaných v aplikaci E-mail Marketing\n"
+
+#. module: website_mass_mailing
+#: model:ir.module.module,summary:base.module_website_mass_mailing
+msgid "Attract visitors to subscribe to mailing lists"
+msgstr "Přilákat návštěvníky k odběru mailing listu"
+
+#. module: website_mass_mailing
+#: model:ir.module.module,shortdesc:base.module_website_mass_mailing
+msgid "Newsletter Subscribe Button"
+msgstr "tlačítko Odebírat Newsletter"
+
+#. module: website_mass_mailing
 #: model_terms:ir.ui.view,arch_db:website_mass_mailing.s_newsletter_benefits_popup
 msgid ""
 "<i class=\"oi text-o-color-1\" data-icon=\"check\" role=\"img\"/>  Curated "

@@ -16,6 +16,19 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_no
+#: model:ir.module.module,shortdesc:base.module_l10n_no
+msgid "Norway - Accounting"
+msgstr ""
+
+#. module: l10n_no
+#: model:ir.module.module,description:base.module_l10n_no
+msgid ""
+"This is the module to manage the accounting chart for Norway in Odoo.\n"
+"\n"
+"Updated for Odoo 9 by Bringsvor Consulting AS <www.bringsvor.com>\n"
+msgstr ""
+
+#. module: l10n_no
 #: model:ir.model,name:l10n_no.model_account_chart_template
 msgid "Account Chart Template"
 msgstr ""

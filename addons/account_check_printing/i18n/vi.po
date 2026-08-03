@@ -25,6 +25,34 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: account_check_printing
+#: model:ir.module.module,description:base.module_account_check_printing
+msgid ""
+"\n"
+"This module offers the basic functionalities to make payments by printing "
+"checks.\n"
+"It must be used as a dependency for modules that provide country-specific "
+"check templates.\n"
+"The check settings are located in the accounting journals configuration "
+"page.\n"
+msgstr ""
+"\n"
+"Phân hệ này cung cấp các chức năng cơ bản để thực hiện thanh toán bằng cách "
+"in séc.\n"
+"Nó phải được sử dụng làm phần phụ thuộc cho những phân hệ cung cấp các mẫu "
+"séc riêng theo quốc gia.\n"
+"Bạn có thể đi đến cài đặt séc trong trang cấu hình nhật ký kế toán.\n"
+
+#. module: account_check_printing
+#: model:ir.module.module,shortdesc:base.module_account_check_printing
+msgid "Check Printing Base"
+msgstr "Cơ sở In Séc"
+
+#. module: account_check_printing
+#: model:ir.module.module,summary:base.module_account_check_printing
+msgid "Check printing basic features"
+msgstr "Tính năng in séc cơ bản"
+
+#. module: account_check_printing
 #. odoo-python
 #: code:addons/account_check_printing/models/account_journal.py:0
 msgid "%(journal)s: Check Number Sequence"

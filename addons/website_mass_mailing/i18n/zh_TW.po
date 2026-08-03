@@ -26,6 +26,29 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_mass_mailing
+#: model:ir.module.module,description:base.module_website_mass_mailing
+msgid ""
+"\n"
+"This module brings a new building block with a mailing list widget to drop "
+"on any page of your website.\n"
+"On a simple click, your visitors can subscribe to mailing lists managed in "
+"the Email Marketing app.\n"
+msgstr ""
+"\n"
+"該模塊提供了一個新的構建模塊，可將郵件列表部件放置在網站的任何頁面上。\n"
+"只需點擊一下，您的訪客就可以訂閱電子郵件營銷應用程序管理的郵件列表。\n"
+
+#. module: website_mass_mailing
+#: model:ir.module.module,summary:base.module_website_mass_mailing
+msgid "Attract visitors to subscribe to mailing lists"
+msgstr "吸引存取者訂閱郵件列表"
+
+#. module: website_mass_mailing
+#: model:ir.module.module,shortdesc:base.module_website_mass_mailing
+msgid "Newsletter Subscribe Button"
+msgstr "通訊簡報訂閱按鈕"
+
+#. module: website_mass_mailing
 #: model_terms:ir.ui.view,arch_db:website_mass_mailing.s_newsletter_benefits_popup
 msgid ""
 "<i class=\"oi text-o-color-1\" data-icon=\"check\" role=\"img\"/>  Curated "

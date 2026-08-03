@@ -16,6 +16,16 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_ar_withholding
+#: model:ir.module.module,description:base.module_l10n_ar_withholding
+msgid "Allows to register withholdings during the payment of an invoice."
+msgstr ""
+
+#. module: l10n_ar_withholding
+#: model:ir.module.module,shortdesc:base.module_l10n_ar_withholding
+msgid "Argentina - Payment Withholdings"
+msgstr ""
+
+#. module: l10n_ar_withholding
 #. odoo-python
 #: code:addons/l10n_ar_withholding/models/l10n_ar_partner_tax.py:0
 msgid "\"From date\" must be lower than \"To date\" on Withholding (AR) taxes."

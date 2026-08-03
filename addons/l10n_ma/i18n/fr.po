@@ -21,6 +21,24 @@ msgstr ""
 "X-Generator: Weblate 5.14.3\n"
 
 #. module: l10n_ma
+#: model:ir.module.module,description:base.module_l10n_ma
+msgid ""
+"\n"
+"This is the base module to manage the accounting chart for Morocco.\n"
+"\n"
+"This module has been built with the help of Caudigef.\n"
+msgstr ""
+"\n"
+"Il s'agit du module de base pour gérer le plan comptable pour le Maroc.\n"
+"\n"
+"Ce module a été construit avec l'aide de Caudigef.\n"
+
+#. module: l10n_ma
+#: model:ir.module.module,shortdesc:base.module_l10n_ma
+msgid "Morocco - Accounting"
+msgstr "Maroc - Comptabilité"
+
+#. module: l10n_ma
 #: model_terms:ir.ui.view,arch_db:l10n_ma.address_form_fields
 msgid ""
 "<small class=\"form-text text-muted\">\n"

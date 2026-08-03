@@ -25,6 +25,47 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: mrp_account
+#: model:ir.module.module,description:base.module_mrp_account
+msgid ""
+"\n"
+"Analytic Accounting in MRP\n"
+"==========================\n"
+"\n"
+"* Cost structure report\n"
+"\n"
+"Also, allows to compute the cost of the product based on its BoM, using the "
+"costs of its components and work center operations.\n"
+"It adds a button on the product itself but also an action in the list view "
+"of the products.\n"
+"If the automated inventory valuation is active, the necessary accounting "
+"entries will be created.\n"
+"\n"
+msgstr ""
+"\n"
+"Kế toán Phân tích trong MRP\n"
+"===========================\n"
+"\n"
+"* Báo cáo cơ cấu chi phí\n"
+"\n"
+"Ngoài ra, cho phép tính toán giá thành của sản phẩm dựa trên danh mục vật "
+"tư, sử dụng chi phí của các bộ phận và hoạt động của khu vực sản xuất.\n"
+"Một nút đã được thêm vào sản phẩm cùng với một hoạt động trong chế độ xem "
+"danh sách của sản phẩm.\n"
+"Nếu tính năng định giá tồn kho tự động đang hoạt động, các bút toán kế toán "
+"cần thiết sẽ được tạo.\n"
+"\n"
+
+#. module: mrp_account
+#: model:ir.module.module,shortdesc:base.module_mrp_account
+msgid "Accounting - MRP"
+msgstr "Kế toán - Sản xuất"
+
+#. module: mrp_account
+#: model:ir.module.module,summary:base.module_mrp_account
+msgid "Analytic accounting in Manufacturing"
+msgstr "Kế toán phân tích trong Sản xuất"
+
+#. module: mrp_account
 #. odoo-python
 #: code:addons/mrp_account/models/stock_move.py:0
 msgid "%(value)s for %(quantity)s %(unit)s from %(production)s"

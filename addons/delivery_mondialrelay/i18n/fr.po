@@ -1,0 +1,61 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# * base
+#
+# Translators:
+# Cécile Collart <cco@odoo.com>, 2022
+# Christophe Klopfert, 2022
+# Martin Trigaux, 2023
+# Jolien De Paepe, 2023
+# "Dylan Kiss (dyki)" <dyki@odoo.com>, 2025, 2026.
+# "Manon Rondou (ronm)" <ronm@odoo.com>, 2025, 2026.
+# Joël Michaud <joel.michaud@braintec.com>, 2025.
+# Camille Dantinne <cmd@odoo.com>, 2025.
+# Weblate <noreply-mt-weblate@weblate.org>, 2025.
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 16.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-05-12 08:36+0000\n"
+"PO-Revision-Date: 2026-06-21 17:16+0000\n"
+"Last-Translator: \"Dylan Kiss (dyki)\" <dyki@odoo.com>\n"
+"Language-Team: French <https://translate.odoo.com/projects/odoo-master/base/"
+"fr/>\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=3; plural=(n == 0 || n == 1) ? 0 : ((n != 0 && n % "
+"1000000 == 0) ? 1 : 2);\n"
+"X-Generator: Weblate 2026.6.1\n"
+
+#. module: delivery_mondialrelay
+#: model:ir.module.module,summary:base.module_delivery_mondialrelay
+msgid " Let's choose a Point Relais® as shipping address "
+msgstr " Choisissons un Point Relais® comme adresse d'expédition "
+
+#. module: delivery_mondialrelay
+#: model:ir.module.module,description:base.module_delivery_mondialrelay
+msgid ""
+"\n"
+"This module allow your customer to choose a Point Relais® and use it as "
+"shipping address.\n"
+"This module doesn't implement the WebService. It is only the integration of "
+"the widget.\n"
+"\n"
+"Delivery price pre-configured is an example, you need to adapt the pricing's "
+"rules.\n"
+msgstr ""
+"\n"
+"Ce module permet à votre client de choisir un Point Relais® et de l'utiliser "
+"comme adresse d'expédition.\n"
+"        Ce module ne met pas en oeuvre le WebService. Il ne s'agit que de "
+"l'intégration du widget.\n"
+"\n"
+"        Le prix de livraison préconfiguré est illustratif, vous devez "
+"adapter les règles de tarification.\n"
+
+#. module: delivery_mondialrelay
+#: model:ir.module.module,shortdesc:base.module_delivery_mondialrelay
+msgid "delivery_mondialrelay"
+msgstr "delivery_mondialrelay"

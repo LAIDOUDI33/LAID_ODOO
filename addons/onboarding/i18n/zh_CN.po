@@ -20,6 +20,22 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: onboarding
+#: model:ir.module.module,description:base.module_onboarding
+msgid ""
+"\n"
+"This module allows to manage onboardings and their progress\n"
+"================================================================================\n"
+msgstr ""
+"\n"
+"该模块可管理入职及其进展情况\n"
+"================================================================================\n"
+
+#. module: onboarding
+#: model:ir.module.module,shortdesc:base.module_onboarding
+msgid "Onboarding Toolbox"
+msgstr "入职工具箱"
+
+#. module: onboarding
 #: model:ir.model.fields,help:onboarding.field_onboarding_onboarding__progress_ids
 msgid "All Onboarding Progress Records (across companies)."
 msgstr "所有入职进度记录（跨公司）"

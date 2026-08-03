@@ -16,6 +16,25 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: pos_edi_ubl
+#: model:ir.module.module,description:base.module_pos_edi_ubl
+msgid ""
+"\n"
+"\n"
+"This module provides helpers for exporting POS orders in various UBL 2.1 formats.\n"
+"\n"
+msgstr ""
+
+#. module: pos_edi_ubl
+#: model:ir.module.module,shortdesc:base.module_pos_edi_ubl
+msgid "Point of Sale UBL"
+msgstr ""
+
+#. module: pos_edi_ubl
+#: model:ir.module.module,summary:base.module_pos_edi_ubl
+msgid "UBL in the Point of Sale "
+msgstr ""
+
+#. module: pos_edi_ubl
 #: model:ir.model.fields,field_description:pos_edi_ubl.field_pos_edi_xml_ubl_21__display_name
 msgid "Display Name"
 msgstr ""

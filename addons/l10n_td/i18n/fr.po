@@ -17,6 +17,28 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_td
+#: model:ir.module.module,description:base.module_l10n_td
+msgid ""
+"\n"
+"This module implements the tax for Tchad.\n"
+"=================================================================\n"
+"\n"
+"The Chart of Accounts is from SYSCOHADA.\n"
+"\n"
+msgstr ""
+"\n"
+"Ce module implémente les impôts pour le Tchad.\n"
+"=================================================================\n"
+"\n"
+"Le plan comptable provient du SYSCOHADA.\n"
+"\n"
+
+#. module: l10n_td
+#: model:ir.module.module,shortdesc:base.module_l10n_td
+msgid "Tchad - Accounting"
+msgstr "Tchad - Comptabilité"
+
+#. module: l10n_td
 #: model:ir.model,name:l10n_td.model_account_chart_template
 msgid "Account Chart Template"
 msgstr "Modèle de Plan Comptable"

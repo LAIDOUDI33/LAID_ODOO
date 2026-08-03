@@ -21,6 +21,25 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: mail_group
+#: model:ir.module.module,description:base.module_mail_group
+msgid ""
+"\n"
+"Manage your mailing lists from Odoo.\n"
+msgstr ""
+
+#. module: mail_group
+#: model:ir.model,name:mail_group.model_mail_group
+#: model:ir.module.module,shortdesc:base.module_mail_group
+#: model_terms:ir.ui.view,arch_db:mail_group.mail_group_view_form
+msgid "Mail Group"
+msgstr "Grup de correu"
+
+#. module: mail_group
+#: model:ir.module.module,summary:base.module_mail_group
+msgid "Manage your mailing lists"
+msgstr "Gestioneu les vostres llistes de correu"
+
+#. module: mail_group
 #: model_terms:ir.ui.view,arch_db:mail_group.mail_group_view_list
 msgid "#Members"
 msgstr ""
@@ -793,12 +812,6 @@ msgstr ""
 #: model:ir.model.fields,field_description:mail_group.field_mail_group__alias_incoming_local
 msgid "Local-part based incoming detection"
 msgstr "Detecció d'entrada basada en la part local"
-
-#. module: mail_group
-#: model:ir.model,name:mail_group.model_mail_group
-#: model_terms:ir.ui.view,arch_db:mail_group.mail_group_view_form
-msgid "Mail Group"
-msgstr "Grup de correu"
 
 #. module: mail_group
 #: model:res.groups,name:mail_group.group_mail_group_manager

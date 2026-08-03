@@ -25,6 +25,33 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_sale_stock
+#: model:ir.module.module,description:base.module_website_sale_stock
+msgid ""
+"\n"
+"Manage the inventory of your products and display their availability status "
+"in your eCommerce store.\n"
+"In case of stockout, you can decide to block further sales or to keep "
+"selling.\n"
+"A default behavior can be selected in the Website settings.\n"
+"Then it can be made specific at the product level.\n"
+msgstr ""
+"\n"
+"管理产品库存，并在电子商务商店中显示其可用状态。\n"
+"如果出现缺货，您可以决定阻止继续销售或继续销售。\n"
+"可以在网站设置中选择默认行为。\n"
+"然后可以在产品级别上进行特定设置。\n"
+
+#. module: website_sale_stock
+#: model:ir.module.module,summary:base.module_website_sale_stock
+msgid "Manage product inventory & availability"
+msgstr "管理产品库存和可用性"
+
+#. module: website_sale_stock
+#: model:ir.module.module,shortdesc:base.module_website_sale_stock
+msgid "Product Availability"
+msgstr "产品可用性"
+
+#. module: website_sale_stock
 #. odoo-javascript
 #: code:addons/website_sale_stock/static/src/js/product_card/product_card.js:0
 msgid "All available quantity selected"

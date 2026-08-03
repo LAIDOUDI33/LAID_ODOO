@@ -16,6 +16,12 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_ar_stock
+#: model:ir.module.module,description:base.module_l10n_ar_stock
+#: model:ir.module.module,shortdesc:base.module_l10n_ar_stock
+msgid "Argentinean - Stock"
+msgstr ""
+
+#. module: l10n_ar_stock
 #. odoo-python
 #: code:addons/l10n_ar_stock/models/stock_picking_type.py:0
 msgid "%(company)s Sequence %(name)s"

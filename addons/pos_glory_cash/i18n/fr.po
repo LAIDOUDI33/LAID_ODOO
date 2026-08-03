@@ -21,6 +21,16 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: pos_glory_cash
+#: model:ir.module.module,summary:base.module_pos_glory_cash
+msgid "Integrate your POS with a Glory automatic cash payment device"
+msgstr "Intégrez votre PdV avec un dispositif de paiement automatique Glory"
+
+#. module: pos_glory_cash
+#: model:ir.module.module,shortdesc:base.module_pos_glory_cash
+msgid "POS Glory Cash Machines"
+msgstr "Machines à espèces automatiques Glory pour PdV"
+
+#. module: pos_glory_cash
 #. odoo-javascript
 #: code:addons/pos_glory_cash/static/src/utils/constants.js:0
 msgid "Calculating change"

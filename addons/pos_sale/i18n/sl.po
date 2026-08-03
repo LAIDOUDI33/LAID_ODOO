@@ -29,6 +29,29 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: pos_sale
+#: model:ir.module.module,description:base.module_pos_sale
+msgid ""
+"\n"
+"\n"
+"This module adds a custom Sales Team for the Point of Sale. This enables you "
+"to view and manage your point of sale sales with more ease.\n"
+msgstr ""
+"\n"
+"\n"
+"Ta modul doda prodajno ekipo po meri za prodajno mesto. To vam omogoča lažji "
+"pregled in upravljanje prodaje na prodajnem mestu.\n"
+
+#. module: pos_sale
+#: model:ir.module.module,summary:base.module_pos_sale
+msgid "Link module between Point of Sale and Sales"
+msgstr "Povezovalni modul med Prodajno točko in Prodajo"
+
+#. module: pos_sale
+#: model:ir.module.module,shortdesc:base.module_pos_sale
+msgid "POS - Sales"
+msgstr "POS - Prodaja"
+
+#. module: pos_sale
 #. odoo-python
 #: code:addons/pos_sale/models/sale_order.py:0
 msgid "%(line_description)s (Cancelled)"

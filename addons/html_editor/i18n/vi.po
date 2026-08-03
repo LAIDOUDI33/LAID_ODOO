@@ -22,6 +22,30 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: html_editor
+#: model:ir.module.module,description:base.module_html_editor
+msgid ""
+"\n"
+"Html Editor\n"
+"==========================\n"
+"This addon provides an extensible, maintainable editor.\n"
+msgstr ""
+"\n"
+"Trình soạn thảo Html\n"
+"==========================\n"
+"Tiện ích bổ sung này cung cấp trình soạn thảo có khả năng mở rộng và bảo "
+"trì.\n"
+
+#. module: html_editor
+#: model:ir.module.module,summary:base.module_html_editor
+msgid "A Html Editor component and plugin system."
+msgstr "Một hệ thống plugin và thành phần của Trình soạn thảo Html."
+
+#. module: html_editor
+#: model:ir.module.module,shortdesc:base.module_html_editor
+msgid "HTML Editor"
+msgstr "Trình soạn thảo HTML"
+
+#. module: html_editor
 #. odoo-javascript
 #: code:addons/html_editor/static/src/components/history_dialog/history_dialog.xml:0
 msgid "'s description from"

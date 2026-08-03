@@ -20,6 +20,22 @@ msgstr ""
 "X-Generator: Weblate 5.12.2\n"
 
 #. module: l10n_pe_pos
+#: model:ir.module.module,description:base.module_l10n_pe_pos
+msgid ""
+"\n"
+"This module brings the technical requirement for the Peruvian regulation.\n"
+"Install this if you are using the Point of Sale app in Peru.\n"
+msgstr ""
+"\n"
+"Este módulo aporta los requisitos técnicos para la regulación peruana.\n"
+"Instálelo si usa la aplicación Punto de venta en Perú.\n"
+
+#. module: l10n_pe_pos
+#: model:ir.module.module,shortdesc:base.module_l10n_pe_pos
+msgid "Peruvian - Point of Sale with Pe Doc"
+msgstr "Perú - Punto de venta con documentos peruanos"
+
+#. module: l10n_pe_pos
 #: model_terms:ir.ui.view,arch_db:l10n_pe_pos.ticket_validation_screen
 msgid ""
 "<span class=\"text-danger\">* Please configure your Identification Number</"

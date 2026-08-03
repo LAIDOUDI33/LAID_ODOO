@@ -20,6 +20,16 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_event_crm
+#: model:ir.module.module,description:base.module_website_event_crm
+msgid "Allow per-order lead creation mode"
+msgstr "Permita el modo que habilita la creación de leads por orden"
+
+#. module: website_event_crm
+#: model:ir.module.module,shortdesc:base.module_website_event_crm
+msgid "Website Events CRM"
+msgstr "Sitio web, Eventos y CRM"
+
+#. module: website_event_crm
 #: model:ir.model.fields,field_description:website_event_crm.field_event_registration__display_name
 msgid "Display Name"
 msgstr "Mostrar nombre"

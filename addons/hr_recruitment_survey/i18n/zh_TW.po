@@ -24,6 +24,30 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: hr_recruitment_survey
+#: model:ir.module.module,description:base.module_hr_recruitment_survey
+msgid ""
+"\n"
+"Use interview forms during recruitment process.\n"
+"This module is integrated with the survey module\n"
+"to allow you to define interviews for different jobs.\n"
+msgstr ""
+"\n"
+"在招聘過程中使用面試表。\n"
+"該模塊與調查模組整合\n"
+"集成在一起，讓您可以為不同的工作定義面試。\n"
+
+#. module: hr_recruitment_survey
+#: model:ir.module.module,shortdesc:base.module_hr_recruitment_survey
+msgid "Hr Recruitment Interview Forms"
+msgstr "HR招聘面試表單"
+
+#. module: hr_recruitment_survey
+#: model:ir.model.fields,field_description:hr_recruitment_survey.field_hr_recruitment_survey_invite__survey_ids
+#: model:ir.module.module,summary:base.module_hr_recruitment_survey
+msgid "Surveys"
+msgstr "問卷調查"
+
+#. module: hr_recruitment_survey
 #: model:mail.template,body_html:hr_recruitment_survey.mail_template_applicant_interview_invite
 msgid ""
 "<div style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
@@ -570,11 +594,6 @@ msgstr ""
 #: model:ir.model,name:hr_recruitment_survey.model_survey_user_input
 msgid "Survey User Input"
 msgstr "問券使用者輸入"
-
-#. module: hr_recruitment_survey
-#: model:ir.model.fields,field_description:hr_recruitment_survey.field_hr_recruitment_survey_invite__survey_ids
-msgid "Surveys"
-msgstr ""
 
 #. module: hr_recruitment_survey
 #: model_terms:survey.survey,description_done:hr_recruitment_survey.survey_recruitment_form

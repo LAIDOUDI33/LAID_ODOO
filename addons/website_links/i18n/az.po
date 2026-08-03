@@ -23,6 +23,30 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_links
+#: model:ir.module.module,description:base.module_website_links
+msgid ""
+"\n"
+"Generate short links with analytics trackers (UTM) to share your pages "
+"through marketing campaigns.\n"
+"Those trackers can be used in Google Analytics to track clicks and visitors, "
+"or in Odoo reports to analyze the efficiency of those campaigns in terms of "
+"lead generation, related revenues (sales orders), recruitment, etc.\n"
+msgstr ""
+
+#. module: website_links
+#: model:ir.module.module,summary:base.module_website_links
+msgid "Generate trackable & short URLs"
+msgstr "İzlənilə bilən və qısa URL-ləri yaradın"
+
+#. module: website_links
+#: model:ir.model,name:website_links.model_link_tracker
+#: model:ir.module.module,shortdesc:base.module_website_links
+#: model:ir.ui.menu,name:website_links.menu_link_tracker
+#: model_terms:ir.ui.view,arch_db:website_links.graphs
+msgid "Link Tracker"
+msgstr "Bağlantı İzləyicisi"
+
+#. module: website_links
 #. odoo-javascript
 #: code:addons/website_links/static/src/interactions/website_links_charts.js:0
 msgid "# of clicks"
@@ -192,13 +216,6 @@ msgstr "Son Həftə"
 #: code:addons/website_links/static/src/interactions/website_links_code_editor.js:0
 msgid "Link Copied!"
 msgstr ""
-
-#. module: website_links
-#: model:ir.model,name:website_links.model_link_tracker
-#: model:ir.ui.menu,name:website_links.menu_link_tracker
-#: model_terms:ir.ui.view,arch_db:website_links.graphs
-msgid "Link Tracker"
-msgstr "Bağlantı İzləyicisi"
 
 #. module: website_links
 #: model_terms:ir.ui.view,arch_db:website_links.create_shorten_url

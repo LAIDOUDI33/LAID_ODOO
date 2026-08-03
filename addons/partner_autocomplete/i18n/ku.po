@@ -19,6 +19,26 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: partner_autocomplete
+#: model:ir.module.module,description:base.module_partner_autocomplete
+msgid ""
+"\n"
+"Auto-complete partner companies' data\n"
+msgstr ""
+"\n"
+"داتاکانی کۆمپانیا هاوبەشەکان بە شێوەیەکی ئۆتۆماتیکی تەواو بکە\n"
+
+#. module: partner_autocomplete
+#: model:ir.module.module,summary:base.module_partner_autocomplete
+msgid "Auto-complete partner companies' data"
+msgstr ""
+
+#. module: partner_autocomplete
+#: model:iap.service,name:partner_autocomplete.iap_service_partner_autocomplete
+#: model:ir.module.module,shortdesc:base.module_partner_autocomplete
+msgid "Partner Autocomplete"
+msgstr ""
+
+#. module: partner_autocomplete
 #: model:iap.service,description:partner_autocomplete.iap_service_partner_autocomplete
 msgid "Automatically enrich your contact base with corporate data."
 msgstr ""
@@ -108,11 +128,6 @@ msgstr ""
 #. odoo-javascript
 #: code:addons/partner_autocomplete/static/src/js/partner_autocomplete_core.js:0
 msgid "Not enough credits for Partner Autocomplete"
-msgstr ""
-
-#. module: partner_autocomplete
-#: model:iap.service,name:partner_autocomplete.iap_service_partner_autocomplete
-msgid "Partner Autocomplete"
 msgstr ""
 
 #. module: partner_autocomplete

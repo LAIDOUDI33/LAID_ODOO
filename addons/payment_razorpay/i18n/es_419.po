@@ -21,6 +21,16 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: payment_razorpay
+#: model:ir.module.module,summary:base.module_payment_razorpay
+msgid "A payment provider covering India."
+msgstr "Un proveedor de pagos que para India."
+
+#. module: payment_razorpay
+#: model:ir.module.module,shortdesc:base.module_payment_razorpay
+msgid "Payment Provider: Razorpay"
+msgstr "Proveedor de pago: Razorpay"
+
+#. module: payment_razorpay
 #: model_terms:ir.ui.view,arch_db:payment_razorpay.payment_provider_form_razorpay
 msgid "Account ID"
 msgstr "ID de la cuenta"

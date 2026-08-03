@@ -24,6 +24,25 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: hr_maintenance
+#: model:ir.module.module,description:base.module_hr_maintenance
+msgid ""
+"\n"
+"Bridge between HR and Maintenance."
+msgstr ""
+"\n"
+"인적자원 관리와 유지관리 업무를 연결."
+
+#. module: hr_maintenance
+#: model:ir.module.module,summary:base.module_hr_maintenance
+msgid "Equipment, Assets, Internal Hardware, Allocation Tracking"
+msgstr "장비, 자산, 내부 하드웨어, 배정 추적"
+
+#. module: hr_maintenance
+#: model:ir.module.module,shortdesc:base.module_hr_maintenance
+msgid "Maintenance - HR"
+msgstr "유지 보수 - HR"
+
+#. module: hr_maintenance
 #. odoo-python
 #: code:addons/hr_maintenance/models/hr_employee_departure.py:0
 msgid ""

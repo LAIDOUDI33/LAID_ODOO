@@ -16,6 +16,21 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: mass_mailing_sale
+#: model:ir.module.module,summary:base.module_mass_mailing_sale
+msgid "Add sale order UTM info on mass mailing"
+msgstr ""
+
+#. module: mass_mailing_sale
+#: model:ir.module.module,shortdesc:base.module_mass_mailing_sale
+msgid "Mass mailing on sale orders"
+msgstr ""
+
+#. module: mass_mailing_sale
+#: model:ir.module.module,description:base.module_mass_mailing_sale
+msgid "UTM and mass mailing on sale orders"
+msgstr ""
+
+#. module: mass_mailing_sale
 #: model_terms:ir.ui.view,arch_db:mass_mailing_sale.s_product_aside
 #: model_terms:ir.ui.view,arch_db:mass_mailing_sale.s_product_card
 #: model_terms:ir.ui.view,arch_db:mass_mailing_sale.s_product_columns

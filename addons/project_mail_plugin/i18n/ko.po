@@ -22,6 +22,25 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: project_mail_plugin
+#: model:ir.module.module,summary:base.module_project_mail_plugin
+msgid "Integrate your inbox with projects"
+msgstr "받은편지함을 프로젝트와 통합"
+
+#. module: project_mail_plugin
+#: model:ir.module.module,shortdesc:base.module_project_mail_plugin
+msgid "Project Mail Plugin"
+msgstr "프로젝트 메일 플러그인"
+
+#. module: project_mail_plugin
+#: model:ir.module.module,description:base.module_project_mail_plugin
+msgid ""
+"Turn emails received in your mailbox into tasks and log their content as "
+"internal notes."
+msgstr ""
+"메일함으로 수신된 이메일을 작업으로 전환하고 그 내용은 내부 메모로 "
+"기록합니다."
+
+#. module: project_mail_plugin
 #. odoo-javascript
 #: code:addons/project_mail_plugin/static/src/to_translate/translations_gmail.xml:0
 #: code:addons/project_mail_plugin/static/src/to_translate/translations_outlook.xml:0

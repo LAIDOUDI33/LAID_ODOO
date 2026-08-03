@@ -28,6 +28,124 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: hr_recruitment
+#: model:ir.module.module,description:base.module_hr_recruitment
+msgid ""
+"Manage Recruitment and Job applications\n"
+"---------------------------------------\n"
+"\n"
+"Publish, promote and organize your job offers with the Odoo\n"
+"<a href=\"https://www.odoo.com/app/recruitment\">Open Source Recruitment "
+"Application</a>.\n"
+"\n"
+"Organize your job board, promote your job announces and keep track of\n"
+"application submissions easily. Follow every applicant and build up a "
+"database\n"
+"of skills and profiles with indexed documents.\n"
+"\n"
+"Post Your Jobs on Best Job Boards\n"
+"---------------------------------\n"
+"\n"
+"Connect automatically to most famous job board websites; linkedIn, Monster,\n"
+"Craigslist, ... Every job position has a new email address automatically\n"
+"assigned to route applications automatically to the right job position.\n"
+"\n"
+"Whether applicants contact you by email or using an online form, you get "
+"all\n"
+"the data indexed automatically (resumes, motivation letter) and you can "
+"answer\n"
+"in just a click, reusing templates of answers.\n"
+"\n"
+"Customize Your Recruitment Process\n"
+"----------------------------------\n"
+"\n"
+"Use the kanban view and customize the steps of your recruitments process;\n"
+"pre-qualification, first interview, second interview, negociaiton, ...\n"
+"\n"
+"Get accurate statistics on your recruitment pipeline. Get reports to "
+"compare\n"
+"the performance of your different investments on external job boards.\n"
+"\n"
+"Streamline Your Recruitment Process\n"
+"-----------------------------------\n"
+"\n"
+"Follow applicants in your recruitment process with the smart kanban view. "
+"Save\n"
+"time by automating some communications with email templates.\n"
+"\n"
+"Documents like resumes and motivation letters are indexed automatically,\n"
+"allowing you to easily find for specific skills and build up a database of\n"
+"profiles.\n"
+msgstr ""
+"Gérer le recrutement et les candidatures\n"
+"---------------------------------------\n"
+"\n"
+"Publiez, promouvez et organisez vos offres d'emploi avec l'\n"
+"<a href=\"https://www.odoo.com/app/recruitment\">Application de Recrutement "
+"Open Source d'Odoo</a>.\n"
+"\n"
+"Organisez votre tableau de bord des vacatures, faites la promotion de vos "
+"offres d'emploi et gardez la main sur les\n"
+"candidatures envoyées en toute simplicité. Suivez chaque candidat et "
+"constituez une base de données\n"
+"de compétences et de profils avec des documents indexés.\n"
+"\n"
+"Publier votre offres d'emploi sur les meilleurs sites\n"
+"---------------------------------\n"
+"\n"
+"Connectez-vous automatiquement aux sites d'offres d'emploi les plus connus : "
+"linkedIn, Monster,\n"
+"Craigslist, ... Une nouvelle adresse e-mail est automatiquement\n"
+"attribuée à chaque poste afin d'acheminer les candidatures vers la bonne "
+"offre.\n"
+"\n"
+"Que les candidats vous contactent par e-mail ou via un formulaire en ligne, "
+"vous obtenez\n"
+"toutes les données indexées automatiquement (CV, lettre de motivation) et "
+"vous pouvez répondre\n"
+"en un seul clic, en réutilisant des modèles de réponses.\n"
+"\n"
+"Personnaliser votre processus de recrutement\n"
+"----------------------------------\n"
+"\n"
+"Utilisez la vue kanban et personnalisez les étapes de votre processus de "
+"recrutement ;\n"
+"pré-qualification, premier entretien, deuxième entretien, négociation, ...\n"
+"\n"
+"Obtenez des statistiques précises sur votre filière de recrutement. Obtenez "
+"des rapports pour comparer\n"
+"les performances de vos différents investissements sur les sites d'emploi "
+"externes.\n"
+"\n"
+"Rationaliser votre processus de recrutement\n"
+"-----------------------------------\n"
+"\n"
+"Suivez les candidats dans votre processus de recrutement grâce à la vue "
+"kanban. Gagnez \n"
+"du temps en automatisant certaines communications grâce à des modèles d'e-"
+"mail.\n"
+"\n"
+"Les documents tels que les CV et les lettres de motivation sont indexés "
+"automatiquement,\n"
+"vous permettant de rechercher facilement des compétences spécifiques et de "
+"constituer une base de\n"
+"données de profils.\n"
+
+#. module: hr_recruitment
+#: model:ir.module.module,shortdesc:base.module_hr_recruitment
+#: model:ir.ui.menu,name:hr_recruitment.menu_hr_recruitment_root
+#: model:res.groups.privilege,name:hr_recruitment.res_groups_privilege_recruitment
+#: model_terms:ir.ui.view,arch_db:hr_recruitment.digest_digest_view_form
+#: model_terms:ir.ui.view,arch_db:hr_recruitment.hr_department_view_kanban
+#: model_terms:ir.ui.view,arch_db:hr_recruitment.res_config_settings_view_form
+msgid "Recruitment"
+msgstr "Recrutement"
+
+#. module: hr_recruitment
+#: model:ir.module.module,summary:base.module_hr_recruitment
+msgid "Track your recruitment pipeline"
+msgstr "Suivez votre pipeline de recrutement"
+
+#. module: hr_recruitment
 #: model:ir.model.fields,field_description:hr_recruitment.field_hr_talent_pool__no_of_talents
 msgid "# Talents"
 msgstr "# Talents"
@@ -3057,15 +3175,6 @@ msgstr "Recruteur"
 #: model:ir.model.fields,field_description:hr_recruitment.field_hr_applicant__recruiter_email
 msgid "Recruiter Work Email"
 msgstr "E-mail professionnel du recruteur"
-
-#. module: hr_recruitment
-#: model:ir.ui.menu,name:hr_recruitment.menu_hr_recruitment_root
-#: model:res.groups.privilege,name:hr_recruitment.res_groups_privilege_recruitment
-#: model_terms:ir.ui.view,arch_db:hr_recruitment.digest_digest_view_form
-#: model_terms:ir.ui.view,arch_db:hr_recruitment.hr_department_view_kanban
-#: model_terms:ir.ui.view,arch_db:hr_recruitment.res_config_settings_view_form
-msgid "Recruitment"
-msgstr "Recrutement"
 
 #. module: hr_recruitment
 #: model:ir.actions.act_window,name:hr_recruitment.hr_job_stage_act

@@ -38,6 +38,41 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: hr_attendance
+#: model:ir.module.module,description:base.module_hr_attendance
+msgid ""
+"\n"
+"This module aims to manage employee's attendances.\n"
+"==================================================\n"
+"\n"
+"Keeps account of the attendances of the employees on the basis of the\n"
+"actions(Check in/Check out) performed by them.\n"
+msgstr ""
+"\n"
+"Ten moduł ma na celu zarządzanie frekwencją pracowników.\n"
+"==================================================\n"
+"\n"
+"Prowadzi rejestr obecności pracowników na podstawie\n"
+"wykonanych przez nich czynności (przybycie / odejście).\n"
+
+#. module: hr_attendance
+#: model:ir.actions.act_window,name:hr_attendance.hr_attendance_action
+#: model:ir.actions.act_window,name:hr_attendance.hr_attendance_reporting
+#: model:ir.module.module,shortdesc:base.module_hr_attendance
+#: model:ir.ui.menu,name:hr_attendance.menu_hr_attendance_attendance_reporting
+#: model:ir.ui.menu,name:hr_attendance.menu_hr_attendance_root
+#: model:res.groups.privilege,name:hr_attendance.res_groups_privilege_attendances
+#: model_terms:ir.ui.view,arch_db:hr_attendance.hr_attendance_employee_calendar_view
+#: model_terms:ir.ui.view,arch_db:hr_attendance.hr_department_view_kanban
+#: model_terms:ir.ui.view,arch_db:hr_attendance.res_config_settings_view_form
+msgid "Attendances"
+msgstr "Obecności"
+
+#. module: hr_attendance
+#: model:ir.module.module,summary:base.module_hr_attendance
+msgid "Track employee attendance"
+msgstr "Śledzenie obecności pracowników"
+
+#. module: hr_attendance
 #. odoo-python
 #: code:addons/hr_attendance/models/hr_attendance.py:0
 msgid "\"Check Out\" time cannot be earlier than \"Check In\" time."
@@ -482,18 +517,6 @@ msgstr "Frekwencja: Automatyzuj wyjścia pracowników"
 #: model:ir.actions.server,name:hr_attendance.hr_attendance_absence_cron_ir_actions_server
 msgid "Attendance: Detect Absences for employees"
 msgstr "Obecność: Wykrywaj nieobecności pracowników"
-
-#. module: hr_attendance
-#: model:ir.actions.act_window,name:hr_attendance.hr_attendance_action
-#: model:ir.actions.act_window,name:hr_attendance.hr_attendance_reporting
-#: model:ir.ui.menu,name:hr_attendance.menu_hr_attendance_attendance_reporting
-#: model:ir.ui.menu,name:hr_attendance.menu_hr_attendance_root
-#: model:res.groups.privilege,name:hr_attendance.res_groups_privilege_attendances
-#: model_terms:ir.ui.view,arch_db:hr_attendance.hr_attendance_employee_calendar_view
-#: model_terms:ir.ui.view,arch_db:hr_attendance.hr_department_view_kanban
-#: model_terms:ir.ui.view,arch_db:hr_attendance.res_config_settings_view_form
-msgid "Attendances"
-msgstr "Obecności"
 
 #. module: hr_attendance
 #. odoo-python

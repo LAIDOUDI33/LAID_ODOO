@@ -22,6 +22,19 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: project_sale_expense
+#: model:ir.module.module,description:base.module_project_sale_expense
+msgid ""
+"Adds a full traceability of reinvoice expenses on the profitability report."
+msgstr ""
+"Agrega trazabilidad completa de los gastos de refacturación al reporte de "
+"rentabilidad."
+
+#. module: project_sale_expense
+#: model:ir.module.module,shortdesc:base.module_project_sale_expense
+msgid "Project - Sale - Expense"
+msgstr "Proyecto - Ventas - Gastos"
+
+#. module: project_sale_expense
 #: model:ir.model,name:project_sale_expense.model_account_analytic_line
 msgid "Analytic Line"
 msgstr "Línea analítica"

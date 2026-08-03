@@ -28,6 +28,205 @@ msgstr ""
 
 #. module: website_blog
 #. odoo-python
+#: code:addons/website_blog/models/website.py:0
+#: model:ir.model,name:website_blog.model_blog_blog
+#: model:ir.model.fields,field_description:website_blog.field_blog_post__blog_id
+#: model:ir.module.module,shortdesc:base.module_website_blog
+#: model:ir.ui.menu,name:website_blog.menu_website_blog_root_global
+#: model:res.groups.privilege,name:website_blog.res_groups_privilege_blog
+#: model:website.menu,name:website_blog.menu_blog
+#: model_terms:ir.ui.view,arch_db:website_blog.blog_blog_view_search
+#: model_terms:ir.ui.view,arch_db:website_blog.view_blog_blog_form
+#: model_terms:ir.ui.view,arch_db:website_blog.view_blog_post_search
+#: model_terms:ir.ui.view,arch_db:website_blog.website_blog
+#, fuzzy
+msgid "Blog"
+msgstr "Blog"
+
+#. module: website_blog
+#: model:ir.module.module,description:base.module_website_blog
+#, fuzzy
+msgid ""
+"Odoo Blog\n"
+"----------\n"
+"\n"
+"Write, Design, Promote and Engage with <a href=\"https://www.odoo.com/app/"
+"blog\">Odoo Blog</a>.\n"
+"\n"
+"Express yourself with the Odoo enterprise grade blogging platform. Write\n"
+"beautiful blog posts, engage with visitors, translate content and moderate\n"
+"social streams.\n"
+"\n"
+"Get your blog posts efficiently referenced in Google and translated in "
+"mutiple\n"
+"languages in just a few clicks.\n"
+"\n"
+"Write Beautiful Blog Posts\n"
+"--------------------------\n"
+"\n"
+"Drag & Drop well designed *'Building Blocks'* to create beautifull blog "
+"posts\n"
+"that perfectly integrates images, videos, call-to-actions, quotes, banners,\n"
+"etc.\n"
+"\n"
+"With our unique *'edit inline'* approach, you don't need to be a designer "
+"to\n"
+"create awsome, good-looking, content. Each blog post will look like it's\n"
+"designed by a professional designer.\n"
+"\n"
+"Automated Translation by Professionals\n"
+"--------------------------------------\n"
+"\n"
+"Get your blog posts translated in multiple languages with no effort. Our\n"
+"translation \"on demand\" feature allows you to benefit from professional\n"
+"translators to translate all your changes automatically. (\\$0.05 per word)\n"
+"Translated versions are updated automatically once translated by "
+"professionals\n"
+"(around 32 hours).\n"
+"\n"
+"Engage With Your Visitors\n"
+"-------------------------\n"
+"\n"
+"The integrated website live chat feature allows you to start chatting in "
+"real time with\n"
+"your visitors to get feedback on your recent posts or get ideas to write "
+"new\n"
+"posts.\n"
+"\n"
+"Engaging with your visitors is also a great way to convert visitors into\n"
+"customers.\n"
+"\n"
+"Build Visitor Loyalty\n"
+"---------------------\n"
+"\n"
+"The one click *follow* button will allow visitors to receive your blog posts "
+"by\n"
+"email with no effort, without having to register. Social media icons allow\n"
+"visitors to share your best blog posts easily.\n"
+"\n"
+"Google Analytics Integration\n"
+"----------------------------\n"
+"\n"
+"Get a clear visibility of your sales funnel. Odoo's Google Analytics "
+"trackers\n"
+"are configured by default to track all kinds of events related to shopping\n"
+"carts, call-to-actions, etc.\n"
+"\n"
+"As Odoo marketing tools (mass mailing, campaigns, etc) are also linked with\n"
+"Google Analytics, you get a 360° view of your business.\n"
+"\n"
+"SEO Optimized Blog Posts\n"
+"------------------------\n"
+"\n"
+"SEO tools are ready to use, with no configuration required. Odoo suggests\n"
+"keywords for your titles according to Google's most searched terms, Google\n"
+"Analytics tracks interests of your visitors, sitemaps are created "
+"automatically\n"
+"for quick Google indexing, etc.\n"
+"\n"
+"The system even creates structured content automatically to promote your\n"
+"products and events effectively in Google.\n"
+"\n"
+"Designer-Friendly Themes\n"
+"------------------------\n"
+"\n"
+"Themes are awesome and easy to design. You don't need to develop to create "
+"new\n"
+"pages, themes or building blocks. We use a clean HTML structure, a\n"
+"[bootstrap](http://getbootstrap.com/) CSS and our modularity allows you to\n"
+"distribute your themes easily.\n"
+"\n"
+"The building block approach allows the website to remain clean after end-"
+"users\n"
+"start creating new contents.\n"
+"\n"
+"Easy Access Rights\n"
+"------------------\n"
+"\n"
+"Not everyone requires the same access to your website. Designers manage the\n"
+"layout of the site, editors approve content and authors write that content.\n"
+"This lets you organize your publishing process according to your needs.\n"
+"\n"
+"Other access rights are related to business objects (products, people, "
+"events,\n"
+"etc) and directly following Odoo's standard access rights management, so you "
+"do\n"
+"not have to configure things twice.\n"
+msgstr ""
+"Odoo blogi ---------- \n"
+"<a href=\"https://www.odoo.com/app/blog\">Odoo blogi</a> bilan yozing, "
+"loyihalang, targ‘ib qiling va mijozlar bilan muloqot qiling.  Odoo "
+"korporativ darajadagi blogerlik platformasi orqali o‘zingizni ifoda eting. "
+"Go‘zal blog postlar yozing, tashrif buyuruvchilar bilan muloqot qiling, "
+"kontentni tarjima qiling va ijtimoiy oqimlarni boshqaring.  Blog "
+"postlaringizni Googleda samarali indekslanishini ta'minlang va bir necha "
+"marta bosish orqali turli tillarga tarjima qiling.  Go‘zal blog postlar "
+"yozish --------------------------  \n"
+"Rasmlar, videolar, chaqiruvlar, iqtiboslar, bannerlar va boshqalarni "
+"mukammal birlashtirgan chiroyli blog postlar yaratish uchun yaxshi "
+"loyihalangan \"Qurilish bloklari\"ni sudrab qo‘ying.  Bizning noyob \"joyida "
+"tahrirlash\" yondashuvimiz bilan ajoyib, ko‘zni quvnatadigan kontent "
+"yaratish uchun dizayner bo‘lishingiz shart emas. Har bir blog post "
+"professional dizayner tomonidan yaratilgandek ko‘rinadi.  Mutaxassislar "
+"tomonidan avtomatik tarjima --------------------------------------  \n"
+"Blog postlaringizni hech qanday qiyinchiliksiz bir nechta tilga tarjima "
+"qiling. \"Talabga ko‘ra tarjima\" xizmatimiz barcha o‘zgarishlarni avtomatik "
+"tarzda tarjima qilish uchun professional tarjimonlardan foydalanish imkonini "
+"beradi. (Har bir so‘z uchun 0,05 dollar) Tarjima qilingan versiyalar "
+"mutaxassislar tomonidan tarjima qilinganidan so‘ng avtomatik yangilanadi "
+"(taxminan 32 soat ichida).  Tashrif buyuruvchilar bilan muloqot "
+"qiling -------------------------  \n"
+"Veb-saytning integratsiyalashgan jonli muloqot funksiyasi sizga tashrif "
+"buyuruvchilar bilan real vaqt rejimida suhbatlashish, so‘nggi postlaringiz "
+"haqida fikr-mulohaza olish yoki yangi postlar yozish uchun g‘oyalar olish "
+"imkonini beradi.  Tashrif buyuruvchilar bilan muloqot qilish ularni "
+"mijozlarga aylantirishning ajoyib usuli hamdir.  Tashrif buyuruvchilar "
+"sodiqligini shakllantiring ---------------------  \n"
+"Bir marta bosish orqali \"kuzatish\" tugmasi tashrif buyuruvchilarga "
+"ro‘yxatdan o‘tmasdan, hech qanday qiyinchiliksiz blog postlaringizni "
+"elektron pochta orqali qabul qilish imkonini beradi. Ijtimoiy tarmoq "
+"belgilari tashrif buyuruvchilarga eng yaxshi blog postlaringizni osongina "
+"ulashish imkonini beradi.  Google Analytics "
+"integratsiyasi ----------------------------  \n"
+"Savdo voronkangiz haqida aniq tasavvurga ega bo‘ling. Odoo Google Analytics "
+"kuzatuvchilari xarid savatchalari, chaqiruvlar va boshqalar bilan bog‘liq "
+"barcha turdagi hodisalarni kuzatish uchun standart sozlangan.  Odoo "
+"marketing vositalari (ommaviy pochta, kampaniyalar va boshqalar) Google "
+"Analytics bilan bog‘langani tufayli, siz biznesingizning 360 daraja "
+"ko‘rinishini olasiz.  SEO optimallashtirilgan blog "
+"postlari ------------------------  \n"
+"SEO vositalari qo‘shimcha sozlashlarni talab qilmaydi, foydalanishga tayyor. "
+"Odoo Googlening eng ko‘p qidirilgan atamalari asosida sarlavhalaringiz uchun "
+"kalit so‘zlarni tavsiya qiladi, Google Analytics tashrif buyuruvchilaringiz "
+"qiziqishlarini kuzatadi, sayt xaritalari Googlening tezkor indeksatsiyasi "
+"uchun avtomatik yaratiladi va hokazo.  Tizim hatto mahsulot va "
+"tadbirlaringizni Googleda samarali targ‘ib qilish uchun avtomatik ravishda "
+"tuzilgan kontent yaratadi.  Dizaynerlarga qulay "
+"mavzular ------------------------  \n"
+"Mavzular ajoyib va ularni loyihalash oson. Yangi sahifalar, mavzular yoki "
+"qurilish bloklarini yaratish uchun dasturlash ko‘nikmalariga ega "
+"bo‘lishingiz shart emas. Biz toza HTML tuzilmasi, [bootstrap](http://"
+"getbootstrap.com/) CSS dan foydalanamiz va modulliligimiz mavzularingizni "
+"oson taqsimlash imkonini beradi.  Qurilish bloklari yondashuvi oxirgi "
+"foydalanuvchilar yangi kontent yaratishni boshlaganidan keyin ham veb-saytni "
+"toza saqlash imkonini beradi.  Oson kirish huquqlari ------------------  \n"
+"Hamma ham sizning saytingizga bir xil kirish huquqiga ega bo‘lishi shart "
+"emas. Dizaynerlar saytning tashqi ko‘rinishini boshqaradi, muharrirlar "
+"kontentni tasdiqlaydi va mualliflar o‘sha kontentni yozadi. Bu sizga nashr "
+"jarayonini o‘z ehtiyojlaringizga muvofiq tashkil etish imkonini beradi.  "
+"Boshqa kirish huquqlari biznes obyektlari (mahsulotlar, odamlar, tadbirlar "
+"va boshqalar) bilan bog‘liq va Odoo standart kirish huquqlarini boshqarishga "
+"bevosita amal qiladi, shuning uchun sozlamalarni ikki marta o‘rnatishingiz "
+"shart emas."
+
+#. module: website_blog
+#: model:ir.module.module,summary:base.module_website_blog
+#, fuzzy
+msgid "Publish blog posts, announces, news"
+msgstr "Blog yozuvlari, e'lonlar, yangiliklarni nashr etish"
+
+#. module: website_blog
+#. odoo-python
 #: code:addons/website_blog/models/website_blog.py:0
 #, fuzzy
 msgid "%s (copy)"
@@ -706,22 +905,6 @@ msgstr "Birinchi xaridni amalga oshirishdan oldin..."
 #, fuzzy
 msgid "Beyond The Eye"
 msgstr "Ko‘zdan tashqari"
-
-#. module: website_blog
-#. odoo-python
-#: code:addons/website_blog/models/website.py:0
-#: model:ir.model,name:website_blog.model_blog_blog
-#: model:ir.model.fields,field_description:website_blog.field_blog_post__blog_id
-#: model:ir.ui.menu,name:website_blog.menu_website_blog_root_global
-#: model:res.groups.privilege,name:website_blog.res_groups_privilege_blog
-#: model:website.menu,name:website_blog.menu_blog
-#: model_terms:ir.ui.view,arch_db:website_blog.blog_blog_view_search
-#: model_terms:ir.ui.view,arch_db:website_blog.view_blog_blog_form
-#: model_terms:ir.ui.view,arch_db:website_blog.view_blog_post_search
-#: model_terms:ir.ui.view,arch_db:website_blog.website_blog
-#, fuzzy
-msgid "Blog"
-msgstr "Blog"
 
 #. module: website_blog
 #. odoo-python

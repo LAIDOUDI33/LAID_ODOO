@@ -27,6 +27,28 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_slides_forum
+#: model:ir.module.module,description:base.module_website_slides_forum
+#, fuzzy
+msgid ""
+"A Slide channel can be linked to forum. Also, profiles from slide and forum "
+"are regrouped together"
+msgstr ""
+"Slayd kanalini forumga bog‘lash mumkin. Bundan tashqari, slayd va forumdagi "
+"profillar birgalikda qayta guruhlanadi."
+
+#. module: website_slides_forum
+#: model:ir.module.module,summary:base.module_website_slides_forum
+#, fuzzy
+msgid "Allows to link forum on a course"
+msgstr "Kursga forum ulash imkonini beradi"
+
+#. module: website_slides_forum
+#: model:ir.module.module,shortdesc:base.module_website_slides_forum
+#, fuzzy
+msgid "Forum on Courses"
+msgstr "Kurslar bo‘yicha forum"
+
+#. module: website_slides_forum
 #: model_terms:forum.forum,faq:website_slides_forum.forum_forum_demo_channel_0
 #: model_terms:forum.forum,faq:website_slides_forum.forum_forum_demo_channel_2
 msgid "(The above section was adapted from Stackoverflow’s FAQ.)"

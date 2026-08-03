@@ -16,6 +16,11 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: hr_calendar_google
+#: model:ir.module.module,shortdesc:base.module_hr_calendar_google
+msgid "HR Calendar with Google Calendar"
+msgstr ""
+
+#. module: hr_calendar_google
 #. odoo-python
 #: code:addons/hr_calendar_google/models/google_sync.py:0
 msgid "Custom"

@@ -16,6 +16,16 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: account_payment_custom
+#: model:ir.module.module,summary:base.module_account_payment_custom
+msgid "Bridge between payment_custom and account_payment."
+msgstr ""
+
+#. module: account_payment_custom
+#: model:ir.module.module,shortdesc:base.module_account_payment_custom
+msgid "Payment Custom / Account Payment"
+msgstr ""
+
+#. module: account_payment_custom
 #: model:ir.model,name:account_payment_custom.model_account_bank_statement_line
 msgid "Bank Statement Line"
 msgstr ""

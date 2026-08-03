@@ -16,6 +16,28 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: contacts
+#: model:ir.module.module,description:base.module_contacts
+msgid ""
+"\n"
+"This module gives you a quick view of your contacts directory, accessible from your home page.\n"
+"You can track your vendors, customers and other contacts.\n"
+msgstr ""
+
+#. module: contacts
+#: model:ir.module.module,summary:base.module_contacts
+msgid "Centralize your address book"
+msgstr ""
+
+#. module: contacts
+#: model:ir.actions.act_window,name:contacts.action_contacts
+#: model:ir.module.module,shortdesc:base.module_contacts
+#: model:ir.ui.menu,name:contacts.menu_contacts
+#: model:ir.ui.menu,name:contacts.res_partner_menu_contacts
+#: model_terms:ir.ui.view,arch_db:contacts.res_partner_view_hierarchy
+msgid "Contacts"
+msgstr ""
+
+#. module: contacts
 #: model_terms:ir.ui.view,arch_db:contacts.res_partner_view_hierarchy
 msgid "<i class=\"oi oi-fw me-1\" data-icon=\"location_on\" title=\"Location\"/>"
 msgstr ""
@@ -52,14 +74,6 @@ msgstr ""
 #. module: contacts
 #: model:ir.ui.menu,name:contacts.menu_partner_category_form
 msgid "Contact Tags"
-msgstr ""
-
-#. module: contacts
-#: model:ir.actions.act_window,name:contacts.action_contacts
-#: model:ir.ui.menu,name:contacts.menu_contacts
-#: model:ir.ui.menu,name:contacts.res_partner_menu_contacts
-#: model_terms:ir.ui.view,arch_db:contacts.res_partner_view_hierarchy
-msgid "Contacts"
 msgstr ""
 
 #. module: contacts

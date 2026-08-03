@@ -21,6 +21,20 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: loyalty
+#: model:ir.module.module,shortdesc:base.module_loyalty
+msgid "Coupons & Loyalty"
+msgstr "Gutscheine & Treue"
+
+#. module: loyalty
+#: model:ir.module.module,summary:base.module_loyalty
+msgid ""
+"Use discounts, gift cards, eWallets and loyalty programs in your sales "
+"channels"
+msgstr ""
+"Nutzen Sie Rabatte, Geschenkkarten, E-Geldbörsen und Treueprogramme in Ihren "
+"Vertriebskanälen"
+
+#. module: loyalty
 #: model:ir.model.fields,help:loyalty.field_loyalty_program__trigger
 msgid ""
 "\n"

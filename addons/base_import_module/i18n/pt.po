@@ -30,6 +30,30 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: base_import_module
+#: model:ir.module.module,description:base.module_base_import_module
+msgid ""
+"\n"
+"Import a custom data module\n"
+"===========================\n"
+"\n"
+"This module allows authorized users to import a custom data module (.xml "
+"files and static assests)\n"
+"for customization purpose.\n"
+msgstr ""
+"\n"
+"Importe um módulo de dados personalizado\n"
+"===========================\n"
+"\n"
+"Este módulo permite que usuários autorizados importem um módulo de dados "
+"personalizados (arquivos .xml e assets estáticos) para fins de "
+"personalização.\n"
+
+#. module: base_import_module
+#: model:ir.module.module,shortdesc:base.module_base_import_module
+msgid "Base import module"
+msgstr "Módulo de Importação base"
+
+#. module: base_import_module
 #. odoo-python
 #: code:addons/base_import_module/models/ir_module.py:0
 msgid ""

@@ -21,6 +21,27 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: sale_timesheet_margin
+#: model:ir.module.module,description:base.module_sale_timesheet_margin
+msgid ""
+"\n"
+"Allows to compute accurate margin for Service sales.\n"
+"======================================================\n"
+msgstr ""
+"\n"
+"允许计算服务销售的准确利润率。\n"
+"======================================================\n"
+
+#. module: sale_timesheet_margin
+#: model:ir.module.module,summary:base.module_sale_timesheet_margin
+msgid "Bridge module between Sales Margin and Sales Timesheet"
+msgstr "销售保证金和销售时间表之间的桥接模块"
+
+#. module: sale_timesheet_margin
+#: model:ir.module.module,shortdesc:base.module_sale_timesheet_margin
+msgid "Service Margins in Sales Orders"
+msgstr "销售订单中的服务利润"
+
+#. module: sale_timesheet_margin
 #: model:ir.model.fields,field_description:sale_timesheet_margin.field_sale_order_line__display_name
 msgid "Display Name"
 msgstr "显示名称"

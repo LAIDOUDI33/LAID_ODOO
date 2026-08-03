@@ -38,6 +38,50 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: stock_account
+#: model:ir.module.module,description:base.module_stock_account
+msgid ""
+"\n"
+"WMS Accounting module\n"
+"======================\n"
+"This module makes the link between the 'stock' and 'account' modules and "
+"allows you to create accounting entries to value your stock movements\n"
+"\n"
+"Key Features\n"
+"------------\n"
+"* Stock Valuation (periodical or automatic)\n"
+"* Invoice from Picking\n"
+"\n"
+"Dashboard / Reports for Warehouse Management includes:\n"
+"------------------------------------------------------\n"
+"* Stock Inventory Value at given date (support dates in the past)\n"
+msgstr ""
+"\n"
+"WMS Muhasebe modülü\n"
+"======================\n"
+"Bu modül, 'stok' ve 'muhasebe' modülleri arasında bağlantı kurar ve stok "
+"hareketlerinizi değerlemek için muhasebe kayıtları oluşturmanıza olanak "
+"tanır\n"
+"\n"
+"Öne Çıkan Özellikler\n"
+"------------\n"
+"* Stok Değerleme (dönemsel veya otomatik)\n"
+"* Sevkiyattan Fatura\n"
+"\n"
+"Depo Yönetimi için Pano / Raporlar şunları içerir:\n"
+"------------------------------------------------------\n"
+"* Belirli bir tarihte stok envanter değeri (geçmiş tarihleri destekler)\n"
+
+#. module: stock_account
+#: model:ir.module.module,summary:base.module_stock_account
+msgid "Inventory, Logistic, Valuation, Accounting"
+msgstr "Stok, Lojistik, Envanter Değerleme, Muhasebe"
+
+#. module: stock_account
+#: model:ir.module.module,shortdesc:base.module_stock_account
+msgid "WMS Accounting"
+msgstr "Stok Muhasebesi"
+
+#. module: stock_account
 #. odoo-python
 #: code:addons/stock_account/models/stock_quant.py:0
 msgid " [Accounted on %s]"

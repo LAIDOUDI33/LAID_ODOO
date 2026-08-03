@@ -25,6 +25,31 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: pos_discount
+#: model:ir.module.module,description:base.module_pos_discount
+msgid ""
+"\n"
+"\n"
+"This module allows the cashier to quickly give percentage-based\n"
+"discount to a customer.\n"
+"\n"
+msgstr ""
+"\n"
+"\n"
+"Questo modulo consente al cassiere di applicare uno sconto percentuale\n"
+"a un cliente in modo veloce.\n"
+"\n"
+
+#. module: pos_discount
+#: model:ir.module.module,shortdesc:base.module_pos_discount
+msgid "Point of Sale Discounts"
+msgstr "Sconti punto vendita"
+
+#. module: pos_discount
+#: model:ir.module.module,summary:base.module_pos_discount
+msgid "Simple Discounts in the Point of Sale "
+msgstr "Sconti semplici nel punto vendita "
+
+#. module: pos_discount
 #: model_terms:ir.ui.view,arch_db:pos_discount.pos_session_sales_details
 msgid "<strong>Amount of global discounts</strong>:"
 msgstr "<strong>Importo degli sconti globali</strong>:"

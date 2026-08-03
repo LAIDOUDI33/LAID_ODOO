@@ -21,6 +21,18 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: crm_iap_enrich
+#: model:ir.module.module,summary:base.module_crm_iap_enrich
+msgid "Enrich Leads/Opportunities using email address domain"
+msgstr ""
+"Enriquir iniciatives/oportunitats mitjançant el domini de l'adreça de correu "
+"electrònic"
+
+#. module: crm_iap_enrich
+#: model:ir.module.module,shortdesc:base.module_crm_iap_enrich
+msgid "Lead Enrichment"
+msgstr "Enriquiment de Lead"
+
+#. module: crm_iap_enrich
 #: model_terms:ir.ui.view,arch_db:crm_iap_enrich.mail_message_lead_enrich_notfound
 msgid ""
 "<span> No company data found based on the email address or email address is "

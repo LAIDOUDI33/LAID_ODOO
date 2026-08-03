@@ -39,6 +39,59 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: fleet
+#: model:ir.module.module,description:base.module_fleet
+msgid ""
+"\n"
+"Vehicle, leasing, insurances, cost\n"
+"==================================\n"
+"With this module, Odoo helps you managing all your vehicles, the\n"
+"contracts associated to those vehicle as well as services, costs\n"
+"and many other features necessary to the management of your fleet\n"
+"of vehicle(s)\n"
+"\n"
+"Main Features\n"
+"-------------\n"
+"* Add vehicles to your fleet\n"
+"* Manage contracts for vehicles\n"
+"* Reminder when a contract reach its expiration date\n"
+"* Add services, odometer values for all vehicles\n"
+"* Show all costs associated to a vehicle or to a type of service\n"
+"* Analysis graph for costs\n"
+msgstr ""
+"\n"
+"Fordon, leasing, försäkringar, kostnader\n"
+"==================================\n"
+"Med den här modulen hjälper Odoo dig att hantera alla dina fordon, de\n"
+"avtal som är kopplade till dessa fordon samt tjänster, kostnader och\n"
+"många andra funktioner som är nödvändiga för att hantera din flotta\n"
+"av fordon\n"
+"\n"
+"Huvudfunktioner\n"
+"-------------\n"
+"* Lägg till fordon i din flotta\n"
+"* Hantera kontrakt för fordon\n"
+"* Påminnelse när ett kontrakt löper ut\n"
+"* Lägg till tjänster och kilometervärden för alla fordon\n"
+"* Visa alla kostnader som är kopplade till ett fordon eller en typ av "
+"tjänst\n"
+"* Analysdiagram för kostnader\n"
+
+#. module: fleet
+#: model:ir.module.module,shortdesc:base.module_fleet
+#: model:ir.ui.menu,name:fleet.fleet_vehicle_menu
+#: model:ir.ui.menu,name:fleet.fleet_vehicles
+#: model:ir.ui.menu,name:fleet.menu_root
+#: model:res.groups.privilege,name:fleet.res_groups_privilege_fleet
+#: model_terms:ir.ui.view,arch_db:fleet.res_config_settings_view_form
+msgid "Fleet"
+msgstr "Fordonsflotta"
+
+#. module: fleet
+#: model:ir.module.module,summary:base.module_fleet
+msgid "Manage your fleet and track car costs"
+msgstr "Hantera din fordonsflotta och spåra bilkostnader"
+
+#. module: fleet
 #: model_terms:ir.ui.view,arch_db:fleet.fleet_vehicle_view_kanban
 msgid "<i class=\"oi\" data-icon=\"location_on\" title=\"Location\"/>"
 msgstr "<i class=\"oi\" data-icon=\"location_on\" title=\"Plats\"/>"
@@ -1120,15 +1173,6 @@ msgstr "Första avtalsdatum"
 #: model_terms:ir.ui.view,arch_db:fleet.fleet_vehicle_view_form
 msgid "Fiscality"
 msgstr "Fiscalitet"
-
-#. module: fleet
-#: model:ir.ui.menu,name:fleet.fleet_vehicle_menu
-#: model:ir.ui.menu,name:fleet.fleet_vehicles
-#: model:ir.ui.menu,name:fleet.menu_root
-#: model:res.groups.privilege,name:fleet.res_groups_privilege_fleet
-#: model_terms:ir.ui.view,arch_db:fleet.res_config_settings_view_form
-msgid "Fleet"
-msgstr "Fordonsflotta"
 
 #. module: fleet
 #: model:ir.model,name:fleet.model_fleet_vehicle_cost_report

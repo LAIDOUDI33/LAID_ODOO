@@ -21,6 +21,21 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: account_qr_code_sepa
+#: model:ir.module.module,description:base.module_account_qr_code_sepa
+msgid ""
+"\n"
+"This module adds support for SEPA Credit Transfer QR-code generation.\n"
+msgstr ""
+"\n"
+"Denna modul lägger till stöd för generering av QR-koder för SEPA-"
+"kreditöverföringar.\n"
+
+#. module: account_qr_code_sepa
+#: model:ir.module.module,shortdesc:base.module_account_qr_code_sepa
+msgid "Account SEPA QR Code"
+msgstr "Konto SEPA QR-kod"
+
+#. module: account_qr_code_sepa
 #: model:ir.model,name:account_qr_code_sepa.model_res_partner_bank
 msgid "Bank Account"
 msgstr ""

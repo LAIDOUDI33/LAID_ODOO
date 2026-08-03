@@ -20,6 +20,12 @@ msgstr ""
 "X-Generator: Weblate 5.12.2\n"
 
 #. module: l10n_pt
+#: model:ir.module.module,description:base.module_l10n_pt
+#: model:ir.module.module,shortdesc:base.module_l10n_pt
+msgid "Portugal - Accounting"
+msgstr "Portugal - Contabilidade"
+
+#. module: l10n_pt
 #: model:ir.model,name:l10n_pt.model_account_account
 msgid "Account"
 msgstr "Conta"

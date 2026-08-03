@@ -21,6 +21,38 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: account_debit_note
+#: model:ir.module.module,description:base.module_account_debit_note
+msgid ""
+"\n"
+"In a lot of countries, a debit note is used as an increase of the amounts of "
+"an existing invoice\n"
+"or in some specific cases to cancel a credit note.\n"
+"It is like a regular invoice, but we need to keep track of the link with the "
+"original invoice.\n"
+"The wizard used is similar as the one for the credit note.\n"
+msgstr ""
+"\n"
+"In veel landen wordt een debetnota gebruikt om het bedrag van een bestaande "
+"factuur te verhogen\n"
+"of in sommige specifieke gevallen om een creditfactuur te annuleren.\n"
+"Het is vergelijkbaar met een gewone verkoopfactuur, maar we moeten de link "
+"met de oorspronkelijke factuur bijhouden.\n"
+"De wizard die hiervoor wordt gebruikt, is vergelijkbaar met die voor de "
+"creditfactuur.\n"
+
+#. module: account_debit_note
+#. odoo-python
+#: code:addons/account_debit_note/models/account_move.py:0
+#: code:addons/account_debit_note/wizard/account_debit_note.py:0
+#: model:ir.model.fields,field_description:account_debit_note.field_account_bank_statement_line__debit_note_ids
+#: model:ir.model.fields,field_description:account_debit_note.field_account_move__debit_note_ids
+#: model:ir.module.module,shortdesc:base.module_account_debit_note
+#: model:ir.module.module,summary:base.module_account_debit_note
+#: model_terms:ir.ui.view,arch_db:account_debit_note.view_account_invoice_filter_debit
+msgid "Debit Notes"
+msgstr "Debetfacturen"
+
+#. module: account_debit_note
 #: model_terms:ir.ui.view,arch_db:account_debit_note.view_move_form_debit
 msgid ""
 "<span class=\"o_stat_text\" invisible=\"debit_origin_move_type != "
@@ -117,16 +149,6 @@ msgstr "Debetfactuur"
 #: model_terms:ir.ui.view,arch_db:account_debit_note.view_account_debit_note
 msgid "Debit Note Date"
 msgstr "Debetfactuur datum"
-
-#. module: account_debit_note
-#. odoo-python
-#: code:addons/account_debit_note/models/account_move.py:0
-#: code:addons/account_debit_note/wizard/account_debit_note.py:0
-#: model:ir.model.fields,field_description:account_debit_note.field_account_bank_statement_line__debit_note_ids
-#: model:ir.model.fields,field_description:account_debit_note.field_account_move__debit_note_ids
-#: model_terms:ir.ui.view,arch_db:account_debit_note.view_account_invoice_filter_debit
-msgid "Debit Notes"
-msgstr "Debetfacturen"
 
 #. module: account_debit_note
 #: model:ir.model.fields,field_description:account_debit_note.field_account_bank_statement_line__debit_origin_move_type

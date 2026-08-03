@@ -20,6 +20,32 @@ msgstr ""
 "X-Generator: Weblate 5.12.2\n"
 
 #. module: l10n_in_edi
+#: model:ir.module.module,description:base.module_l10n_in_edi
+msgid ""
+"\n"
+"Indian - E-invoicing\n"
+"====================\n"
+"To submit invoicing through API to the government.\n"
+"We use \"Tera Software Limited\" as GSP\n"
+"Step 1: First you need to create an API username and password in the E-"
+"invoice portal.\n"
+"Step 2: Switch to company related to that GST number\n"
+"Step 3: Set that username and password in Odoo (Goto: Invoicing/Accounting "
+"-> Configuration -> Settings -> Customer Invoices or find \"E-invoice\" in "
+"search bar)\n"
+"Step 4: Repeat steps 1,2,3 for all GSTIN you have in odoo. If you have a "
+"multi-company with the same GST number then perform step 1 for the first "
+"company only.\n"
+"For the creation of API username and password please ref this document: "
+"<https://service.odoo.co.in/einvoice_create_api_user>\n"
+msgstr ""
+
+#. module: l10n_in_edi
+#: model:ir.module.module,shortdesc:base.module_l10n_in_edi
+msgid "Indian - E-invoicing"
+msgstr ""
+
+#. module: l10n_in_edi
 #. odoo-python
 #: code:addons/l10n_in_edi/models/account_move.py:0
 msgid ""

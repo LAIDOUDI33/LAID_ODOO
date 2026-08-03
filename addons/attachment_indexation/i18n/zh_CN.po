@@ -23,6 +23,31 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: attachment_indexation
+#: model:ir.module.module,description:base.module_attachment_indexation
+msgid ""
+"\n"
+"Attachments list and document indexation\n"
+"========================================\n"
+"* Show attachment on the top of the forms\n"
+"* Document Indexation: odt, pdf, xlsx, docx\n"
+"\n"
+"The `pdfminer.six` Python library has to be installed in order to index PDF "
+"files\n"
+msgstr ""
+"\n"
+"附件列表和文档索引\n"
+"========================================\n"
+"• 在表单顶部显示附件\n"
+"• 文档索引：气味、pdf、xlsx、多cx\n"
+"\n"
+"必须安装\"pdfminer.6\" Python 库才能索引 PDF 文件\n"
+
+#. module: attachment_indexation
+#: model:ir.module.module,shortdesc:base.module_attachment_indexation
+msgid "Attachments List and Document Indexation"
+msgstr "附录清单和文件索引"
+
+#. module: attachment_indexation
 #: model:ir.model,name:attachment_indexation.model_ir_attachment
 msgid "Attachment"
 msgstr "附件"

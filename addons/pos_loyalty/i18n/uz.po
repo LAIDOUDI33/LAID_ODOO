@@ -27,6 +27,20 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: pos_loyalty
+#: model:ir.module.module,shortdesc:base.module_pos_loyalty
+#, fuzzy
+msgid "Point of Sale - Coupons & Loyalty"
+msgstr "Savdo nuqtasi - Kuponlar va sodiqlik dasturi"
+
+#. module: pos_loyalty
+#: model:ir.module.module,summary:base.module_pos_loyalty
+#, fuzzy
+msgid "Use Coupons, Gift Cards and Loyalty programs in Point of Sale"
+msgstr ""
+"Sotuv nuqtasida kuponlar, sovg‘a kartalari va sodiqlik dasturlaridan "
+"foydalaning"
+
+#. module: pos_loyalty
 #: model:ir.model.fields,help:pos_loyalty.field_pos_order_line__reward_identifier_code
 #, fuzzy
 msgid ""

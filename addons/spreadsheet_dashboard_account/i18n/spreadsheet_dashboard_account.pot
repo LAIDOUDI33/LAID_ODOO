@@ -16,6 +16,17 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: spreadsheet_dashboard_account
+#: model:ir.module.module,description:base.module_spreadsheet_dashboard_account
+#: model:ir.module.module,summary:base.module_spreadsheet_dashboard_account
+msgid "Spreadsheet"
+msgstr ""
+
+#. module: spreadsheet_dashboard_account
+#: model:ir.module.module,shortdesc:base.module_spreadsheet_dashboard_account
+msgid "Spreadsheet dashboard for accounting"
+msgstr ""
+
+#. module: spreadsheet_dashboard_account
 #. odoo-javascript
 #: code:addons/spreadsheet_dashboard_account/data/files/invoicing_dashboard.json:0
 msgid " days"

@@ -17,6 +17,46 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_jo
+#: model:ir.module.module,description:base.module_l10n_jo
+msgid ""
+"\n"
+"This is the base module to manage the accounting chart for Jordan in Odoo.\n"
+"==============================================================================\n"
+"\n"
+"Jordan accounting basic charts and localization.\n"
+"\n"
+"Activates:\n"
+"\n"
+"- Chart of accounts\n"
+"\n"
+"- Taxes\n"
+"\n"
+"- Tax report\n"
+"\n"
+"- Fiscal positions\n"
+msgstr ""
+"\n"
+"هذا هو التطبيق الأساسي لإدارة شجرة الحسابات للأردن في أودو.\n"
+"==============================================================================\n"
+"\n"
+"شجرة الحسابات الأساسية والأقلمة للمحاسبة الأردنية.\n"
+"\n"
+"تؤدي إلى تنشيط كل من:\n"
+"\n"
+"- شجرة الحسابات\n"
+"\n"
+"- الضرائب\n"
+"\n"
+"- التقرير الضريبي\n"
+"\n"
+"- الأوضاع المالية\n"
+
+#. module: l10n_jo
+#: model:ir.module.module,shortdesc:base.module_l10n_jo
+msgid "Jordan - Accounting"
+msgstr "الأردن - المحاسبة"
+
+#. module: l10n_jo
 #: model:account.report.line,name:l10n_jo.tax_report_vat_purchase_sixteen
 msgid "2a. 16%"
 msgstr ""

@@ -23,6 +23,16 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: microsoft_outlook
+#: model:ir.module.module,shortdesc:base.module_microsoft_outlook
+msgid "Microsoft Outlook"
+msgstr "Microsoft Outlook"
+
+#. module: microsoft_outlook
+#: model:ir.module.module,description:base.module_microsoft_outlook
+msgid "Outlook support for incoming / outgoing mail servers"
+msgstr "Gelen / giden posta sunucuları için Outlook desteği"
+
+#. module: microsoft_outlook
 #: model_terms:ir.ui.view,arch_db:microsoft_outlook.fetchmail_server_view_form
 #: model_terms:ir.ui.view,arch_db:microsoft_outlook.ir_mail_server_view_form
 msgid ""

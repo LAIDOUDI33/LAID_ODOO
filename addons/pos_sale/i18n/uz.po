@@ -27,6 +27,31 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: pos_sale
+#: model:ir.module.module,description:base.module_pos_sale
+#, fuzzy
+msgid ""
+"\n"
+"\n"
+"This module adds a custom Sales Team for the Point of Sale. This enables you "
+"to view and manage your point of sale sales with more ease.\n"
+msgstr ""
+"Ushbu modul savdo nuqtasi uchun maxsus Savdo jamoasini qo‘shadi. Bu sizga "
+"savdo nuqtasi sotuvlarini yanada osonroq ko‘rish va boshqarish imkonini "
+"beradi."
+
+#. module: pos_sale
+#: model:ir.module.module,summary:base.module_pos_sale
+#, fuzzy
+msgid "Link module between Point of Sale and Sales"
+msgstr "Savdo nuqtasi va sotuv orasidagi bog‘lovchi modul"
+
+#. module: pos_sale
+#: model:ir.module.module,shortdesc:base.module_pos_sale
+#, fuzzy
+msgid "POS - Sales"
+msgstr "POS - Savdo"
+
+#. module: pos_sale
 #. odoo-python
 #: code:addons/pos_sale/models/sale_order.py:0
 #, fuzzy

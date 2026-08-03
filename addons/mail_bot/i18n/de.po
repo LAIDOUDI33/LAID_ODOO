@@ -25,6 +25,16 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: mail_bot
+#: model:ir.module.module,summary:base.module_mail_bot
+msgid "Add OdooBot in discussions"
+msgstr "OdooBot in Diskussionen hinzufügen"
+
+#. module: mail_bot
+#: model:ir.module.module,shortdesc:base.module_mail_bot
+msgid "OdooBot"
+msgstr "OdooBot"
+
+#. module: mail_bot
 #. odoo-python
 #: code:addons/mail_bot/models/mail_bot.py:0
 msgid ""

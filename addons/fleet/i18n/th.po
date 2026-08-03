@@ -25,6 +25,56 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: fleet
+#: model:ir.module.module,description:base.module_fleet
+msgid ""
+"\n"
+"Vehicle, leasing, insurances, cost\n"
+"==================================\n"
+"With this module, Odoo helps you managing all your vehicles, the\n"
+"contracts associated to those vehicle as well as services, costs\n"
+"and many other features necessary to the management of your fleet\n"
+"of vehicle(s)\n"
+"\n"
+"Main Features\n"
+"-------------\n"
+"* Add vehicles to your fleet\n"
+"* Manage contracts for vehicles\n"
+"* Reminder when a contract reach its expiration date\n"
+"* Add services, odometer values for all vehicles\n"
+"* Show all costs associated to a vehicle or to a type of service\n"
+"* Analysis graph for costs\n"
+msgstr ""
+"\n"
+"ยานพาหนะ, การเช่า, ประกันภัย, ค่าใช้จ่าย\n"
+"==================================\n"
+"ด้วยโมดูลนี้, Odoo ช่วยให้คุณสามารถจัดการยานพาหนะทั้งหมดของคุณได้ สัญญาที่เกี่ยวข้องกับยานพาหนะเ"
+"หล่านั้น รวมถึงบริการ ค่าใช้จ่าย และฟีเจอร์อื่นๆ ที่จำเป็นสำหรับการจัดการของกลุ่มยานพาหนะของคุณ\n"
+"\n"
+"ฟีเจอร์หลัก\n"
+"-------------\n"
+"* เพิ่มยานพาหนะในขนส่งของคุณ\n"
+"* จัดการสัญญาสำหรับยานพาหนะ\n"
+"* แจ้งเตือนเมื่อสัญญาถึงวันหมดอายุ\n"
+"* เพิ่มบริการและค่าไมล์สำหรับยานพาหนะทั้งหมด\n"
+"* แสดงค่าใช้จ่ายทั้งหมดที่เกี่ยวข้องกับยานพาหนะหรือประเภทของบริการ\n"
+"* กราฟการวิเคราะห์ค่าใช้จ่าย\n"
+
+#. module: fleet
+#: model:ir.module.module,shortdesc:base.module_fleet
+#: model:ir.ui.menu,name:fleet.fleet_vehicle_menu
+#: model:ir.ui.menu,name:fleet.fleet_vehicles
+#: model:ir.ui.menu,name:fleet.menu_root
+#: model:res.groups.privilege,name:fleet.res_groups_privilege_fleet
+#: model_terms:ir.ui.view,arch_db:fleet.res_config_settings_view_form
+msgid "Fleet"
+msgstr "การขนส่ง"
+
+#. module: fleet
+#: model:ir.module.module,summary:base.module_fleet
+msgid "Manage your fleet and track car costs"
+msgstr "จัดการค่าใช้จ่ายและติดตามยานพาหนะของคุณ"
+
+#. module: fleet
 #: model_terms:ir.ui.view,arch_db:fleet.fleet_vehicle_view_kanban
 msgid "<i class=\"oi\" data-icon=\"location_on\" title=\"Location\"/>"
 msgstr "<i class=\"oi\" data-icon=\"location_on\" title=\"ตำแหน่ง\"/>"
@@ -1097,15 +1147,6 @@ msgstr "วันที่ทำสัญญาครั้งแรก"
 #: model_terms:ir.ui.view,arch_db:fleet.fleet_vehicle_view_form
 msgid "Fiscality"
 msgstr "การเงิน"
-
-#. module: fleet
-#: model:ir.ui.menu,name:fleet.fleet_vehicle_menu
-#: model:ir.ui.menu,name:fleet.fleet_vehicles
-#: model:ir.ui.menu,name:fleet.menu_root
-#: model:res.groups.privilege,name:fleet.res_groups_privilege_fleet
-#: model_terms:ir.ui.view,arch_db:fleet.res_config_settings_view_form
-msgid "Fleet"
-msgstr "การขนส่ง"
 
 #. module: fleet
 #: model:ir.model,name:fleet.model_fleet_vehicle_cost_report

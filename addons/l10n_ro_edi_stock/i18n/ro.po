@@ -22,6 +22,20 @@ msgstr ""
 "X-Generator: Weblate 5.14.3\n"
 
 #. module: l10n_ro_edi_stock
+#: model:ir.module.module,description:base.module_l10n_ro_edi_stock
+msgid ""
+"\n"
+"E-Transport implementation for Romania\n"
+msgstr ""
+"\n"
+"Implementare E-Transport pentru România\n"
+
+#. module: l10n_ro_edi_stock
+#: model:ir.module.module,shortdesc:base.module_l10n_ro_edi_stock
+msgid "Romania - E-Transport"
+msgstr "România - E-Transport"
+
+#. module: l10n_ro_edi_stock
 #. odoo-python
 #: code:addons/l10n_ro_edi_stock/models/stock_picking.py:0
 msgid "%(location_group)s is missing following fields: %(field_names)s"

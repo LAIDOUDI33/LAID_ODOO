@@ -21,6 +21,34 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: product_email_template
+#: model:ir.module.module,description:base.module_product_email_template
+msgid ""
+"\n"
+"Add email templates to products to be sent on invoice confirmation\n"
+"==================================================================\n"
+"\n"
+"With this module, link your products to a template to send complete "
+"information and tools to your customer.\n"
+"For instance when invoicing a training, the training agenda and materials "
+"will automatically be sent to your customers.'\n"
+msgstr ""
+"\n"
+"Agregue plantillas de correo electrónico a los productos que se enviarán al "
+"confirmar la factura\n"
+"======================================================================\n"
+"Este módulo le permite vincular sus productos a plantillas para que pueda "
+"enviarle información detallada o herramientas a sus clientes.\n"
+"Por ejemplo, al facturar una capacitación, la agenda de la capacitación y "
+"los materiales se enviarán en automático a su cliente.\n"
+
+#. module: product_email_template
+#: model:ir.model.fields,field_description:product_email_template.field_product_product__email_template_id
+#: model:ir.model.fields,field_description:product_email_template.field_product_template__email_template_id
+#: model:ir.module.module,shortdesc:base.module_product_email_template
+msgid "Product Email Template"
+msgstr "Plantilla de correo electrónico del producto"
+
+#. module: product_email_template
 #: model_terms:ir.ui.view,arch_db:product_email_template.product_template_form_view
 msgid "Automatic Email at Invoice"
 msgstr "Correo electrónico automático en la factura"
@@ -57,12 +85,6 @@ msgstr "Asiento contable"
 #: model:ir.model,name:product_email_template.model_product_template
 msgid "Product"
 msgstr "Producto"
-
-#. module: product_email_template
-#: model:ir.model.fields,field_description:product_email_template.field_product_product__email_template_id
-#: model:ir.model.fields,field_description:product_email_template.field_product_template__email_template_id
-msgid "Product Email Template"
-msgstr "Plantilla de correo electrónico del producto"
 
 #. module: product_email_template
 #: model_terms:ir.ui.view,arch_db:product_email_template.product_template_form_view

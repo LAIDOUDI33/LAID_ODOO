@@ -26,6 +26,46 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: sale_stock
+#: model:ir.module.module,description:base.module_sale_stock
+msgid ""
+"\n"
+"Manage sales quotations and orders\n"
+"==================================\n"
+"\n"
+"This module makes the link between the sales and warehouses management "
+"applications.\n"
+"\n"
+"Preferences\n"
+"-----------\n"
+"* Shipping: Choice of delivery at once or partial delivery\n"
+"* Invoicing: choose how invoices will be paid\n"
+"* Incoterms: International Commercial terms\n"
+"\n"
+msgstr ""
+"\n"
+"إدارة عروض أسعار المبيعات والأوامر\n"
+"==================================\n"
+"\n"
+"ينشئ هذا التطبيق الرابطة بين تطبيقات إدارة المبيعات والمستودعات.\n"
+"\n"
+"التفضيلات\n"
+"-----------\n"
+"* الشحن: خيار التوصيل دفعة واحدة أو التوصيل جزئياً\n"
+"* الفوترة: اختر كيفية دفع الفواتير\n"
+"* شروط التجارة الدولية: الشروط التجارية العالمية\n"
+"\n"
+
+#. module: sale_stock
+#: model:ir.module.module,summary:base.module_sale_stock
+msgid "Quotation, Sales Orders, Delivery & Invoicing Control"
+msgstr "مراقبة عروض الأسعار وأوامر البيع والتوصيل والفوترة"
+
+#. module: sale_stock
+#: model:ir.module.module,shortdesc:base.module_sale_stock
+msgid "Sales and Warehouse Management"
+msgstr "إدارة المبيعات والمستودعات"
+
+#. module: sale_stock
 #: model:ir.actions.report,print_report_name:sale_stock.action_report_return_label
 msgid "\"Return - %s\" % (object.name)"
 msgstr ""

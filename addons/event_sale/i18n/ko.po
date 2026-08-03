@@ -25,6 +25,46 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: event_sale
+#: model:ir.module.module,description:base.module_event_sale
+msgid ""
+"\n"
+"Creating registration with sales orders.\n"
+"========================================\n"
+"\n"
+"This module allows you to automate and connect your registration creation "
+"with\n"
+"your main sale flow and therefore, to enable the invoicing feature of "
+"registrations.\n"
+"\n"
+"It defines a new kind of service products that offers you the possibility "
+"to\n"
+"choose an event category associated with it. When you encode a sales order "
+"for\n"
+"that product, you will be able to choose an existing event of that category "
+"and\n"
+"when you confirm your sales order it will automatically create a "
+"registration for\n"
+"this event.\n"
+msgstr ""
+"\n"
+"판매주문서를 통한 등록 생성\n"
+"========================================\n"
+"\n"
+"이 모듈을 통해 등록 생성 과정을 주요 판매 흐름과 연동하여 자동화합니다.\n"
+"이에 따라 등록과 관련된 청구서 발행 기능을 사용할 수 있게 됩니다.\n"
+"\n"
+"이 항목을 활용하여 행사 카테고리를 선택할 수 있는 \n"
+"새로운 서비스 제품 유형을 지정할 수 있습니다.\n"
+"해당 제품의 판매주문서를 작성할 때 기존 행사를\n"
+"선택하고 판매주문서를 승인하면 해당 행사에 대한 등록이\n"
+"자동으로 생성됩니다.\n"
+
+#. module: event_sale
+#: model:ir.module.module,shortdesc:base.module_event_sale
+msgid "Events Sales"
+msgstr "행사 판매"
+
+#. module: event_sale
 #: model_terms:ir.ui.view,arch_db:event_sale.event_registration_change_exception
 msgid ""
 ".\n"

@@ -20,6 +20,22 @@ msgstr ""
 "X-Generator: Gtranslator 46.0\n"
 
 #. module: l10n_ua
+#: model:ir.module.module,description:base.module_l10n_ua
+msgid ""
+"\n"
+"Ukraine - Chart of accounts.\n"
+"============================\n"
+msgstr ""
+"\n"
+"Україна - План рахунків.\n"
+"============================\n"
+
+#. module: l10n_ua
+#: model:ir.module.module,shortdesc:base.module_l10n_ua
+msgid "Ukraine - Accounting"
+msgstr "Україна - Бухоблік"
+
+#. module: l10n_ua
 #: model:ir.model,name:l10n_ua.model_account_chart_template
 msgid "Account Chart Template"
 msgstr "Шаблон плану рахунків"

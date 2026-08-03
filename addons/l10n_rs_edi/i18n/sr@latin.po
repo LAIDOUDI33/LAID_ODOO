@@ -22,6 +22,23 @@ msgstr ""
 "X-Generator: Weblate 5.16.2\n"
 
 #. module: l10n_rs_edi
+#: model:ir.module.module,description:base.module_l10n_rs_edi
+msgid ""
+"\n"
+"eFaktura E-invoice implementation for Serbia\n"
+msgstr ""
+
+#. module: l10n_rs_edi
+#: model:ir.module.module,summary:base.module_l10n_rs_edi
+msgid "E-Invoice implementation for Serbia"
+msgstr ""
+
+#. module: l10n_rs_edi
+#: model:ir.module.module,shortdesc:base.module_l10n_rs_edi
+msgid "Serbia - eFaktura E-invoicing"
+msgstr ""
+
+#. module: l10n_rs_edi
 #: model_terms:ir.ui.view,arch_db:l10n_rs_edi.view_move_form
 msgid ""
 "<i class=\"fa fa-warning\" role=\"img\" title=\"Serbian eFaktura\"/>\n"

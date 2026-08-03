@@ -23,6 +23,16 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: payment_custom
+#: model:ir.module.module,summary:base.module_payment_custom
+msgid "A payment provider for custom flows like wire transfers."
+msgstr "이체 거래와 같은 지정된 이동 거래를 담당하는 결제대행업체입니다."
+
+#. module: payment_custom
+#: model:ir.module.module,shortdesc:base.module_payment_custom
+msgid "Payment Provider: Custom Payment Modes"
+msgstr "결제대행업체: Custom Payment Modes"
+
+#. module: payment_custom
 #: model_terms:ir.ui.view,arch_db:payment_custom.custom_state_header
 msgid ""
 "<small class=\"text-center text-wrap lh-sm\">Scan me in your banking app</"

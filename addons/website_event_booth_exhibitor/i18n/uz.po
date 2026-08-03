@@ -27,6 +27,26 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_event_booth_exhibitor
+#: model:ir.module.module,description:base.module_website_event_booth_exhibitor
+#, fuzzy
+msgid ""
+"\n"
+"Automatically create a sponsor when renting a booth.\n"
+msgstr "Stend ijaraga olinganda avtomatik ravishda homiy yaratish"
+
+#. module: website_event_booth_exhibitor
+#: model:ir.module.module,shortdesc:base.module_website_event_booth_exhibitor
+#, fuzzy
+msgid "Booths/Exhibitors Bridge"
+msgstr "Stendlar/Ko‘rgazmachilar ko‘prigi"
+
+#. module: website_event_booth_exhibitor
+#: model:ir.module.module,summary:base.module_website_event_booth_exhibitor
+#, fuzzy
+msgid "Event Booths, automatically create a sponsor."
+msgstr "Tadbir stendlari, avtomatik ravishda homiy yaratish"
+
+#. module: website_event_booth_exhibitor
 #: model_terms:ir.ui.view,arch_db:website_event_booth_exhibitor.event_booth_booked_template
 #, fuzzy
 msgid "<b>Sponsor</b>:"

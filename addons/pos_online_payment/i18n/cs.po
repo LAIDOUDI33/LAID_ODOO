@@ -21,6 +21,11 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: pos_online_payment
+#: model:ir.module.module,shortdesc:base.module_pos_online_payment
+msgid "Point of Sale online payment"
+msgstr "Místo prodeje - online platby"
+
+#. module: pos_online_payment
 #: model_terms:ir.ui.view,arch_db:pos_online_payment.pos_payment_status
 msgid "<span class=\"visually-hidden\">Loading...</span>"
 msgstr ""

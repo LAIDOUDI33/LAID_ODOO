@@ -20,6 +20,27 @@ msgstr ""
 "X-Generator: Weblate 5.16.1\n"
 
 #. module: l10n_tw_edi_ecpay_sale
+#: model:ir.module.module,description:base.module_l10n_tw_edi_ecpay_sale
+msgid ""
+"\n"
+"This bridge module allows the user to input ECPay information in Sales for "
+"sending their invoices to the ECPay system\n"
+msgstr ""
+"\n"
+"此橋接模組讓使用者可在銷售應用程式中輸入 ECPay 資料，以便將發票傳送至 ECPay "
+"系統。\n"
+
+#. module: l10n_tw_edi_ecpay_sale
+#: model:ir.module.module,summary:base.module_l10n_tw_edi_ecpay_sale
+msgid "ECPay E-invoice bridge module for Sales"
+msgstr "銷售 ECPay 電子發票橋接模組"
+
+#. module: l10n_tw_edi_ecpay_sale
+#: model:ir.module.module,shortdesc:base.module_l10n_tw_edi_ecpay_sale
+msgid "Taiwan - E-invoicing Sales"
+msgstr "台灣 - 銷售電子發票"
+
+#. module: l10n_tw_edi_ecpay_sale
 #: model:ir.model.fields,help:l10n_tw_edi_ecpay_sale.field_sale_order__l10n_tw_edi_carrier_type
 msgid ""
 "- Citizen Digital Certificate: The carrier number format is 2 capital "

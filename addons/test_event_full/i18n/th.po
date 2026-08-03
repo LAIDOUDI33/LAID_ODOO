@@ -1,0 +1,50 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# * base
+#
+# Translators:
+# monchai7 <montchye@gmail.com>, 2022
+# Krisa C, 2022
+# Odoo Thaidev <odoothaidev@gmail.com>, 2022
+# Khwunchai Jaengsawang <khwunchai.j@ku.th>, 2022
+# Chatcha Mee, 2022
+# Wichanon Jamwutthipreecha, 2022
+# Amin Cheloh <amincheloh@gmail.com>, 2022
+# Martin Trigaux, 2023
+# "Tiffany Chang (tic)" <tic@odoo.com>, 2025.
+# Weblate <noreply-mt-weblate@weblate.org>, 2025.
+# Nusara Boonma <nuboo@odoo.com>, 2026.
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 16.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-05-12 08:36+0000\n"
+"PO-Revision-Date: 2026-06-20 08:11+0000\n"
+"Last-Translator: Nusara Boonma <nuboo@odoo.com>\n"
+"Language-Team: Thai <https://translate.odoo.com/projects/odoo-master/base/"
+"th/>\n"
+"Language: th\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Weblate 2026.6.1\n"
+
+#. module: test_event_full
+#: model:ir.module.module,description:base.module_test_event_full
+msgid ""
+"\n"
+"This module will test the main event flows of Odoo, both frontend and "
+"backend.\n"
+"It installs sale capabilities, front-end flow, eCommerce, questions and\n"
+"automatic lead generation, full Online support, ...\n"
+msgstr ""
+"\n"
+"โมดูลนี้จะทดสอบโฟลว์ของกิจกรรมหลักบน Odoo ทั้งการทำงานส่วนหน้าและส่วนหลัง\n"
+"ติดตั้งความสามารถในการขาย การทำงานเบื้องหน้า อีคอมเมิร์ซ คำถาม และ\n"
+"การสร้างลูกค้าเป้าหมายอัตโนมัติ, การรองรับแบบออนไลน์อย่างเต็มรูปแบบ ...\n"
+
+#. module: test_event_full
+#: model:ir.module.module,shortdesc:base.module_test_event_full
+msgid "Test Full Event Flow"
+msgstr "ทดสอบโฟลว์แอปกิจกรรมแบบเต็ม"

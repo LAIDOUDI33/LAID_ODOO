@@ -20,6 +20,23 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_crm_livechat
+#: model:ir.module.module,description:base.module_website_crm_livechat
+msgid "Adds a stat button on lead form view to access their livechat sessions."
+msgstr ""
+"Adiciona um botão na visualização do formulário de lead para acessar suas "
+"sessões de chat ao vivo."
+
+#. module: website_crm_livechat
+#: model:ir.module.module,shortdesc:base.module_website_crm_livechat
+msgid "Lead Livechat Sessions"
+msgstr "Sessões de chat ao vivo com o lead"
+
+#. module: website_crm_livechat
+#: model:ir.module.module,summary:base.module_website_crm_livechat
+msgid "View livechat sessions for leads"
+msgstr "Visualizar sessões de chat ao vivo para leads"
+
+#. module: website_crm_livechat
 #: model:ir.model.fields,field_description:website_crm_livechat.field_crm_lead__visitor_sessions_count
 msgid "# Sessions"
 msgstr "Nº de sessões"

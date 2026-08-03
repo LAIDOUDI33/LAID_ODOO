@@ -27,6 +27,18 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: sale_pdf_quote_builder
+#: model:ir.module.module,description:base.module_sale_pdf_quote_builder
+#, fuzzy
+msgid "Build nice quotations"
+msgstr "Jozibali narx takliflarini tayyorlash"
+
+#. module: sale_pdf_quote_builder
+#: model:ir.module.module,shortdesc:base.module_sale_pdf_quote_builder
+#, fuzzy
+msgid "Sales PDF Quotation Builder"
+msgstr "Sotuvlar uchun PDF narxnoma tuzuvchi"
+
+#. module: sale_pdf_quote_builder
 #: model:ir.actions.report,print_report_name:sale_pdf_quote_builder.action_report_saleorder_raw
 #, fuzzy
 msgid ""

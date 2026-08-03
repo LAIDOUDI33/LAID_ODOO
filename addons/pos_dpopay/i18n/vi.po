@@ -19,6 +19,48 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: pos_dpopay
+#: model:ir.module.module,description:base.module_pos_dpopay
+msgid ""
+"\n"
+"Allow DPO POS payments\n"
+"==============================\n"
+"\n"
+"It supports all currencies supported by the terminal device — primarily for "
+"use in the **African region**.\n"
+"It enables customers to pay for their orders using debit/credit cards and "
+"Mobile Money through DPO POS terminals.\n"
+"A DPO merchant account is required to process transactions.\n"
+"Features include:\n"
+"\n"
+"* Quick payments by swiping, scanning, or tapping your credit/debit card or "
+"Mobile Money (Airtel Money / M-Pesa) at the payment terminal.\n"
+"* Supported cards: Visa, MasterCard, American Express etc.\n"
+msgstr ""
+"\n"
+"Cho phép thanh toán POS qua DPO\n"
+"==============================\n"
+"Phân hệ này hỗ trợ tất cả các loại tiền tệ được thiết bị đầu cuối hỗ trợ — "
+"chủ yếu dùng cho **khu vực châu Phi**.\n"
+"Nó cho phép khách hàng thanh toán đơn hàng bằng thẻ ghi nợ/thẻ tín dụng và "
+"Mobile Money thông qua các thiết bị POS của DPO.\n"
+"Cần có tài khoản người bán DPO để xử lý giao dịch.\n"
+"Các tính năng bao gồm:\n"
+"\n"
+"* Thanh toán nhanh bằng cách quẹt, quét hoặc chạm thẻ tín dụng/thẻ ghi nợ "
+"hoặc Mobile Money (Airtel Money/M-Pesa) tại thiết bị thanh toán.\n"
+"* Các loại thẻ được hỗ trợ: Visa, MasterCard, American Express, v.v.\n"
+
+#. module: pos_dpopay
+#: model:ir.module.module,summary:base.module_pos_dpopay
+msgid "Integrate your POS with DPO payment terminal."
+msgstr "Tích hợp POS của bạn với thiết bị thanh toán DPO."
+
+#. module: pos_dpopay
+#: model:ir.module.module,shortdesc:base.module_pos_dpopay
+msgid "PoS DPO Pay"
+msgstr "PoS DPO Pay"
+
+#. module: pos_dpopay
 #: model:ir.model.fields,help:pos_dpopay.field_pos_payment_method__dpopay_bearer_token
 msgid ""
 "Bearer token used for authenticating requests. Automatically refreshed when "

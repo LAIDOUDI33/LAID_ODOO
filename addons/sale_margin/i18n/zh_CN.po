@@ -24,6 +24,28 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: sale_margin
+#: model:ir.module.module,description:base.module_sale_margin
+msgid ""
+"\n"
+"This module adds the 'Margin' on sales order.\n"
+"=============================================\n"
+"\n"
+"This gives the profitability by calculating the difference between the Unit\n"
+"Price and Cost Price.\n"
+msgstr ""
+"\n"
+"此模块在销售订单上添加 \"保证金\"。\n"
+"=============================================\n"
+"\n"
+"它通过计算单价和成本价之间的差额来得出利润率。\n"
+"价格和成本价格之间的差额，从而得出利润率。\n"
+
+#. module: sale_margin
+#: model:ir.module.module,shortdesc:base.module_sale_margin
+msgid "Margins in Sales Orders"
+msgstr "销售订单利润率"
+
+#. module: sale_margin
 #: model_terms:ir.ui.view,arch_db:sale_margin.sale_report_projected_margins_list
 msgid "Delivered"
 msgstr ""

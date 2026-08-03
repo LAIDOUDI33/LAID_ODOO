@@ -26,6 +26,60 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: fleet
+#: model:ir.module.module,description:base.module_fleet
+msgid ""
+"\n"
+"Vehicle, leasing, insurances, cost\n"
+"==================================\n"
+"With this module, Odoo helps you managing all your vehicles, the\n"
+"contracts associated to those vehicle as well as services, costs\n"
+"and many other features necessary to the management of your fleet\n"
+"of vehicle(s)\n"
+"\n"
+"Main Features\n"
+"-------------\n"
+"* Add vehicles to your fleet\n"
+"* Manage contracts for vehicles\n"
+"* Reminder when a contract reach its expiration date\n"
+"* Add services, odometer values for all vehicles\n"
+"* Show all costs associated to a vehicle or to a type of service\n"
+"* Analysis graph for costs\n"
+msgstr ""
+"\n"
+"Véhicule, leasing, assurances, coût\n"
+"==================================\n"
+"Avec ce module, Odoo vous aide à gérer tous vos véhicules,\n"
+"les contrats associés à ces véhicules ainsi que les services, les coûts\n"
+"et de nombreuses autres fonctionnalités nécessaires à la gestion de votre "
+"parc\n"
+"automobile\n"
+"\n"
+"Fonctionnalités principales\n"
+"-------------\n"
+"* Ajout des véhicules à votre parc automobile\n"
+"* Gestion des contrats pour les véhicules\n"
+"* Rappel lorsqu'un contrat atteint sa date d'expiration\n"
+"* Ajout des services, des valeurs d'odomètre pour tous les véhicules\n"
+"* Affichage de tous les coûts associés à un véhicule ou à un type de "
+"service\n"
+"* Graphique d'analyse des coûts\n"
+
+#. module: fleet
+#: model:ir.module.module,shortdesc:base.module_fleet
+#: model:ir.ui.menu,name:fleet.fleet_vehicle_menu
+#: model:ir.ui.menu,name:fleet.fleet_vehicles
+#: model:ir.ui.menu,name:fleet.menu_root
+#: model:res.groups.privilege,name:fleet.res_groups_privilege_fleet
+#: model_terms:ir.ui.view,arch_db:fleet.res_config_settings_view_form
+msgid "Fleet"
+msgstr "Parc automobile"
+
+#. module: fleet
+#: model:ir.module.module,summary:base.module_fleet
+msgid "Manage your fleet and track car costs"
+msgstr "Gérez votre parc automobile et suivez les coûts de vos véhicules"
+
+#. module: fleet
 #: model_terms:ir.ui.view,arch_db:fleet.fleet_vehicle_view_kanban
 msgid "<i class=\"oi\" data-icon=\"location_on\" title=\"Location\"/>"
 msgstr "<i class=\"oi\" data-icon=\"location_on\" title=\"Location\"/>"
@@ -1111,15 +1165,6 @@ msgstr "Première date de contrat"
 #: model_terms:ir.ui.view,arch_db:fleet.fleet_vehicle_view_form
 msgid "Fiscality"
 msgstr "Fiscalité"
-
-#. module: fleet
-#: model:ir.ui.menu,name:fleet.fleet_vehicle_menu
-#: model:ir.ui.menu,name:fleet.fleet_vehicles
-#: model:ir.ui.menu,name:fleet.menu_root
-#: model:res.groups.privilege,name:fleet.res_groups_privilege_fleet
-#: model_terms:ir.ui.view,arch_db:fleet.res_config_settings_view_form
-msgid "Fleet"
-msgstr "Parc automobile"
 
 #. module: fleet
 #: model:ir.model,name:fleet.model_fleet_vehicle_cost_report

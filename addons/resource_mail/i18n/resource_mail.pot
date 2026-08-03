@@ -16,6 +16,18 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: resource_mail
+#: model:ir.module.module,description:base.module_resource_mail
+msgid ""
+"Integrate features developped in Mail in use case involving resources "
+"instead of users"
+msgstr ""
+
+#. module: resource_mail
+#: model:ir.module.module,shortdesc:base.module_resource_mail
+msgid "Resource Mail"
+msgstr ""
+
+#. module: resource_mail
 #. odoo-javascript
 #: code:addons/resource_mail/static/src/views/fields/many2many_avatar_resource/many2many_avatar_resource_field.xml:0
 msgid "Delete"

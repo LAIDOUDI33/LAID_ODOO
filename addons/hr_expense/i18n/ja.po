@@ -28,6 +28,80 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: hr_expense
+#: model:ir.module.module,description:base.module_hr_expense
+msgid ""
+"\n"
+"Manage expenses by Employees\n"
+"============================\n"
+"\n"
+"This application allows you to manage your employees' daily expenses. It "
+"gives you access to your employees’ fee notes and give you the right to "
+"complete and validate or refuse the notes. After validation it creates an "
+"invoice for the employee.\n"
+"Employee can encode their own expenses and the validation flow puts it "
+"automatically in the accounting after validation by managers.\n"
+"\n"
+"\n"
+"The whole flow is implemented as:\n"
+"---------------------------------\n"
+"* Draft expense\n"
+"* Submitted by the employee to his manager\n"
+"* Approved by his manager\n"
+"* Validation by the accountant and accounting entries creation\n"
+"\n"
+"This module also uses analytic accounting and is compatible with the invoice "
+"on timesheet module so that you are able to automatically re-invoice your "
+"customers' expenses if your work by project.\n"
+msgstr ""
+"\n"
+"従業員経費の管理\n"
+"================\n"
+"\n"
+"このアプリケーションでは、従業員の日々の経費を管理できます。\n"
+"従業員の経費明細にアクセスでき、それらを確認・承認または却下する権限が与えら"
+"れます。\n"
+"承認後は、従業員に対して請求書が自動で作成されます。。\n"
+"従業員は自分自身の経費を入力することができ、承認フローによって、マネジャーの"
+"承認後に自動的に会計処理に反映されます。\n"
+"\n"
+"\n"
+"フロー全体は以下のように実装されています:\n"
+"---------------------------------\n"
+"*経費の下書き作成\n"
+"*従業員がマネジャーに提出\n"
+"*マネジャーによる承認\n"
+"*会計担当者による承認および仕訳の作成\n"
+"\n"
+"このモジュールは、分析会計も使用しており、タイムシート請求モジュールとも互換"
+"性があります。そのため、プロジェクト単位で業務を行っている場合には、顧客の経"
+"費を自動的に再請求することも可能です。\n"
+
+#. module: hr_expense
+#. odoo-python
+#: code:addons/hr_expense/models/account_move.py:0
+#: code:addons/hr_expense/models/account_payment.py:0
+#: model:ir.model.fields,field_description:hr_expense.field_product_product__can_be_expensed
+#: model:ir.model.fields,field_description:hr_expense.field_product_template__can_be_expensed
+#: model:ir.module.module,shortdesc:base.module_hr_expense
+#: model:ir.ui.menu,name:hr_expense.menu_hr_expense_root
+#: model:product.template,name:hr_expense.product_product_no_cost_product_template
+#: model:res.groups.privilege,name:hr_expense.res_groups_privilege_expenses
+#: model_terms:ir.ui.view,arch_db:hr_expense.hr_department_view_kanban
+#: model_terms:ir.ui.view,arch_db:hr_expense.hr_expense_view_activity
+#: model_terms:ir.ui.view,arch_db:hr_expense.hr_expense_view_expenses_analysis_tree
+#: model_terms:ir.ui.view,arch_db:hr_expense.hr_expense_view_form
+#: model_terms:ir.ui.view,arch_db:hr_expense.product_template_search_view_inherit_hr_expense
+#: model_terms:ir.ui.view,arch_db:hr_expense.res_config_settings_view_form
+#: model_terms:ir.ui.view,arch_db:hr_expense.view_move_form_inherit_expense
+msgid "Expenses"
+msgstr "経費"
+
+#. module: hr_expense
+#: model:ir.module.module,summary:base.module_hr_expense
+msgid "Submit, validate and reinvoice employee expenses"
+msgstr "経費の申請・承認・再請求"
+
+#. module: hr_expense
 #: model:ir.model.fields,help:hr_expense.field_hr_expense__has_existing_bill
 msgid ""
 " - When a bill already exists, the payment will use the supplier payable "
@@ -900,25 +974,6 @@ msgstr "経費がドラフトにリセットされました"
 #: code:addons/hr_expense/models/hr_expense.py:0
 msgid "Expense split"
 msgstr "経費分割"
-
-#. module: hr_expense
-#. odoo-python
-#: code:addons/hr_expense/models/account_move.py:0
-#: code:addons/hr_expense/models/account_payment.py:0
-#: model:ir.model.fields,field_description:hr_expense.field_product_product__can_be_expensed
-#: model:ir.model.fields,field_description:hr_expense.field_product_template__can_be_expensed
-#: model:ir.ui.menu,name:hr_expense.menu_hr_expense_root
-#: model:product.template,name:hr_expense.product_product_no_cost_product_template
-#: model:res.groups.privilege,name:hr_expense.res_groups_privilege_expenses
-#: model_terms:ir.ui.view,arch_db:hr_expense.hr_department_view_kanban
-#: model_terms:ir.ui.view,arch_db:hr_expense.hr_expense_view_activity
-#: model_terms:ir.ui.view,arch_db:hr_expense.hr_expense_view_expenses_analysis_tree
-#: model_terms:ir.ui.view,arch_db:hr_expense.hr_expense_view_form
-#: model_terms:ir.ui.view,arch_db:hr_expense.product_template_search_view_inherit_hr_expense
-#: model_terms:ir.ui.view,arch_db:hr_expense.res_config_settings_view_form
-#: model_terms:ir.ui.view,arch_db:hr_expense.view_move_form_inherit_expense
-msgid "Expenses"
-msgstr "経費"
 
 #. module: hr_expense
 #: model:ir.actions.act_window,name:hr_expense.hr_expense_actions_all

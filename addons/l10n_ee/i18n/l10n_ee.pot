@@ -16,6 +16,18 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_ee
+#: model:ir.module.module,description:base.module_l10n_ee
+msgid ""
+"\n"
+"This is the base module to manage the accounting chart for Estonia in Odoo.\n"
+msgstr ""
+
+#. module: l10n_ee
+#: model:ir.module.module,shortdesc:base.module_l10n_ee
+msgid "Estonia - Accounting"
+msgstr ""
+
+#. module: l10n_ee
 #: model:ir.model,name:l10n_ee.model_account_chart_template
 msgid "Account Chart Template"
 msgstr ""

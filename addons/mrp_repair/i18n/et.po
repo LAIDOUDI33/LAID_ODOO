@@ -20,6 +20,11 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: mrp_repair
+#: model:ir.module.module,shortdesc:base.module_mrp_repair
+msgid "Mrp Repairs"
+msgstr "Tootmise parandustööd"
+
+#. module: mrp_repair
 #: model:ir.model.fields,field_description:mrp_repair.field_repair_order__production_count
 msgid "Count of MOs generated"
 msgstr "Loodud tootmistellimuste arv"

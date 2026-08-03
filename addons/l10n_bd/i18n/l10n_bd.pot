@@ -16,6 +16,27 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_bd
+#: model:ir.module.module,description:base.module_l10n_bd
+msgid ""
+"\n"
+"This is the base module to manage the accounting chart for Bangladesh in Odoo\n"
+"==============================================================================\n"
+"\n"
+"Bangladesh accounting basic charts and localization.\n"
+"\n"
+"Activates:\n"
+"\n"
+"- Chart of accounts\n"
+"- Taxes\n"
+"- Tax report\n"
+msgstr ""
+
+#. module: l10n_bd
+#: model:ir.module.module,shortdesc:base.module_l10n_bd
+msgid "Bangladesh - Accounting"
+msgstr ""
+
+#. module: l10n_bd
 #: model:ir.model,name:l10n_bd.model_account_chart_template
 msgid "Account Chart Template"
 msgstr ""

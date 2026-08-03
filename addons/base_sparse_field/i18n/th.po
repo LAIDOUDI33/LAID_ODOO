@@ -24,6 +24,30 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: base_sparse_field
+#: model:ir.module.module,description:base.module_base_sparse_field
+msgid ""
+"\n"
+"The purpose of this module is to implement \"sparse\" fields, i.e., fields\n"
+"that are mostly null. This implementation circumvents the PostgreSQL\n"
+"limitation on the number of columns in a table. The values of all sparse\n"
+"fields are stored in a \"serialized\" field in the form of a JSON mapping.\n"
+msgstr ""
+"\n"
+"วัตถุประสงค์ของโมดูลนี้คือการนำเข้า \"ฟิลด์ที่เป็น sparse\" หรือฟิลด์ที่มีค่าเป็น null ส่วนใหญ่ การน"
+"ำเข้านี้เป็นการหลีกเลี่ยงข้อจำกัดของ PostgreSQL ในการจำกัดจำนวนคอลัมน์ในตาราง ค่าของฟิลด์ที่เป็"
+"น sparse ทั้งหมดจะถูกเก็บไว้ในฟิลด์ที่ \"ถูกแปลงเป็นลำดับ\" ในรูปแบบของการแมป JSON\n"
+
+#. module: base_sparse_field
+#: model:ir.module.module,summary:base.module_base_sparse_field
+msgid "Implementation of sparse fields."
+msgstr "การดำเนินการ"
+
+#. module: base_sparse_field
+#: model:ir.module.module,shortdesc:base.module_base_sparse_field
+msgid "Sparse Fields"
+msgstr "ช่องข้อมูล"
+
+#. module: base_sparse_field
 #: model:ir.model,name:base_sparse_field.model_base
 msgid "Base"
 msgstr "ฐาน"

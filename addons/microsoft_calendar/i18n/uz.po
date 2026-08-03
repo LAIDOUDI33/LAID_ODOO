@@ -27,6 +27,13 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: microsoft_calendar
+#: model:ir.module.module,shortdesc:base.module_microsoft_calendar
+#: model_terms:ir.ui.view,arch_db:microsoft_calendar.view_users_form
+#, fuzzy
+msgid "Outlook Calendar"
+msgstr "Outlook taqvimi"
+
+#. module: microsoft_calendar
 #. odoo-python
 #: code:addons/microsoft_calendar/models/calendar.py:0
 #, fuzzy
@@ -409,12 +416,6 @@ msgstr "Tashkilotchi tadbir identifikatori"
 #, fuzzy
 msgid "Outlook"
 msgstr "Outlook"
-
-#. module: microsoft_calendar
-#: model_terms:ir.ui.view,arch_db:microsoft_calendar.view_users_form
-#, fuzzy
-msgid "Outlook Calendar"
-msgstr "Outlook taqvimi"
 
 #. module: microsoft_calendar
 #: model:ir.model.fields,field_description:microsoft_calendar.field_res_users__microsoft_synchronization_stopped

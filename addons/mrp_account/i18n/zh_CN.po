@@ -25,6 +25,44 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: mrp_account
+#: model:ir.module.module,description:base.module_mrp_account
+msgid ""
+"\n"
+"Analytic Accounting in MRP\n"
+"==========================\n"
+"\n"
+"* Cost structure report\n"
+"\n"
+"Also, allows to compute the cost of the product based on its BoM, using the "
+"costs of its components and work center operations.\n"
+"It adds a button on the product itself but also an action in the list view "
+"of the products.\n"
+"If the automated inventory valuation is active, the necessary accounting "
+"entries will be created.\n"
+"\n"
+msgstr ""
+"\n"
+"MRP 中的分析会计\n"
+"==========================\n"
+"\n"
+"* 成本结构报告\n"
+"\n"
+"此外，还可以根据产品的 BoM，使用其组件和工作中心作业的成本计算产品的成本。\n"
+"它不仅可以在产品本身添加一个按钮，还可以在产品列表视图中添加一个作业。\n"
+"如果自动库存估价已激活，则将创建必要的会计分录。\n"
+"\n"
+
+#. module: mrp_account
+#: model:ir.module.module,shortdesc:base.module_mrp_account
+msgid "Accounting - MRP"
+msgstr "会计 - 生产"
+
+#. module: mrp_account
+#: model:ir.module.module,summary:base.module_mrp_account
+msgid "Analytic accounting in Manufacturing"
+msgstr "制造辅助核算项"
+
+#. module: mrp_account
 #. odoo-python
 #: code:addons/mrp_account/models/stock_move.py:0
 msgid "%(value)s for %(quantity)s %(unit)s from %(production)s"

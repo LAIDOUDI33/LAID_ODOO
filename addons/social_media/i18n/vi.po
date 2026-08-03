@@ -24,6 +24,28 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: social_media
+#: model:ir.module.module,description:base.module_social_media
+msgid ""
+"\n"
+"The purpose of this technical module is to provide a front for\n"
+"social media configuration for any other module that might need it.\n"
+msgstr ""
+"\n"
+"Mục đích của phân hệ kỹ thuật này là cung cấp phông chữ cho\n"
+"cấu hình mạng xã hội dành cho bất kỳ phân hệ nào khác có thể cần đến nó.\n"
+
+#. module: social_media
+#: model:ir.module.module,shortdesc:base.module_social_media
+#: model_terms:ir.ui.view,arch_db:social_media.view_company_form_inherit_social_media
+msgid "Social Media"
+msgstr "Truyền thông xã hội"
+
+#. module: social_media
+#: model:ir.module.module,summary:base.module_social_media
+msgid "Social media connectors for company settings."
+msgstr "Liên kết Mạng xã hội cho thiết lập công ty."
+
+#. module: social_media
 #: model:ir.model,name:social_media.model_res_company
 msgid "Company"
 msgstr "Công ty"
@@ -62,11 +84,6 @@ msgstr "Tài khoản Instagram"
 #: model:ir.model.fields,field_description:social_media.field_res_company__social_linkedin
 msgid "LinkedIn Account"
 msgstr "Tài khoản LinkedIn"
-
-#. module: social_media
-#: model_terms:ir.ui.view,arch_db:social_media.view_company_form_inherit_social_media
-msgid "Social Media"
-msgstr "Truyền thông xã hội"
 
 #. module: social_media
 #: model:ir.model.fields,field_description:social_media.field_res_company__social_tiktok

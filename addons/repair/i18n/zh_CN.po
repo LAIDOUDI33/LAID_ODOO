@@ -28,6 +28,50 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: repair
+#: model:ir.module.module,description:base.module_repair
+msgid ""
+"\n"
+"The aim is to have a complete module to manage all products repairs.\n"
+"====================================================================\n"
+"\n"
+"The following topics are covered by this module:\n"
+"------------------------------------------------------\n"
+"    * Add/remove products in the reparation\n"
+"    * Impact for stocks\n"
+"    * Warranty concept\n"
+"    * Repair quotation report\n"
+"    * Notes for the technician and for the final customer\n"
+msgstr ""
+"\n"
+"我们的目标是建立一个管理所有产品维修的完整模块。\n"
+"====================================================================\n"
+"\n"
+"本模块涵盖以下主题：\n"
+"------------------------------------------------------\n"
+"    * 在维修中添加/删除产品\n"
+"    * 对库存的影响\n"
+"    * 保修概念\n"
+"    * 维修报价报告\n"
+"    * 技术人员和最终客户须知\n"
+
+#. module: repair
+#: model:ir.module.module,summary:base.module_repair
+msgid "Repair damaged products"
+msgstr "维修受损产品"
+
+#. module: repair
+#. odoo-python
+#: code:addons/repair/models/stock_warehouse.py:0
+#: model:ir.module.module,shortdesc:base.module_repair
+#: model:ir.ui.menu,name:repair.menu_repair_order
+#: model:ir.ui.menu,name:repair.repair_menu
+#: model:stock.picking.type,name:repair.picking_type_warehouse0_repair
+#: model_terms:ir.ui.view,arch_db:repair.view_partner_form
+#: model_terms:ir.ui.view,arch_db:repair.view_sale_order_form_inherit_repair
+msgid "Repairs"
+msgstr "维修"
+
+#. module: repair
 #. odoo-python
 #: code:addons/repair/models/stock_warehouse.py:0
 msgid "%(name)s Sequence repair"
@@ -1213,17 +1257,6 @@ msgstr "已维修"
 #: model:ir.model.fields,field_description:repair.field_stock_lot__repaired_count
 msgid "Repaired count"
 msgstr "维修计数"
-
-#. module: repair
-#. odoo-python
-#: code:addons/repair/models/stock_warehouse.py:0
-#: model:ir.ui.menu,name:repair.menu_repair_order
-#: model:ir.ui.menu,name:repair.repair_menu
-#: model:stock.picking.type,name:repair.picking_type_warehouse0_repair
-#: model_terms:ir.ui.view,arch_db:repair.view_partner_form
-#: model_terms:ir.ui.view,arch_db:repair.view_sale_order_form_inherit_repair
-msgid "Repairs"
-msgstr "维修"
 
 #. module: repair
 #: model_terms:ir.ui.view,arch_db:repair.view_repair_order_form

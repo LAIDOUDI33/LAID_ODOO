@@ -27,6 +27,23 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: stock_picking_batch
+#: model:ir.module.module,description:base.module_stock_picking_batch
+#, fuzzy
+msgid ""
+"\n"
+"This module adds the batch transfer option in warehouse management\n"
+"==================================================================\n"
+msgstr ""
+"Ushbu modul omborni boshqarishga partiyalarni o‘tkazish imkoniyatini "
+"qo‘shadi =================================================================="
+
+#. module: stock_picking_batch
+#: model:ir.module.module,shortdesc:base.module_stock_picking_batch
+#, fuzzy
+msgid "Warehouse Management: Batch Transfer"
+msgstr "Ombor boshqaruvi: Partiyali o‘tkazma"
+
+#. module: stock_picking_batch
 #. odoo-python
 #: code:addons/stock_picking_batch/models/stock_picking_batch.py:0
 #, fuzzy

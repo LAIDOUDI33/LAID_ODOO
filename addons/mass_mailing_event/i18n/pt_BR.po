@@ -24,6 +24,28 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: mass_mailing_event
+#: model:ir.module.module,description:base.module_mass_mailing_event
+msgid ""
+"\n"
+"Mass mail event attendees\n"
+"=========================\n"
+"\n"
+"Bridge module adding UX requirements to ease mass mailing of event "
+"attendees.\n"
+msgstr ""
+"\n"
+"Envio de e-mails em massa para participantes de eventos massa\n"
+"=========================\n"
+"\n"
+"Módulo ponte que adiciona requisitos de UX para facilitar comunicações em "
+"massa para participantes do evento.\n"
+
+#. module: mass_mailing_event
+#: model:ir.module.module,shortdesc:base.module_mass_mailing_event
+msgid "Mass mailing on attendees"
+msgstr "Envio de e-mails em massa para participantes"
+
+#. module: mass_mailing_event
 #: model_terms:ir.ui.view,arch_db:mass_mailing_event.event_event_view_form_inherit_mass_mailing
 msgid "Contact Attendees"
 msgstr "Contatar participantes"

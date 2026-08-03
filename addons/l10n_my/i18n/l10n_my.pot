@@ -16,6 +16,19 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_my
+#: model:ir.module.module,description:base.module_l10n_my
+msgid ""
+"\n"
+"This is the base module to manage the accounting chart for Malaysia in Odoo.\n"
+"==============================================================================\n"
+msgstr ""
+
+#. module: l10n_my
+#: model:ir.module.module,shortdesc:base.module_l10n_my
+msgid "Malaysia - Accounting"
+msgstr ""
+
+#. module: l10n_my
 #: model:ir.model.fields,help:l10n_my.field_product_product__l10n_my_tax_classification_code
 #: model:ir.model.fields,help:l10n_my.field_product_template__l10n_my_tax_classification_code
 msgid ""

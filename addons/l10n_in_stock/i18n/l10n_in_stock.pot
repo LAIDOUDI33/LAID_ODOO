@@ -16,6 +16,16 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_in_stock
+#: model:ir.module.module,description:base.module_l10n_in_stock
+msgid "GST Stock Report"
+msgstr ""
+
+#. module: l10n_in_stock
+#: model:ir.module.module,shortdesc:base.module_l10n_in_stock
+msgid "Indian - Stock Report(GST)"
+msgstr ""
+
+#. module: l10n_in_stock
 #: model_terms:ir.ui.view,arch_db:l10n_in_stock.gst_report_picking_inherit
 msgid "<strong class=\"ml16\">HSN/SAC Code:</strong>"
 msgstr ""

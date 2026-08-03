@@ -35,6 +35,46 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: sale_stock
+#: model:ir.module.module,description:base.module_sale_stock
+msgid ""
+"\n"
+"Manage sales quotations and orders\n"
+"==================================\n"
+"\n"
+"This module makes the link between the sales and warehouses management "
+"applications.\n"
+"\n"
+"Preferences\n"
+"-----------\n"
+"* Shipping: Choice of delivery at once or partial delivery\n"
+"* Invoicing: choose how invoices will be paid\n"
+"* Incoterms: International Commercial terms\n"
+"\n"
+msgstr ""
+"\n"
+"Hallake müügipakkumisi ja tellimus\n"
+"==================================\n"
+"\n"
+"See moodul loob seose müügi- ja laohalduse rakenduste vahel.\n"
+"\n"
+"Seaded\n"
+"-----------\n"
+"* Saatmine: Valik kas tarnida kohe või osade kaupa\n"
+"* Arveldamine: Valige, kuidas arved tasutakse\n"
+"* Incoterms: Rahvusvahelised kaubanduslikud tingimused\n"
+"\n"
+
+#. module: sale_stock
+#: model:ir.module.module,summary:base.module_sale_stock
+msgid "Quotation, Sales Orders, Delivery & Invoicing Control"
+msgstr "Pakkumise, Müügitellimuse, Tarne ja Arveldamise kontroll"
+
+#. module: sale_stock
+#: model:ir.module.module,shortdesc:base.module_sale_stock
+msgid "Sales and Warehouse Management"
+msgstr "Müük ja laohaldus"
+
+#. module: sale_stock
 #: model:ir.actions.report,print_report_name:sale_stock.action_report_return_label
 msgid "\"Return - %s\" % (object.name)"
 msgstr ""

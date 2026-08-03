@@ -20,6 +20,29 @@ msgstr ""
 "X-Generator: Weblate 5.16.1\n"
 
 #. module: l10n_tw_edi_ecpay
+#: model:ir.module.module,description:base.module_l10n_tw_edi_ecpay
+msgid ""
+"\n"
+"Taiwan - E-invoicing\n"
+"=====================\n"
+"This module allows the user to send their invoices to the Ecpay system.\n"
+msgstr ""
+"\n"
+"台灣 - 電子發票\n"
+"=====================\n"
+"此模組讓使用者可將發票傳送至 ECPay 系統。\n"
+
+#. module: l10n_tw_edi_ecpay
+#: model:ir.module.module,summary:base.module_l10n_tw_edi_ecpay
+msgid "E-invoicing using ECpay"
+msgstr "使用 ECPay 處理電子發票"
+
+#. module: l10n_tw_edi_ecpay
+#: model:ir.module.module,shortdesc:base.module_l10n_tw_edi_ecpay
+msgid "Taiwan - E-invoicing"
+msgstr "台灣 - 電子發票"
+
+#. module: l10n_tw_edi_ecpay
 #: model:ir.model.fields,help:l10n_tw_edi_ecpay.field_account_bank_statement_line__l10n_tw_edi_carrier_type
 #: model:ir.model.fields,help:l10n_tw_edi_ecpay.field_account_move__l10n_tw_edi_carrier_type
 msgid ""

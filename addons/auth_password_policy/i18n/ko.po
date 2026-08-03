@@ -26,6 +26,16 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: auth_password_policy
+#: model:ir.module.module,summary:base.module_auth_password_policy
+msgid "Implement basic password policy configuration & check"
+msgstr "기본 비밀번호 정책 환경 설정 및 확인 구현"
+
+#. module: auth_password_policy
+#: model:ir.module.module,shortdesc:base.module_auth_password_policy
+msgid "Password Policy"
+msgstr "비밀번호 정책"
+
+#. module: auth_password_policy
 #: model:ir.model,name:auth_password_policy.model_res_config_settings
 msgid "Config Settings"
 msgstr "환경설정"

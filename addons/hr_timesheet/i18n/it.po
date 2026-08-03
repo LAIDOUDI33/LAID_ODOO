@@ -26,6 +26,45 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: hr_timesheet
+#: model:ir.module.module,description:base.module_hr_timesheet
+msgid ""
+"\n"
+"This module implements a timesheet system.\n"
+"==========================================\n"
+"\n"
+"Each employee can encode and track their time spent on the different "
+"projects.\n"
+"\n"
+"Lots of reporting on time and employee tracking are provided.\n"
+"\n"
+"It is completely integrated with the cost accounting module. It allows you "
+"to set\n"
+"up a management by affair.\n"
+msgstr ""
+"\n"
+"Modulo che implementa un sistema con fogli ore.\n"
+"===============================================\n"
+"\n"
+"Ciascun dipendente può definire e tenere traccia del tempo dedicato ai "
+"diversi progetti.\n"
+"\n"
+"Fornisce molti resoconti sul monitoraggio di tempi e dipendenti.\n"
+"\n"
+"È completamente integrato con il modulo di contabilità analitica. Consente "
+"di\n"
+"organizzare la gestione per lavoro.\n"
+
+#. module: hr_timesheet
+#: model:ir.module.module,shortdesc:base.module_hr_timesheet
+msgid "Task Logs"
+msgstr "Registri lavoro"
+
+#. module: hr_timesheet
+#: model:ir.module.module,summary:base.module_hr_timesheet
+msgid "Track employee time on tasks"
+msgstr "Monitora i tempi dipendente sui lavori"
+
+#. module: hr_timesheet
 #. odoo-python
 #: code:addons/hr_timesheet/models/project_project.py:0
 msgid "%(effective)s %(uom_name)s"

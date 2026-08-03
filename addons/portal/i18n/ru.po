@@ -25,6 +25,38 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: portal
+#: model:ir.module.module,description:base.module_portal
+msgid ""
+"\n"
+"This module adds required base code for a fully integrated customer portal.\n"
+"It contains the base controller class and base templates. Business addons\n"
+"will add their specific templates and controllers to extend the customer\n"
+"portal.\n"
+"\n"
+"This module contains most code coming from odoo v10 website_portal. Purpose\n"
+"of this module is to allow the display of a customer portal without having\n"
+"a dependency towards website editing and customization capabilities."
+msgstr ""
+"\n"
+"Этот модуль добавляет необходимый базовый код для полностью интегрированного "
+"клиентского портала.\n"
+"Он содержит базовый класс контроллера и базовые шаблоны. Бизнес-аддоны\n"
+"будут добавлять свои шаблоны и контроллеры для расширения клиентского\n"
+"портал.\n"
+"\n"
+"Этот модуль содержит большую часть кода, взятого из odoo v10 website_portal. "
+"Назначение\n"
+"этого модуля заключается в том, чтобы позволить отображать портал клиента "
+"без\n"
+"зависимости от возможностей редактирования и настройки сайта."
+
+#. module: portal
+#: model:ir.module.module,shortdesc:base.module_portal
+#: model:ir.module.module,summary:base.module_portal
+msgid "Customer Portal"
+msgstr "Клиентский портал"
+
+#. module: portal
 #: model_terms:ir.ui.view,arch_db:portal.portal_my_security
 msgid "\" to validate your action."
 msgstr "\", чтобы подтвердить свое действие."

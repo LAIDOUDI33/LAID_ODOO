@@ -23,6 +23,11 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: auth_totp_portal
+#: model:ir.module.module,shortdesc:base.module_auth_totp_portal
+msgid "TOTPortal"
+msgstr "TOTPortal"
+
+#. module: auth_totp_portal
 #. odoo-javascript
 #: code:addons/auth_totp_portal/static/src/interactions/totp_enable.js:0
 msgid " Copy"

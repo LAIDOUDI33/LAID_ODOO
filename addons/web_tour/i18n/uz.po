@@ -27,6 +27,24 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: web_tour
+#: model:ir.module.module,description:base.module_web_tour
+#, fuzzy
+msgid ""
+"\n"
+"Odoo Web tours.\n"
+"========================\n"
+"\n"
+msgstr "Odoo veb sayohatlari. ========================"
+
+#. module: web_tour
+#: model:ir.actions.act_window,name:web_tour.tour_action
+#: model:ir.module.module,shortdesc:base.module_web_tour
+#: model:ir.ui.menu,name:web_tour.menu_tour_action
+#, fuzzy
+msgid "Tours"
+msgstr "Sayohatlar"
+
+#. module: web_tour
 #. odoo-javascript
 #: code:addons/web_tour/static/src/js/tour_recorder/tour_recorder.js:0
 msgid "'%s' created"
@@ -389,13 +407,6 @@ msgstr "Sayohat"
 #, fuzzy
 msgid "Tour's step"
 msgstr "Sayohat bosqichi"
-
-#. module: web_tour
-#: model:ir.actions.act_window,name:web_tour.tour_action
-#: model:ir.ui.menu,name:web_tour.menu_tour_action
-#, fuzzy
-msgid "Tours"
-msgstr "Sayohatlar"
 
 #. module: web_tour
 #. odoo-javascript

@@ -20,6 +20,30 @@ msgstr ""
 "X-Generator: Weblate 5.12.2\n"
 
 #. module: l10n_gt
+#: model:ir.module.module,description:base.module_l10n_gt
+msgid ""
+"\n"
+"This is the base module to manage the accounting chart for Guatemala.\n"
+"=====================================================================\n"
+"\n"
+"Agrega una nomenclatura contable para Guatemala. También icluye impuestos y\n"
+"la moneda del Quetzal. -- Adds accounting chart for Guatemala. It also "
+"includes\n"
+"taxes and the Quetzal currency."
+msgstr ""
+"\n"
+"Este es el módulo base para gestionar el plan de cuentas para Guatemala.\n"
+"=====================================================================\n"
+"\n"
+"Agrega una nomenclatura contable para Guatemala. También incluye impuestos y "
+"la divisa Quetzal."
+
+#. module: l10n_gt
+#: model:ir.module.module,shortdesc:base.module_l10n_gt
+msgid "Guatemala - Accounting"
+msgstr "Guatemala - Contabilidad"
+
+#. module: l10n_gt
 #: model:ir.model,name:l10n_gt.model_account_chart_template
 msgid "Account Chart Template"
 msgstr "Plantilla del plan de cuentas"

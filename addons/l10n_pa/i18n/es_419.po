@@ -20,6 +20,33 @@ msgstr ""
 "X-Generator: Weblate 5.12.2\n"
 
 #. module: l10n_pa
+#: model:ir.module.module,description:base.module_l10n_pa
+msgid ""
+"\n"
+"Panamenian accounting chart and tax localization.\n"
+"\n"
+"Plan contable panameño e impuestos de acuerdo a disposiciones vigentes\n"
+"\n"
+"Con la Colaboración de\n"
+"- AHMNET CORP http://www.ahmnet.com\n"
+"\n"
+msgstr ""
+"\n"
+"Plan de cuentas y localización de impuestos de Panamá\n"
+"\n"
+"Plan de cuentas panameño e impuestos de acuerdo a las disposiciones "
+"vigentes.\n"
+"\n"
+"Con la colaboración de\n"
+"- AHMNET CORP http://www.ahmnet.com\n"
+"\n"
+
+#. module: l10n_pa
+#: model:ir.module.module,shortdesc:base.module_l10n_pa
+msgid "Panama - Accounting"
+msgstr "Panama - Contabilidad"
+
+#. module: l10n_pa
 #: model:ir.model,name:l10n_pa.model_account_chart_template
 msgid "Account Chart Template"
 msgstr "Plantilla del plan de cuentas"

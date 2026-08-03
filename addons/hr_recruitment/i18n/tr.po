@@ -45,6 +45,116 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: hr_recruitment
+#: model:ir.module.module,description:base.module_hr_recruitment
+msgid ""
+"Manage Recruitment and Job applications\n"
+"---------------------------------------\n"
+"\n"
+"Publish, promote and organize your job offers with the Odoo\n"
+"<a href=\"https://www.odoo.com/app/recruitment\">Open Source Recruitment "
+"Application</a>.\n"
+"\n"
+"Organize your job board, promote your job announces and keep track of\n"
+"application submissions easily. Follow every applicant and build up a "
+"database\n"
+"of skills and profiles with indexed documents.\n"
+"\n"
+"Post Your Jobs on Best Job Boards\n"
+"---------------------------------\n"
+"\n"
+"Connect automatically to most famous job board websites; linkedIn, Monster,\n"
+"Craigslist, ... Every job position has a new email address automatically\n"
+"assigned to route applications automatically to the right job position.\n"
+"\n"
+"Whether applicants contact you by email or using an online form, you get "
+"all\n"
+"the data indexed automatically (resumes, motivation letter) and you can "
+"answer\n"
+"in just a click, reusing templates of answers.\n"
+"\n"
+"Customize Your Recruitment Process\n"
+"----------------------------------\n"
+"\n"
+"Use the kanban view and customize the steps of your recruitments process;\n"
+"pre-qualification, first interview, second interview, negociaiton, ...\n"
+"\n"
+"Get accurate statistics on your recruitment pipeline. Get reports to "
+"compare\n"
+"the performance of your different investments on external job boards.\n"
+"\n"
+"Streamline Your Recruitment Process\n"
+"-----------------------------------\n"
+"\n"
+"Follow applicants in your recruitment process with the smart kanban view. "
+"Save\n"
+"time by automating some communications with email templates.\n"
+"\n"
+"Documents like resumes and motivation letters are indexed automatically,\n"
+"allowing you to easily find for specific skills and build up a database of\n"
+"profiles.\n"
+msgstr ""
+"İşe Alımı ve İş başvurularını yönetin\n"
+"---------------------------------------\n"
+"\n"
+"Odoo'nun <a href=\"https://www.odoo.com/app/recruitment\">Açık Kaynak İşe "
+"Alım Uygulaması</a>\n"
+"ile iş tekliflerinizi yayımlayın, tanıtın ve organize edin.\n"
+"\n"
+"İş panonuzu düzenleyin, iş ilanlarınızı duyurun ve başvuruları kolayca takip "
+"edin.\n"
+"Her başvuru sahibini takip edin ve dizinlenmiş belgelerle beceri ve \n"
+"profillerden oluşan bir veri tabanı oluşturun.\n"
+"\n"
+"İş İlanlarınızı En İyi İş Panolarında Duyurun\n"
+"---------------------------------\n"
+"\n"
+"En ünlü iş panosu web sitelerine otomatik olarak bağlanın; linkedIn, "
+"Monster,\n"
+"Craigslist, ... Her ilan, başvuruları doğru pozisyonuna yönlendirmek \n"
+"için otomatik olarak atanan yeni bir e-posta adresine sahiptir.\n"
+"\n"
+"Başvuru sahipleri sizinle ister e-posta yoluyla, ister çevrim içi formlar\n"
+"kullanarak iletişime geçsin (öz geçmişler, üst yazılar), yanıt şablonlarını "
+"yeniden\n"
+"kullanarak onlara tek bir tıklamayla yanıt verebilirsiniz.\n"
+"\n"
+"İşe Alım Sürecinizi Özelleştirin\n"
+"----------------------------------\n"
+"\n"
+"Kanban görünümünü kullanın ve işe alım sürecinizin adımlarını \n"
+"(ön eleme, ilk görüşme, ikinci görüşme, pazarlık...) özelleştirin.\n"
+"\n"
+"İşe alım pieline'ınıza dair doğru istatistikler elde edin. Farklı "
+"yatırımlarınızın\n"
+"harici iş panolarındaki performansını karşılaştırmak için raporlar alın.\n"
+"\n"
+"İşe Alım Sürecinizi Kolaylaştırın\n"
+"-----------------------------------\n"
+"\n"
+"Akıllı kanban görünümü ile işe alım sürecinizdeki başvuru sahiplerini takip "
+"edin.\n"
+"E-posta şablonları ile bazı iletişimleri otomatikleştirerek zaman kazanın.\n"
+"\n"
+"Öz geçmişler ve üst yazılar gibi belgeler otomatik olarak dizinlenerek\n"
+"belirli becerileri kolayca bulmanızı ve profillerden oluşan bir veri tabanı\n"
+" oluşturmanızı sağlar.\n"
+
+#. module: hr_recruitment
+#: model:ir.module.module,shortdesc:base.module_hr_recruitment
+#: model:ir.ui.menu,name:hr_recruitment.menu_hr_recruitment_root
+#: model:res.groups.privilege,name:hr_recruitment.res_groups_privilege_recruitment
+#: model_terms:ir.ui.view,arch_db:hr_recruitment.digest_digest_view_form
+#: model_terms:ir.ui.view,arch_db:hr_recruitment.hr_department_view_kanban
+#: model_terms:ir.ui.view,arch_db:hr_recruitment.res_config_settings_view_form
+msgid "Recruitment"
+msgstr "İşe Alım"
+
+#. module: hr_recruitment
+#: model:ir.module.module,summary:base.module_hr_recruitment
+msgid "Track your recruitment pipeline"
+msgstr "İşe alım fırsatlarını takip edin"
+
+#. module: hr_recruitment
 #: model:ir.model.fields,field_description:hr_recruitment.field_hr_talent_pool__no_of_talents
 msgid "# Talents"
 msgstr "# Yetenekler"
@@ -2796,15 +2906,6 @@ msgstr "İşe Alan"
 #: model:ir.model.fields,field_description:hr_recruitment.field_hr_applicant__recruiter_email
 msgid "Recruiter Work Email"
 msgstr ""
-
-#. module: hr_recruitment
-#: model:ir.ui.menu,name:hr_recruitment.menu_hr_recruitment_root
-#: model:res.groups.privilege,name:hr_recruitment.res_groups_privilege_recruitment
-#: model_terms:ir.ui.view,arch_db:hr_recruitment.digest_digest_view_form
-#: model_terms:ir.ui.view,arch_db:hr_recruitment.hr_department_view_kanban
-#: model_terms:ir.ui.view,arch_db:hr_recruitment.res_config_settings_view_form
-msgid "Recruitment"
-msgstr "İşe Alım"
 
 #. module: hr_recruitment
 #: model:ir.actions.act_window,name:hr_recruitment.hr_job_stage_act

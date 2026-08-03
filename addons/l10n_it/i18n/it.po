@@ -20,6 +20,26 @@ msgstr ""
 "X-Generator: Weblate 5.12.2\n"
 
 #. module: l10n_it
+#: model:ir.module.module,description:base.module_l10n_it
+msgid ""
+"\n"
+"Piano dei conti italiano di un'impresa generica.\n"
+"================================================\n"
+"\n"
+"Italian accounting chart and localization.\n"
+msgstr ""
+"\n"
+"Piano dei conti italiano di un'impresa generica.\n"
+"================================================\n"
+"\n"
+"Piano dei conti italiano e localizzazione.\n"
+
+#. module: l10n_it
+#: model:ir.module.module,shortdesc:base.module_l10n_it
+msgid "Italy - Accounting"
+msgstr "Italia - Contabilità"
+
+#. module: l10n_it
 #: model:ir.model,name:l10n_it.model_account_chart_template
 msgid "Account Chart Template"
 msgstr "Modello piano dei conti"

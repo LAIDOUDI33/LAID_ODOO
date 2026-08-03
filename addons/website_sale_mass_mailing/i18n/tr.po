@@ -23,6 +23,29 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_sale_mass_mailing
+#: model:ir.module.module,description:base.module_website_sale_mass_mailing
+msgid ""
+"\n"
+"Allows anonymous shoppers of your eCommerce to sign up for a newsletter "
+"during the checkout\n"
+"process.\n"
+msgstr ""
+"\n"
+"eTicaretinizin anonim alışveriş yapanlarının ödeme adımı sırasında bir "
+"bültene kaydolmasına\n"
+"izin verir.\n"
+
+#. module: website_sale_mass_mailing
+#: model:ir.module.module,shortdesc:base.module_website_sale_mass_mailing
+msgid "Checkout Newsletter"
+msgstr "Ödeme Bülteni"
+
+#. module: website_sale_mass_mailing
+#: model:ir.module.module,summary:base.module_website_sale_mass_mailing
+msgid "Let new customers sign up for a newsletter during checkout"
+msgstr "Yeni müşterilerin ödeme sırasında bültene kaydolmasına izin verin"
+
+#. module: website_sale_mass_mailing
 #: model:ir.model,name:website_sale_mass_mailing.model_res_config_settings
 msgid "Config Settings"
 msgstr "Yapılandırma Ayarları"

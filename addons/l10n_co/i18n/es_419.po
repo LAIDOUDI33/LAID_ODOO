@@ -20,6 +20,16 @@ msgstr ""
 "X-Generator: Weblate 5.12.2\n"
 
 #. module: l10n_co
+#: model:ir.module.module,shortdesc:base.module_l10n_co
+msgid "Colombia - Accounting"
+msgstr "Colombia - Contabilidad"
+
+#. module: l10n_co
+#: model:ir.module.module,description:base.module_l10n_co
+msgid "Colombian Accounting and Tax Preconfiguration"
+msgstr "Contabilidad de Colombia y preconfiguración de impuestos"
+
+#. module: l10n_co
 #: model:ir.model,name:l10n_co.model_account_chart_template
 msgid "Account Chart Template"
 msgstr "Plantilla del plan de cuentas"

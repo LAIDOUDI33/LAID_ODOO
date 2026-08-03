@@ -16,6 +16,18 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: utm
+#: model:ir.module.module,description:base.module_utm
+msgid ""
+"\n"
+"Enable management of UTM trackers: campaign, medium, source.\n"
+msgstr ""
+
+#. module: utm
+#: model:ir.module.module,shortdesc:base.module_utm
+msgid "UTM Trackers"
+msgstr ""
+
+#. module: utm
 #. odoo-python
 #: code:addons/utm/models/utm_source.py:0
 msgid "%(content)s (%(model_description)s created on %(create_date)s)"

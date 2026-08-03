@@ -24,6 +24,34 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: maintenance
+#: model:ir.module.module,description:base.module_maintenance
+msgid ""
+"\n"
+"Track equipment and maintenance requests"
+msgstr ""
+"\n"
+"跟踪设备和维护申请"
+
+#. module: maintenance
+#: model:ir.model.fields,field_description:maintenance.field_maintenance_equipment__maintenance_ids
+#: model:ir.model.fields,field_description:maintenance.field_maintenance_equipment_category__maintenance_ids
+#: model:ir.model.fields,field_description:maintenance.field_maintenance_mixin__maintenance_ids
+#: model:ir.module.module,shortdesc:base.module_maintenance
+#: model:ir.ui.menu,name:maintenance.menu_m_request
+#: model:ir.ui.menu,name:maintenance.menu_maintenance_title
+#: model:res.groups.privilege,name:maintenance.res_groups_privilege_maintenance
+#: model_terms:ir.ui.view,arch_db:maintenance.hr_equipment_category_view_form
+#: model_terms:ir.ui.view,arch_db:maintenance.hr_equipment_view_form
+#: model_terms:ir.ui.view,arch_db:maintenance.res_config_settings_view_form
+msgid "Maintenance"
+msgstr "维护保养"
+
+#. module: maintenance
+#: model:ir.module.module,summary:base.module_maintenance
+msgid "Track equipment and manage maintenance requests"
+msgstr "跟踪设备并管理维护申请"
+
+#. module: maintenance
 #: model_terms:ir.ui.view,arch_db:maintenance.maintenance_team_kanban
 msgid "<span>Reporting</span>"
 msgstr "<span>报表</span>"
@@ -801,19 +829,6 @@ msgstr "平均故障间隔时间"
 #: model:ir.model.fields,field_description:maintenance.field_maintenance_mixin__mttr
 msgid "MTTR"
 msgstr "平均维修时间"
-
-#. module: maintenance
-#: model:ir.model.fields,field_description:maintenance.field_maintenance_equipment__maintenance_ids
-#: model:ir.model.fields,field_description:maintenance.field_maintenance_equipment_category__maintenance_ids
-#: model:ir.model.fields,field_description:maintenance.field_maintenance_mixin__maintenance_ids
-#: model:ir.ui.menu,name:maintenance.menu_m_request
-#: model:ir.ui.menu,name:maintenance.menu_maintenance_title
-#: model:res.groups.privilege,name:maintenance.res_groups_privilege_maintenance
-#: model_terms:ir.ui.view,arch_db:maintenance.hr_equipment_category_view_form
-#: model_terms:ir.ui.view,arch_db:maintenance.hr_equipment_view_form
-#: model_terms:ir.ui.view,arch_db:maintenance.res_config_settings_view_form
-msgid "Maintenance"
-msgstr "维护保养"
 
 #. module: maintenance
 #: model:ir.model.fields,field_description:maintenance.field_maintenance_equipment__maintenance_count

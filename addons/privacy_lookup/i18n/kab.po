@@ -20,6 +20,12 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: privacy_lookup
+#: model:ir.module.module,shortdesc:base.module_privacy_lookup
+#: model:ir.ui.menu,name:privacy_lookup.privacy_menu
+msgid "Privacy"
+msgstr ""
+
+#. module: privacy_lookup
 #: model:ir.model.fields,field_description:privacy_lookup.field_privacy_log__additional_note
 msgid "Additional Note"
 msgstr ""
@@ -208,11 +214,6 @@ msgstr ""
 #. module: privacy_lookup
 #: model_terms:ir.ui.view,arch_db:privacy_lookup.privacy_lookup_wizard_line_view_tree
 msgid "Open Record"
-msgstr ""
-
-#. module: privacy_lookup
-#: model:ir.ui.menu,name:privacy_lookup.privacy_menu
-msgid "Privacy"
 msgstr ""
 
 #. module: privacy_lookup

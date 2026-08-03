@@ -1,0 +1,48 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# * base
+#
+# Translators:
+# 山西清水欧度(QQ:54773801) <54773801@qq.com>, 2022
+# lonely落叶 <liu--qiong@hotmail.com>, 2022
+# Benson <Benson.Dr@Gmail.com>, 2022
+# 深圳 JM <3440895@qq.com>, 2022
+# Jeffery CHEN <jeffery9@gmail.com>, 2023
+# Emily Jia <eji@odoo.com>, 2023
+# Martin Trigaux, 2023
+# Raymond Yu <cl_yu@hotmail.com>, 2023
+# "Tiffany Chang (tic)" <tic@odoo.com>, 2025.
+# "Chloe Wang (chwa)" <chwa@odoo.com>, 2025, 2026.
+# 何彬 <vnsoft.he@gmail.com>, 2025.
+# Weblate <noreply-mt-weblate@weblate.org>, 2025.
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 16.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-05-12 08:36+0000\n"
+"PO-Revision-Date: 2026-06-21 12:58+0000\n"
+"Last-Translator: Anonymous <noreply@weblate.org>\n"
+"Language-Team: Chinese (Simplified Han script) <https://translate.odoo.com/"
+"projects/odoo-master/base/zh_Hans/>\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Weblate 2026.6.1\n"
+
+#. module: test_website_modules
+#: model:ir.module.module,description:base.module_test_website_modules
+msgid ""
+"This module contains tests related to website modules.\n"
+"It allows to test website business code when another website module is\n"
+"installed."
+msgstr ""
+"本模块包含与网站模块相关的测试。\n"
+"它允许在安装了另一个网站模块时测试网站业务代码。\n"
+"安装时测试网站业务代码。"
+
+#. module: test_website_modules
+#: model:ir.module.module,shortdesc:base.module_test_website_modules
+msgid "Website Modules Test"
+msgstr "网站模块测试"

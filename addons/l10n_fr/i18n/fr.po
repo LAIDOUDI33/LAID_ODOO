@@ -21,6 +21,11 @@ msgstr ""
 "X-Generator: Weblate 5.14.3\n"
 
 #. module: l10n_fr
+#: model:ir.module.module,shortdesc:base.module_l10n_fr
+msgid "France - Localizations"
+msgstr "France - Localisations"
+
+#. module: l10n_fr
 #: model:ir.model.fields,field_description:l10n_fr.field_res_company__ape
 msgid "APE"
 msgstr "APE"

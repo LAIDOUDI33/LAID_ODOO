@@ -19,6 +19,28 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: mrp_subcontracting_landed_costs
+#: model:ir.module.module,description:base.module_mrp_subcontracting_landed_costs
+msgid ""
+"\n"
+"This module allows users to more easily identify subcontracting orders when "
+"applying landed costs,\n"
+"by also displaying the associated picking reference in the search view.\n"
+msgstr ""
+"\n"
+"โมดูลนี้ช่วยให้ผู้ใช้ระบุคำสั่งรับเหมาช่วงได้ง่ายขึ้นเมื่อใช้ปันส่วนต้นทุนสินค้า\n"
+"โดยการแสดงการอ้างอิงการเบิกสินค้าที่เกี่ยวข้องในมุมมองการค้นหาด้วย\n"
+
+#. module: mrp_subcontracting_landed_costs
+#: model:ir.module.module,summary:base.module_mrp_subcontracting_landed_costs
+msgid "Advanced views to manage landed cost for subcontracting orders"
+msgstr "มุมมองขั้นสูงเพื่อจัดการปันส่วนต้นทุนสินค้าสำหรับใบสั่งรับเหมาช่วง"
+
+#. module: mrp_subcontracting_landed_costs
+#: model:ir.module.module,shortdesc:base.module_mrp_subcontracting_landed_costs
+msgid "Landed Costs With Subcontracting order"
+msgstr "ปันส่วนต้นทุนสินค้าด้วยคำสั่งรับเหมาช่วง"
+
+#. module: mrp_subcontracting_landed_costs
 #: model:ir.model.fields,field_description:mrp_subcontracting_landed_costs.field_stock_landed_cost__display_name
 msgid "Display Name"
 msgstr ""

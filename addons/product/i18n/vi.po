@@ -29,6 +29,56 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: product
+#: model:ir.module.module,description:base.module_product
+msgid ""
+"\n"
+"This is the base module for managing products and pricelists in Odoo.\n"
+"========================================================================\n"
+"\n"
+"Products support variants, different pricing methods, vendors information,\n"
+"make to stock/order, different units of measure, packaging and properties.\n"
+"\n"
+"Pricelists support:\n"
+"-------------------\n"
+"    * Multiple-level of discount (by product, category, quantities)\n"
+"    * Compute price based on different criteria:\n"
+"        * Other pricelist\n"
+"        * Cost price\n"
+"        * List price\n"
+"        * Vendor price\n"
+"\n"
+"Pricelists preferences by product and/or partners.\n"
+"\n"
+"Print product labels with barcode.\n"
+msgstr ""
+"\n"
+"Đây là phân hệ cơ sở để quản lý các sản phẩm và bảng giá trong Odoo.\n"
+"========================================================================\n"
+"\n"
+"Sản phẩm hỗ trợ biến thể, phương pháp định giá khác nhau, thông tin nhà cung "
+"cấp, \n"
+"sản xuất để lưu kho/theo đơn đặt hàng, các đơn vị tính khác nhau, cách đóng "
+"gói và thuộc tính.\n"
+"\n"
+"Bảng giá hỗ trợ:\n"
+"-------------------\n"
+"* Nhiều hình thức giảm giá (theo sản phẩm, danh mục, số lượng)\n"
+"* Tính giá dựa trên các tiêu chí khác nhau:\n"
+"* Bảng giá khác\n"
+"* Chi phí\n"
+"* Giá niêm yết\n"
+"* Giá của nhà cung cấp\n"
+"\n"
+"Tùy chọn bảng giá theo sản phẩm và/hoặc đối tác.\n"
+"\n"
+"In nhãn sản phẩm với mã vạch.\n"
+
+#. module: product
+#: model:ir.module.module,shortdesc:base.module_product
+msgid "Products & Pricelists"
+msgstr "Sản phẩm & Bảng giá"
+
+#. module: product
 #: model:ir.model.fields,field_description:product.field_product_pricelist_item__product_variant_count
 #: model:ir.model.fields,field_description:product.field_product_product__product_variant_count
 #: model:ir.model.fields,field_description:product.field_product_template__product_variant_count

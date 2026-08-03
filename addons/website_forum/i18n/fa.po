@@ -31,6 +31,39 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_forum
+#: model:ir.module.module,description:base.module_website_forum
+msgid ""
+"\n"
+"Ask questions, get answers, no distractions\n"
+msgstr ""
+
+#. module: website_forum
+#. odoo-python
+#: code:addons/website_forum/controllers/website_forum.py:0
+#: code:addons/website_forum/models/forum_forum.py:0
+#: code:addons/website_forum/models/website.py:0
+#: model:ir.actions.act_url,name:website_forum.action_open_forum
+#: model:ir.model,name:website_forum.model_forum_forum
+#: model:ir.model.fields,field_description:website_forum.field_forum_post__forum_id
+#: model:ir.model.fields,field_description:website_forum.field_forum_post_comment__forum_id
+#: model:ir.model.fields,field_description:website_forum.field_forum_post_vote__forum_id
+#: model:ir.model.fields,field_description:website_forum.field_forum_tag__forum_id
+#: model:ir.module.module,shortdesc:base.module_website_forum
+#: model:ir.ui.menu,name:website_forum.menu_website_forum_global
+#: model:website.menu,name:website_forum.menu_website_forums
+#: model_terms:ir.ui.view,arch_db:website_forum.forum_forum_view_form
+#: model_terms:ir.ui.view,arch_db:website_forum.forum_forum_view_search
+#: model_terms:ir.ui.view,arch_db:website_forum.forum_post_view_search
+#: model_terms:ir.ui.view,arch_db:website_forum.gamification_karma_tracking_view_search
+msgid "Forum"
+msgstr "انجمن"
+
+#. module: website_forum
+#: model:ir.module.module,summary:base.module_website_forum
+msgid "Manage a forum with FAQ and Q&A"
+msgstr "یک انجمن با FAQ و Q&A اداره کنید"
+
+#. module: website_forum
 #. odoo-javascript
 #: code:addons/website_forum/static/src/interactions/website_forum.js:0
 msgid " Flag"
@@ -1976,26 +2009,6 @@ msgstr ""
 "رای موافق 10 امتیاز برای شما ایجاد کرده و هر رای مخالف 2 امتیاز از شما کم "
 "می‌کند. محدودیت امتیازی که در یک روز برای یک پرسش یا پاسخ قابل جمع‌آوری است، "
 "200 امتیاز است."
-
-#. module: website_forum
-#. odoo-python
-#: code:addons/website_forum/controllers/website_forum.py:0
-#: code:addons/website_forum/models/forum_forum.py:0
-#: code:addons/website_forum/models/website.py:0
-#: model:ir.actions.act_url,name:website_forum.action_open_forum
-#: model:ir.model,name:website_forum.model_forum_forum
-#: model:ir.model.fields,field_description:website_forum.field_forum_post__forum_id
-#: model:ir.model.fields,field_description:website_forum.field_forum_post_comment__forum_id
-#: model:ir.model.fields,field_description:website_forum.field_forum_post_vote__forum_id
-#: model:ir.model.fields,field_description:website_forum.field_forum_tag__forum_id
-#: model:ir.ui.menu,name:website_forum.menu_website_forum_global
-#: model:website.menu,name:website_forum.menu_website_forums
-#: model_terms:ir.ui.view,arch_db:website_forum.forum_forum_view_form
-#: model_terms:ir.ui.view,arch_db:website_forum.forum_forum_view_search
-#: model_terms:ir.ui.view,arch_db:website_forum.forum_post_view_search
-#: model_terms:ir.ui.view,arch_db:website_forum.gamification_karma_tracking_view_search
-msgid "Forum"
-msgstr "انجمن"
 
 #. module: website_forum
 #: model:ir.model.fields,field_description:website_forum.field_website__forum_count

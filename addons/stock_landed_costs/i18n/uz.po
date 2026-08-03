@@ -27,6 +27,46 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: stock_landed_costs
+#: model:ir.module.module,description:base.module_stock_landed_costs
+#, fuzzy
+msgid ""
+"\n"
+"Landed Costs Management\n"
+"=======================\n"
+"This module allows you to easily add extra costs on pickings and decide the "
+"split of these costs among their stock moves in order to take them into "
+"account in your stock valuation.\n"
+msgstr ""
+"Qo‘shimcha xarajatlarni boshqarish\n"
+"=======================\n"
+"Ushbu modul sizga tovarlarni yig‘ish jarayonida qo‘shimcha xarajatlarni "
+"osonlik bilan qo‘shish va bu xarajatlarni tovar zaxiralarini baholashda "
+"hisobga olish uchun ular o‘rtasida taqsimlashni belgilash imkonini beradi."
+
+#. module: stock_landed_costs
+#. odoo-python
+#: code:addons/stock_landed_costs/models/account_move.py:0
+#: model:ir.actions.act_window,name:stock_landed_costs.action_stock_landed_cost
+#: model:ir.model.fields,field_description:stock_landed_costs.field_account_bank_statement_line__landed_costs_ids
+#: model:ir.model.fields,field_description:stock_landed_costs.field_account_move__landed_costs_ids
+#: model:ir.module.module,summary:base.module_stock_landed_costs
+#: model:ir.ui.menu,name:stock_landed_costs.menu_stock_landed_cost
+#: model_terms:ir.ui.view,arch_db:stock_landed_costs.account_view_move_form_inherited
+#: model_terms:ir.ui.view,arch_db:stock_landed_costs.view_stock_landed_cost_form
+#: model_terms:ir.ui.view,arch_db:stock_landed_costs.view_stock_landed_cost_search
+#: model_terms:ir.ui.view,arch_db:stock_landed_costs.view_stock_landed_cost_tree
+#: model_terms:ir.ui.view,arch_db:stock_landed_costs.view_stock_landed_cost_tree2
+#, fuzzy
+msgid "Landed Costs"
+msgstr "Qo‘shimcha xarajatlar"
+
+#. module: stock_landed_costs
+#: model:ir.module.module,shortdesc:base.module_stock_landed_costs
+#, fuzzy
+msgid "WMS Landed Costs"
+msgstr "WMS yetkazib berish xarajatlari"
+
+#. module: stock_landed_costs
 #. odoo-python
 #: code:addons/stock_landed_costs/models/stock_move.py:0
 msgid "+ %(value)s (Landed Cost: %(landed_cost)s)"
@@ -479,22 +519,6 @@ msgstr "Jurnal elementi"
 #, fuzzy
 msgid "Landed Cost"
 msgstr "Qo‘shimcha xarajat"
-
-#. module: stock_landed_costs
-#. odoo-python
-#: code:addons/stock_landed_costs/models/account_move.py:0
-#: model:ir.actions.act_window,name:stock_landed_costs.action_stock_landed_cost
-#: model:ir.model.fields,field_description:stock_landed_costs.field_account_bank_statement_line__landed_costs_ids
-#: model:ir.model.fields,field_description:stock_landed_costs.field_account_move__landed_costs_ids
-#: model:ir.ui.menu,name:stock_landed_costs.menu_stock_landed_cost
-#: model_terms:ir.ui.view,arch_db:stock_landed_costs.account_view_move_form_inherited
-#: model_terms:ir.ui.view,arch_db:stock_landed_costs.view_stock_landed_cost_form
-#: model_terms:ir.ui.view,arch_db:stock_landed_costs.view_stock_landed_cost_search
-#: model_terms:ir.ui.view,arch_db:stock_landed_costs.view_stock_landed_cost_tree
-#: model_terms:ir.ui.view,arch_db:stock_landed_costs.view_stock_landed_cost_tree2
-#, fuzzy
-msgid "Landed Costs"
-msgstr "Qo‘shimcha xarajatlar"
 
 #. module: stock_landed_costs
 #: model:ir.model.fields,field_description:stock_landed_costs.field_account_bank_statement_line__landed_costs_visible

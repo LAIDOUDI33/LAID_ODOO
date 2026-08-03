@@ -16,6 +16,12 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_pt
+#: model:ir.module.module,description:base.module_l10n_pt
+#: model:ir.module.module,shortdesc:base.module_l10n_pt
+msgid "Portugal - Accounting"
+msgstr ""
+
+#. module: l10n_pt
 #: model:ir.model,name:l10n_pt.model_account_account
 msgid "Account"
 msgstr ""

@@ -30,6 +30,26 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: web
+#: model:ir.module.module,description:base.module_web
+msgid ""
+"\n"
+"Odoo Web core module.\n"
+"========================\n"
+"\n"
+"This module provides the core of the Odoo Web Client.\n"
+msgstr ""
+"\n"
+"Основний веб-модуль Odoo.\n"
+"========================\n"
+"\n"
+"Цей модуль забезпечує ядро веб-клієнта Odoo.\n"
+
+#. module: web
+#: model:ir.module.module,shortdesc:base.module_web
+msgid "Web"
+msgstr "Web"
+
+#. module: web
 #. odoo-javascript
 #: code:addons/web/static/src/core/domain_selector/domain_selector.xml:0
 #: code:addons/web/static/src/core/expression_editor/expression_editor.xml:0

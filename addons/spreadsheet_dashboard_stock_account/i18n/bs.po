@@ -21,6 +21,17 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: spreadsheet_dashboard_stock_account
+#: model:ir.module.module,description:base.module_spreadsheet_dashboard_stock_account
+#: model:ir.module.module,summary:base.module_spreadsheet_dashboard_stock_account
+msgid "Spreadsheet"
+msgstr ""
+
+#. module: spreadsheet_dashboard_stock_account
+#: model:ir.module.module,shortdesc:base.module_spreadsheet_dashboard_stock_account
+msgid "Spreadsheet dashboard for stock"
+msgstr ""
+
+#. module: spreadsheet_dashboard_stock_account
 #. odoo-javascript
 #: code:addons/spreadsheet_dashboard_stock_account/data/files/warehouse_metrics_dashboard.json:0
 msgid "Ageing stock qty by product and creation date"

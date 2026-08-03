@@ -28,6 +28,18 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: payment_buckaroo
+#: model:ir.module.module,summary:base.module_payment_buckaroo
+msgid "A Dutch payment provider covering several countries in Europe."
+msgstr ""
+"Holenderski dostawca usług płatniczych obejmujący swoim zasięgiem kilka "
+"krajów w Europie."
+
+#. module: payment_buckaroo
+#: model:ir.module.module,shortdesc:base.module_payment_buckaroo
+msgid "Payment Provider: Buckaroo"
+msgstr "Operator płatności: Buckaroo"
+
+#. module: payment_buckaroo
 #: model:payment.method,name:payment_buckaroo.payment_method_afterpay_riverty
 msgid "AfterPay"
 msgstr ""

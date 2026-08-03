@@ -24,6 +24,49 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: survey
+#: model:ir.module.module,description:base.module_survey
+msgid ""
+"\n"
+"Create beautiful surveys and visualize answers\n"
+"==============================================\n"
+"\n"
+"It depends on the answers or reviews of some questions by different users. "
+"A\n"
+"survey may have multiple pages. Each page may contain multiple questions "
+"and\n"
+"each question may have multiple answers. Different users may give different\n"
+"answers of question and according to that survey is done. Partners are also\n"
+"sent mails with personal token for the invitation of the survey.\n"
+msgstr ""
+"\n"
+"Создание красивых опросов и визуализация ответов\n"
+"==============================================\n"
+"\n"
+"Зависит от ответов или отзывов на некоторые вопросы от разных "
+"пользователей.\n"
+"Опрос может содержать несколько страниц. Каждая страница может включать "
+"несколько вопросов,\n"
+"а каждый вопрос может иметь несколько ответов. Разные пользователи могут "
+"давать разные\n"
+"ответы на вопросы, и на основе этого проводится опрос. Партнерам также\n"
+"отправляются письма с персональным токеном для приглашения к участию в "
+"опросе.\n"
+
+#. module: survey
+#: model:ir.module.module,summary:base.module_survey
+msgid "Send your surveys or share them live."
+msgstr "Отправка опросов или их трансляция в прямом эфире."
+
+#. module: survey
+#: model:ir.actions.act_window,name:survey.action_survey_form
+#: model:ir.module.module,shortdesc:base.module_survey
+#: model:ir.ui.menu,name:survey.menu_survey_form
+#: model:ir.ui.menu,name:survey.menu_surveys
+#: model:res.groups.privilege,name:survey.res_groups_privilege_surveys
+msgid "Surveys"
+msgstr "Опросы"
+
+#. module: survey
 #: model:ir.model.fields,field_description:survey.field_survey_survey__question_count
 msgid "# Questions"
 msgstr "# Вопросы"
@@ -4325,14 +4368,6 @@ msgstr "Исследование: Успех сертификации"
 #: model:mail.template,name:survey.mail_template_user_input_invite
 msgid "Survey: Invite"
 msgstr "Исследование: Пригласите"
-
-#. module: survey
-#: model:ir.actions.act_window,name:survey.action_survey_form
-#: model:ir.ui.menu,name:survey.menu_survey_form
-#: model:ir.ui.menu,name:survey.menu_surveys
-#: model:res.groups.privilege,name:survey.res_groups_privilege_surveys
-msgid "Surveys"
-msgstr "Опросы"
 
 #. module: survey
 #: model:survey.question.answer,value:survey.survey_demo_burger_quiz_p4_q1_sug3

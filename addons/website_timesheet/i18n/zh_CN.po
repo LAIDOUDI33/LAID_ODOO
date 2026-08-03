@@ -20,6 +20,26 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_timesheet
+#: model:ir.module.module,description:base.module_website_timesheet
+msgid ""
+"\n"
+"When hiding the timesheets in the portal, this module allows also hiding "
+"timesheet information on other records.\n"
+msgstr ""
+"\n"
+"在门户网站中隐藏工时单时，该模块还允许隐藏其他记录中的工时单信息。\n"
+
+#. module: website_timesheet
+#: model:ir.module.module,summary:base.module_website_timesheet
+msgid "Allow hiding timesheet information in the portal"
+msgstr "允许在门户中隐藏工时表信息"
+
+#. module: website_timesheet
+#: model:ir.module.module,shortdesc:base.module_website_timesheet
+msgid "Hide Portal Timesheet Information"
+msgstr "隐藏门户工时单信息"
+
+#. module: website_timesheet
 #: model:ir.model,name:website_timesheet.model_account_analytic_line
 msgid "Analytic Line"
 msgstr "分析行"

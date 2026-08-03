@@ -16,6 +16,17 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: spreadsheet_dashboard_website_sale
+#: model:ir.module.module,description:base.module_spreadsheet_dashboard_website_sale
+#: model:ir.module.module,summary:base.module_spreadsheet_dashboard_website_sale
+msgid "Spreadsheet"
+msgstr ""
+
+#. module: spreadsheet_dashboard_website_sale
+#: model:ir.module.module,shortdesc:base.module_spreadsheet_dashboard_website_sale
+msgid "Spreadsheet dashboard for eCommerce"
+msgstr ""
+
+#. module: spreadsheet_dashboard_website_sale
 #. odoo-javascript
 #: code:addons/spreadsheet_dashboard_website_sale/data/files/ecommerce_dashboard.json:0
 #: code:addons/spreadsheet_dashboard_website_sale/data/files/ecommerce_sample_dashboard.json:0

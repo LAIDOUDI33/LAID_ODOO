@@ -16,6 +16,16 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: pos_stock
+#: model:ir.module.module,shortdesc:base.module_pos_stock
+msgid "PoS - Stock"
+msgstr ""
+
+#. module: pos_stock
+#: model:ir.module.module,summary:base.module_pos_stock
+msgid "Stock integration for PoS"
+msgstr ""
+
+#. module: pos_stock
 #. odoo-python
 #: code:addons/pos_stock/models/stock_move.py:0
 msgid ""

@@ -20,6 +20,18 @@ msgstr ""
 "X-Generator: Weblate 5.12.2\n"
 
 #. module: l10n_hu
+#: model:ir.module.module,description:base.module_l10n_hu
+msgid ""
+"\n"
+"Accounting chart and localization for Hungary\n"
+msgstr ""
+
+#. module: l10n_hu
+#: model:ir.module.module,shortdesc:base.module_l10n_hu
+msgid "Hungary - Accounting"
+msgstr "Magyarország - Könyvelés"
+
+#. module: l10n_hu
 #: model:ir.model,name:l10n_hu.model_account_chart_template
 msgid "Account Chart Template"
 msgstr "Számlatükör sablon"

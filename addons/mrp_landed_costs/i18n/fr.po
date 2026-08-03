@@ -21,6 +21,31 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: mrp_landed_costs
+#: model:ir.module.module,description:base.module_mrp_landed_costs
+msgid ""
+"\n"
+"This module allows you to easily add extra costs on manufacturing order\n"
+"and decide the split of these costs among their stock moves in order to\n"
+"take them into account in your stock valuation.\n"
+msgstr ""
+"\n"
+"Ce module vous permet d’ajouter facilement des coûts supplémentaires à "
+"l’ordre de fabrication\n"
+"et de décider de la répartition de ces coûts entre leurs mouvements de stock "
+"afin\n"
+"de les prendre en compte dans la valorisation des stocks.\n"
+
+#. module: mrp_landed_costs
+#: model:ir.module.module,summary:base.module_mrp_landed_costs
+msgid "Landed Costs on Manufacturing Order"
+msgstr "Coûts logistiques sur ordre de fabrication"
+
+#. module: mrp_landed_costs
+#: model:ir.module.module,shortdesc:base.module_mrp_landed_costs
+msgid "Landed Costs On MO"
+msgstr "Coûts logistiques sur l'ordre de fabrication"
+
+#. module: mrp_landed_costs
 #: model:ir.model.fields,field_description:mrp_landed_costs.field_stock_landed_cost__target_model
 msgid "Apply On"
 msgstr "Appliquer sur"

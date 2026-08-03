@@ -21,6 +21,16 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: barcodes_gs1_nomenclature
+#: model:ir.module.module,shortdesc:base.module_barcodes_gs1_nomenclature
+msgid "Barcode - GS1 Nomenclature"
+msgstr "Streckkod - GS1-nomenklatur"
+
+#. module: barcodes_gs1_nomenclature
+#: model:ir.module.module,summary:base.module_barcodes_gs1_nomenclature
+msgid "Parse barcodes according to the GS1-128 specifications"
+msgstr "Objekta streckkoder i enlighet med GS1-128-specifikationerna"
+
+#. module: barcodes_gs1_nomenclature
 #. odoo-python
 #: code:addons/barcodes_gs1_nomenclature/models/barcode_nomenclature.py:0
 msgid ""

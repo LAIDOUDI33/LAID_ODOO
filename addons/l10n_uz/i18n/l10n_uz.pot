@@ -16,6 +16,21 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_uz
+#: model:ir.module.module,description:base.module_l10n_uz
+msgid ""
+"\n"
+"Uzbekistan Accounting: Chart of Account.\n"
+"========================================\n"
+"\n"
+"Uzbekistan accounting chart and localization.\n"
+msgstr ""
+
+#. module: l10n_uz
+#: model:ir.module.module,shortdesc:base.module_l10n_uz
+msgid "Uzbekistan - Accounting"
+msgstr ""
+
+#. module: l10n_uz
 #: model:ir.model,name:l10n_uz.model_account_chart_template
 msgid "Account Chart Template"
 msgstr ""

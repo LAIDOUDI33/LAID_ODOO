@@ -20,6 +20,17 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: hr_recruitment_sms
+#: model:ir.module.module,description:base.module_hr_recruitment_sms
+#: model:ir.module.module,summary:base.module_hr_recruitment_sms
+msgid "Mass mailing sms to job applicants"
+msgstr "Mailing sms di massa ai candidati"
+
+#. module: hr_recruitment_sms
+#: model:ir.module.module,shortdesc:base.module_hr_recruitment_sms
+msgid "Recruitment - SMS"
+msgstr "Assunzioni - SMS"
+
+#. module: hr_recruitment_sms
 #: model:ir.model,name:hr_recruitment_sms.model_hr_applicant
 msgid "Applicant"
 msgstr "Candidato"

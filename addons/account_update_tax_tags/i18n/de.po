@@ -21,6 +21,38 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: account_update_tax_tags
+#: model:ir.module.module,description:base.module_account_update_tax_tags
+msgid ""
+"\n"
+"This module allows updating tax grids on existing accounting entries.\n"
+"In debug mode a button to update your entries' tax grids will be available\n"
+"in Accounting settings.\n"
+"This is typically useful after some legal changes were done on the tax "
+"report,\n"
+"requiring a new tax configuration.\n"
+msgstr ""
+"\n"
+"Mit diesem Modol können Steuerraster auf bestehenden Buchungen aktualisiert "
+"werden.\n"
+"Im Fehlerbeseitigungsmodus steht eine Schaltfläche zur Aktualisierung Ihrer "
+"Steuerraster in den Buchhaltungseinstellungen\n"
+"zur Verfügung.\n"
+"Dies ist vor allem nützlich, nachdem rechtliche Änderungen am Steuerbericht "
+"vorgenommen wurden,\n"
+"die eine neue Steuerkonfiguratione erfordern.\n"
+
+#. module: account_update_tax_tags
+#: model:ir.module.module,shortdesc:base.module_account_update_tax_tags
+msgid "Account - Allow updating tax grids"
+msgstr "Konto - Aktualisierung von Steuerrastern erlauben"
+
+#. module: account_update_tax_tags
+#: model:ir.module.module,summary:base.module_account_update_tax_tags
+msgid "Allow updating tax grids on existing entries"
+msgstr ""
+"Erlauben Sie die Aktualisierung von Steuerrastern auf bestehenden Einträgen"
+
+#. module: account_update_tax_tags
 #: model:ir.model.fields,field_description:account_update_tax_tags.field_account_update_tax_tags_wizard__company_id
 msgid "Company"
 msgstr "Unternehmen"

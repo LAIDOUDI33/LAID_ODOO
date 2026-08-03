@@ -16,6 +16,27 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_ae
+#: model:ir.module.module,description:base.module_l10n_ae
+msgid ""
+"\n"
+"United Arab Emirates Accounting Module\n"
+"=======================================================\n"
+"United Arab Emirates accounting basic charts and localization.\n"
+"\n"
+"Activates:\n"
+"\n"
+"- Chart of Accounts\n"
+"- Taxes\n"
+"- Tax Report\n"
+"- Fiscal Positions\n"
+msgstr ""
+
+#. module: l10n_ae
+#: model:ir.module.module,shortdesc:base.module_l10n_ae
+msgid "United Arab Emirates - Accounting"
+msgstr ""
+
+#. module: l10n_ae
 #: model:account.report.line,name:l10n_ae.tax_report_line_standard_rated_supplies
 msgid "1. Standard rated supplies in:"
 msgstr ""

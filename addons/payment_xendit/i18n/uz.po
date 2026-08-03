@@ -27,6 +27,18 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: payment_xendit
+#: model:ir.module.module,summary:base.module_payment_xendit
+#, fuzzy
+msgid "A payment provider for Indonesian and the Philippines."
+msgstr "Indoneziya va Filippin uchun to‘lov provayderi."
+
+#. module: payment_xendit
+#: model:ir.module.module,shortdesc:base.module_payment_xendit
+#, fuzzy
+msgid "Payment Provider: Xendit"
+msgstr "To‘lov provayderi: Xendit"
+
+#. module: payment_xendit
 #: model:payment.method,name:payment_xendit.payment_method_7eleven
 msgid "7Eleven"
 msgstr ""

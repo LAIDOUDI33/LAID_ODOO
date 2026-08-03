@@ -27,6 +27,33 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: hr_skills
+#: model:ir.module.module,description:base.module_hr_skills
+#, fuzzy
+msgid ""
+"\n"
+"Skills and Resume for HR\n"
+"========================\n"
+"\n"
+"This module introduces skills and resume management for employees.\n"
+msgstr ""
+"HR uchun ko‘nikmalar va rezyume\n"
+"========================\n"
+"\n"
+"Ushbu modul xodimlar uchun ko‘nikmalar va rezyume boshqarishni taqdim etadi."
+
+#. module: hr_skills
+#: model:ir.module.module,summary:base.module_hr_skills
+#, fuzzy
+msgid "Manage skills, knowledge and resume of your employees"
+msgstr "Xodimlarning ko‘nikmalari, bilimlari va rezumesini boshqarish"
+
+#. module: hr_skills
+#: model:ir.module.module,shortdesc:base.module_hr_skills
+#, fuzzy
+msgid "Skills Management"
+msgstr "Ko‘nikmalarni boshqarish"
+
+#. module: hr_skills
 #. odoo-python
 #: code:addons/hr_skills/models/hr_skill_type.py:0
 msgid "%(skill_type_name)s (copy)"

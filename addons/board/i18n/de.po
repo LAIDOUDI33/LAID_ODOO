@@ -25,6 +25,31 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: board
+#: model:ir.module.module,description:base.module_board
+msgid ""
+"\n"
+"Lets the user create a custom dashboard.\n"
+"========================================\n"
+"\n"
+"Allows users to create custom dashboard.\n"
+msgstr ""
+"\n"
+"Ermöglicht es dem Benutzer, ein benutzerdefiniertes Dashboard zu erstellen\n"
+"==========================================================\n"
+"\n"
+"Ermöglicht Benutzern die Erstellung benutzerdefinierter Dashboards.\n"
+
+#. module: board
+#: model:ir.module.module,summary:base.module_board
+msgid "Build your own dashboards"
+msgstr "Ihre eigenen Dashboards erstellen"
+
+#. module: board
+#: model:ir.module.module,shortdesc:base.module_board
+msgid "Dashboards"
+msgstr "Dashboards"
+
+#. module: board
 #. odoo-javascript
 #: code:addons/board/static/src/board_controller.xml:0
 msgid ""

@@ -20,6 +20,16 @@ msgstr ""
 "X-Generator: Weblate 5.12.2\n"
 
 #. module: l10n_in_sale
+#: model:ir.module.module,description:base.module_l10n_in_sale
+msgid "GST Sale Report"
+msgstr ""
+
+#. module: l10n_in_sale
+#: model:ir.module.module,shortdesc:base.module_l10n_in_sale
+msgid "Indian - Sale Report(GST)"
+msgstr ""
+
+#. module: l10n_in_sale
 #: model:ir.model.fields,field_description:l10n_in_sale.field_sale_advance_payment_inv__display_name
 #: model:ir.model.fields,field_description:l10n_in_sale.field_sale_order__display_name
 msgid "Display Name"

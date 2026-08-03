@@ -20,6 +20,28 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: partnership
+#: model:ir.module.module,description:base.module_partnership
+msgid ""
+"\n"
+"This module allows you to manage all operations for managing memberships and "
+"partnerships.\n"
+"==========================================================================================\n"
+"\n"
+"You can easily assign grade to members/partners, with a specific pricelist.\n"
+msgstr ""
+"\n"
+"このモジュールでは、メンバーシップおよびパートナーシップの管理に関するすべて"
+"のオペレーションを管理できます。.\n"
+"==========================================================================================\n"
+"\n"
+"メンバーや取引先に、特定の価格表で簡単にグレードを割当てることができます。\n"
+
+#. module: partnership
+#: model:ir.module.module,shortdesc:base.module_partnership
+msgid "Partnership / Membership"
+msgstr "パートナーシップ / メンバーシップ"
+
+#. module: partnership
 #: model:ir.model.fields,field_description:partnership.field_res_partner_grade__active
 msgid "Active"
 msgstr "有効"

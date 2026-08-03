@@ -16,6 +16,18 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_hr_edi
+#: model:ir.module.module,description:base.module_l10n_hr_edi
+msgid ""
+"\n"
+"e-invoicing for Croatia\n"
+msgstr ""
+
+#. module: l10n_hr_edi
+#: model:ir.module.module,shortdesc:base.module_l10n_hr_edi
+msgid "Croatia - e-invoicing"
+msgstr ""
+
+#. module: l10n_hr_edi
 #. odoo-python
 #: code:addons/l10n_hr_edi/wizard/l10n_hr_edi_mojeracun_reject_wizard.py:0
 msgid ""

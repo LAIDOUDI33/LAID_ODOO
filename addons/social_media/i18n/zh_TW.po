@@ -24,6 +24,28 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: social_media
+#: model:ir.module.module,description:base.module_social_media
+msgid ""
+"\n"
+"The purpose of this technical module is to provide a front for\n"
+"social media configuration for any other module that might need it.\n"
+msgstr ""
+"\n"
+"本技術模塊的目的是為其他可能需要的模塊提供社交媒體配置前台。\n"
+"社交媒體配置的前台。\n"
+
+#. module: social_media
+#: model:ir.module.module,shortdesc:base.module_social_media
+#: model_terms:ir.ui.view,arch_db:social_media.view_company_form_inherit_social_media
+msgid "Social Media"
+msgstr "社交媒體"
+
+#. module: social_media
+#: model:ir.module.module,summary:base.module_social_media
+msgid "Social media connectors for company settings."
+msgstr "用於公司設定的社群媒體連接器."
+
+#. module: social_media
 #: model:ir.model,name:social_media.model_res_company
 msgid "Company"
 msgstr ""
@@ -62,11 +84,6 @@ msgstr "Instagram 帳號"
 #: model:ir.model.fields,field_description:social_media.field_res_company__social_linkedin
 msgid "LinkedIn Account"
 msgstr "LinkedIn 帳號"
-
-#. module: social_media
-#: model_terms:ir.ui.view,arch_db:social_media.view_company_form_inherit_social_media
-msgid "Social Media"
-msgstr "社交媒體"
 
 #. module: social_media
 #: model:ir.model.fields,field_description:social_media.field_res_company__social_tiktok

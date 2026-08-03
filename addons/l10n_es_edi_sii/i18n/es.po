@@ -21,6 +21,52 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: l10n_es_edi_sii
+#: model:ir.module.module,description:base.module_l10n_es_edi_sii
+msgid ""
+"\n"
+"This module sends the taxes information (mostly VAT) of the\n"
+"vendor bills and customer invoices to the SII.  It is called\n"
+"Procedimiento G417 - IVA. Llevanza de libros registro.  It is\n"
+"required for every company with a turnover of +6M€ and others can\n"
+"already make use of it.  The invoices are automatically\n"
+"sent after validation.\n"
+"\n"
+"How the information is sent to the SII depends on the\n"
+"configuration that is put in the taxes.  The taxes\n"
+"that were in the chart template (l10n_es) are automatically\n"
+"configured to have the right type.  It is possible however\n"
+"that extra taxes need to be created for certain exempt/no sujeta reasons.\n"
+"\n"
+"You need to configure your certificate and the tax agency.\n"
+msgstr ""
+"\n"
+"Este módulo envía información tributaria (principalmente sobre el IVA) de "
+"las\n"
+"        facturas de proveedores y clientes al SII. Se llama \n"
+"        Procedimiento G417 - IVA. Llevanza de libros registro.  Este "
+"procedimiento \n"
+"        es obligatorio para toda empresa que tenga una facturación +6M€ y "
+"otros pueden \n"
+"        usarlo.  Las facturas se envían automáticamente\n"
+"        después de la validación.  \n"
+"        \n"
+"        Dependiendo de la configuración que se ponga en los impuestos se "
+"enviará \n"
+"        la información a la SII. Los impuestos \n"
+"        que estaban en la plantilla del plan (l10n_es) se configuran\n"
+"        automáticamente para que tengan el tipo correcto. Sin embargo, es "
+"posible\n"
+"        que se tengan que crear impuestos en operaciones exentas o no "
+"sujetas a IVA.\n"
+"        \n"
+"        Necesita configurar su certificado y la agencia tributaria.\n"
+
+#. module: l10n_es_edi_sii
+#: model:ir.module.module,shortdesc:base.module_l10n_es_edi_sii
+msgid "Spain - SII EDI Suministro de Libros"
+msgstr "España - SII EDI Suministro de libros"
+
+#. module: l10n_es_edi_sii
 #: model:ir.model.fields.selection,name:l10n_es_edi_sii.selection__l10n_es_edi_sii_document__state__accepted
 #, fuzzy
 msgid "Accepted"

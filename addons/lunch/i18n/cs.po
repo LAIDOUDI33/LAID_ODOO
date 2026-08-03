@@ -31,6 +31,62 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: lunch
+#: model:ir.module.module,description:base.module_lunch
+msgid ""
+"\n"
+"The base module to manage lunch.\n"
+"================================\n"
+"\n"
+"Many companies order sandwiches, pizzas and other, from usual vendors, for "
+"their employees to offer them more facilities.\n"
+"\n"
+"However lunches management within the company requires proper administration "
+"especially when the number of employees or vendors is important.\n"
+"\n"
+"The “Lunch Order” module has been developed to make this management easier "
+"but also to offer employees more tools and usability.\n"
+"\n"
+"In addition to a full meal and vendor management, this module offers the "
+"possibility to display warning and provides quick order selection based on "
+"employee’s preferences.\n"
+"\n"
+"If you want to save your employees' time and avoid them to always have coins "
+"in their pockets, this module is essential.\n"
+msgstr ""
+"\n"
+"Základní modul pro řízení oběda.\n"
+"================================\n"
+"\n"
+"Mnoho společností objednává sendviče, pizzy a další jídla od běžných "
+"dodavatelů pro své zaměstnance, aby jim nabídly více komfortu.\n"
+"\n"
+"Správa obědů v rámci společnosti však vyžaduje řádnou správu, zejména pokud "
+"je důležitý počet zaměstnanců nebo prodejců.\n"
+"\n"
+"Modul “Objednání oběda” byl vyvinut s cílem usnadnit tuto správu, ale také "
+"nabídnout zaměstnancům více nástrojů a použitelnosti.\n"
+"\n"
+"Kromě kompletního stravování a správy dodavatelů nabízí tento modul možnost "
+"zobrazit varování a poskytuje rychlý výběr objednávek podle preferencí "
+"zaměstnance.\n"
+"\n"
+"Pokud chcete ušetřit čas svých zaměstnanců a zabránit tomu, aby měli "
+"neustále po kapsách mince, je tento modul nezbytný.\n"
+
+#. module: lunch
+#: model:ir.module.module,summary:base.module_lunch
+msgid "Handle lunch orders of your employees"
+msgstr "Řešte objednávky oběda vašich zaměstnanců"
+
+#. module: lunch
+#: model:ir.module.module,shortdesc:base.module_lunch
+#: model:ir.ui.menu,name:lunch.menu_lunch
+#: model:res.groups.privilege,name:lunch.res_groups_privilege_lunch
+#: model_terms:ir.ui.view,arch_db:lunch.res_config_settings_view_form
+msgid "Lunch"
+msgstr "Obědy"
+
+#. module: lunch
 #: model_terms:lunch.product,description:lunch.product_temaki
 msgid "1 Avocado - 1 Salmon - 1 Eggs - 1 Tuna"
 msgstr "1 avokádo - 1 losos - 1 vejce - 1 tuňák"
@@ -1041,13 +1097,6 @@ msgstr "Název místa"
 #: model:ir.ui.menu,name:lunch.lunch_location_menu
 msgid "Locations"
 msgstr "Lokace"
-
-#. module: lunch
-#: model:ir.ui.menu,name:lunch.menu_lunch
-#: model:res.groups.privilege,name:lunch.res_groups_privilege_lunch
-#: model_terms:ir.ui.view,arch_db:lunch.res_config_settings_view_form
-msgid "Lunch"
-msgstr "Obědy"
 
 #. module: lunch
 #: model:ir.model,name:lunch.model_lunch_alert

@@ -21,6 +21,21 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: google_recaptcha
+#: model:ir.module.module,description:base.module_google_recaptcha
+msgid ""
+"\n"
+"This module implements reCaptchaV3 so that you can prevent bot spam on your "
+"public modules.\n"
+msgstr ""
+"\n"
+"该模块实现了 reCaptchaV3，因此可以防止公共模块上出现僵尸垃圾邮件。\n"
+
+#. module: google_recaptcha
+#: model:ir.module.module,shortdesc:base.module_google_recaptcha
+msgid "Google reCAPTCHA integration"
+msgstr "谷歌 验证码集成"
+
+#. module: google_recaptcha
 #: model_terms:ir.ui.view,arch_db:google_recaptcha.res_config_settings_view_form
 msgid "<i class=\"oi\" data-icon=\"east\"/> Generate reCAPTCHA v3 keys"
 msgstr "<i class=\"oi\" data-icon=\"east\"/>生成 reCAPTCHA v3 密钥"

@@ -20,6 +20,49 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: pos_dpopay
+#: model:ir.module.module,description:base.module_pos_dpopay
+msgid ""
+"\n"
+"Allow DPO POS payments\n"
+"==============================\n"
+"\n"
+"It supports all currencies supported by the terminal device — primarily for "
+"use in the **African region**.\n"
+"It enables customers to pay for their orders using debit/credit cards and "
+"Mobile Money through DPO POS terminals.\n"
+"A DPO merchant account is required to process transactions.\n"
+"Features include:\n"
+"\n"
+"* Quick payments by swiping, scanning, or tapping your credit/debit card or "
+"Mobile Money (Airtel Money / M-Pesa) at the payment terminal.\n"
+"* Supported cards: Visa, MasterCard, American Express etc.\n"
+msgstr ""
+"\n"
+"Salli DPO-kassajärjestelmän maksut\n"
+"==============================\n"
+"\n"
+"Tukee kaikkia päätelaitteen tukemia valuuttoja — pääasiassa käytettäväksi "
+"**Afrikan alueella**.\n"
+"Mahdollistaa asiakkaille tilausten maksamisen debit-/luottokorteilla sekä "
+"mobiilimaksulla DPO-kassajärjestelmän päätelaitteiden kautta.\n"
+"Maksutapahtumien käsittelyyn tarvitaan DPO-kauppiasili.\n"
+"Ominaisuudet sisältävät:\n"
+"\n"
+"* Nopeat maksut pyyhkäisemällä, skannaamalla tai napauttamalla luotto-/debit-"
+"korttia tai mobiilimaksua (Airtel Money / M-Pesa) maksupäätteessä.\n"
+"* Tuetut kortit: Visa, MasterCard, American Express, jne.\n"
+
+#. module: pos_dpopay
+#: model:ir.module.module,summary:base.module_pos_dpopay
+msgid "Integrate your POS with DPO payment terminal."
+msgstr ""
+
+#. module: pos_dpopay
+#: model:ir.module.module,shortdesc:base.module_pos_dpopay
+msgid "PoS DPO Pay"
+msgstr "Kassajärjestelmä DPO Pay"
+
+#. module: pos_dpopay
 #: model:ir.model.fields,help:pos_dpopay.field_pos_payment_method__dpopay_bearer_token
 msgid ""
 "Bearer token used for authenticating requests. Automatically refreshed when "

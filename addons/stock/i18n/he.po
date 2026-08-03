@@ -51,6 +51,27 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: stock
+#: model:ir.actions.server,name:stock.action_view_inventory_tree
+#: model:ir.actions.server,name:stock.action_view_quants
+#: model:ir.model.fields,field_description:stock.field_stock_move__is_inventory
+#: model:ir.model.fields,field_description:stock.field_stock_move_line__is_inventory
+#: model:ir.module.module,shortdesc:base.module_stock
+#: model:ir.ui.menu,name:stock.menu_stock_root
+#: model:res.groups.privilege,name:stock.res_groups_privilege_inventory
+#: model_terms:ir.ui.view,arch_db:stock.res_config_settings_view_form
+#: model_terms:ir.ui.view,arch_db:stock.view_move_search
+#: model_terms:ir.ui.view,arch_db:stock.view_partner_stock_form
+#: model_terms:ir.ui.view,arch_db:stock.view_production_lot_form
+#: model_terms:ir.ui.view,arch_db:stock.view_stock_quant_pivot
+msgid "Inventory"
+msgstr "מלאי"
+
+#. module: stock
+#: model:ir.module.module,summary:base.module_stock
+msgid "Manage your stock and logistics activities"
+msgstr "ניהול מלאי שלך ופעילויות לוגיסטיקה"
+
+#. module: stock
 #. odoo-python
 #: code:addons/stock/models/stock_location.py:0
 msgid "\t--Empty--"
@@ -4401,21 +4422,6 @@ msgstr "קונפיגורציה שגויה של הכלל, הכלל הבא גור�
 #: model:ir.model.fields,field_description:stock.field_stock_quant__inventory_quantity_auto_apply
 msgid "Inventoried Quantity"
 msgstr "כמות במלאי"
-
-#. module: stock
-#: model:ir.actions.server,name:stock.action_view_inventory_tree
-#: model:ir.actions.server,name:stock.action_view_quants
-#: model:ir.model.fields,field_description:stock.field_stock_move__is_inventory
-#: model:ir.model.fields,field_description:stock.field_stock_move_line__is_inventory
-#: model:ir.ui.menu,name:stock.menu_stock_root
-#: model:res.groups.privilege,name:stock.res_groups_privilege_inventory
-#: model_terms:ir.ui.view,arch_db:stock.res_config_settings_view_form
-#: model_terms:ir.ui.view,arch_db:stock.view_move_search
-#: model_terms:ir.ui.view,arch_db:stock.view_partner_stock_form
-#: model_terms:ir.ui.view,arch_db:stock.view_production_lot_form
-#: model_terms:ir.ui.view,arch_db:stock.view_stock_quant_pivot
-msgid "Inventory"
-msgstr "מלאי"
 
 #. module: stock
 #. odoo-python

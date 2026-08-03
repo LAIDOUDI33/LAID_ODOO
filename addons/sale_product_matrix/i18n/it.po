@@ -24,6 +24,29 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: sale_product_matrix
+#: model:ir.module.module,description:base.module_sale_product_matrix
+msgid ""
+"\n"
+"This module allows to fill Sales Order rapidly\n"
+"by choosing product variants quantity through a Grid Entry.\n"
+msgstr ""
+"\n"
+"Questo modulo permette una compilazione rapida di ordini di\n"
+"vendita scegliendo la quantità di varianti prodotto da una voce della "
+"griglia.\n"
+
+#. module: sale_product_matrix
+#: model:ir.module.module,summary:base.module_sale_product_matrix
+msgid "Add variants to Sales Order through a grid entry."
+msgstr ""
+"Aggiunge varianti a un ordine di vendita attraverso una voce della griglia."
+
+#. module: sale_product_matrix
+#: model:ir.module.module,shortdesc:base.module_sale_product_matrix
+msgid "Sale Matrix"
+msgstr "Matrice Vendita"
+
+#. module: sale_product_matrix
 #: model:ir.model.fields.selection,name:sale_product_matrix.selection__product_template__product_add_mode__configurator
 msgid "Configurator"
 msgstr ""

@@ -20,6 +20,11 @@ msgstr ""
 "X-Generator: Weblate 5.12.2\n"
 
 #. module: l10n_be_pos_restaurant
+#: model:ir.module.module,shortdesc:base.module_l10n_be_pos_restaurant
+msgid "Belgian POS Restaurant Localization"
+msgstr "Belgische Lokalisierung für Kassensystem in Restaurants"
+
+#. module: l10n_be_pos_restaurant
 #: model:ir.model,name:l10n_be_pos_restaurant.model_account_chart_template
 msgid "Account Chart Template"
 msgstr "Kontenrahmenvorlage"

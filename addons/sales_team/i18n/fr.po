@@ -26,6 +26,27 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: sales_team
+#: model:ir.module.module,description:base.module_sales_team
+msgid ""
+"\n"
+"Using this application you can manage Sales Teams with CRM and/or Sales\n"
+"=======================================================================\n"
+msgstr ""
+"\n"
+"Grâce à cette application, vous pouvez gérer les équipes de vente avec CRM "
+"et/ou Ventes.\n"
+"=======================================================================\n"
+
+#. module: sales_team
+#: model:ir.actions.act_window,name:sales_team.crm_team_action_config
+#: model:ir.actions.act_window,name:sales_team.crm_team_action_sales
+#: model:ir.model.fields,field_description:sales_team.field_res_users__crm_team_ids
+#: model:ir.module.module,shortdesc:base.module_sales_team
+#: model:ir.module.module,summary:base.module_sales_team
+msgid "Sales Teams"
+msgstr "Équipes commerciales"
+
+#. module: sales_team
 #. odoo-python
 #: code:addons/sales_team/models/crm_team_member.py:0
 msgid "%(user_name)s already in other teams (%(team_names)s)."
@@ -530,13 +551,6 @@ msgstr "Membres de l'équipe commerciale"
 #: model:ir.model.fields,field_description:sales_team.field_crm_team__crm_team_member_all_ids
 msgid "Sales Team Members (incl. inactive)"
 msgstr "Membres de l'équipe commerciale (y compris les inactifs)"
-
-#. module: sales_team
-#: model:ir.actions.act_window,name:sales_team.crm_team_action_config
-#: model:ir.actions.act_window,name:sales_team.crm_team_action_sales
-#: model:ir.model.fields,field_description:sales_team.field_res_users__crm_team_ids
-msgid "Sales Teams"
-msgstr "Équipes commerciales"
 
 #. module: sales_team
 #: model:ir.model.fields,field_description:sales_team.field_crm_team_member__user_id

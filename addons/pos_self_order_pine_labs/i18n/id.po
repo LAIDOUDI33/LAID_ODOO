@@ -20,6 +20,20 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: pos_self_order_pine_labs
+#: model:ir.module.module,summary:base.module_pos_self_order_pine_labs
+msgid ""
+"An addon for the Self Order App (KIOSK) that allows customers to pay using "
+"the Pine Labs POS Terminal."
+msgstr ""
+"Addon untuk Aplikasi Pesan Mandiri (KIOSK) yang memungkinkan pelanggan untuk "
+"membayar menggunakan Terminal POS Pine Labs."
+
+#. module: pos_self_order_pine_labs
+#: model:ir.module.module,shortdesc:base.module_pos_self_order_pine_labs
+msgid "POS Self Order Pine Labs"
+msgstr "POS Pemesanan Mandiri Pine Labs"
+
+#. module: pos_self_order_pine_labs
 #: model:ir.model.fields,field_description:pos_self_order_pine_labs.field_pos_payment_method__display_name
 msgid "Display Name"
 msgstr "Nama Tampilan"

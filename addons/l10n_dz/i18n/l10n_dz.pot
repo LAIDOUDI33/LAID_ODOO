@@ -16,6 +16,20 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_dz
+#: model:ir.module.module,description:base.module_l10n_dz
+msgid ""
+"\n"
+"This is the module to manage the accounting chart for Algeria in Odoo.\n"
+"======================================================================\n"
+"This module applies to companies based in Algeria.\n"
+msgstr ""
+
+#. module: l10n_dz
+#: model:ir.module.module,shortdesc:base.module_l10n_dz
+msgid "Algeria - Accounting"
+msgstr ""
+
+#. module: l10n_dz
 #: model:ir.model,name:l10n_dz.model_account_chart_template
 msgid "Account Chart Template"
 msgstr ""

@@ -26,6 +26,18 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: pos_self_order
+#: model:ir.module.module,summary:base.module_pos_self_order
+msgid ""
+"Addon for the POS App that allows customers to view the menu on their "
+"smartphone."
+msgstr "POS 應用程序的插件，可讓顧客在智能手機上查看菜單。"
+
+#. module: pos_self_order
+#: model:ir.module.module,shortdesc:base.module_pos_self_order
+msgid "POS Self Order"
+msgstr "POS 自助訂購"
+
+#. module: pos_self_order
 #: model:ir.actions.report,print_report_name:pos_self_order.report_self_order_qr_codes_page
 msgid "\"QR codes\""
 msgstr "\"二維碼\""

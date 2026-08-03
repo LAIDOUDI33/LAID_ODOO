@@ -16,6 +16,18 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_kh
+#: model:ir.module.module,description:base.module_l10n_kh
+msgid ""
+"\n"
+"Chart Of Account and Taxes for Cambodia.\n"
+msgstr ""
+
+#. module: l10n_kh
+#: model:ir.module.module,shortdesc:base.module_l10n_kh
+msgid "Cambodia - Accounting"
+msgstr ""
+
+#. module: l10n_kh
 #: model:account.report.line,name:l10n_kh.l10n_kh_wt003_kh_wt003_wht_2_1
 msgid "01 Payment of interest"
 msgstr ""

@@ -16,6 +16,23 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_tw_edi_ecpay_website_sale
+#: model:ir.module.module,description:base.module_l10n_tw_edi_ecpay_website_sale
+msgid ""
+"\n"
+"This bridge module allows the user to input Ecpay information in ecommerce for sending their invoices to the Ecpay system\n"
+msgstr ""
+
+#. module: l10n_tw_edi_ecpay_website_sale
+#: model:ir.module.module,summary:base.module_l10n_tw_edi_ecpay_website_sale
+msgid "ECpay E-invoice bridge module for Ecommerce"
+msgstr ""
+
+#. module: l10n_tw_edi_ecpay_website_sale
+#: model:ir.module.module,shortdesc:base.module_l10n_tw_edi_ecpay_website_sale
+msgid "Taiwan - E-invoicing Ecommerce"
+msgstr ""
+
+#. module: l10n_tw_edi_ecpay_website_sale
 #. odoo-javascript
 #: code:addons/l10n_tw_edi_ecpay_website_sale/static/src/js/edi_invoicing_info.js:0
 msgid "Card hidden code"

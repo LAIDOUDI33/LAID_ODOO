@@ -23,6 +23,31 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: base_sparse_field
+#: model:ir.module.module,description:base.module_base_sparse_field
+msgid ""
+"\n"
+"The purpose of this module is to implement \"sparse\" fields, i.e., fields\n"
+"that are mostly null. This implementation circumvents the PostgreSQL\n"
+"limitation on the number of columns in a table. The values of all sparse\n"
+"fields are stored in a \"serialized\" field in the form of a JSON mapping.\n"
+msgstr ""
+"\n"
+"此模块的目的是实现“稀疏”字段，即大部分为空的字段。\n"
+"此实现绕过了PostgreSQL\n"
+"对表中列数的限制。\n"
+"所有稀疏字段的值都以JSON映射的形式存储在“序列化”字段中。\n"
+
+#. module: base_sparse_field
+#: model:ir.module.module,summary:base.module_base_sparse_field
+msgid "Implementation of sparse fields."
+msgstr "稀疏字段的实现"
+
+#. module: base_sparse_field
+#: model:ir.module.module,shortdesc:base.module_base_sparse_field
+msgid "Sparse Fields"
+msgstr "稀疏字段"
+
+#. module: base_sparse_field
 #: model:ir.model,name:base_sparse_field.model_base
 msgid "Base"
 msgstr "基数"

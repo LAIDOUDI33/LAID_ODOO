@@ -21,6 +21,37 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: account_update_tax_tags
+#: model:ir.module.module,description:base.module_account_update_tax_tags
+msgid ""
+"\n"
+"This module allows updating tax grids on existing accounting entries.\n"
+"In debug mode a button to update your entries' tax grids will be available\n"
+"in Accounting settings.\n"
+"This is typically useful after some legal changes were done on the tax "
+"report,\n"
+"requiring a new tax configuration.\n"
+msgstr ""
+"\n"
+"Ta modul omogoča posodabljanje davčnih tabel na obstoječih računovodskih "
+"vnosih.\n"
+"V načinu za odpravljanje napak bo na voljo gumb za posodobitev davčnih mrež "
+"vaših vnosov.\n"
+"v nastavitvah računovodstva.\n"
+"To je običajno uporabno po tem, ko so bile v davčni napovedi opravljene "
+"nekatere pravne spremembe,\n"
+"katere zahtevajo novo davčno konfiguracijo.\n"
+
+#. module: account_update_tax_tags
+#: model:ir.module.module,shortdesc:base.module_account_update_tax_tags
+msgid "Account - Allow updating tax grids"
+msgstr "Račun - Dovoli posodabljanje davčnih tabel"
+
+#. module: account_update_tax_tags
+#: model:ir.module.module,summary:base.module_account_update_tax_tags
+msgid "Allow updating tax grids on existing entries"
+msgstr "Dovoli posodabljanje davčnih mrež za obstoječe vnose"
+
+#. module: account_update_tax_tags
 #: model:ir.model.fields,field_description:account_update_tax_tags.field_account_update_tax_tags_wizard__company_id
 msgid "Company"
 msgstr "Podjetje"

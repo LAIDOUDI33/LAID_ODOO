@@ -23,6 +23,21 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_crm_livechat
+#: model:ir.module.module,description:base.module_website_crm_livechat
+msgid "Adds a stat button on lead form view to access their livechat sessions."
+msgstr "在潛在客戶表單視圖上添加統計按鈕，以訪問他們的即時聊天會話。"
+
+#. module: website_crm_livechat
+#: model:ir.module.module,shortdesc:base.module_website_crm_livechat
+msgid "Lead Livechat Sessions"
+msgstr "潛在客戶線上客服作業階段"
+
+#. module: website_crm_livechat
+#: model:ir.module.module,summary:base.module_website_crm_livechat
+msgid "View livechat sessions for leads"
+msgstr "檢視潛在客戶的即時聊天作業階段"
+
+#. module: website_crm_livechat
 #: model:ir.model.fields,field_description:website_crm_livechat.field_crm_lead__visitor_sessions_count
 msgid "# Sessions"
 msgstr "# 對話視窗"

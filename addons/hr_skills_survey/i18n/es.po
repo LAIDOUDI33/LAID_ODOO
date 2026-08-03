@@ -25,6 +25,31 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: hr_skills_survey
+#: model:ir.module.module,description:base.module_hr_skills_survey
+msgid ""
+"\n"
+"Certification and Skills for HR\n"
+"===============================\n"
+"\n"
+"This module adds certification to resume for employees.\n"
+msgstr ""
+"\n"
+"Certificación y habilidades para RR. HH. \n"
+"===============================\n"
+"\n"
+"Este módulo añade certificación al currículum de los empleados.\n"
+
+#. module: hr_skills_survey
+#: model:ir.module.module,summary:base.module_hr_skills_survey
+msgid "Add certification to resume of your employees"
+msgstr "Añada certificaciones a los currículums de sus empleados"
+
+#. module: hr_skills_survey
+#: model:ir.module.module,shortdesc:base.module_hr_skills_survey
+msgid "Skills Certification"
+msgstr "Certificación de habilidades"
+
+#. module: hr_skills_survey
 #. odoo-python
 #: code:addons/hr_skills_survey/models/hr_resume_line.py:0
 msgid "%s (copy)"

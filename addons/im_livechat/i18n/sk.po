@@ -32,6 +32,36 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: im_livechat
+#: model:ir.module.module,description:base.module_im_livechat
+msgid ""
+"\n"
+"Live Chat Support\n"
+"==========================\n"
+"\n"
+"Allow to drop instant messaging widgets on any web page that will "
+"communicate\n"
+"with the current server and dispatch visitors request amongst several live\n"
+"chat operators.\n"
+"Help your customers with this chat, and analyse their feedback.\n"
+"\n"
+msgstr ""
+
+#. module: im_livechat
+#: model:ir.module.module,summary:base.module_im_livechat
+msgid "Chat with your website visitors"
+msgstr "Chatujte s návštevníkmi svojich webstránok"
+
+#. module: im_livechat
+#: model:ir.model.fields.selection,name:im_livechat.selection__discuss_channel__channel_type__livechat
+#: model:ir.module.module,shortdesc:base.module_im_livechat
+#: model:ir.ui.menu,name:im_livechat.livechat_technical
+#: model:ir.ui.menu,name:im_livechat.menu_livechat_root
+#: model:res.groups.privilege,name:im_livechat.res_groups_privilege_live_chat
+#: model_terms:ir.ui.view,arch_db:im_livechat.digest_digest_view_form_inherit
+msgid "Live Chat"
+msgstr "Živý chat"
+
+#. module: im_livechat
 #: model:ir.model.constraint,message:im_livechat.constraint_discuss_channel_livechat_rating_constraint
 msgid ""
 "\n"
@@ -1757,15 +1787,6 @@ msgstr "Skúsim zistiť, či vás môžem spojiť so správnym odborníkom..."
 #, fuzzy
 msgid "Limited"
 msgstr "Obmedzené"
-
-#. module: im_livechat
-#: model:ir.model.fields.selection,name:im_livechat.selection__discuss_channel__channel_type__livechat
-#: model:ir.ui.menu,name:im_livechat.livechat_technical
-#: model:ir.ui.menu,name:im_livechat.menu_livechat_root
-#: model:res.groups.privilege,name:im_livechat.res_groups_privilege_live_chat
-#: model_terms:ir.ui.view,arch_db:im_livechat.digest_digest_view_form_inherit
-msgid "Live Chat"
-msgstr "Živý chat"
 
 #. module: im_livechat
 #: model:ir.model.fields,field_description:im_livechat.field_im_livechat_channel_rule__action

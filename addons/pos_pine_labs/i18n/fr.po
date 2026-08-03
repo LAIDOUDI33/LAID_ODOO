@@ -21,6 +21,48 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: pos_pine_labs
+#: model:ir.module.module,description:base.module_pos_pine_labs
+msgid ""
+"\n"
+"Allow Pine Labs POS payments\n"
+"==============================\n"
+"\n"
+"This module is available only for companies that use INR currency.\n"
+"It enables customers to pay for their orders using debit/credit cards and "
+"UPI through Pine Labs POS terminals.\n"
+"A Pine Labs merchant account is required to process transactions.\n"
+"Features include:\n"
+"\n"
+"* Quick payments by swiping, scanning, or tapping your credit/debit card or "
+"UPI QR code at the payment terminal.\n"
+"* Supported cards: Visa, MasterCard, RuPay.\n"
+msgstr ""
+"\n"
+"Autoriser les paiements Pine Labs PdV\n"
+"==============================\n"
+"\n"
+"Ce module est disponible uniquement pour les entreprises utilisant la devise "
+"INR.\n"
+"Il permet aux clients de payer leurs commandes par carte de débit/crédit ou "
+"UPI via les terminaux PdV Pine Labs.\n"
+"Un compte marchand Pine Labs est requis pour traiter les transactions.\n"
+"Fonctionnalités :\n"
+"\n"
+"* Paiements rapides par glissement, scan ou contact de la carte de crédit/"
+"débit ou du QR code UPI sur le terminal de paiement.\n"
+"* Cartes prises en charge : Visa, MasterCard, RuPay.\n"
+
+#. module: pos_pine_labs
+#: model:ir.module.module,summary:base.module_pos_pine_labs
+msgid "Integrate your POS with Pine Labs payment terminals"
+msgstr "Intégrez votre PdV avec les terminaux de paiement Pine Labs"
+
+#. module: pos_pine_labs
+#: model:ir.module.module,shortdesc:base.module_pos_pine_labs
+msgid "POS Pine Labs"
+msgstr "PdV Pine Labs"
+
+#. module: pos_pine_labs
 #: model:ir.model.fields,help:pos_pine_labs.field_pos_payment_method__pine_labs_client
 msgid "A client id issued directly to the merchant by Pine Labs."
 msgstr "Un identifiant client attribué directement au commerçant par Pine Labs."

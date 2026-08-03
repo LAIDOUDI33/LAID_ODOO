@@ -20,6 +20,29 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: stock_maintenance
+#: model:ir.module.module,description:base.module_stock_maintenance
+msgid ""
+"\n"
+"Stock in Maintenance\n"
+"====================\n"
+"Open the record of the serial number from an equipment form\n"
+msgstr ""
+"\n"
+"Scorte in manutenzione\n"
+"====================\n"
+"Apri il record del numero seriale da un modulo di attrezzatura\n"
+
+#. module: stock_maintenance
+#: model:ir.module.module,summary:base.module_stock_maintenance
+msgid "See lots used in maintenance"
+msgstr "Vedi i lotti usati per la manutenzione"
+
+#. module: stock_maintenance
+#: model:ir.module.module,shortdesc:base.module_stock_maintenance
+msgid "Stock - Maintenance"
+msgstr "Scorte - Manutenzione"
+
+#. module: stock_maintenance
 #: model_terms:ir.ui.view,arch_db:stock_maintenance.stock_location_form_maintenance_equipments
 msgid ""
 "<span class=\"o_stat_text\">\n"
