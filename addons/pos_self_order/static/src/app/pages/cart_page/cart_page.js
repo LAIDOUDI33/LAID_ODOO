@@ -7,11 +7,13 @@ import { PresetInfoPopup } from "@pos_self_order/app/components/preset_info_popu
 import { useScrollShadow } from "../../utils/scroll_shadow_hook";
 import { CancelPopup } from "@pos_self_order/app/components/cancel_popup/cancel_popup";
 import { TextInputPopup } from "@point_of_sale/app/components/popups/text_input_popup/text_input_popup";
+import { NumberPopup } from "@pos_self_order/app/components/number_popup/number_popup";
 import { _t } from "@web/core/l10n/translation";
 import { formatProductName } from "../../utils";
 import { makeAwaitable } from "@point_of_sale/app/utils/make_awaitable_dialog";
 import { PillsSelectionPopup } from "@pos_self_order/app/components/pills_selection_popup/pills_selection_popup";
 import { ChooseComboPopup } from "@pos_self_order/app/components/choose_combo_popup/choose_combo_popup";
+import { getOrderLineValues } from "@pos_self_order/app/services/card_utils";
 const { DateTime } = luxon;
 
 export class CartPage extends Component {
@@ -37,7 +39,7 @@ export class CartPage extends Component {
                 const order = this.selfOrder.currentOrder;
                 const nonDeliveryId = order.preset_id?.delivery_product_id?.id;
                 const nonDeliveryTotal = order.lines
-                    .filter((l) => l.product_id?.id !== nonDeliveryId)
+                    .filter((l) => l.product_id?.id !== nonDeliveryId && !l.isTipLine())
                     .reduce((sum, l) => sum + (l.qty || 0) * (l.price_unit || 0), 0);
                 return [order.preset_id?.id, nonDeliveryTotal];
             }
@@ -48,7 +50,7 @@ export class CartPage extends Component {
                 const order = this.selfOrder.currentOrder;
                 const serviceFeeProductId = order.preset_id?.service_fee_product_id?.id;
                 const applicableTotal = order.lines
-                    .filter((l) => l.product_id?.id !== serviceFeeProductId)
+                    .filter((l) => l.product_id?.id !== serviceFeeProductId && !l.isTipLine())
                     .reduce((sum, l) => sum + (l.qty || 0) * (l.price_unit || 0), 0);
                 return [order.preset_id?.id, applicableTotal];
             }
@@ -128,7 +130,7 @@ export class CartPage extends Component {
             lines = order.unsentLines.filter((line) => !line.combo_parent_id);
         } else {
             lines = order.lines.filter(
-                (l) => order.uiState.lineChanges[l.uuid] && !l.combo_parent_id
+                (l) => order.uiState.lineChanges[l.uuid] && !l.combo_parent_id && !l.isTipLine()
             );
         }
 
@@ -155,7 +157,7 @@ export class CartPage extends Component {
             ? this.selfOrder.orderLineNotSend
             : this.selfOrder.orderLineSent;
         return {
-            priceWithTax: count > 0 ? priceWithTax : priceIncl,
+            priceWithTax: count > 0 ? priceWithTax + this.tipAmount : priceIncl,
             tax: count > 0 ? tax : amountTaxes,
         };
     }
@@ -301,6 +303,106 @@ export class CartPage extends Component {
         if (note !== undefined) {
             this.state.orderNoteValue = note;
         }
+    }
+
+    get tipPercentages() {
+        return [15, 20, 25];
+    }
+
+    tipAmountForPercent(percentage) {
+        const subtotal = this.selfOrder.currentOrder.lines
+            .filter((l) => !l.isTipLine() && !l.isDeliveryLine() && !l.isServiceFeeLine())
+            .reduce((sum, l) => sum + l.prices.total_included, 0);
+        return this.selfOrder.currency.round((subtotal * percentage) / 100);
+    }
+
+    get tipAmount() {
+        return this.selfOrder.currentOrder.tip_amount || 0;
+    }
+
+    get tipUiState() {
+        return this.selfOrder.currentOrder.uiState.tip;
+    }
+
+    get isCustomTip() {
+        if (!this.selfOrder.currentOrder.is_tipped) {
+            return false;
+        }
+        return this.tipPercentages.every(
+            (percentage) => this.tipAmountForPercent(percentage) !== this.tipAmount
+        );
+    }
+
+    get showTipSection() {
+        return (
+            this.selfOrder.config.tip_product_id &&
+            this.selfOrder.hasPaymentMethod() &&
+            this.totalPriceAndTax.priceWithTax > 0 &&
+            this.lines.length > 0 &&
+            !(
+                this.selfOrder.config.self_ordering_pay_after === "meal" &&
+                Object.keys(this.selfOrder.currentOrder.changes).length > 0
+            )
+        );
+    }
+
+    setTip(amount, type = "fixed", value = false) {
+        const order = this.selfOrder.currentOrder;
+        const tipProduct = this.selfOrder.config.tip_product_id;
+        if (!order || !tipProduct) {
+            return;
+        }
+
+        const tipLine = order.lines.find((l) => l.isTipLine());
+        const tip = amount || 0;
+
+        if (!tip) {
+            this.selfOrder.resetTip();
+            return;
+        }
+
+        if (tipLine) {
+            tipLine.qty = 1;
+            tipLine.setUnitPrice(tip);
+        } else {
+            const lineValues = getOrderLineValues(
+                this.selfOrder,
+                tipProduct.product_tmpl_id,
+                1,
+                ""
+            );
+            const line = this.selfOrder.models["pos.order.line"].create(lineValues);
+            line.price_type = "manual";
+            line.setUnitPrice(tip);
+        }
+        order.setTip(tip, type, value || tip);
+    }
+
+    selectTipPercent(percentage) {
+        if (this.tipAmountForPercent(percentage) === this.tipAmount) {
+            this.setTip(false);
+        } else {
+            this.setTip(this.tipAmountForPercent(percentage), "percent", percentage);
+        }
+    }
+
+    async openTipNumpad() {
+        const payload = await makeAwaitable(this.dialog, NumberPopup, {
+            title: _t("Add a Tip"),
+            startingValue: this.isCustomTip ? this.tipUiState.value || "" : "",
+            formatDisplayedValue: (value) => this.env.utils.formatCurrency(parseFloat(value) || 0),
+        });
+        if (!payload) {
+            return;
+        }
+
+        const amount = this.selfOrder.currency.round(parseFloat(payload.value) || 0);
+        if (!amount) {
+            await this.setTip(false);
+            return;
+        }
+
+        await this.setTip(amount);
     }
 
     async cancelOrder() {
@@ -508,8 +610,8 @@ export class CartPage extends Component {
             line.qty = lastChange.qty;
             return;
         }
-
         const doRemoveLine = () => {
+            this.setTip(false);
             this.selfOrder.removeLine(line);
             if (this.lines.length === 0) {
                 this.router.navigate("product_list");
@@ -532,7 +634,7 @@ export class CartPage extends Component {
         if (!increase && !this.canChangeQuantity(line)) {
             return;
         }
-
+        this.setTip(false);
         // Update combo first
         for (const cline of line.combo_line_ids) {
             this.changeQuantity(cline, increase);
@@ -555,11 +657,6 @@ export class CartPage extends Component {
     }
     get displayTaxes() {
         return !this.selfOrder.isTaxesIncludedInPrice();
-    }
-
-    isDeliveryLine(line) {
-        const deliveryProductId = this.selfOrder.currentOrder.preset_id?.delivery_product_id?.id;
-        return deliveryProductId && line.product_id?.id === deliveryProductId;
     }
 
     formatProductName(product) {
