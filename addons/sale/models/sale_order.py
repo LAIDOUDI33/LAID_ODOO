@@ -2271,25 +2271,29 @@ class SaleOrder(models.Model):
         self.ensure_one()
         return self.sudo().transaction_ids._get_last()
 
-    def _get_portal_payment_status(self):
-        """Return the payment status to display on the customer portal.
+    def _get_portal_display_transaction(self):
+        """Return the transaction whose state should be displayed on the customer portal.
+        # TODO-PDA brainstorm name here too.
 
         With split payments, the status can no longer be inferred from the last transaction only;
-        it is derived from the aggregated transaction amounts.
+        it is derived from the most relevant transaction, considering the following order:
+        - done (amount_paid >= amount_total, no transaction authorized)
+        - authorized (amount_paid >= amount_total, at least 1 authorized transaction)
+        - pending (amount_paid + amount_pending >= amount_total, at least 1 pending transaction)
 
-        :return: 'paid', 'pending', 'authorized', or False if no status should be displayed.
-        :rtype: str|bool
+        :return: The last transaction in the relevant state ('done', 'authorized' or 'pending'),
+                 or an empty recordset if no status should be displayed.
+        :rtype: recordset of `payment.transaction`
         """
         self.ensure_one()
-        transactions = self.with_context(active_test=False).sudo().transaction_ids
-        if self._is_paid():
-            if any(tx.state == "authorized" for tx in transactions):
-                return "authorized"
-            return "paid"
-        if self._is_paid_or_in_payment():
-            if any(tx.state == "pending" for tx in transactions):
-                return "pending"
-        return False
+        txs_sudo = self.with_context(active_test=False).sudo().transaction_ids
+        if self.currency_id.compare_amounts(self.amount_paid, self.amount_total) >= 0:
+            authorized_tx = txs_sudo.filtered(lambda tx: tx.state == "authorized")._get_last()
+            return authorized_tx or txs_sudo.filtered(lambda tx: tx.state == "done")._get_last()
+        paid_or_pending_amount = self.amount_paid + self.amount_pending
+        if self.currency_id.compare_amounts(paid_or_pending_amount, self.amount_total) >= 0:
+            return txs_sudo.filtered(lambda tx: tx.state == "pending")._get_last()
+        return self.env["payment.transaction"]
 
     def _get_order_lines_to_report(self):
         down_payment_lines = self.order_line.filtered(
