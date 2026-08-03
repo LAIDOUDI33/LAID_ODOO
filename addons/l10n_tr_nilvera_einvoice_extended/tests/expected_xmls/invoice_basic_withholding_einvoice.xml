@@ -127,7 +127,7 @@
       <cbc:Percent>90</cbc:Percent>
       <cac:TaxCategory>
         <cac:TaxScheme>
-          <cbc:Name>Özel Güvenlik Hizmeti</cbc:Name>
+          <cbc:Name>607 - Özel Güvenlik Hizmeti</cbc:Name>
           <cbc:TaxTypeCode>607</cbc:TaxTypeCode>
         </cac:TaxScheme>
       </cac:TaxCategory>
@@ -171,14 +171,13 @@
         <cbc:Percent>90</cbc:Percent>
         <cac:TaxCategory>
           <cac:TaxScheme>
-            <cbc:Name>Özel Güvenlik Hizmeti</cbc:Name>
+            <cbc:Name>607 - Özel Güvenlik Hizmeti</cbc:Name>
             <cbc:TaxTypeCode>607</cbc:TaxTypeCode>
           </cac:TaxScheme>
         </cac:TaxCategory>
       </cac:TaxSubtotal>
     </cac:WithholdingTaxTotal>
     <cac:Item>
-      <cbc:Description>product_a</cbc:Description>
       <cbc:Name>product_a</cbc:Name>
     </cac:Item>
     <cac:Price>
