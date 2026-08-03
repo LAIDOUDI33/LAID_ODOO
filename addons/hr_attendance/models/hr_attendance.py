@@ -4,10 +4,18 @@ import pytz
 
 from calendar import monthrange
 from collections import defaultdict
+<<<<<<< 42becee9017170852d48fb659a633c236341d045
 from datetime import datetime, timedelta, time
 from dateutil.rrule import rrule, DAILY
 from dateutil.relativedelta import relativedelta, MO, SU
 from itertools import chain
+||||||| 94b3cdd32bc53d7d30e9b26a69a9c70f5dc11b3e
+from datetime import date, datetime, timedelta
+from dateutil.relativedelta import relativedelta
+=======
+from datetime import date, datetime, timedelta
+from dateutil.relativedelta import relativedelta, MO, SU
+>>>>>>> 91f754e6c64f972fa81af60de4fd8a9cf300a1b2
 from operator import itemgetter
 from pytz import timezone, utc
 from random import randint
@@ -282,6 +290,7 @@ class HrAttendance(models.Model):
                 date_from = local_check_in.date()
                 date_to = local_check_out.date()
 
+<<<<<<< 42becee9017170852d48fb659a633c236341d045
             domain_list.append(Domain.AND([
                 Domain('employee_id', '=', employee.id),
                 Domain('check_in', '<=', datetime.combine(date_to, datetime.max.time()).replace(tzinfo=tz).astimezone(utc).replace(tzinfo=None)),
@@ -290,6 +299,64 @@ class HrAttendance(models.Model):
         if not domain_list:
             return Domain.FALSE
         return Domain.OR(domain_list) if len(domain_list) > 1 else domain_list[0]
+||||||| 94b3cdd32bc53d7d30e9b26a69a9c70f5dc11b3e
+    def _update_overtime(self, employee_attendance_dates=None):
+        if employee_attendance_dates is None:
+            employee_attendance_dates = self._get_attendances_dates()
+=======
+    def _update_overtime(self, employee_attendance_dates=None):
+        if employee_attendance_dates is None:
+            employee_attendance_dates = self._get_attendances_dates()
+        employee_attendance_dates = {
+            employee: attendance_dates
+            for employee, attendance_dates in employee_attendance_dates.items()
+            if not employee.sudo().is_fully_flexible
+        }
+        expanded_attendance_dates = dict(employee_attendance_dates)
+        # Collect week boundaries per flexible employee, then fetch all attendances in a single query
+        flexible_emp_data = {}
+        for emp in list(employee_attendance_dates.keys()):
+            calendar = emp.resource_calendar_id or emp.company_id.resource_calendar_id
+            if calendar and calendar.flexible_hours and calendar.full_time_required_hours:
+                employee_tz = pytz.timezone(emp._get_tz())
+                week_starts = set()
+                for attendance_tuple in employee_attendance_dates[emp]:
+                    attendance_date = attendance_tuple[1]
+                    week_starts.add(attendance_date + relativedelta(weekday=MO(-1)))
+
+                if week_starts:
+                    min_week_start = min(week_starts)
+                    max_week_start = max(week_starts)
+                    min_week_start_utc = employee_tz.localize(datetime.combine(min_week_start, datetime.min.time())).astimezone(pytz.utc).replace(tzinfo=None)
+                    max_week_end_utc = employee_tz.localize(datetime.combine(max_week_start + relativedelta(weekday=SU(1)), datetime.max.time())).astimezone(pytz.utc).replace(tzinfo=None)
+                    flexible_emp_data[emp] = {
+                        'week_starts': week_starts,
+                        'min_utc': min_week_start_utc,
+                        'max_utc': max_week_end_utc,
+                    }
+
+        if flexible_emp_data:
+            att_groups = self.env['hr.attendance']._read_group(
+                domain=[
+                    ('employee_id', 'in', [emp.id for emp in flexible_emp_data]),
+                    ('check_in', '>=', min(d['min_utc'] for d in flexible_emp_data.values())),
+                    ('check_in', '<=', max(d['max_utc'] for d in flexible_emp_data.values())),
+                ],
+                groupby=['employee_id'],
+                aggregates=['id:recordset'],
+            )
+            att_by_emp = dict(att_groups)
+            for emp, emp_data in flexible_emp_data.items():
+                week_dates_to_add = set()
+                for att in att_by_emp.get(emp, self.browse()):
+                    day_start_tuple = att._get_day_start_and_day(emp, att.check_in)
+                    week_start = day_start_tuple[1] + relativedelta(weekday=MO(-1))
+                    if week_start in emp_data['week_starts']:
+                        week_dates_to_add.add(day_start_tuple)
+                expanded_attendance_dates[emp] = expanded_attendance_dates.get(emp, set()) | week_dates_to_add
+
+        employee_attendance_dates = expanded_attendance_dates
+>>>>>>> 91f754e6c64f972fa81af60de4fd8a9cf300a1b2
 
     def _get_overtime_domain_from_attendance_domain(self, attendance_domain):
         overtime_domain = []
@@ -337,6 +404,7 @@ class HrAttendance(models.Model):
         employees = all_attendances.employee_id
         schedules_intervals_by_employee = employees._get_schedules_by_employee_by_work_type(min_check_in, max_check_out, version_periods_by_employee)
         overtime_vals_list = []
+<<<<<<< 42becee9017170852d48fb659a633c236341d045
         for ruleset_sudo, ruleset_attendances in attendances_by_ruleset.items():
             attendances_dates = list(chain(*ruleset_attendances._get_dates().values()))
             overtime_vals_list.extend([
@@ -345,12 +413,372 @@ class HrAttendance(models.Model):
                     'status': 'to_approve'
                 } if (val['employee_id'], val['date']) in manual_overtimes else val
                 for val in ruleset_sudo.rule_ids._generate_overtime_vals_v2(min(attendances_dates), max(attendances_dates), ruleset_attendances, schedules_intervals_by_employee)
+||||||| 94b3cdd32bc53d7d30e9b26a69a9c70f5dc11b3e
+        affected_employees = self.env['hr.employee']
+        for emp, attendance_dates in employee_attendance_dates.items():
+            # get_attendances_dates returns the date translated from the local timezone without tzinfo,
+            # and contains all the date which we need to check for overtime
+            attendance_domain = []
+            for attendance_date in attendance_dates:
+                attendance_domain = OR([attendance_domain, [
+                    ('check_in', '>=', attendance_date[0]), ('check_in', '<', attendance_date[0] + timedelta(hours=24)),
+                ]])
+            attendance_domain = AND([[('employee_id', '=', emp.id)], attendance_domain])
+
+            # Attendances per LOCAL day
+            attendances_per_day = defaultdict(lambda: self.env['hr.attendance'])
+            all_attendances = self.env['hr.attendance'].search(attendance_domain)
+            for attendance in all_attendances:
+                check_in_day_start = attendance._get_day_start_and_day(attendance.employee_id, attendance.check_in)
+                attendances_per_day[check_in_day_start[1]] += attendance
+
+            # As _attendance_intervals_batch and _leave_intervals_batch both take localized dates we need to localize those date
+            start = pytz.utc.localize(min(attendance_dates, key=itemgetter(0))[0])
+            stop = pytz.utc.localize(max(attendance_dates, key=itemgetter(0))[0] + timedelta(hours=24))
+
+            # Retrieve expected attendance intervals
+            expected_attendances = emp._employee_attendance_intervals(start, stop)
+
+            # working_times = {date: [(start, stop)]}
+            working_times = defaultdict(lambda: [])
+            for expected_attendance in expected_attendances:
+                # Exclude resource.calendar.attendance
+                working_times[expected_attendance[0].date()].append(expected_attendance[:2])
+
+            overtimes = self.env['hr.attendance.overtime'].sudo().search([
+                ('employee_id', '=', emp.id),
+                ('date', 'in', [day_data[1] for day_data in attendance_dates]),
+                ('adjustment', '=', False),
+=======
+        affected_employees = self.env['hr.employee']
+        for emp, attendance_dates in employee_attendance_dates.items():
+            # get_attendances_dates returns the date translated from the local timezone without tzinfo,
+            # and contains all the date which we need to check for overtime
+            attendance_domain = []
+            for attendance_date in attendance_dates:
+                attendance_domain = OR([attendance_domain, [
+                    ('check_in', '>=', attendance_date[0]), ('check_in', '<', attendance_date[0] + timedelta(hours=24)),
+                ]])
+            attendance_domain = AND([[('employee_id', '=', emp.id)], attendance_domain])
+
+            # Attendances per LOCAL day
+            attendances_per_day = defaultdict(lambda: self.env['hr.attendance'])
+            all_attendances = self.env['hr.attendance'].search(attendance_domain)
+            for attendance in all_attendances:
+                check_in_day_start = attendance._get_day_start_and_day(attendance.employee_id, attendance.check_in)
+                attendances_per_day[check_in_day_start[1]] += attendance
+
+            # As _attendance_intervals_batch and _leave_intervals_batch both take localized dates we need to localize those date
+            start = pytz.utc.localize(min(attendance_dates, key=itemgetter(0))[0])
+            stop = pytz.utc.localize(max(attendance_dates, key=itemgetter(0))[0] + timedelta(hours=24))
+
+            # Retrieve expected attendance intervals
+            calendar = emp.resource_calendar_id or emp.company_id.resource_calendar_id
+            expected_attendances = emp._employee_attendance_intervals(start, stop)
+
+            # working_times = {date: [(start, stop)]}
+            working_times = defaultdict(lambda: [])
+            for expected_attendance in expected_attendances:
+                # Exclude resource.calendar.attendance
+                working_times[expected_attendance[0].date()].append(expected_attendance[:2])
+
+            overtimes = self.env['hr.attendance.overtime'].sudo().search([
+                ('employee_id', '=', emp.id),
+                ('date', 'in', [day_data[1] for day_data in attendance_dates]),
+                ('adjustment', '=', False),
+>>>>>>> 91f754e6c64f972fa81af60de4fd8a9cf300a1b2
             ])
+<<<<<<< 42becee9017170852d48fb659a633c236341d045
         self.env['hr.attendance.overtime.line'].create(overtime_vals_list)
         self.env.add_to_compute(self._fields['overtime_hours'], all_attendances)
         self.env.add_to_compute(self._fields['expected_hours'], all_attendances)
         self.env.add_to_compute(self._fields['validated_overtime_hours'], all_attendances)
         self.env.add_to_compute(self._fields['overtime_status'], all_attendances)
+||||||| 94b3cdd32bc53d7d30e9b26a69a9c70f5dc11b3e
+
+            company_threshold = emp.company_id.overtime_company_threshold / 60.0
+            employee_threshold = emp.company_id.overtime_employee_threshold / 60.0
+
+            for day_data in attendance_dates:
+                attendance_date = day_data[1]
+                attendances = attendances_per_day.get(attendance_date, self.browse())
+                unfinished_shifts = attendances.filtered(lambda a: not a.check_out)
+                overtime_duration = 0
+                overtime_duration_real = 0
+                # Overtime is not counted if any shift is not closed or if there are no attendances for that day,
+                # this could happen when deleting attendances.
+
+                # No overtime computed for fully flexible employees
+                if emp.sudo().is_fully_flexible:
+                    continue
+
+                if not unfinished_shifts and attendances:
+                    # The employee usually doesn't work on that day
+                    if not working_times[attendance_date]:
+                        # User does not have any resource_calendar_attendance for that day (week-end for example)
+                        overtime_duration = sum(attendances.mapped('worked_hours'))
+                        overtime_duration_real = overtime_duration
+                    # The employee usually work on that day
+                    else:
+                        # Count time before, during and after 'working hours'
+                        pre_work_time, work_duration, post_work_time, planned_work_duration = attendances._get_pre_post_work_time(emp, working_times, attendance_date)
+                        # Overtime within the planned work hours + overtime before/after work hours is > company threshold
+                        total_overtime_duration = pre_work_time + work_duration + post_work_time - planned_work_duration
+                        if total_overtime_duration > company_threshold and total_overtime_duration > 0:
+                            company_overtime_duration = total_overtime_duration
+                        else:
+                            company_overtime_duration = 0
+
+                        if total_overtime_duration < 0 and abs(total_overtime_duration) > employee_threshold:
+                            employee_overtime_duration = total_overtime_duration
+                        else:
+                            employee_overtime_duration = 0
+                        overtime_duration = employee_overtime_duration + company_overtime_duration
+                        # Global overtime including the thresholds
+                        overtime_duration_real = sum(attendances.mapped('worked_hours')) - planned_work_duration
+
+                overtime = overtimes.filtered(lambda o: o.date == attendance_date)
+                if not float_is_zero(overtime_duration, 2) or unfinished_shifts:
+                    # Do not create if any attendance doesn't have a check_out, update if exists
+                    if unfinished_shifts:
+                        overtime_duration = 0
+                    if not overtime and overtime_duration:
+                        overtime_vals_list.append({
+                            'employee_id': emp.id,
+                            'date': attendance_date,
+                            'duration': overtime_duration,
+                            'duration_real': overtime_duration_real,
+                        })
+                    elif overtime:
+                        overtime.sudo().write({
+                            'duration': overtime_duration,
+                            'duration_real': overtime_duration
+                        })
+                        affected_employees |= overtime.employee_id
+                elif overtime:
+                    overtime_to_unlink |= overtime
+        created_overtimes = self.env['hr.attendance.overtime'].sudo().create(overtime_vals_list)
+        employees_worked_hours_to_compute = (affected_employees.ids +
+                                             created_overtimes.employee_id.ids +
+                                             overtime_to_unlink.employee_id.ids)
+        overtime_to_unlink.sudo().unlink()
+        to_recompute = self.search([('employee_id', 'in', employees_worked_hours_to_compute)])
+        # for automatically validated attendances, avoid recomputing extra hours if user has changed its value
+        validated_modified = to_recompute.filtered(lambda att: att.employee_id.company_id.attendance_overtime_validation == 'no_validation'
+                                                        and float_compare(att.overtime_hours, att.validated_overtime_hours, precision_digits=2))
+        self.env.add_to_compute(self._fields['overtime_hours'],
+                                to_recompute)
+        self.env.add_to_compute(self._fields['validated_overtime_hours'],
+                                to_recompute - validated_modified)
+        self.env.add_to_compute(self._fields['expected_hours'],
+                                to_recompute)
+
+    def _get_pre_post_work_time(self, employee, working_times, attendance_date):
+        pre_work_time, work_duration, post_work_time = 0, 0, 0
+        company_threshold = employee.company_id.overtime_company_threshold / 60.0
+        employee_threshold = employee.company_id.overtime_employee_threshold / 60.0
+        # Compute start and end time for that day
+        planned_start_dt, planned_end_dt = False, False
+        planned_work_duration = 0
+        for calendar_attendance in working_times[attendance_date]:
+            planned_start_dt = min(planned_start_dt, calendar_attendance[0]) if planned_start_dt else calendar_attendance[0]
+            planned_end_dt = max(planned_end_dt, calendar_attendance[1]) if planned_end_dt else calendar_attendance[1]
+            planned_work_duration += (calendar_attendance[1] - calendar_attendance[0]).total_seconds() / 3600.0
+        for attendance in self:
+            # consider check_in as planned_start_dt if within threshold
+            # if delta_in < 0: Checked in after supposed start of the day
+            # if delta_in > 0: Checked in before supposed start of the day
+            local_check_in = pytz.utc.localize(attendance.check_in)
+            delta_in = (planned_start_dt - local_check_in).total_seconds() / 3600.0
+
+            # Started before or after planned date within the threshold interval
+            if (delta_in > 0 and delta_in <= company_threshold) or\
+                (delta_in < 0 and abs(delta_in) <= employee_threshold):
+                local_check_in = planned_start_dt
+            local_check_out = pytz.utc.localize(attendance.check_out)
+
+            # same for check_out as planned_end_dt
+            delta_out = (local_check_out - planned_end_dt).total_seconds() / 3600.0
+            # if delta_out < 0: Checked out before supposed start of the day
+            # if delta_out > 0: Checked out after supposed start of the day
+
+            # Finised before or after planned date within the threshold interval
+            if (delta_out > 0 and delta_out <= company_threshold) or\
+                (delta_out < 0 and abs(delta_out) <= employee_threshold):
+                local_check_out = planned_end_dt
+
+            # There is an overtime at the start of the day
+            if local_check_in < planned_start_dt:
+                pre_work_time += (min(planned_start_dt, local_check_out) - local_check_in).total_seconds() / 3600.0
+            # Interval inside the working hours -> Considered as working time
+            if local_check_in <= planned_end_dt and local_check_out >= planned_start_dt:
+                start_dt = max(planned_start_dt, local_check_in)
+                stop_dt = min(planned_end_dt, local_check_out)
+                work_duration += (stop_dt - start_dt).total_seconds() / 3600.0
+                # remove lunch time from work duration
+                if not employee.sudo().is_flexible:
+                    lunch_intervals = employee._employee_attendance_intervals(start_dt, stop_dt, lunch=True)
+                    work_duration -= sum((i[1] - i[0]).total_seconds() / 3600.0 for i in lunch_intervals)
+
+            # There is an overtime at the end of the day
+            if local_check_out > planned_end_dt:
+                post_work_time += (local_check_out - max(planned_end_dt, local_check_in)).total_seconds() / 3600.0
+        return pre_work_time, work_duration, post_work_time, planned_work_duration
+=======
+
+            company_threshold = emp.company_id.overtime_company_threshold / 60.0
+            employee_threshold = emp.company_id.overtime_employee_threshold / 60.0
+
+            is_flexible = bool(calendar and calendar.flexible_hours)
+            has_weekly_cap = bool(calendar and calendar.full_time_required_hours)
+            is_weekly_flexible = is_flexible and has_weekly_cap
+            weekly_limit = calendar.full_time_required_hours if is_weekly_flexible else 0.0
+
+            weekly_expected_hours = defaultdict(float)
+
+            for day_data in sorted(attendance_dates, key=lambda x: x[1]):
+                attendance_date = day_data[1]
+                attendances = attendances_per_day.get(attendance_date, self.browse())
+                unfinished_shifts = attendances.filtered(lambda a: not a.check_out)
+                overtime_duration = 0
+                overtime_duration_real = 0
+                # Overtime is not counted if any shift is not closed or if there are no attendances for that day,
+                # this could happen when deleting attendances.
+
+                if not unfinished_shifts and attendances:
+                    if is_weekly_flexible:
+                        # For flexible schedules with weekly limits, calculate overtime based on weekly cap
+                        week_key = attendance_date + relativedelta(weekday=MO(-1))
+                        expected_hours_so_far_this_week = weekly_expected_hours[week_key]
+                        hours_today = sum(attendances.mapped('worked_hours'))
+
+                        # Calculate expected hours for today based on:
+                        # 1. hours_per_day from calendar
+                        # 2. remaining weekly hours allowed - weekly cap based on expected hours
+                        # Expected is the minimum of these two (what they should work, capped by weekly limit)
+                        hours_per_day = calendar.hours_per_day or 0.0
+                        hours_remaining_this_week = max(0.0, weekly_limit - expected_hours_so_far_this_week)
+                        expected_hours_today = min(hours_per_day, hours_remaining_this_week)
+                        weekly_expected_hours[week_key] = expected_hours_so_far_this_week + expected_hours_today
+                        overtime_duration = hours_today - expected_hours_today
+                        overtime_duration_real = overtime_duration
+                    # For flexible schedules without weekly limits, calculate based on hours_per_day
+                    elif is_flexible:
+                        hours_today = sum(attendances.mapped('worked_hours'))
+                        hours_per_day = calendar.hours_per_day or 8.0
+                        overtime_duration = hours_today - hours_per_day
+                        overtime_duration_real = overtime_duration
+                    # For non-flexible schedules: check if it's a weekend/non-working day
+                    elif not working_times[attendance_date]:
+                        # User does not have any resource_calendar_attendance for that day (week-end for example)
+                        overtime_duration = sum(attendances.mapped('worked_hours'))
+                        overtime_duration_real = overtime_duration
+                    else:
+                        # Count time before, during and after 'working hours'
+                        pre_work_time, work_duration, post_work_time, planned_work_duration = attendances._get_pre_post_work_time(emp, working_times, attendance_date)
+                        # Overtime within the planned work hours + overtime before/after work hours is > company threshold
+                        total_overtime_duration = pre_work_time + work_duration + post_work_time - planned_work_duration
+                        if total_overtime_duration > company_threshold and total_overtime_duration > 0:
+                            company_overtime_duration = total_overtime_duration
+                        else:
+                            company_overtime_duration = 0
+
+                        if total_overtime_duration < 0 and abs(total_overtime_duration) > employee_threshold:
+                            employee_overtime_duration = total_overtime_duration
+                        else:
+                            employee_overtime_duration = 0
+                        overtime_duration = employee_overtime_duration + company_overtime_duration
+                        # Global overtime including the thresholds
+                        overtime_duration_real = sum(attendances.mapped('worked_hours')) - planned_work_duration
+
+                overtime = overtimes.filtered(lambda o: o.date == attendance_date)
+                if not float_is_zero(overtime_duration, 2) or unfinished_shifts:
+                    # Do not create if any attendance doesn't have a check_out, update if exists
+                    if unfinished_shifts:
+                        overtime_duration = 0
+                    if not overtime and overtime_duration:
+                        overtime_vals_list.append({
+                            'employee_id': emp.id,
+                            'date': attendance_date,
+                            'duration': overtime_duration,
+                            'duration_real': overtime_duration_real,
+                        })
+                    elif overtime:
+                        overtime.sudo().write({
+                            'duration': overtime_duration,
+                            'duration_real': overtime_duration
+                        })
+                        affected_employees |= overtime.employee_id
+                elif overtime:
+                    overtime_to_unlink |= overtime
+        created_overtimes = self.env['hr.attendance.overtime'].sudo().create(overtime_vals_list)
+        employees_worked_hours_to_compute = (affected_employees.ids +
+                                             created_overtimes.employee_id.ids +
+                                             overtime_to_unlink.employee_id.ids)
+        overtime_to_unlink.sudo().unlink()
+        to_recompute = self.search([('employee_id', 'in', employees_worked_hours_to_compute)])
+        # for automatically validated attendances, avoid recomputing extra hours if user has changed its value
+        validated_modified = to_recompute.filtered(lambda att: att.employee_id.company_id.attendance_overtime_validation == 'no_validation'
+                                                        and float_compare(att.overtime_hours, att.validated_overtime_hours, precision_digits=2))
+        self.env.add_to_compute(self._fields['overtime_hours'],
+                                to_recompute)
+        self.env.add_to_compute(self._fields['validated_overtime_hours'],
+                                to_recompute - validated_modified)
+        self.env.add_to_compute(self._fields['expected_hours'],
+                                to_recompute)
+
+    def _get_pre_post_work_time(self, employee, working_times, attendance_date):
+        pre_work_time, work_duration, post_work_time = 0, 0, 0
+        company_threshold = employee.company_id.overtime_company_threshold / 60.0
+        employee_threshold = employee.company_id.overtime_employee_threshold / 60.0
+        # Compute start and end time for that day
+        planned_start_dt, planned_end_dt = False, False
+        planned_work_duration = 0
+        for calendar_attendance in working_times[attendance_date]:
+            planned_start_dt = min(planned_start_dt, calendar_attendance[0]) if planned_start_dt else calendar_attendance[0]
+            planned_end_dt = max(planned_end_dt, calendar_attendance[1]) if planned_end_dt else calendar_attendance[1]
+            planned_work_duration += (calendar_attendance[1] - calendar_attendance[0]).total_seconds() / 3600.0
+        for attendance in self:
+            # consider check_in as planned_start_dt if within threshold
+            # if delta_in < 0: Checked in after supposed start of the day
+            # if delta_in > 0: Checked in before supposed start of the day
+            local_check_in = pytz.utc.localize(attendance.check_in)
+            delta_in = (planned_start_dt - local_check_in).total_seconds() / 3600.0
+
+            # Started before or after planned date within the threshold interval
+            if (delta_in > 0 and delta_in <= company_threshold) or\
+                (delta_in < 0 and abs(delta_in) <= employee_threshold):
+                local_check_in = planned_start_dt
+            local_check_out = pytz.utc.localize(attendance.check_out)
+
+            # same for check_out as planned_end_dt
+            delta_out = (local_check_out - planned_end_dt).total_seconds() / 3600.0
+            # if delta_out < 0: Checked out before supposed start of the day
+            # if delta_out > 0: Checked out after supposed start of the day
+
+            # Finised before or after planned date within the threshold interval
+            if (delta_out > 0 and delta_out <= company_threshold) or\
+                (delta_out < 0 and abs(delta_out) <= employee_threshold):
+                local_check_out = planned_end_dt
+
+            # There is an overtime at the start of the day
+            if local_check_in < planned_start_dt:
+                pre_work_time += (min(planned_start_dt, local_check_out) - local_check_in).total_seconds() / 3600.0
+            # Interval inside the working hours -> Considered as working time
+            if local_check_in <= planned_end_dt and local_check_out >= planned_start_dt:
+                start_dt = max(planned_start_dt, local_check_in)
+                stop_dt = min(planned_end_dt, local_check_out)
+                work_duration += (stop_dt - start_dt).total_seconds() / 3600.0
+                # remove lunch time from work duration
+                if not employee.sudo().is_flexible:
+                    lunch_intervals = employee._employee_attendance_intervals(start_dt, stop_dt, lunch=True)
+                    work_duration -= sum((i[1] - i[0]).total_seconds() / 3600.0 for i in lunch_intervals)
+
+            # There is an overtime at the end of the day
+            if local_check_out > planned_end_dt:
+                post_work_time += (local_check_out - max(planned_end_dt, local_check_in)).total_seconds() / 3600.0
+        return pre_work_time, work_duration, post_work_time, planned_work_duration
+>>>>>>> 91f754e6c64f972fa81af60de4fd8a9cf300a1b2
 
     @api.model_create_multi
     def create(self, vals_list):
