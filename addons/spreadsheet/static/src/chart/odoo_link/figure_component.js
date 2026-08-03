@@ -50,7 +50,7 @@ patch(spreadsheet.components.ScorecardChart.prototype, {
             const positionString = section === "KEY" ? def.keyValue : def.baseline;
             const range = this.env.model.getters.getRangeFromSheetXC(
                 this.env.model.getters.getActiveSheetId(),
-                positionString
+                positionString.startsWith("=") ? positionString.slice(1) : positionString
             );
             let position = undefined;
             if (!range.invalidSheetName && range.sheetId) {
@@ -84,7 +84,7 @@ patch(spreadsheet.components.ScorecardChart.prototype, {
             const positionString = section === "KEY" ? def.keyValue : def.baseline;
             const range = this.env.model.getters.getRangeFromSheetXC(
                 this.env.model.getters.getActiveSheetId(),
-                positionString
+                positionString.startsWith("=") ? positionString.slice(1) : positionString
             );
             let position = undefined;
             if (!range.invalidSheetName && range.sheetId) {
