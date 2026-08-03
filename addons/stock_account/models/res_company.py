@@ -60,6 +60,20 @@ class ResCompany(models.Model):
         required=True,
     )
 
+    def write(self, vals):
+        companies = self.filtered(lambda c: c.cost_method != vals['cost_method']) if 'cost_method' in vals else []
+        res = super().write(vals)
+        for company in companies:
+            products = self.env['product.product'].with_company(company).search([
+                ('is_storable', '=', True),
+                '|',
+                    ('categ_id', '=', False),
+                    ('categ_id.property_cost_method', '=', False)
+            ])
+            last_closing_date = company._get_last_closing_date()
+            products._correct_inventory_valuation(last_closing_date)
+        return res
+
     def action_close_stock_valuation(self, at_date=None, auto_post=False):
         self.ensure_one()
         if at_date and isinstance(at_date, str):
@@ -350,6 +364,12 @@ class ResCompany(models.Model):
         }]
 
     def _get_last_closing_date(self):
+        """Return the datetime of the last posted stock closing of the company.
+
+        Returns ``datetime.min`` when no closing exists yet, so the result can
+        always be used as a lower bound in date domains: never test it for
+        truthiness to know whether a closing exists.
+        """
         self.ensure_one()
         closing = self.env['account.move'].search_fetch([
             ('inventory_closing', '=', True),
@@ -357,5 +377,5 @@ class ResCompany(models.Model):
             ('company_id', '=', self.id),
         ], ['closing_datetime'], limit=1, order='closing_datetime desc, id desc')
         if not closing:
-            return False
+            return datetime.min
         return closing.closing_datetime

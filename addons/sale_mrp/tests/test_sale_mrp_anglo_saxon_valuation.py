@@ -1,7 +1,11 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
+from datetime import timedelta
 from unittest import skip
 
+from freezegun import freeze_time
+
+from odoo import fields
 from odoo.fields import Command
 from odoo.tests import Form, tagged
 
@@ -145,18 +149,21 @@ class TestSaleMRPAngloSaxonValuation(TestSaleCommon, ValuationReconciliationTest
         self.variant_2 = self.product_template._get_variant_for_combination(self.pt_attr1_v2)
 
         def create_simple_bom_for_product(product, name, price):
-            component = self.env['product.product'].create({
-                'name': 'Component ' + name,
-                'is_storable': True,
-                'uom_id': self.uom_unit.id,
-                'categ_id': self.stock_account_product_categ.id,
-                'standard_price': price
-            })
-            self.env['stock.quant'].sudo().create({
-                'product_id': component.id,
-                'location_id': self.company_data['default_warehouse'].lot_stock_id.id,
-                'quantity': 10.0,
-            })
+            # Freeze the component/quant creation a few seconds in the past, safely before
+            # the delivery below, to avoid any tie on `date` with the moves created there.
+            with freeze_time(fields.Datetime.now() - timedelta(seconds=10)):
+                component = self.env['product.product'].create({
+                    'name': 'Component ' + name,
+                    'is_storable': True,
+                    'uom_id': self.uom_unit.id,
+                    'categ_id': self.stock_account_product_categ.id,
+                    'standard_price': price
+                })
+                self.env['stock.quant'].sudo().create({
+                    'product_id': component.id,
+                    'location_id': self.company_data['default_warehouse'].lot_stock_id.id,
+                    'quantity': 10.0,
+                })
             bom = self.env['mrp.bom'].create({
                 'product_tmpl_id': self.product_template.id,
                 'product_id': product.id,
@@ -185,17 +192,24 @@ class TestSaleMRPAngloSaxonValuation(TestSaleCommon, ValuationReconciliationTest
                 })],
                 'company_id': self.company_data['company'].id,
             }
-            so = self.env['sale.order'].create(so_vals)
-            # Validate the SO
-            so.action_confirm()
-            # Deliver the three finished products
-            pick = so.picking_ids
-            # To check the products on the picking
-            pick.button_validate()
-            # Create the invoice
-            so._create_invoices()
-            invoice = so.invoice_ids
-            invoice.action_post()
+            # Freeze time for the whole confirm/deliver flow: `button_validate` can write
+            # the move's `date` more than once (e.g. while creating the stock account move),
+            # and if the real clock ticks over a second between those writes, the move looks
+            # rescheduled and triggers a valuation replay. With no real incoming move for
+            # these test components (stock is seeded via a raw quant), that replay can't
+            # price the FIFO stack and zeroes the move's value instead.
+            with freeze_time(fields.Datetime.now()):
+                so = self.env['sale.order'].create(so_vals)
+                # Validate the SO
+                so.action_confirm()
+                # Deliver the three finished products
+                pick = so.picking_ids
+                # To check the products on the picking
+                pick.button_validate()
+                # Create the invoice
+                so._create_invoices()
+                invoice = so.invoice_ids
+                invoice.action_post()
             return invoice
 
         # Create a SO for variant 1
@@ -307,13 +321,25 @@ class TestSaleMRPAngloSaxonValuation(TestSaleCommon, ValuationReconciliationTest
                 line.quantity = 1
         reverse_invoice.action_post()
 
+        # The returned component keeps its own FIFO value.
+        self.assertEqual(return_picking.move_ids.value, 20, 'Returned component keeps its FIFO value')
+
+        # The credit note COGS is the component cost averaged over every move of the
+        # sale line (the three deliveries and the return): (10 + 20 + 60 - 20) / 2 = 35.
         amls = reverse_invoice.line_ids
         stock_out_aml = amls.filtered(lambda aml: aml.account_id == self.company_data['default_account_stock_valuation'])
-        self.assertEqual(stock_out_aml.debit, 20, 'Should be to the value of the returned component')
+        self.assertEqual(stock_out_aml.debit, 35, 'Averaged component cost over the sale line moves')
         self.assertEqual(stock_out_aml.credit, 0)
         cogs_aml = amls.filtered(lambda aml: aml.account_id == self.company_data['default_account_expense'])
         self.assertEqual(cogs_aml.debit, 0)
-        self.assertEqual(cogs_aml.credit, 20, 'Should be to the value of the returned component')
+        self.assertEqual(cogs_aml.credit, 35, 'Averaged component cost over the sale line moves')
+
+        # Validating the return replayed the original invoice's COGS too, so the net COGS
+        # booked for the whole sale order matches the components actually consumed
+        # (10 + 20 + 60 delivered - 20 returned = 70).
+        so_cogs_amls = (invoice + reverse_invoice).line_ids.filtered(
+            lambda l: l.display_type == 'cogs' and l.account_id == self.company_data['default_account_expense'])
+        self.assertEqual(sum(so_cogs_amls.mapped('debit')) - sum(so_cogs_amls.mapped('credit')), 70)
 
     def test_anglo_saxo_return_and_create_invoice(self):
         """
@@ -408,13 +434,25 @@ class TestSaleMRPAngloSaxonValuation(TestSaleCommon, ValuationReconciliationTest
                 line.quantity = 1
         reverse_invoice.action_post()
 
+        # The returned component keeps its own FIFO value.
+        self.assertEqual(return_picking.move_ids.value, 20, 'Returned component keeps its FIFO value')
+
+        # The COGS is the component cost averaged over every move of the sale line (the
+        # three deliveries and the return): (10 + 20 + 60 - 20) / 2 = 35.
         amls = reverse_invoice.line_ids
         stock_val_aml = amls.filtered(lambda aml: aml.account_id == self.company_data['default_account_stock_valuation'])
-        self.assertEqual(stock_val_aml.debit, 20, 'Should be to the value of the returned component')
+        self.assertEqual(stock_val_aml.debit, 35, 'Averaged component cost over the sale line moves')
         self.assertEqual(stock_val_aml.credit, 0)
         cogs_aml = amls.filtered(lambda aml: aml.account_id == self.company_data['default_account_expense'])
         self.assertEqual(cogs_aml.debit, 0)
-        self.assertEqual(cogs_aml.credit, 20, 'Should be to the value of the returned component')
+        self.assertEqual(cogs_aml.credit, 35, 'Averaged component cost over the sale line moves')
+
+        # Validating the return replayed the original invoice's COGS too, so the net COGS
+        # booked for the whole sale order matches the components actually consumed
+        # (10 + 20 + 60 delivered - 20 returned = 70).
+        so_cogs_amls = (invoice + reverse_invoice).line_ids.filtered(
+            lambda l: l.display_type == 'cogs' and l.account_id == self.company_data['default_account_expense'])
+        self.assertEqual(sum(so_cogs_amls.mapped('debit')) - sum(so_cogs_amls.mapped('credit')), 70)
 
     def test_kit_avco_fully_owned_and_delivered_invoice_post_delivery(self):
         self.stock_account_product_categ.property_cost_method = 'average'
@@ -458,12 +496,14 @@ class TestSaleMRPAngloSaxonValuation(TestSaleCommon, ValuationReconciliationTest
         invoice = so._create_invoices()
         invoice.action_post()
 
-        # COGS should not exist because the products are owned by an external partner
+        # COGS lines are still generated but valued at 0 since the products are owned by an external partner
         amls = invoice.line_ids
         self.assertRecordValues(amls, [
             # pylint: disable=bad-whitespace
-            {'account_id': self.company_data['default_account_revenue'].id,     'debit': 0,     'credit': 5},
-            {'account_id': self.company_data['default_account_receivable'].id,  'debit': 5,     'credit': 0},
+            {'account_id': self.company_data['default_account_revenue'].id,          'debit': 0,     'credit': 5},
+            {'account_id': self.company_data['default_account_receivable'].id,       'debit': 5,     'credit': 0},
+            {'account_id': self.company_data['default_account_stock_valuation'].id,  'debit': 0,     'credit': 0},
+            {'account_id': self.company_data['default_account_expense'].id,          'debit': 0,     'credit': 0},
         ])
 
     def test_kit_avco_partially_owned_and_delivered_invoice_post_delivery(self):
@@ -802,11 +842,24 @@ class TestSaleMRPAngloSaxonValuation(TestSaleCommon, ValuationReconciliationTest
             Form.from_action(self.env, action).save().process()
         invoice_2 = so._create_invoices()
         invoice_2.action_post()
+        # COGS is now averaged over all of the sale line's delivered components
+        # ((10 + 20) / 2 = 15) rather than following the per-wave FIFO layer.
         invoice_2_cogs_amls = invoice_2.line_ids.filtered(lambda l: l.display_type == 'cogs').sorted('balance')
         self.assertRecordValues(invoice_2_cogs_amls, [
-            {'account_id': self.company_data['default_account_stock_valuation'].id,   'debit': 0,     'credit': 20},
-            {'account_id': self.company_data['default_account_expense'].id,           'debit': 20,    'credit': 0},
+            {'account_id': self.company_data['default_account_stock_valuation'].id,   'debit': 0,     'credit': 15},
+            {'account_id': self.company_data['default_account_expense'].id,           'debit': 15,    'credit': 0},
         ])
+
+        # Delivering the second wave replayed the first invoice's COGS to the same
+        # averaged cost, so the total COGS booked across both invoices is still 30.
+        invoice_1_cogs_amls = invoice.line_ids.filtered(lambda l: l.display_type == 'cogs').sorted('balance')
+        self.assertRecordValues(invoice_1_cogs_amls, [
+            {'account_id': self.company_data['default_account_stock_valuation'].id,   'debit': 0,     'credit': 15},
+            {'account_id': self.company_data['default_account_expense'].id,           'debit': 15,    'credit': 0},
+        ])
+        all_cogs_amls = (invoice + invoice_2).line_ids.filtered(lambda l: l.display_type == 'cogs')
+        self.assertEqual(sum(all_cogs_amls.mapped('debit')), 30)
+        self.assertEqual(sum(all_cogs_amls.mapped('credit')), 30)
 
     def test_cogs_kit_multi_steps_first_step_validated(self):
         """ Check that cogs are correct for a kit with multiple components product when we are in multi steps delivery
@@ -818,7 +871,7 @@ class TestSaleMRPAngloSaxonValuation(TestSaleCommon, ValuationReconciliationTest
 
         compo01 = self._create_product(name='Compo 01', is_storable=True, standard_price=10)
         compo02 = self._create_product(name='Compo 02', is_storable=True, standard_price=20)
-        kit = self._create_product(name='Kit', is_storable=True, standard_price=0, invoice_policy='order')
+        kit = self._create_product(name='Kit', is_storable=True, standard_price=30, invoice_policy='order')
 
         self.env['stock.quant']._update_available_quantity(compo01, self.company_data['default_warehouse'].lot_stock_id, 1)
         self.env['stock.quant']._update_available_quantity(compo02, self.company_data['default_warehouse'].lot_stock_id, 1)
