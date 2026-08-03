@@ -37,8 +37,56 @@
             </td>
         </xpath>
 
-        <xpath expr="//t[@name='account_invoice_line_section']/td[1]" position="after">
+        <xpath expr="//t[@name='account_invoice_line_section']/td[2]" position="after">
             <td t-if="o.company_id.account_fiscal_country_id.code == 'IN' and o.company_id.l10n_in_is_gst_registered"></td>
+        </xpath>
+
+        <xpath expr="//table[@name='invoice_line_table']//td[@name='account_invoice_line_name_grouped']" position="after">
+            <td t-if="o.company_id.account_fiscal_country_id.code == 'IN' and o.company_id.l10n_in_is_gst_registered">
+                <span t-if="line.l10n_in_hsn_code and hide_prices and grouped_line['display_type'] == 'product'" t-field="line.l10n_in_hsn_code"></span>
+            </td>
+        </xpath>
+
+        <!-- Price-Adjustment credit note: swap Quantity & Unit Price cells for "-" -->
+        <xpath expr="//div[@id='informations']" position="after">
+            <t t-set="is_price_adjustment" t-value="o.move_type == 'out_refund' and o.l10n_in_credit_note_reason == 'price_adjustment'"/>
+        </xpath>
+
+        <xpath expr="//t[@name='account_invoice_line_accountable']/td[@name='td_quantity']" position="attributes">
+            <attribute name="t-if" add="not is_price_adjustment" separator="and"/>
+        </xpath>
+
+        <xpath expr="//t[@name='account_invoice_line_accountable']/td[@name='td_quantity']" position="after">
+            <td t-if="is_price_adjustment" class="o_td_quantity text-end">-</td>
+        </xpath>
+
+        <xpath expr="//t[@name='account_invoice_line_accountable']/td[@name='td_price_unit']" position="attributes">
+            <attribute name="t-if" add="not is_price_adjustment" separator="and"/>
+        </xpath>
+
+        <xpath expr="//t[@name='account_invoice_line_accountable']/td[@name='td_price_unit']" position="after">
+            <td t-if="is_price_adjustment" t-attf-class="text-end {{ 'd-none d-md-table-cell' if report_type == 'html' else '' }}">-</td>
+        </xpath>
+
+        <!-- Grouped/collapsed line — Quantity and Unit Price swaps -->
+        <xpath expr="//table[@name='invoice_line_table']//td[@name='td_quantity_grouped']" position="attributes">
+            <attribute name="t-if" add="not is_price_adjustment" separator="and"/>
+        </xpath>
+
+        <xpath expr="//table[@name='invoice_line_table']//td[@name='td_quantity_grouped']" position="after">
+            <td t-if="(hide_details or (hide_prices and grouped_line['display_type'] not in ('line_section', 'line_subsection'))) and is_price_adjustment"
+                class="o_td_quantity text-end">-</td>
+        </xpath>
+
+        <xpath expr="//table[@name='invoice_line_table']//td[@name='td_price_unit_grouped']" position="attributes">
+            <attribute name="t-if" add="not is_price_adjustment" separator="and"/>
+        </xpath>
+
+        <xpath expr="//table[@name='invoice_line_table']//td[@name='td_price_unit_grouped']" position="after">
+            <td t-if="(hide_details or grouped_line['display_type'] not in ('line_section', 'line_subsection')) and is_price_adjustment"
+                t-attf-class="text-end {{ 'd-none d-md-table-cell' if report_type == 'html' else '' }}">
+                -
+            </td>
         </xpath>
 
         <xpath expr="//div[@id='qrcode_info']" position="attributes">
@@ -94,8 +142,11 @@
                             <tr t-foreach="hsn_summary['items']" t-as="item">
                                 <td t-out="item['l10n_in_hsn_code']"/>
                                 <td class="text-end">
-                                    <span t-out="item['quantity']"/>
-                                    <span t-if="hsn_summary['display_uom']">(<t t-out="item['uom_name']"/>)</span>
+                                    <t t-if = "is_price_adjustment">-</t>
+                                    <t t-else="">
+                                        <span t-out="item['quantity']"/>
+                                        <span t-if="hsn_summary['display_uom']">(<t t-out="item['uom_name']"/>)</span>
+                                    </t>
                                 </td>
                                 <td class="text-end" t-out="item['rate']"/>
                                 <td class="text-end">

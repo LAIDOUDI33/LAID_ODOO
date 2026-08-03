@@ -302,7 +302,7 @@
                                                     </td>
                                                     <!-- For mobile -->
                                                     <td name="account_invoice_line_name_grouped"
-                                                        t-att-colspan="2 if grouped_line['display_type'] != 'product' else 1"
+                                                        t-att-colspan="2 if hide_prices and grouped_line['display_type'] != 'product' else 1"
                                                         t-attf-class="{{'d-md-none d-table-cell' if report_type == 'html' else 'd-none'}}"
                                                         t-att-style="padding_style">
                                                         <span t-out="grouped_line['name']" t-options="{'widget': 'text'}">Group 1</span>
