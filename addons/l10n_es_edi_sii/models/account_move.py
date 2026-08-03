@@ -80,10 +80,7 @@ class AccountMove(models.Model):
                     not move.commercial_partner_id.country_id
                     or move.commercial_partner_id.country_id in eu_vat_country_group.country_ids
                 )
-                and (
-                    not move.commercial_partner_id.state_id
-                    or move.commercial_partner_id.state_id not in eu_vat_country_group.exclude_state_ids
-                )
+                and move.commercial_partner_id.state_id not in eu_vat_country_group.exclude_state_ids
             )
             purchase_requires_tax_check = move.is_purchase_document() and not partner_in_eu_vat
 
@@ -165,6 +162,18 @@ class AccountMove(models.Model):
             move.l10n_es_edi_sii_state = 'sent' if latest_doc.state == 'accepted' else latest_doc.state
             move.l10n_es_edi_sii_last_document_id = latest_doc.id
 
+    def _compute_sql_l10n_es_edi_sii_state(self, table):
+        return SQL(
+            """CASE
+                WHEN NOT %(is_required)s THEN NULL
+                WHEN %(latest_doc_state)s IS NULL THEN 'to_send'
+                WHEN %(latest_doc_state)s = 'accepted' THEN 'sent'
+                ELSE %(latest_doc_state)s
+               END""",
+            is_required=table.l10n_es_edi_is_required,
+            latest_doc_state=table.l10n_es_edi_sii_last_document_id.state,
+        )
+
     def _compute_sql_l10n_es_edi_sii_last_document_id(self, table):
         latest_doc = table._make_alias('latest_sii_doc')
         table._query.add_join(
@@ -180,20 +189,6 @@ class AccountMove(models.Model):
             condition=SQL("TRUE"),
         )
         return latest_doc.id
-
-    def _compute_sql_l10n_es_edi_sii_state(self, table):
-        is_required = table.l10n_es_edi_is_required
-        latest_doc = table.l10n_es_edi_sii_last_document_id
-        return SQL(
-            """CASE
-                WHEN NOT %(is_required)s THEN NULL
-                WHEN %(latest_doc_state)s IS NULL THEN 'to_send'
-                WHEN %(latest_doc_state)s = 'accepted' THEN 'sent'
-                ELSE %(latest_doc_state)s
-               END""",
-            is_required=is_required,
-            latest_doc_state=latest_doc.state,
-        )
 
     @api.depends('l10n_es_edi_is_required', 'l10n_es_edi_sii_state')
     def _compute_need_cancel_request(self):
@@ -245,10 +240,13 @@ class AccountMove(models.Model):
             'tag': 'soft_reload',
         }
 
+    def _l10n_es_sii_has_registration_csv(self):
+        return bool(self.l10n_es_edi_sii_document_ids.filtered('csv'))
+
     def action_l10n_es_sii_send_in_batch(self):
         """ Groups selected invoices, chunks them, and sends them to SII via batched payloads. """
         moves_to_process = self.filtered(lambda m: m.l10n_es_edi_is_required and m.state == 'posted')
-        batches = moves_to_process.grouped(lambda m: (m.company_id, m.is_sale_document(), bool(m.l10n_es_edi_csv)))
+        batches = moves_to_process.grouped(lambda m: (m.company_id, m.is_sale_document(), m._l10n_es_sii_has_registration_csv()))
 
         result = True
         for batch_moves in batches.values():
@@ -303,7 +301,7 @@ class AccountMove(models.Model):
         if not documents:
             return False
 
-        communication_type = moves_to_send[:1].l10n_es_edi_csv and not cancel and 'A1' or 'A0'
+        communication_type = moves_to_send[:1]._l10n_es_sii_has_registration_csv() and not cancel and 'A1' or 'A0'
         info_list = moves_to_send._l10n_es_edi_get_invoices_info()
 
         results = documents._post_to_web_service(info_list, communication_type)

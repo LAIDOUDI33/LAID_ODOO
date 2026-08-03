@@ -1,6 +1,7 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-from datetime import timedelta
+from datetime import timedelta, datetime
+from zoneinfo import ZoneInfo
 
 from odoo import fields, models
 
@@ -51,7 +52,7 @@ class AccountJournal(models.Model):
         if not sii_journals:
             return
 
-        urgency_date = (fields.Datetime.now() - timedelta(hours=36)).date()
+        urgency_date = (datetime.now(ZoneInfo('Europe/Madrid')) - timedelta(hours=36)).date()
         rg_result = self.env['account.move'].sudo()._read_group(
             domain=sii_journals._get_l10n_es_sii_pending_domain(),
             groupby=['journal_id'],
