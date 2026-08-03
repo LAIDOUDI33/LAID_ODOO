@@ -15,9 +15,8 @@ patch(OrderSummary.prototype, {
             body: _t("You are not allowed to change the price of a product."),
         });
     },
-
     async updateSelectedOrderline({ buffer, key }) {
-        if (key == "-" && this.pos.cashier._role === "minimal") {
+        if (key == "-" && this.pos.hasEmployeeRole("restrictive", "supervised")) {
             this.numberBuffer.reset();
             return;
         }
