@@ -131,6 +131,22 @@ export class IconPlugin extends Plugin {
             },
         ],
         click_overrides: this.onClickIcon.bind(this),
+        is_formattable_node_predicates: (node, formatName) => {
+            if (
+                (formatName === "color" || formatName === "backgroundColor") &&
+                isIconElement(node)
+            ) {
+                return true;
+            }
+        },
+        atomic_format_leaf_predicates: (node, formatName) => {
+            if (
+                (formatName === "color" || formatName === "backgroundColor") &&
+                isIconElement(node)
+            ) {
+                return true;
+            }
+        },
         would_feff_be_legit_predicates: (node) => {
             if (
                 (node.previousSibling && isIconElement(closestElement(node.previousSibling))) ||
@@ -241,7 +257,7 @@ export class IconPlugin extends Plugin {
         if (nodes.length === 0) {
             return;
         }
-        const el = closestElement(nodes[0], "font");
+        const el = closestElement(nodes[0], "span");
         if (!el) {
             return;
         }
