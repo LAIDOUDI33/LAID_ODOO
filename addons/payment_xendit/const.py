@@ -118,8 +118,8 @@ PAYMENT_METHODS_MAPPING = {
 # Mapping of transaction states to Xendit payment statuses.
 PAYMENT_STATUS_MAPPING = {
     'draft': (),
-    'pending': ('PENDING'),
-    'done': ('SUCCEEDED', 'PAID', 'CAPTURED'),
-    'cancel': ('CANCELLED', 'EXPIRED'),
+    'pending': ('PENDING', 'ACTIVE'),
+    'done': ('SUCCEEDED', 'PAID', 'CAPTURED', 'COMPLETED'),
+    'cancel': ('CANCELLED', 'EXPIRED', 'CANCELED'),
     'error': ('FAILED',)
 }

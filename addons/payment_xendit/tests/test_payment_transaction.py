@@ -22,7 +22,7 @@ class TestPaymentTransaction(PaymentHttpCommon, XenditCommon):
         API_URL corresponding to the response of API request. """
         tx = self._create_transaction('redirect')
         url = 'https://dummy.com'
-        return_value = {'invoice_url': url}
+        return_value = {'payment_link_url': url}
         with (
             patch.object(PaymentProvider, '_xendit_make_request', return_value=return_value),
             patch.object(payment_utils, 'generate_access_token', self._generate_test_access_token),
@@ -77,25 +77,28 @@ class TestPaymentTransaction(PaymentHttpCommon, XenditCommon):
             'odoo.addons.payment.utils.generate_access_token', new=self._generate_test_access_token
         ):
             request_payload = tx._xendit_prepare_invoice_request_payload()
+        partner_first_name, partner_last_name = payment_utils.split_partner_name(tx.partner_name)
         self.assertDictEqual(request_payload, {
-            'external_id': tx.reference,
+            'reference_id': tx.reference,
+            'session_type': 'PAY',
+            'mode': 'PAYMENT_LINK',
             'amount': tx.amount,
             'description': tx.reference,
             'customer': {
-                'given_names': tx.partner_name,
+                'reference_id': tx.reference,
+                'type': 'INDIVIDUAL',
+                'individual_detail': {
+                    'given_names': partner_first_name,
+                    'surname': partner_last_name,
+                },
                 'email': tx.partner_email,
-                'mobile_number': tx.partner_id.phone,
-                'addresses': [{
-                    'city': tx.partner_city,
-                    'country': tx.partner_country_id.name,
-                    'postal_code': tx.partner_zip,
-                    'street_line1': tx.partner_address,
-                }],
+                'mobile_number': '003212345678',
             },
-            'success_redirect_url': f'{return_url}?{success_url_params}',
-            'failure_redirect_url': return_url,
-            'payment_methods': [self.payment_method_code.upper()],
+            'success_return_url': f'{return_url}?{success_url_params}',
+            'cancel_return_url': return_url,
+            'allowed_payment_channels': [self.payment_method_code.upper()],
             'currency': tx.currency_id.name,
+            'country': tx.partner_id.country_id.code,
         })
 
     def test_processing_values_contain_rounded_amount_idr(self):
