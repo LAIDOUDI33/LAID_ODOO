@@ -12,18 +12,15 @@ class PosOrderLine(models.Model):
     reward_id = fields.Many2one(
         'loyalty.reward', "Reward", ondelete='restrict',
         help="The reward associated with this line.", index='btree_not_null')
-    coupon_id = fields.Many2one(
-        'loyalty.card', "Coupon", ondelete='restrict',
-        help="The coupon used to claim that reward.", index='btree_not_null')
-    reward_identifier_code = fields.Char(help="""
-        Technical field used to link multiple reward lines from the same reward together.
-    """)
-    points_cost = fields.Float(help="How many point this reward cost on the coupon.")
+    card_id = fields.Many2one(
+        'loyalty.card', "Card", ondelete='restrict',
+        help="The card used to claim that reward.")
+    points_cost = fields.Float(help="How many points this reward cost.")
 
     @api.model
     def _load_pos_data_fields(self, config):
         params = super()._load_pos_data_fields(config)
-        params += ['is_reward_line', 'reward_id', 'reward_identifier_code', 'points_cost', 'coupon_id']
+        params += ['is_reward_line', 'reward_id', 'points_cost', 'card_id']
         return params
 
     def _has_discount(self):

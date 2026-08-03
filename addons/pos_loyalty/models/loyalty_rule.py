@@ -2,32 +2,32 @@
 
 from odoo import api, fields, models
 from odoo.fields import Domain
-
+from odoo.exceptions import UserError
+from odoo.tools import float_round
 
 class LoyaltyRule(models.Model):
     _name = 'loyalty.rule'
     _inherit = ['loyalty.rule', 'pos.load.mixin']
 
+    any_product = fields.Boolean(
+        compute="_compute_valid_product_ids", help="Technical field, whether all prodcuts match")
     valid_product_ids = fields.Many2many(
         'product.product', "Valid Products", compute='_compute_valid_product_ids',
-        help="These are the products that are valid for this rule.")
-    any_product = fields.Boolean(
-        compute='_compute_valid_product_ids', help="Technical field, whether all product match")
+        help="these are the products that are valid for this rule.")
 
     promo_barcode = fields.Char("Barcode", compute='_compute_promo_barcode', store=True, readonly=False,
         help="A technical field used as an alternative to the promo code. "
-        "This is automatically generated when the promo code is changed."
-    )
-
+        "This is automatically generated when the rpomo code is changed.")
+    
     @api.model
     def _load_pos_data_domain(self, data, config):
         return [('program_id', 'in', config._get_program_ids().ids)]
 
     @api.model
     def _load_pos_data_fields(self, config):
-        return ['program_id', 'valid_product_ids', 'any_product', 'currency_id',
-            'reward_point_amount', 'reward_point_split', 'reward_point_mode',
-            'minimum_qty', 'minimum_amount', 'minimum_amount_tax_mode', 'mode', 'code']
+        return ['program_id', 'valid_product_ids', 'currency_id', 'reward_point_amount', 'reward_point_mode',
+                'minimum_qty', 'minimum_amount', 'minimum_amount_tax_mode', 'mode', 'code', 'any_product',
+                'promo_barcode']
 
     @api.depends('product_ids', 'product_category_id', 'product_tag_id', 'product_domain')  # TODO later: product tags
     def _compute_valid_product_ids(self):
@@ -49,3 +49,65 @@ class LoyaltyRule(models.Model):
     def _compute_promo_barcode(self):
         for rule in self:
             rule.promo_barcode = self.env['loyalty.card']._generate_code()
+
+    def _get_pos_order_points(self, order, lines=None):
+        """Points this rule generates for ``order`` over ``lines`` (defaults to all its lines).
+
+        Mirrors the frontend loyalty.rule.getPoints. A subset of lines is passed to score a
+        single trigger-product line against its own program.
+        """
+        self.ensure_one()
+        if not self.reward_point_amount:
+            return 0
+
+        if self.mode == 'with_code':
+            return 0
+
+        order_lines = order.lines if lines is None else lines
+
+        def in_domain(line):
+            return self.any_product or line.product_id in self.valid_product_ids
+
+        qualifying = order_lines.filtered(
+            lambda l: not l.is_reward_line and not l.combo_parent_id and in_domain(l)
+        )
+        if not qualifying:
+            return 0
+        total_qty = sum(qualifying.mapped('qty'))
+        if total_qty < self.minimum_qty:
+            return 0
+
+        amount_incl = sum(qualifying.mapped('price_subtotal_incl'))
+        amount_excl = sum(qualifying.mapped('price_subtotal'))
+
+        if order.is_refund:
+            amount_incl = -amount_incl
+            amount_excl = -amount_excl
+
+        threshold = amount_incl if self.minimum_amount_tax_mode == 'incl' else amount_excl
+        if threshold < self.minimum_amount:
+            return 0
+
+        if self.reward_point_mode == 'order':
+            return self.reward_point_amount
+        elif self.reward_point_mode == 'money':
+            def is_excluded_reward(line):
+                return line.is_reward_line and (
+                    line.reward_id.program_id == self.program_id
+                    or line.reward_id.program_id.program_type in ('ewallet', 'gift_card')
+                )
+
+            money_lines = order_lines.filtered(
+                lambda l: not l.combo_parent_id and in_domain(l) and not is_excluded_reward(l)
+            )
+            money_amount = sum(money_lines.mapped('price_subtotal_incl'))
+            if order.is_refund:
+                money_amount = -money_amount
+            return float_round(
+                self.reward_point_amount * money_amount,
+                precision_rounding=0.01,
+                rounding_method='DOWN',
+            )
+        elif self.reward_point_mode == 'unit':
+            return self.reward_point_amount * total_qty
+        return 0

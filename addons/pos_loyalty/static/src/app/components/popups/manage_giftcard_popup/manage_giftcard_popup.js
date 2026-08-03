@@ -61,7 +61,7 @@ export class ManageGiftCardPopup extends Component {
     async checkGiftCard() {
         try {
             const code = this.state.inputValue.trim();
-            const result = await this.pos.data.call("loyalty.card", "get_gift_card_status", [
+            const result = await this.pos.data.call("loyalty.card", "get_card_status", [
                 code,
                 this.pos.config.id,
             ]);
@@ -74,13 +74,12 @@ export class ManageGiftCardPopup extends Component {
                     ),
                 });
                 this.state.error = true;
-                this.state.lastCheck = false;
                 this.state.inputValue = "";
                 return false;
             }
 
-            if (result.data["loyalty.card"].length > 0) {
-                const giftCard = result.data["loyalty.card"][0];
+            if (result["loyalty.card"].length > 0) {
+                const giftCard = result["loyalty.card"][0];
                 this.state.amountValue = roundCurrency(
                     giftCard.points?.toString() || "0",
                     this.pos.currency

@@ -10,13 +10,13 @@
     'data': [
         'data/default_barcode_patterns.xml',
         'data/gift_card_data.xml',
+        'receipt/pos_order_receipt.xml',
         'views/loyalty_card_views.xml',
         'views/loyalty_mail_views.xml',
         'views/pos_loyalty_menu_views.xml',
         'views/res_config_settings_view.xml',
         'views/loyalty_program_views.xml',
         'views/res_partner_views.xml',
-        'receipt/pos_order_receipt.xml',
         'security/ir.access.csv',
     ],
     'demo': [

@@ -1347,6 +1347,7 @@ class TestUi(TestPointOfSaleHttpCommon):
             'name': 'Promo Program',
             'program_type': 'promotion',
             'pos_ok': True,
+            'trigger': 'auto',
             'rule_ids': [(0, 0, {
                 'minimum_amount': 0,
                 'minimum_qty': 0
@@ -3481,18 +3482,19 @@ class TestUi(TestPointOfSaleHttpCommon):
 
     def test_confirm_coupon_programs_one_by_one(self):
         """
-        Sync from UI is now syncing orders one by one.
-        confirm_coupon_programs should be called 6 times in this tour (6 orders created).
+        Sync from UI is now syncing orders one by one, so the per-order loyalty
+        processing (_process_loyalty) runs once per order: 6 times in this tour
+        (6 orders created).
         """
         self.create_programs([('arbitrary_name', 'gift_card')])['arbitrary_name']
         pos_order = self.env.registry.models['pos.order']
         sync_counter = {'count': 0}
 
-        def confirm_coupon_programs_patch(self, coupon_data):
+        def _process_loyalty_patch(self):
             sync_counter['count'] += 1
-            return super(pos_order, self).confirm_coupon_programs(coupon_data)
+            return super(pos_order, self)._process_loyalty()
 
-        with patch.object(pos_order, "confirm_coupon_programs", confirm_coupon_programs_patch):
+        with patch.object(pos_order, "_process_loyalty", _process_loyalty_patch):
             self.start_pos_tour("test_confirm_coupon_programs_one_by_one", login="pos_user")
             self.assertEqual(sync_counter['count'], 6)
 
@@ -3691,7 +3693,7 @@ class TestUi(TestPointOfSaleHttpCommon):
         self.env['loyalty.program'].search([]).write({'pos_ok': False})
         self.loyalty_program = self.env['loyalty.program'].create({
             'name': 'Coupon Program - Pricelist',
-            'program_type': 'coupons',
+            'program_type': 'promotion',
             'trigger': 'auto',
             'applies_on': 'current',
             'pos_ok': True,
