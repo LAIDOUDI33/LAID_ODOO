@@ -448,7 +448,7 @@ export class ColorPlugin extends Plugin {
             );
         } else {
             delete parts.gradient;
-            if (hasGradientStyle && !backgroundImagePartsToCss(parts)) {
+            if (hasGradientStyle && !backgroundImagePartsToCss(parts) && element.matches("font")) {
                 element.style["background-image"] = "";
             }
             if (color.startsWith("text") || color.startsWith("bg-")) {
