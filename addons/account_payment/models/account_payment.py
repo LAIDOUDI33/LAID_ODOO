@@ -145,17 +145,6 @@ class AccountPayment(models.Model):
         for tx in transactions:  # Process the transactions with a payment by token
             tx._charge_with_token()
 
-        # Post payments for issued transactions
-        transactions._post_process()
-        payments_tx_done = payments_need_tx.filtered(
-            lambda p: p.payment_transaction_id.state == 'done'
-        )
-        super(AccountPayment, payments_tx_done).action_post()
-        payments_tx_not_done = payments_need_tx.filtered(
-            lambda p: p.payment_transaction_id.state not in ('done', 'pending', 'authorized')
-        )
-        payments_tx_not_done.action_cancel()
-
         return res
 
     def action_refund_wizard(self):
