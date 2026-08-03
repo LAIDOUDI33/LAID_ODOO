@@ -1,7 +1,5 @@
-import { getCSSVariableValue, getHtmlStyle } from "@html_editor/utils/formatting";
 import { _t } from '@web/core/l10n/translation';
 import { registry } from '@web/core/registry';
-import { isCSSColor } from "@web/core/utils/colors";
 import { DynamicSnippet } from '@website/snippets/s_dynamic_snippet/dynamic_snippet';
 
 
@@ -33,19 +31,7 @@ export class DynamicSnippetCategory extends DynamicSnippet {
             colSpanTwo: colSpanTwo,
             includeParent: nodeData.parentCategoryId && nodeData.showParent,
             parentCategoryId: parseInt(nodeData.parentCategoryId),
-            overlayColor: this.ensureCSSColor(nodeData.overlayGradient) || "rgba(0, 0, 0, 0.25)",
         });
-    }
-
-    ensureCSSColor(color) {
-        if (!color) {
-            return color;
-        }
-
-        if (color.startsWith("linear-gradient") || isCSSColor(color)) {
-            return color;
-        }
-        return getCSSVariableValue(color, getHtmlStyle(document));
     }
 
     getQWebRenderOptions() {
