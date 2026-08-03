@@ -308,3 +308,9 @@ class StockMove(models.Model):
         if self.move_dest_ids.raw_material_production_id.subcontractor_id:
             return []
         return super()._get_production_assignation_domain()
+
+    def _prepare_procurement_origin(self):
+        self.ensure_one()
+        if self.raw_material_production_id.bom_id.type == 'subcontract':
+            return (self.reference_ids and self.reference_ids[0].name) or self.origin or self.picking_id.display_name
+        return super()._prepare_procurement_origin()

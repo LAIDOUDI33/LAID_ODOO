@@ -3012,6 +3012,32 @@ class TestSaleMrpFlow(TestSaleMrpFlowCommon):
         cogs_lines = invoice.line_ids.filtered(lambda l: l.display_type == 'cogs' and l.debit > 0)
         self.assertAlmostEqual(cogs_lines.debit, 20.0, places=2)
 
+    def test_component_picking_origin_is_mo_in_mto_flow(self):
+        """
+        Test that component picking transfers use the manufacturing order as
+        their origin in MTO two-step and three-step manufacturing flows.
+        """
+        self.company_data['default_warehouse'].manufacture_steps = 'pbm'
+        self.product_a.route_ids = self.env.ref('stock.route_warehouse0_mto')
+        self.env['mrp.bom'].create({
+            'product_tmpl_id': self.product_a.product_tmpl_id.id,
+            'product_qty': 1.0,
+            'bom_line_ids': [Command.create({
+                'product_id': self.component_a.id,
+                'product_qty': 1.0,
+            })],
+        })
+        so = self.env['sale.order'].create({
+            'partner_id': self.partner_a.id,
+            'order_line': [Command.create({
+                'product_id': self.product_a.id,
+                'product_uom_qty': 1.0,
+                'price_unit': 100.0,
+            })],
+        })
+        so.action_confirm()
+        self.assertTrue(so.mrp_production_ids.name in so.mrp_production_ids.picking_ids.origin)
+
 
 @tagged('post_install', '-at_install')
 class TestSaleMrpAccessRights(TransactionCase):
