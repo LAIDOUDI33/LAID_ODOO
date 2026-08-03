@@ -80,7 +80,7 @@ export class AttendeeCalendarCommonPopover extends CalendarCommonPopover {
      * @override
      */
     get isEventDeletable() {
-        return super.isEventDeletable && this.isEventEditable && !this.isEventArchivable;
+        return super.isEventDeletable && this.isEventEditable;
     }
 
     /**
@@ -113,10 +113,5 @@ export class AttendeeCalendarCommonPopover extends CalendarCommonPopover {
         ]);
         await this.props.model.load();
         this.props.close();
-    }
-
-    async onClickArchive() {
-        this.props.close();
-        await this.props.model.archiveRecord(this.props.record);
     }
 }
