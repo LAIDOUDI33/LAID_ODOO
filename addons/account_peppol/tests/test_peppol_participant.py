@@ -19,8 +19,16 @@ from odoo.addons.account_peppol.tests.common import (
 
 
 @freeze_time('2023-01-01')
+<<<<<<< c23cda2682b0895e03f35696b0a3e63330e45826
 @tagged('-at_install', 'post_install')
 class TestPeppolParticipant(TransactionCase):
+||||||| 20db2910d16fa6ebd07794fb9ed3fb1c8f57b0fc
+@tagged('-at_install', 'post_install')
+class TestPeppolParticipant(PeppolConnectorCommon):
+=======
+@tagged('-at_install', 'post_install', 'pep')
+class TestPeppolParticipant(PeppolConnectorCommon):
+>>>>>>> cf2e38c0ad7bc42d391981d1bb724abea5f7e3ba
 
     @classmethod
     def setUpClass(cls):
