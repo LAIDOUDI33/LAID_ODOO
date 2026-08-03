@@ -22,6 +22,24 @@ class StockPutInPack(models.TransientModel):
                 packages |= wizard.move_line_ids.result_package_id
             wizard.origin_package_ids = packages.parent_package_id
 
+    @api.onchange('package_type_id', 'result_package_id')
+    def _onchange_package_weight(self):
+        package_type = self.package_type_id or self.result_package_id.package_type_id
+        if package_type.max_weight:
+            max_weight = package_type.max_weight + package_type.base_weight
+            weight = self._get_weight_to_check()
+            if max_weight and weight > max_weight:
+                if self.package_type_id:
+                    message = self.env._("The weight of your package is higher than the maximum weight authorized for this package type. Please choose another package type.")
+                else:
+                    message = self.env._("The weight of your package is higher than the maximum weight authorized for its package type. Please choose another package.")
+                return {
+                    'warning': {
+                        'title': self.env._("Package Too Heavy!"),
+                        'message': message,
+                    }
+                }
+
     @api.onchange('package_type_id')
     def _onchange_package_type_id(self):
         if self.package_type_id and self.result_package_id and self.result_package_id.package_type_id != self.package_type_id:
@@ -32,6 +50,18 @@ class StockPutInPack(models.TransientModel):
         if self.package_ids:
             return self.package_ids.with_context(**context).action_put_in_pack(package_id=self.result_package_id.id, package_type_id=self.package_type_id.id)
         return self.move_line_ids.with_context(**context).action_put_in_pack(package_id=self.result_package_id.id, package_type_id=self.package_type_id.id)
+
+    def _get_move_lines_weight(self):
+        return sum(ml.quantity_product_uom * ml.product_id.weight for ml in self.move_line_ids)
+
+    def _get_weight_to_check(self):
+        total_weight = self.package_type_id.base_weight or 0.0
+        total_weight += self._get_move_lines_weight
+        packages = self.result_package_id | self.package_ids._origin
+        picking_ids = self.env.context.get('picking_ids') or self.env.context.get('active_ids')
+        packages_weight = packages._get_weight(picking_ids, include_quants=True)
+        total_weight += sum(packages_weight.get(package) for package in packages)
+        return total_weight
 
     def _get_put_in_pack_context(self):
         return {

@@ -23,28 +23,18 @@ class StockPutInPack(models.TransientModel):
                 # If we use an existing package, we need to factor in the shipping weight already set on the package.
                 total_weight += wizard.result_package_id.shipping_weight
 
-            for ml in wizard.move_line_ids:
-                qty = ml.uom_id._compute_quantity(ml.quantity, ml.product_id.uom_id)
-                total_weight += qty * ml.product_id.weight
+            total_weight += self._get_move_lines_weight()
             for package in wizard.package_ids:
                 total_weight += package.shipping_weight
 
             wizard.shipping_weight = total_weight
 
     @api.onchange('package_type_id', 'result_package_id', 'shipping_weight')
-    def _onchange_package_type_weight(self):
-        max_weight = self.package_type_id.max_weight if self.package_type_id else self.result_package_id.package_type_id.max_weight
-        if self.package_carrier_type and max_weight and self.shipping_weight > max_weight:
-            if self.package_type_id:
-                message = self.env._('The weight of your package is higher than the maximum weight authorized for this package type. Please choose another package type.')
-            else:
-                message = self.env._('The weight of your package is higher than the maximum weight authorized for its package type. Please choose another package.')
-            return {
-                'warning': {
-                    'title': self.env._('Package too heavy!'),
-                    'message': message,
-                }
-            }
+    def _onchange_package_weight(self):
+        return super()._onchange_package_weight()
+
+    def _get_weight_to_check(self):
+        return self.shipping_weight
 
     def _get_put_in_pack_context(self):
         context = super()._get_put_in_pack_context()

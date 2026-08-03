@@ -1025,6 +1025,21 @@ class StockQuant(models.Model):
                 [('company_id', '=', company_id)], limit=1
             ).lot_stock_id
 
+    @api.onchange('package_id', 'inventory_quantity_auto_apply')
+    def _onchange_package_id(self):
+        package_type = self.package_id.package_type_id
+        if not package_type or not package_type.max_weight:
+            return
+        weight_delta = (self.inventory_quantity_auto_apply - self._origin.inventory_quantity_auto_apply) * self.product_id.weight
+        projected_weight = self.package_id._get_weight(include_quants=True).get(self.package_id, 0.0) + weight_delta
+        if projected_weight > package_type.max_weight + package_type.base_weight:
+            return {
+                    'warning': {
+                        'title': self.env._("Package Too Heavy!"),
+                        'message': self.env._("The weight of your package is higher than the maximum weight authorized for its package type. Please choose another package."),
+                    }
+                }
+
     def _apply_inventory(self, date=None):
         # Consider the inventory_quantity as set => recompute the inventory_diff_quantity if needed
         self.inventory_quantity_set = True
