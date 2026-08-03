@@ -358,7 +358,7 @@ class HrVersion(models.Model):
         new_vals = {
             f_name: f_value
             for f_name, f_value in vals.items()
-            if (f_name != 'contract_date_start' or not f_value) and f_name != 'contract_date_end'
+            # if (f_name != 'contract_date_start' or not f_value) and f_name != 'contract_date_end'
         }
         for employee, versions in multiple_versions.grouped('employee_id').items():
 
@@ -381,13 +381,13 @@ class HrVersion(models.Model):
                 )
                 all_versions_to_sync = self.env['hr.version']
                 for contract_versions in versions_to_sync.values():
-                    all_versions_to_sync |= next(iter(contract_versions.values()))
+                    all_versions_to_sync |= next(iter(contract_versions.values())).filtered(lambda version: version not in self)
 
                 if all_versions_to_sync:
                     all_versions_to_sync.with_context(sync_contract_dates=True).write(dates_vals)
 
             else:
-                versions.with_context(sync_contract_dates=True).write(dates_vals)
+                versions.filtered(lambda version: version not in self).with_context(sync_contract_dates=True).write(dates_vals)
 
         return super(HrVersion, multiple_versions).write(new_vals)
 
