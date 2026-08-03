@@ -1,11 +1,17 @@
-import { useSubEnv } from "@web/owl2/utils";
+import { useExternalListener, useSubEnv } from "@web/owl2/utils";
 import {
     ProductLabelSectionAndNoteListRender,
     productLabelSectionAndNoteOne2Many,
     ProductLabelSectionAndNoteOne2Many,
 } from '@account/components/product_label_section_and_note_field/product_label_section_and_note_field_o2m';
-import { sectionAndNoteFieldOne2Many } from "@account/components/section_and_note_fields_backend/section_and_note_fields_backend";
+import {
+    getSectionRecords,
+    sectionAndNoteFieldOne2Many,
+} from "@account/components/section_and_note_fields_backend/section_and_note_fields_backend";
 import { registry } from '@web/core/registry';
+
+const SECTION_QTY_COLUMN_NAMES = ["section_qty", "product_uom_qty"];
+const SECTION_UOM_COLUMN_NAMES = ["section_uom_id", "product_uom_id"];
 
 function getComboRecords(listRecords, record) {
     const comboRecords = [];
@@ -60,9 +66,18 @@ export class SaleOrderLineListRenderer extends ProductLabelSectionAndNoteListRen
     setup() {
         super.setup();
         this.priceColumns.push('discount');
+        this.state.hoveredSectionId = false;
+        this.state.focusedSectionId = false;
+        this.sectionQtyClicked = false;
+        this.sectionUOMClicked = false;
+        this._mouseButtonDown = false;
+
+        useExternalListener(document, "pointerdown", () => { this._mouseButtonDown = true; });
+        useExternalListener(document, "pointerup", () => { this._mouseButtonDown = false; });
 
         useSubEnv({
             shouldCollapse: this.shouldCollapse.bind(this),
+            updateSectionLinesQty: this.updateSectionLinesQty.bind(this),
         });
     }
 
@@ -101,6 +116,133 @@ export class SaleOrderLineListRenderer extends ProductLabelSectionAndNoteListRen
             classNames.push("o_invalid_cell o_required_modifier");
         }
         return classNames.join(" ");
+    }
+
+    /**
+     * @override
+     */
+    async onCellClicked(record, column, ev) {
+        if (column && column.name === "section_qty") {
+            this.sectionQtyClicked = true;
+        } else if (column && column.name === "section_uom_id") {
+            this.sectionUOMClicked = true;
+        } else {
+            this.sectionQtyClicked = false;
+            this.sectionUOMClicked = false;
+        }
+        return super.onCellClicked(record, column, ev);
+    }
+
+    /**
+     * @override
+     */
+    focusCell(column, ...args) {
+        if (this.editedRecord() && this.isSection(this.editedRecord())) {
+            if (this.sectionQtyClicked || (column && column.name === "section_qty")) {
+                const originalCol = this.columns.find(c => c.name === "product_uom_qty");
+                if (originalCol) {
+                    this.sectionQtyClicked = false;
+                    return super.focusCell(originalCol, ...args);
+                }
+            }
+            if (this.sectionUOMClicked || (column && column.name === "section_uom_id")) {
+                const originalCol = this.columns.find(c => c.name === "product_uom_id");
+                if (originalCol) {
+                    this.sectionUOMClicked = false;
+                    return super.focusCell(originalCol, ...args);
+                }
+            }
+        }
+        return super.focusCell(column, ...args);
+    }
+
+    async updateSectionLinesQty(record, ratio) {
+        if (!this.isSection(record) || ratio === 1) {
+            return;
+        }
+
+        const proms = [];
+        for (const line of getSectionRecords(this.props.list, record, this.isSubSection(record))) {
+            if (line === record || (!this.isSection(line) && this.isSectionOrNote(line))) {
+                continue;
+            }
+            const qtyField = this.isSection(line) ? "section_qty" : "product_uom_qty";
+            proms.push(line._update({ [qtyField]: line.data[qtyField] * ratio }));
+        }
+        await Promise.all(proms);
+    }
+
+    async onSectionMouseEnter(record) {
+        if (!this.isSection(record) || this._mouseButtonDown) return;
+        this.state.hoveredSectionId = record.id;
+    }
+
+    async onSectionMouseLeave(record) {
+        if (!this.isSection(record) || this._mouseButtonDown) return;
+        this.state.hoveredSectionId = false;
+    }
+
+    onSectionFocusIn(record) {
+        if (!this.isSection(record)) return;
+        this.state.focusedSectionId = record.id;
+    }
+
+    onSectionFocusOut(record) {
+        if (!this.isSection(record)) return;
+        this.state.focusedSectionId = false;
+    }
+
+    get sectionColumns() {
+        return [...super.sectionColumns, 'product_uom_qty', 'product_uom_id'];
+    }
+
+    changeFieldSection(columns) {
+        return columns.map(col => {
+            if (SECTION_QTY_COLUMN_NAMES.includes(col.name)) {
+                const sectionCol = this.allColumns.find((c) => c.name === "section_qty");
+                return sectionCol ? { ...sectionCol, id: col.id } : { ...col };
+            }
+            if (SECTION_UOM_COLUMN_NAMES.includes(col.name)) {
+                const sectionCol = this.allColumns.find((c) => c.name === "section_uom_id");
+                return sectionCol ? { ...sectionCol, id: col.id } : { ...col };
+            }
+            return { ...col };
+        });
+    }
+
+    /**
+     * @override
+     */
+    getSectionAndNoteColumns(columns, record) {
+        let sectionCols = columns.filter(
+            (col) =>
+                col.widget === "handle"
+                || col.name === this.titleField
+                || (this.isSection(record) && this.sectionColumns.includes(col.name))
+        );
+        columns = this.changeFieldSection(columns);
+        sectionCols = this.changeFieldSection(sectionCols);
+        const showQtyUnit = this.state.hoveredSectionId === record.id || this.state.focusedSectionId === record.id;
+        if (showQtyUnit) {
+            const isSectionCol = (col) => sectionCols.some((s) => s.id === col.id);
+            const titleIndex = columns.findIndex((col) => col.name === this.titleField);
+            const colspanBonus = columns.slice(0, titleIndex).filter((col) => !isSectionCol(col)).length;
+            return columns.flatMap((col, i) => {
+                if (col.name === this.titleField) return [colspanBonus ? { ...col, colspan: colspanBonus + 1 } : col];
+                if (i < titleIndex && !isSectionCol(col)) return []; // absorbed by colspan
+                return [isSectionCol(col) ? col : { ...col, invisible: "1", readonly: "1" }];
+            });
+        }
+        sectionCols = sectionCols.filter(
+            (col) => ![...SECTION_QTY_COLUMN_NAMES, ...SECTION_UOM_COLUMN_NAMES].includes(col.name)
+        );
+        return sectionCols.map((col) => {
+            if (col.name === this.titleField) {
+                return { ...col, colspan: columns.length - sectionCols.length + 1 };
+            } else {
+                return { ...col };
+            }
+        });
     }
 
     isCellReadonly(column, record) {

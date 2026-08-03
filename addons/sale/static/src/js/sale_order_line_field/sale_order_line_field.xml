@@ -5,6 +5,20 @@
         t-inherit="account.SectionAndNoteListRenderer.RecordRow"
         t-inherit-mode="primary"
     >
+        <xpath expr="//tr[hasclass('o_data_row')]" position="attributes">
+            <attribute name="t-on-mouseenter">
+                () => this.onSectionMouseEnter(record)
+            </attribute>
+            <attribute name="t-on-mouseleave">
+                () => this.onSectionMouseLeave(record)
+            </attribute>
+             <attribute name="t-on-focusin">
+                () => this.onSectionFocusIn(record)
+            </attribute>
+            <attribute name="t-on-focusout">
+                () => this.onSectionFocusOut(record)
+            </attribute>
+        </xpath>
         <t t-set="isInvisible" position="attributes">
             <attribute
                 name="t-value"
