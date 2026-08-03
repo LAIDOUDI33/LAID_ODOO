@@ -2,7 +2,7 @@
 
 from odoo import Command
 from odoo.addons.account.tests.common import AccountTestInvoicingCommon
-from odoo.tests import tagged
+from odoo.tests import Form, tagged
 from odoo.exceptions import UserError, ValidationError
 
 
@@ -392,3 +392,39 @@ class TestAccountTax(AccountTestInvoicingCommon):
             hide_original_tax_ids=True,
         ).name_search(name='Name search tax')
         self.assertEqual(result, [(tax_1.id, tax_1.display_name)])
+
+    def test_change_tax_exigibility_without_group_account_readonly(self):
+        """
+        A user without `group_account_readonly` must be able to set
+        `cash_basis_transition_account_id` when switching a tax's `tax_exigibility` to 'on_payment'
+        If a user is allowed to modify the `tax_exigibility`, they should also
+        be able to modify the linked account
+        """
+        self.env.company.tax_exigibility = True
+        # Simulate a user without group_account_readonly (not implied by group_account_user)
+        self.env.user.group_ids -= self.env.ref('account.group_account_user')
+
+        sales_10 = self.env['account.tax'].create({
+            'name': '10% Sales tax',
+            'amount': 10.0,
+            'amount_type': 'percent',
+        })
+        self.assertFalse(sales_10.cash_basis_transition_account_id)
+
+        tax_base_amount_account = self.env['account.account'].create({
+            'name': 'TAX_BASE',
+            'code': 'TBASE',
+            'account_type': 'asset_current',
+        })
+
+        with Form(sales_10) as tax_form:
+            tax_form.tax_exigibility = 'on_payment'
+            with self.assertRaisesRegex(AssertionError, 'cash_basis_transition_account_id is a required field'):
+                tax_form.save()
+            with self.assertRaisesRegex(ValidationError, 'The cash basis transition account needs to allow reconciliation'):
+                tax_form.cash_basis_transition_account_id = tax_base_amount_account
+                tax_form.save()
+            tax_base_amount_account.reconcile = True
+            # Account is now reconcilable: save must succeed without group_account_readonly
+            tax_form.cash_basis_transition_account_id = tax_base_amount_account
+            tax_form.save()
