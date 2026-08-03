@@ -7,6 +7,83 @@ $o-label-contour-mark-gap: 1mm;
 $o-label-contour-mark-length: 1.25mm;
 $o-label-contour-mark-width: 0.35mm;
 
+@mixin o-label-two-line-ellipsis($max-height: 2.1em) {
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    display: -webkit-box;
+    height: auto;
+    max-height: $max-height;
+    line-height: 1.05;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
+    word-break: normal;
+    word-wrap: break-word;
+}
+
+@mixin o-label-positioned-row($top: null, $right: 0, $bottom: null, $left: 0) {
+    bottom: $bottom;
+    left: $left;
+    position: absolute;
+    right: $right;
+    top: $top;
+}
+
+@mixin o-label-full-width-block($text-align: null) {
+    display: block;
+    text-align: $text-align;
+    width: 100%;
+}
+
+@mixin o-label-qr-columns(
+    $barcode-width,
+    $info-vertical-align: null,
+    $info-padding-left: null,
+    $info-padding-right: null
+) {
+    .o_label_barcode_side {
+        width: $barcode-width;
+    }
+
+    .o_label_info_side {
+        padding-left: $info-padding-left;
+        padding-right: $info-padding-right;
+        vertical-align: $info-vertical-align;
+        width: 100% - $barcode-width;
+    }
+}
+
+@mixin o-label-product-code-size($font-size) {
+    .o_product_code,
+    .o_label_meta_line.o_packaging_meta_line {
+        font-size: $font-size;
+    }
+}
+
+@mixin o-label-product-block(
+    $width: 100%,
+    $text-align: left,
+    $overflow: hidden,
+    $packaging-line-height: 1.2
+) {
+    overflow: $overflow;
+    text-align: $text-align;
+    width: $width;
+
+    .o_product_code {
+        display: block;
+        text-align: $text-align;
+        width: 100%;
+    }
+
+    .o_product_packaging {
+        line-height: $packaging-line-height;
+        overflow: $overflow;
+        text-overflow: clip;
+        white-space: normal;
+    }
+}
+
 .o_label_sheet {
     margin-left: -4mm;
     margin-right: -4mm;
@@ -38,9 +115,12 @@ $o-label-contour-mark-width: 0.35mm;
         .o_label_identifier_text,
         .o_product_code,
         .o_label_meta_block,
-        .o_label_price,
-        .o_label_meta_line {
+        .o_label_price {
             line-height: 1;
+        }
+
+        .o_label_meta_line {
+            line-height: 1.5;
         }
 
         .o_label_title,
@@ -50,6 +130,11 @@ $o-label-contour-mark-width: 0.35mm;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+        }
+
+        .o_packaging_meta_line {
+            line-height: 1;
+            margin-top: 0;
         }
 
         .o_label_title {
@@ -62,15 +147,40 @@ $o-label-contour-mark-width: 0.35mm;
         }
 
         .o_label_barcode_block,
-        .o_label_identifier_text {
+        .o_label_identifier_text,
+        .o_label_barcode_side {
             text-align: center;
         }
 
-        .o_label_table {
-            display: table;
+        .o_label_info_frame {
+            box-sizing: border-box;
+            position: relative;
             width: 100%;
-            table-layout: fixed;
+        }
 
+        .o_label_info_top,
+        .o_label_info_bottom {
+            left: 0;
+            position: absolute;
+            right: 0;
+        }
+
+        .o_label_info_top {
+            top: 0;
+        }
+
+        .o_label_info_bottom {
+            bottom: 0;
+        }
+
+        .o_label_table,
+        .o_label_centering_table {
+            display: table;
+            table-layout: fixed;
+            width: 100%;
+        }
+
+        .o_label_table {
             > * {
                 display: table-cell;
                 vertical-align: top;
@@ -78,9 +188,8 @@ $o-label-contour-mark-width: 0.35mm;
             }
         }
 
-        .o_product_code {
-            text-align: left;
-            width: 42%;
+        .o_label_product_block {
+            @include o-label-product-block(42%);
         }
 
         .o_label_meta_block {
@@ -95,10 +204,7 @@ $o-label-contour-mark-width: 0.35mm;
         }
 
         .o_label_centering_table {
-            display: table;
             height: 100%;
-            table-layout: fixed;
-            width: 100%;
         }
 
         .o_label_centered_content {
@@ -207,9 +313,15 @@ $o-label-contour-mark-width: 0.35mm;
             }
         }
 
-        &.o_label_2x7 {
+        &.o_label_2x7,
+        &.o_label_4x7 {
             height: 37.1mm;
+        }
+
+        &.o_label_2x7 {
             width: 97mm;
+
+            @include o-label-product-code-size(0.78em);
 
             .o_label_title,
             .o_label_price {
@@ -218,7 +330,6 @@ $o-label-contour-mark-width: 0.35mm;
 
             .o_label_barcode_side {
                 width: 38%;
-                text-align: center;
                 padding: 3mm 0 0.2mm 2.5mm;
             }
 
@@ -233,32 +344,47 @@ $o-label-contour-mark-width: 0.35mm;
             }
 
             .o_label_title {
+                @include o-label-two-line-ellipsis;
+
                 text-align: left;
                 font-size: 1em;
-                line-height: 1.05;
-                height: 1.35em;
-                margin: 0 0 1mm 0;
+                margin: 0 0 1mm;
             }
 
-            .o_product_code {
+            .o_label_product_block {
+                @include o-label-product-block(auto);
+
                 display: block;
-                width: auto;
-                font-size: 0.78em;
-                margin: 0 0 2.2mm 0;
+                margin: 0;
+
+                .o_product_code {
+                    margin: 0;
+                }
             }
 
             .o_label_extra_content {
-                text-align: left;
+                @include o-label-two-line-ellipsis;
+
                 font-size: 0.8em;
-                line-height: 1.1;
-                height: 8mm;
-                overflow: hidden;
-                margin: 0 0 1.5mm 0;
+                margin: 0 0 1.5mm;
+                text-align: left;
+
+                > * {
+                    display: inline;
+                    margin: 0;
+                    padding: 0;
+                }
+
+                &.o_label_extra_content_single_line {
+                    -webkit-line-clamp: 1;
+                    display: block;
+                    height: 1.05em;
+                    max-height: 1.05em;
+                    white-space: nowrap;
+                }
             }
 
             .o_label_meta_block {
-                text-align: right;
-                line-height: 1;
                 width: 100%;
             }
 
@@ -270,18 +396,26 @@ $o-label-contour-mark-width: 0.35mm;
                 font-size: 0.8em;
                 margin-top: 0.5mm;
             }
+
+            &.o_label_2x7_qr {
+                @include o-label-qr-columns(35%);
+
+                .o_label_barcode {
+                    text-align: center;
+                }
+            }
         }
 
         &.o_label_4x7 {
-            height: 37.1mm;
             width: 47mm;
+
+            @include o-label-product-code-size(0.6em);
 
             .o_label_centered_content {
                 padding: 1.5mm 2.2mm;
             }
 
             .o_label_identifier_text,
-            .o_product_code,
             .o_label_meta_line {
                 font-size: 0.6em;
             }
@@ -289,12 +423,12 @@ $o-label-contour-mark-width: 0.35mm;
             .o_label_title {
                 font-size: 0.75em;
                 height: 2.3em;
-                padding: 3.5mm 1mm 0 1mm;
-                margin: 0 0 4mm 0;
+                padding: 3.5mm 1mm 0;
+                margin: 0 0 4mm;
             }
 
             .o_label_identifier_text {
-                margin: 0.3mm 0 4mm 0;
+                margin: 0.3mm 0 4mm;
             }
 
             .o_label_price {
@@ -304,6 +438,57 @@ $o-label-contour-mark-width: 0.35mm;
             .o_label_meta_line {
                 margin-top: 0.25mm;
             }
+
+            &.o_label_4x7_qr {
+                .o_label_centered_content {
+                    padding: 2mm 1.5mm;
+                    vertical-align: top;
+                }
+
+                .o_label_title {
+                    @include o-label-two-line-ellipsis(2em);
+
+                    margin: 0;
+                    padding: 0;
+                    text-align: center;
+                }
+
+                .o_label_title_row {
+                    display: table-cell;
+                    height: 2em;
+                    padding-bottom: 1mm;
+                    vertical-align: middle;
+                    width: 44mm;
+                }
+
+                .o_label_qr_body {
+                    height: 25mm;
+                }
+
+                @include o-label-qr-columns(53%, top, 1mm);
+
+                .o_label_info_frame {
+                    height: 23mm;
+                }
+
+                .o_label_identifier_text {
+                    @include o-label-full-width-block;
+
+                    margin: 0.3mm 0 0;
+                }
+
+                .o_label_product_block {
+                    @include o-label-product-block;
+                    @include o-label-positioned-row($top: -1mm);
+                }
+
+                .o_label_meta_block {
+                    @include o-label-positioned-row($bottom: 0);
+
+                    text-align: right;
+                    width: 100%;
+                }
+            }
         }
 
         &.o_label_4x7,
@@ -312,9 +497,14 @@ $o-label-contour-mark-width: 0.35mm;
             padding: 0;
         }
 
-        &.o_label_4x12 {
+        &.o_label_4x12,
+        &.o_label_4x12_gs1 {
             height: 19mm;
             width: 43mm;
+        }
+
+        &.o_label_4x12 {
+            @include o-label-product-code-size(0.5em);
 
             .o_label_centered_content {
                 padding: 1.5mm;
@@ -326,13 +516,23 @@ $o-label-contour-mark-width: 0.35mm;
                     font-weight: 700;
                 }
 
-                .o_label_title {
+                .o_label_title_block {
                     width: 58%;
+                    text-align: left;
+                }
+
+                .o_label_title {
+                    width: 100%;
                     text-align: left;
                     font-size: 0.55em;
                     line-height: 1.05;
                     height: 1.2em;
                     padding-right: 1mm;
+                }
+
+                .o_label_title_block .o_product_packaging {
+                    line-height: 1.2;
+                    text-align: left;
                 }
 
                 .o_label_meta_block {
@@ -346,10 +546,8 @@ $o-label-contour-mark-width: 0.35mm;
                     font-size: 0.5em;
                 }
 
-                .o_product_code {
-                    width: 48%;
-                    text-align: right;
-                    font-size: 0.5em;
+                .o_label_product_block {
+                    @include o-label-product-block(48%, right);
                 }
             }
 
@@ -360,6 +558,16 @@ $o-label-contour-mark-width: 0.35mm;
 
             .o_label_header {
                 margin-bottom: 0;
+            }
+
+            &.o_label_without_meta_block .o_label_header {
+                .o_label_title_block {
+                    width: 100%;
+                }
+
+                .o_label_meta_block {
+                    display: none;
+                }
             }
 
             .o_label_footer {
@@ -390,64 +598,81 @@ $o-label-contour-mark-width: 0.35mm;
                     padding-top: 0.75mm;
                 }
             }
+
+            &.o_label_4x12_qr {
+                @include o-label-qr-columns(38%, top, 1mm);
+
+                .o_label_info_frame {
+                    height: 16mm;
+                }
+
+                .o_label_title {
+                    @include o-label-full-width-block(left);
+                    @include o-label-two-line-ellipsis;
+
+                    margin-bottom: 0.4mm;
+                    padding: 0;
+                }
+
+                .o_label_product_block {
+                    @include o-label-product-block(
+                        $overflow: visible,
+                        $packaging-line-height: 1.3
+                    );
+                }
+
+                .o_label_identifier_text {
+                    @include o-label-full-width-block(center);
+
+                    font-size: 0.38em;
+                    margin-top: 0.2mm;
+                }
+
+                .o_label_meta_block {
+                    @include o-label-positioned-row($bottom: 0);
+
+                    text-align: right;
+                    width: 100%;
+                }
+
+                .o_label_barcode_block {
+                    margin: 0;
+                }
+            }
         }
 
         &.o_label_4x12_gs1 {
-            height: 19mm;
-            width: 43mm;
+            @include o-label-product-code-size(0.45em);
+            @include o-label-qr-columns(40%, middle);
 
             .o_label_centered_content {
                 padding: 1.2mm 1.5mm;
             }
 
             .o_label_barcode_side {
-                width: 40%;
-                text-align: center;
                 padding-right: 1.2mm;
             }
 
-            .o_label_info_side {
-                width: 60%;
-                vertical-align: middle;
-            }
-
             .o_label_info_frame {
-                box-sizing: border-box;
                 height: 16mm;
-                position: relative;
-                width: 100%;
-            }
-
-            .o_label_info_top,
-            .o_label_info_bottom {
-                left: 0;
-                position: absolute;
-                right: 0;
-            }
-
-            .o_label_info_top {
-                top: 0;
-            }
-
-            .o_label_info_bottom {
-                bottom: 0;
             }
 
             .o_label_title,
-            .o_product_code,
             .o_label_identifier_text,
             .o_label_price,
             .o_label_meta_line {
-                display: block;
-                text-align: left;
-                width: 100%;
+                @include o-label-full-width-block(left);
+            }
+
+            .o_label_product_block {
+                @include o-label-product-block;
             }
 
             .o_label_title {
                 font-size: 0.55em;
                 font-weight: 700;
                 line-height: 1.05;
-                margin: 0 0 0.45mm 0;
+                margin: 0 0 0.45mm;
             }
 
             .o_label_identifier_text,
@@ -455,13 +680,9 @@ $o-label-contour-mark-width: 0.35mm;
                 font-size: 0.5em;
             }
 
-            .o_product_code {
-                font-size: 0.45em;
-            }
-
             .o_product_code,
             .o_label_identifier_text {
-                margin: 0 0 0.35mm 0;
+                margin: 0 0 0.35mm;
             }
 
             .o_label_meta_block {
@@ -472,7 +693,7 @@ $o-label-contour-mark-width: 0.35mm;
 
             .o_label_price {
                 font-size: 0.8em;
-                margin: 0 0 0.2mm 0;
+                margin: 0 0 0.2mm;
             }
         }
     }
@@ -483,8 +704,9 @@ $o-label-contour-mark-width: 0.35mm;
         height: 32mm;
 
         div.o_label_full {
+            @include o-label-product-code-size(0.6em);
+
             .o_label_identifier_text,
-            .o_product_code,
             .o_label_meta_line {
                 font-size: 0.6em;
             }
@@ -497,7 +719,7 @@ $o-label-contour-mark-width: 0.35mm;
             }
 
             .o_label_identifier_text {
-                margin: 0.2mm 0 1mm 0;
+                margin: 0.2mm 0 1mm;
             }
 
             .o_label_barcode_block {
@@ -523,6 +745,48 @@ $o-label-contour-mark-width: 0.35mm;
             .o_label_full {
                 .o_label_barcode_block {
                     margin: 3mm 0;
+                }
+            }
+        }
+
+        &.o_label_dymo_qr {
+            div.o_label_full {
+                .o_label_centered_content {
+                    padding: 0;
+                }
+
+                @include o-label-qr-columns(35%, middle, 2.5mm, 0.5mm);
+
+                .o_label_info_frame {
+                    height: 24mm;
+                }
+
+                .o_label_title {
+                    @include o-label-two-line-ellipsis;
+
+                    margin: 0 0 0.6mm;
+                    text-align: left;
+                }
+
+                .o_label_identifier_text {
+                    @include o-label-full-width-block(center);
+
+                    margin: 0.2mm 0 0;
+                }
+
+                .o_label_product_block {
+                    @include o-label-product-block;
+                }
+
+                .o_label_barcode_block {
+                    margin: 0;
+                }
+
+                .o_label_meta_block {
+                    @include o-label-positioned-row($right: 0.5mm, $bottom: 0);
+
+                    text-align: right;
+                    width: auto;
                 }
             }
         }

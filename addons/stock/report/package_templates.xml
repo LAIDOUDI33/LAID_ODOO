@@ -2,28 +2,38 @@
 <odoo>
     <data>
         <template id="label_package_template_view">
-            <t t-foreach="docs" t-as="package">
+            <t t-foreach="docs" t-as="package_values">
+                <t t-set="package" t-value="package_values['record']"/>
                 <t t-translation="off">
-^XA
+^XA^CI28
+^PW457
+^LL254
                     <t t-if="package.valid_sscc">
                         <t t-set="barcode" t-value="'00' + package.name"/>
                         <t t-if="package.pack_date" name="datamatrix_pack_date" t-set="barcode" t-value="barcode + '13' + package.pack_date.strftime('%y%m%d')"/>
-^FO310,50
-^A0N,44,33^FDSSCC: <t t-out="package.name"/>^FS
-^FO310,100^BY3
-<t t-if="package.pack_date">^A0N,44,33^FDPack Date: <t t-out="package.pack_date" t-options='{"widget": "date"}'/>^FS</t>
-^FO310,150^BY3
-<t t-if="package.package_type_id">^A0N,44,33^FDPackage Type: <t t-out="package.package_type_id.name"/>^FS</t>
-^FO100,50^BY3
-^BXN,10,200
-^FD<t t-out="barcode"/>^FS
+^FO13,55^BXN,6,200,24,24^FD<t t-out="barcode"/>^FS
+^FO174,55^A0N,25,16^TBN,277,21^FDSSCC: <t t-out="package.name"/>^FS
+                        <t t-if="package.package_type_id">
+^FO174,85^A0N,18,15^TBN,277,19^FDPackage Type: <t t-out="package.package_type_id.name"/>^FS
+                        </t>
+                        <t t-if="package.pack_date">
+^FO174,105^A0N,18,15^TBN,277,19^FDPack Date: <t t-out="package.pack_date" t-options='{"widget": "date"}'/>^FS
+                        </t>
                     </t>
                     <t t-else="">
-^FO100,50
-^A0N,44,33^FD<t t-out="package.name"/>^FS
-^FO100,100^BY3
-^BCN,100,Y,N,N
-^FD<t t-out="package.name"/>^FS
+^FO0,48^A0N,30^FB457,1,0,C^FD<t t-out="package.name[:32]"/>^FS
+                        <t t-if="package_values['barcode_graphic']">
+^FO5,89^GFA,<t t-out="package_values['barcode_graphic']['total_bytes']"/>,<t t-out="package_values['barcode_graphic']['total_bytes']"/>,<t t-out="package_values['barcode_graphic']['bytes_per_row']"/>,<t t-out="package_values['barcode_graphic']['data']"/>^FS
+                        </t>
+                        <t t-else="">
+^FO5,89^BY2^BCN,80,N,N,N^FD<t t-out="package.name"/>^FS
+                        </t>
+                        <t t-if="package.pack_date">
+^FO5,187^A0N,18,15^TBN,220,19^FDPack Date: <t t-out="package.pack_date" t-options='{"widget": "date"}'/>^FS
+                        </t>
+                        <t t-if="package.package_type_id">
+^FO452,187,1^A0N,18,15^TBN,220,19^FDPackage Type: <t t-out="package.package_type_id.name"/>^FS
+                        </t>
                     </t>
 ^XZ
                 </t>
@@ -31,7 +41,6 @@
         </template>
 
         <template id="label_package_history_template_view">
-            <t t-set="docs" t-value="docs.package_id"/>
             <t t-call="stock.label_package_template_view"/>
         </template>
     </data>
