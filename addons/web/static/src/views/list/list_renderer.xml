@@ -356,6 +356,7 @@
                         t-att-class="this.getCellClass(column, record)"
                         t-att-name="column.fields[0].name"
                         t-att-data-column-id="column.id"
+                        t-att-colspan="column.colspan"
                         t-custom-click="(ev, isMiddleClick) => this.onCellClicked(record, column, ev, isMiddleClick)"
                         tabindex="-1">
                         <t t-foreach="column.fields" t-as="fieldInfo" t-key="fieldInfo.id">

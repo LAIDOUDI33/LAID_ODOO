@@ -120,7 +120,11 @@ class AccountMoveLine(models.Model):
         compute='_compute_name', store=True, readonly=False, precompute=True,
         tracking=True,
     )
-    translated_product_name = fields.Text(compute='_compute_translated_product_name')
+    label = fields.Text(
+        string="Product & Description",
+        compute="_compute_label",
+        inverse="_set_description",
+    )
     debit = fields.Monetary(
         string='Debit',
         compute='_compute_debit_credit', inverse='_inverse_debit', store=True, precompute=True,
@@ -637,8 +641,8 @@ class AccountMoveLine(models.Model):
     def _compute_name(self):
         def get_name(line):
             values = []
-            if line.move_id.partner_id.lang:
-                product = line.product_id.with_context(lang=line.move_id.partner_id.lang)
+            if lang := line.move_id._get_lang():
+                product = line.product_id.with_context(lang=lang)
             elif line.partner_id.lang:
                 product = line.product_id.with_context(lang=line.partner_id.lang)
             else:
@@ -646,14 +650,10 @@ class AccountMoveLine(models.Model):
             if not product:
                 return False
 
-            if line.journal_id.type == 'sale':
-                values.append(product.display_name)
-                if product.description_sale:
-                    values.append(product.description_sale)
-            elif line.journal_id.type == 'purchase':
-                values.append(product.display_name)
-                if product.description_purchase:
-                    values.append(product.description_purchase)
+            if line.journal_id.type == 'sale' and product.description_sale:
+                values.append(product.description_sale)
+            elif line.journal_id.type == 'purchase' and product.description_purchase:
+                values.append(product.description_purchase)
             return '\n'.join(values) if values else False
 
         term_by_move = (self.move_id.line_ids | self).filtered(lambda l: l.display_type == 'payment_term').sorted(lambda l: l.date_maturity or date.max).grouped('move_id')
@@ -682,12 +682,25 @@ class AccountMoveLine(models.Model):
             if not line.name or line._origin.name == get_name(line._origin) or line.product_id != line._origin.product_id:
                 line.name = get_name(line)
 
-    @api.depends('product_id')
-    def _compute_translated_product_name(self):
+    @api.depends("product_id", "name")
+    def _compute_label(self):
         for line in self:
-            line.translated_product_name = line.product_id.with_context(
-                lang=line.partner_id.lang,
-            ).display_name
+            lang_line = line.with_context(lang=line.move_id._get_lang())
+            if lang_line.product_id and lang_line.name:
+                lang_line.label = lang_line.product_id.display_name + "\n" + lang_line.name
+            elif lang_line.product_id and not lang_line.name:
+                lang_line.label = lang_line.product_id.display_name
+            else:
+                lang_line.label = lang_line.name
+
+    def _set_description(self):
+        for line in self:
+            if line.product_id:
+                line.name = line.label.removeprefix(
+                    line.product_id.display_name
+                ).removeprefix("\n")
+            else:
+                line.name = line.label
 
     def _compute_account_id(self):
         term_lines = self.filtered(lambda line: line.display_type == 'payment_term')
@@ -3805,9 +3818,6 @@ class AccountMoveLine(models.Model):
         }
         return res
 
-    def _get_journal_items_full_name(self, name, display_name):
-        return name if not display_name or display_name in name else f"{display_name}\n{name}"
-
     def _check_edi_line_tax_required(self):
         return self.product_id.type != 'combo'
 
@@ -3848,7 +3858,7 @@ class AccountMoveLine(models.Model):
         section_subtotal = sum(l.price_subtotal for l in children_lines)
         section_total = sum(l.price_total for l in children_lines)
         result = [{
-            'name': self.name,
+            'label': self.label,
             'product': False,
             'taxes': [tax.tax_label for tax in children_lines.tax_ids if tax.tax_label] if not self.collapse_prices else [],
             'price_subtotal': section_subtotal,
@@ -3864,7 +3874,7 @@ class AccountMoveLine(models.Model):
 
         for line in direct_children_lines:
             result.append({
-                'name': line.name,
+                'label': line.label,
                 'product': line.product_id,
                 'taxes': [tax.tax_label for tax in line.tax_ids if tax.tax_label],
                 'price_subtotal': line.price_subtotal,
@@ -3887,7 +3897,7 @@ class AccountMoveLine(models.Model):
                     continue
                 if subsection_line.collapse_composition:
                     result.append({
-                        'name': subsection_line.name,
+                        'label': subsection_line.label,
                         'product': False,
                         'taxes': tax_labels,
                         'price_subtotal': subtotal,
@@ -3901,7 +3911,7 @@ class AccountMoveLine(models.Model):
                 else:
                     for line in subsection_line | lines_for_tax_group:
                         result.append({
-                            'name': line.name,
+                            'label': line.label,
                             'product': line.product_id,
                             'taxes': tax_labels if (line == subsection_line and not self.collapse_prices) or (line != subsection_line and self.collapse_prices) else [],
                             'price_subtotal': subtotal if line == subsection_line else line.price_subtotal,
@@ -3913,7 +3923,7 @@ class AccountMoveLine(models.Model):
                             'discount': line.discount,
                         })
         return result or [{
-            'name': self.name,
+            'label': self.label,
             'taxes': [],
             'price_subtotal': 0.0,
             'price_total': 0.0,

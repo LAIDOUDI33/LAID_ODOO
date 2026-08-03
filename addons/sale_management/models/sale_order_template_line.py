@@ -181,8 +181,6 @@ class SaleOrderTemplateLine(models.Model):
         }
         if self.name:
             vals["name"] = self.name
-            if self.product_id:
-                vals["name"] = f"{self.product_id.display_name}\n{self.name}"
 
         if not self.product_id:
             taxes = self.tax_ids._filter_taxes_by_company()

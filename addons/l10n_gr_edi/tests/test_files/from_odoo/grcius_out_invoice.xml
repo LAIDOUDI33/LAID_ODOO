@@ -132,7 +132,6 @@
 		<cbc:InvoicedQuantity unitCode="C62">1.0</cbc:InvoicedQuantity>
 		<cbc:LineExtensionAmount currencyID="EUR">15.80</cbc:LineExtensionAmount>
 		<cac:Item>
-			<cbc:Description>[E-COM08] product_a</cbc:Description>
 			<cbc:Name>product_a</cbc:Name>
 			<cac:SellersItemIdentification>
 				<cbc:ID>E-COM08</cbc:ID>
@@ -157,7 +156,6 @@
 		<cbc:InvoicedQuantity unitCode="DZN">1.0</cbc:InvoicedQuantity>
 		<cbc:LineExtensionAmount currencyID="EUR">5.10</cbc:LineExtensionAmount>
 		<cac:Item>
-			<cbc:Description>[FURN_0001] product_b</cbc:Description>
 			<cbc:Name>product_b</cbc:Name>
 			<cac:SellersItemIdentification>
 				<cbc:ID>FURN_0001</cbc:ID>

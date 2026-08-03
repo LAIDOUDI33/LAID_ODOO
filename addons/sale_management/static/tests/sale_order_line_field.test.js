@@ -142,6 +142,7 @@ class SaleOrder extends saleManagementModels.SaleOrder {
                         </control>
                         <field name="sequence" widget="handle"/>
                         <field name="name"/>
+                        <field name="label"/>
                         <field name="product_uom_qty"/>
                         <field name="price_unit"/>
                         <field name="price_total"/>

@@ -142,14 +142,11 @@ class SaleOrderLine(models.Model):
     is_product_archived = fields.Boolean(compute="_compute_is_product_archived")
 
     name = fields.Text(
-        string="Description",
-        compute="_compute_name",
-        store=True,
-        readonly=False,
-        required=True,
-        precompute=True,
+        string="Description", compute="_compute_name", store=True, readonly=False, precompute=True
     )
-    translated_product_name = fields.Text(compute="_compute_translated_product_name")
+    label = fields.Text(
+        string="Product & Description", compute="_compute_label", inverse="_set_description"
+    )
 
     product_uom_qty = fields.Float(
         string="Quantity",
@@ -496,22 +493,32 @@ class SaleOrderLine(models.Model):
     def _get_sale_order_line_multiline_description_sale(self):
         """Compute a default multiline description for this sales order line.
 
-        In most cases the product description is enough but sometimes we need to append information
-        that only exists on the sale order line itself (custom and no_variant attributes, ...).
+        In most cases the product description is enough, but sometimes we need to append
+        information that only exists on the sale order line itself (custom and
+        no_variant attributes, ...).
         """
         self.ensure_one()
-        description = (
-            self.product_id.get_product_multiline_description_sale()
-            + self._get_sale_order_line_multiline_description_variants()
-        )
+
+        description_parts = []
+
+        if self.product_id.description_sale:
+            description_parts.append(self.product_id.description_sale)
+
+        variants = self._get_sale_order_line_multiline_description_variants()
+        if variants:
+            description_parts.append(variants)
+
         if self.linked_line_id and not self.combo_item_id:
-            description += "\n" + self.env._(
-                "Option for: %s",
-                self.linked_line_id.product_id.with_context(
-                    display_default_code=False
-                ).display_name,
+            description_parts.append(
+                self.env._(
+                    "Option for: %s",
+                    self.linked_line_id.product_id.with_context(
+                        display_default_code=False
+                    ).display_name,
+                )
             )
-        return description
+
+        return "\n".join(description_parts)
 
     def _get_sale_order_line_multiline_description_variants(self):
         """When using no_variant attributes or is_custom values, the product
@@ -528,7 +535,7 @@ class SaleOrderLine(models.Model):
         if not self.product_custom_attribute_value_ids and not no_variant_ptavs:
             return ""
 
-        name = ""
+        lines = []
 
         custom_ptavs = (
             self.product_custom_attribute_value_ids.custom_product_template_attribute_value_id
@@ -537,15 +544,16 @@ class SaleOrderLine(models.Model):
 
         # display the no_variant attributes, except those that are also
         # displayed by a custom (avoid duplicate description)
-        for ptav in no_variant_ptavs - multi_ptavs - custom_ptavs:
-            name += "\n" + ptav.display_name
+        lines.extend(ptav.display_name for ptav in no_variant_ptavs - multi_ptavs - custom_ptavs)
 
         # display the selected values per attribute on a single for a multi checkbox
         for pta, ptavs in groupby(multi_ptavs, lambda ptav: ptav.attribute_id):
-            name += "\n" + self.env._(
-                "%(attribute)s: %(values)s",
-                attribute=pta.name,
-                values=", ".join(ptav.name for ptav in ptavs),
+            lines.append(
+                self.env._(
+                    "%(attribute)s: %(values)s",
+                    attribute=pta.name,
+                    values=", ".join(ptav.name for ptav in ptavs),
+                )
             )
 
         # Sort the values according to _order settings, because it doesn't work for virtual records
@@ -555,9 +563,9 @@ class SaleOrderLine(models.Model):
             pacv = self.product_custom_attribute_value_ids.filtered(
                 lambda pcav: pcav.custom_product_template_attribute_value_id == patv
             )
-            name += "\n" + pacv.display_name
+            lines.append(pacv.display_name)
 
-        return name
+        return "\n".join(lines)
 
     def _get_downpayment_description(self):
         self.ensure_one()
@@ -589,12 +597,26 @@ class SaleOrderLine(models.Model):
 
         return name
 
-    @api.depends("product_id")
-    def _compute_translated_product_name(self):
+    @api.depends("product_id", "name", "order_id.partner_id")
+    def _compute_label(self):
         for line in self:
-            line.translated_product_name = line.product_id.with_context(
-                lang=line.order_id._get_lang()
-            ).display_name
+            lang_line = line.with_context(lang=line.order_id._get_lang())
+            if lang_line.product_id and lang_line.name:
+                lang_line.label = lang_line.product_id.display_name + "\n" + lang_line.name
+            elif lang_line.product_id and not lang_line.name:
+                lang_line.label = lang_line.product_id.display_name
+            else:
+                lang_line.label = lang_line.name
+
+    def _set_description(self):
+        for line in self:
+            if line.product_id:
+                display_name = line.product_id.with_context(
+                    lang=line.order_id._get_lang()
+                ).display_name
+                line.name = line.label.removeprefix(display_name).removeprefix("\n")
+            else:
+                line.name = line.label
 
     @api.depends("display_type", "product_id")
     def _compute_product_uom_qty(self):
@@ -1899,9 +1921,7 @@ class SaleOrderLine(models.Model):
         res = {
             "display_type": self.display_type or "product",
             "sequence": self.sequence,
-            "name": self.env["account.move.line"]._get_journal_items_full_name(
-                self.name, self.product_id.display_name
-            ),
+            "name": self.name,
             "product_id": self.product_id.id,
             "product_uom_id": self.product_uom_id.id,
             "quantity": self.qty_to_invoice,

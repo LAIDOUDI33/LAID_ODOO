@@ -26,7 +26,7 @@
                             t-out="line.product_id.default_code"/>
                         <t t-set="item_name" t-value="line.product_id.name or line.name"/>
                         <ram:Name t-out="item_name"/>
-                        <ram:Description t-out="line.name" t-if="item_name != line.name"/>
+                        <ram:Description t-out="line.name" t-if="line.name != item_name"/>
                     </ram:SpecifiedTradeProduct>
 
                     <!-- Amounts. -->

@@ -160,7 +160,6 @@
             </cac:TaxSubtotal>
         </cac:TaxTotal>
         <cac:Item>
-            <cbc:Description>USD PoS Shop Test - 000001-USD PoS Shop Test - 000004</cbc:Description>
             <cbc:Name>USD PoS Shop Test - 000001-USD PoS Shop Test - 000004</cbc:Name>
             <cac:CommodityClassification>
                 <cbc:ItemClassificationCode listID="CLASS">004</cbc:ItemClassificationCode>
@@ -219,7 +218,6 @@
             </cac:TaxSubtotal>
         </cac:TaxTotal>
         <cac:Item>
-            <cbc:Description>USD PoS Shop Test - 000006</cbc:Description>
             <cbc:Name>USD PoS Shop Test - 000006</cbc:Name>
             <cac:CommodityClassification>
                 <cbc:ItemClassificationCode listID="CLASS">004</cbc:ItemClassificationCode>

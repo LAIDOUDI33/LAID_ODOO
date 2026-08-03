@@ -57,7 +57,7 @@ class SaleOrderLine(models.Model):
         super()._compute_name()
         for line in self:
             if line.repair_service_line_id and line.repair_service_line_id.description:
-                line.name = line.translated_product_name + '\n' + line.repair_service_line_id.description
+                line.name = line.repair_service_line_id.description
 
     def _prepare_qty_delivered(self):
         repair_delivered_qties = defaultdict(float)

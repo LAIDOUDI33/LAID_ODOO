@@ -798,7 +798,7 @@
                                             class="d-sm-none"
                                             t-att-style="padding_style"
                                         >
-                                            <span t-field="line.name"/>
+                                            <span t-field="line.label"/>
                                         </td>
                                         <td
                                             name="td_section_name_sm"
@@ -806,7 +806,7 @@
                                             class="d-none d-sm-table-cell d-md-none"
                                             t-att-style="padding_style"
                                         >
-                                            <span t-field="line.name"/>
+                                            <span t-field="line.label"/>
                                         </td>
                                         <td
                                             name="td_section_name"
@@ -814,7 +814,7 @@
                                             class="d-none d-md-table-cell"
                                             t-att-style="padding_style"
                                         >
-                                            <span t-field="line.name"/>
+                                            <span t-field="line.label"/>
                                         </td>
                                         <td
                                             t-if="show_section_total"
@@ -843,7 +843,7 @@
                                             colspan="99"
                                             t-att-style="padding_style"
                                         >
-                                            <span t-field="line.name"/>
+                                            <span t-field="line.label"/>
                                         </td>
                                     </tr>
                                     <tr t-elif="is_combo" name="tr_combo" class="fw-bold">
@@ -859,7 +859,7 @@
                                             name="td_combo_name"
                                             t-att-style="padding_style"
                                         >
-                                            <span t-field="line.name">Combo Product</span>
+                                            <span t-field="line.label">Combo Product</span>
                                         </td>
                                         <td
                                             name="td_combo_quantity"
@@ -905,7 +905,7 @@
                                                     t-att-src="image_data_uri(line.product_id.image_128)"
                                                     t-att-alt="line.product_id.display_name" class="o_sale_portal_product_image d-none d-lg-inline me-2 rounded object-fit-cover"
                                                 />
-                                                <span name="span_product_name" t-field="line.name"/>
+                                                <span name="span_product_name" t-field="line.label"/>
                                             </div>
                                         </td>
                                         <td name="td_product_quantity" class="text-end">
@@ -972,7 +972,7 @@
                                             <t t-set="line_counter" t-value="line_counter + 1"/>
                                         </td>
                                         <td name="td_section_group_name" t-att-style="padding_style">
-                                            <span t-field="line.name">
+                                            <span t-field="line.label">
                                                 Section Summary
                                             </span>
                                         </td>

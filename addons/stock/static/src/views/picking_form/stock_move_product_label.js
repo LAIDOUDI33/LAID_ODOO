@@ -21,9 +21,6 @@ export class MoveProductLabelField extends ProductNameAndDescriptionField {
     get showLabelVisibilityToggler() {
         return !this.isDescriptionReadonly && this.columnIsProductAndLabel.value && !this.label;
     }
-    parseLabel(value) {
-        return value;
-    }
 }
 
 export const moveProductLabelField = {

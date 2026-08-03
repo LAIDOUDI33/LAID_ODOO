@@ -125,7 +125,7 @@ export class SectionAndNoteListRenderer extends ListRenderer {
     }
 
     get sectionColumns() {
-        return [...this.props.aggregatedFields, 'section_state'];
+        return [...this.props.aggregatedFields, 'section_state', "label"];
     }
 
     buildParentSectionMap(records) {
@@ -443,7 +443,7 @@ export class SectionAndNoteListRenderer extends ListRenderer {
                 || (this.isSection(record) && this.sectionColumns.includes(col.name))
         );
         return sectionCols.map((col) => {
-            if (col.name === this.titleField) {
+            if (col.name === this.titleField || col.name === "label") {
                 return { ...col, colspan: columns.length - sectionCols.length + 1 };
             } else {
                 return { ...col };
