@@ -317,22 +317,27 @@ class ResCompany(models.Model):
 
         :returns: dictionary of the form: {module_name: [(document identifier, document_name)]}
         """
-        return {
-            'default': {
-                "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2::Invoice##urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0::2.1":
-                    "Peppol BIS Billing UBL Invoice V3",
-                "urn:oasis:names:specification:ubl:schema:xsd:CreditNote-2::CreditNote##urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0::2.1":
-                    "Peppol BIS Billing UBL CreditNote V3",
-                "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2::Invoice##urn:cen.eu:en16931:2017#compliant#urn:fdc:nen.nl:nlcius:v1.0::2.1":
-                    "SI-UBL 2.0 Invoice",
-                "urn:oasis:names:specification:ubl:schema:xsd:CreditNote-2::CreditNote##urn:cen.eu:en16931:2017#compliant#urn:fdc:nen.nl:nlcius:v1.0::2.1":
-                    "SI-UBL 2.0 CreditNote",
-                "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2::Invoice##urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:selfbilling:3.0::2.1":
-                    "Peppol BIS Self-Billing UBL Invoice V3",
-                "urn:oasis:names:specification:ubl:schema:xsd:CreditNote-2::CreditNote##urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:selfbilling:3.0::2.1":
-                    "Peppol BIS Self-Billing UBL CreditNote V3",
-            }
+        default = {
+            "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2::Invoice##urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0::2.1":
+                "Peppol BIS Billing UBL Invoice V3",
+            "urn:oasis:names:specification:ubl:schema:xsd:CreditNote-2::CreditNote##urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0::2.1":
+                "Peppol BIS Billing UBL CreditNote V3",
+            "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2::Invoice##urn:cen.eu:en16931:2017#compliant#urn:fdc:nen.nl:nlcius:v1.0::2.1":
+                "SI-UBL 2.0 Invoice",
+            "urn:oasis:names:specification:ubl:schema:xsd:CreditNote-2::CreditNote##urn:cen.eu:en16931:2017#compliant#urn:fdc:nen.nl:nlcius:v1.0::2.1":
+                "SI-UBL 2.0 CreditNote",
+            "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2::Invoice##urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:selfbilling:3.0::2.1":
+                "Peppol BIS Self-Billing UBL Invoice V3",
+            "urn:oasis:names:specification:ubl:schema:xsd:CreditNote-2::CreditNote##urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:selfbilling:3.0::2.1":
+                "Peppol BIS Self-Billing UBL CreditNote V3",
+            "urn:oasis:names:specification:ubl:schema:xsd:ApplicationResponse-2::ApplicationResponse##urn:peppol:edec:mls:1.0::2.1":
+                "Peppol Message Level Status v1.0",
         }
+
+        if self.peppol_eas == '0245':
+            default["urn:peppol:schema:sk-taxdata:1.0::TaxData##urn:peppol:taxdata:sk-1::1.0"] = "SK Tax Data Document v1.0"
+
+        return {'default': default}
 
     def _peppol_supported_document_types(self):
         """Returns a flattened dictionary of all supported document types."""
