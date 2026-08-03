@@ -13,6 +13,7 @@ from markupsafe import Markup, escape
 
 from odoo import _, api, fields, models, tools
 from odoo.addons.base.models.ir_qweb import QWebError
+from odoo.addons.base.models.ir_ui_view import MOVABLE_BRANDING
 from odoo.exceptions import UserError, AccessError
 from odoo.tools import urls
 from odoo.tools.mail import is_html_empty, prepend_html_content, html_normalize
@@ -21,6 +22,8 @@ from odoo.tools.rendering_tools import convert_inline_template_to_qweb, parse_in
 _logger = logging.getLogger(__name__)
 
 BYPASS_RESTRICTED_RENDERING = object()
+_PLACEHOLDER_DIRECTIVES = {'t-out', 't-esc', 't-raw', 't-field',
+                           't-tag-open', 't-tag-close', 't-inner-content'}
 
 
 def format_date(env, date, pattern=False, lang_code=False):
@@ -54,6 +57,17 @@ def render_res_ids(model, res_ids, results):
     yield model.browse()
     for res_id in falsy_ids:
         results[res_id] = results[False]
+
+
+def _strip_editor_attributes(node):
+    """Strip editor metadata attributes added by the email/html editor before the safety check.
+    """
+    for el in node.iter():
+        if not _PLACEHOLDER_DIRECTIVES.intersection(el.attrib):
+            continue
+        for attr in list(el.attrib):
+            if attr.startswith('data-oe-') and attr not in MOVABLE_BRANDING:
+                del el.attrib[attr]
 
 
 class MailRenderMixin(models.AbstractModel):
@@ -301,6 +315,7 @@ class MailRenderMixin(models.AbstractModel):
         if template_src:
             try:
                 node = html.fragment_fromstring(template_src, create_parent='div')
+                _strip_editor_attributes(node)
                 self.env["ir.qweb"].with_context(raise_on_forbidden_code_for_model=model)._generate_code(node)
             except PermissionError:
                 return True
@@ -472,6 +487,11 @@ class MailRenderMixin(models.AbstractModel):
 
         Supporting only QWeb allowed expressions, no custom variable in that mode.
         """
+        if template_src and 'data-oe-' in template_src:
+            wrapper = html.fragment_fromstring(f'<div>{template_src}</div>')
+            _strip_editor_attributes(wrapper)
+            template_src = html.tostring(wrapper, encoding='unicode')[5:-6]
+
         result = {}
         for record in render_res_ids(self.env[model], res_ids, result):
             def replace(match):
