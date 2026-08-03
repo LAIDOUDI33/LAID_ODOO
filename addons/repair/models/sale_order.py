@@ -52,12 +52,14 @@ class SaleOrderLine(models.Model):
 
     repair_service_line_id = fields.Many2one('repair.service.line', check_company=True, copy=False, index='btree_not_null')
 
-    @api.depends('repair_service_line_id.description')
+    @api.depends('repair_service_line_id.description', 'move_ids.description_picking')
     def _compute_name(self):
         super()._compute_name()
         for line in self:
             if line.repair_service_line_id and line.repair_service_line_id.description:
                 line.name = line.translated_product_name + '\n' + line.repair_service_line_id.description
+            elif len(line.move_ids) == 1 and line.move_ids.description_picking_manual and line.translated_product_name != line.move_ids.description_picking:
+                line.name = line.translated_product_name + '\n' + line.move_ids.description_picking
 
     def _prepare_qty_delivered(self):
         repair_delivered_qties = defaultdict(float)
