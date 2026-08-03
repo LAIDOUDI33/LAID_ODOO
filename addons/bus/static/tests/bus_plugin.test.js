@@ -11,6 +11,7 @@ import {
     WebsocketWorker,
     WORKER_STATE,
 } from "@bus/workers/websocket_worker";
+import { signal } from "@odoo/owl";
 import { advanceTime, describe, expect, test } from "@odoo/hoot";
 import { manuallyDispatchProgrammaticEvent, runAllTimers } from "@odoo/hoot-dom";
 import { mockWebSocket } from "@odoo/hoot-mock";
@@ -29,6 +30,8 @@ import { getWebSocketWorker, onWebsocketEvent } from "./mock_websocket";
 import { browser } from "@web/core/browser/browser";
 import { user } from "@web/core/user";
 import { session } from "@web/session";
+import { BusPlugin } from "@bus/services/bus_plugin";
+import { MultiTabPlugin } from "@bus/multi_tab_plugin";
 
 defineBusModels();
 describe.current.tags("desktop");
@@ -36,12 +39,12 @@ describe.current.tags("desktop");
 test("notifications not received after stoping the service", async () => {
     await makeTestApp({ forceNew: true });
     const firstTabEnv = getMockEnv();
-    const firstTabBus = getService("bus_service");
+    const firstTabBus = getService(BusPlugin);
     stepWorkerActions("BUS:LEAVE");
     startBusService();
     await makeTestApp({ forceNew: true });
     const secondTabEnv = getMockEnv();
-    const secondTabBus = getService("bus_service");
+    const secondTabBus = getService(BusPlugin);
     startBusService();
     firstTabBus.addChannel("lambda");
     await waitForChannels(["lambda"]);
@@ -65,7 +68,7 @@ test("notifications still received after disconnect/reconnect", async () => {
         ["BUS:RECONNECT", () => expect.step("BUS:RECONNECT")]
     );
     await makeTestApp();
-    getService("bus_service").addChannel("lambda");
+    getService(BusPlugin).addChannel("lambda");
     await waitForChannels(["lambda"]);
     MockServer.env["bus.bus"]._sendone("lambda", "notifType", "beta");
     await waitNotifications(["notifType", "beta"]);
@@ -80,10 +83,10 @@ test("notifications still received after disconnect/reconnect", async () => {
 test("notifications are received by each tab", async () => {
     await makeTestApp({ forceNew: true });
     const firstTabEnv = getMockEnv();
-    getService("bus_service").addChannel("lambda");
+    getService(BusPlugin).addChannel("lambda");
     await makeTestApp({ forceNew: true });
     const secondTabEnv = getMockEnv();
-    getService("bus_service").addChannel("lambda");
+    getService(BusPlugin).addChannel("lambda");
     await waitForChannels(["lambda"]);
     MockServer.env["bus.bus"]._sendone("lambda", "notifType", "beta");
     await waitNotifications(
@@ -96,7 +99,7 @@ test("second tab still receives notifications after main pagehide", async () => 
     await makeTestApp({ forceNew: true });
     const mainEnv = getMockEnv();
     stepWorkerActions("BUS:LEAVE");
-    getService("bus_service").addChannel("lambda");
+    getService(BusPlugin).addChannel("lambda");
     // Prevent second tab from receiving pagehide event.
     patchWithCleanup(browser, {
         addEventListener(eventName, callback) {
@@ -116,7 +119,7 @@ test("second tab still receives notifications after main pagehide", async () => 
     });
     await makeTestApp({ forceNew: true });
     const secondEnv = getMockEnv();
-    getService("bus_service").addChannel("lambda");
+    getService(BusPlugin).addChannel("lambda");
     await waitForChannels(["lambda"]);
     MockServer.env["bus.bus"]._sendone("lambda", "notifType", "beta");
     await waitNotifications([mainEnv, "notifType", "beta"], [secondEnv, "notifType", "beta"]);
@@ -133,10 +136,10 @@ test("second tab still receives notifications after main pagehide", async () => 
 test("add two different channels from different tabs", async () => {
     await makeTestApp({ forceNew: true });
     const firstTabEnv = getMockEnv();
-    getService("bus_service").addChannel("alpha");
+    getService(BusPlugin).addChannel("alpha");
     await makeTestApp({ forceNew: true });
     const secondTabEnv = getMockEnv();
-    getService("bus_service").addChannel("beta");
+    getService(BusPlugin).addChannel("beta");
     await waitForChannels(["alpha", "beta"]);
     MockServer.env["bus.bus"]._sendmany([
         ["alpha", "notifType", "alpha"],
@@ -155,9 +158,9 @@ test("channel management from multiple tabs", async () => {
         expect.step(`subscribe - [${data.channels.toString()}]`)
     );
     await makeTestApp({ forceNew: true });
-    const firstTabBus = getService("bus_service");
+    const firstTabBus = getService(BusPlugin);
     await makeTestApp({ forceNew: true });
-    const secondTabBus = getService("bus_service");
+    const secondTabBus = getService(BusPlugin);
     firstTabBus.addChannel("channel1");
     await expect.waitForSteps(["subscribe - [channel1]"]);
     // Already known: no subscription.
@@ -199,7 +202,7 @@ test("pass last notification id on initialization", async () => {
     const firstEnv = getMockEnv();
     startBusService();
     await expect.waitForSteps(["BUS:INITIALIZE_CONNECTION - 0"]);
-    getService("bus_service").addChannel("lambda");
+    getService(BusPlugin).addChannel("lambda");
     await waitForChannels(["lambda"]);
     MockServer.env["bus.bus"]._sendone("lambda", "notifType", "beta");
     await waitNotifications([firstEnv, "notifType", "beta"]);
@@ -248,13 +251,15 @@ test("websocket reconnects upon user log in", async () => {
 });
 
 test("websocket connects with URL corresponding to given serverURL", async () => {
-    const serverURL = "http://random-website.com";
+    const serverURL = signal("http://random-website.com");
     mockService("bus.parameters", { serverURL });
     await makeTestApp();
     mockWebSocket((ws) => expect.step(ws.url));
     startBusService();
     await expect.waitForSteps([
-        `${serverURL.replace("http", "ws")}/websocket?version=${session.websocket_worker_version}`,
+        `${serverURL().replace("http", "ws")}/websocket?version=${
+            session.websocket_worker_version
+        }`,
     ]);
 });
 
@@ -286,7 +291,7 @@ test("no disconnect on offline/online when bus is inactive", async () => {
         addChannel() {},
     });
     await makeTestApp();
-    expect(getService("bus_service").isActive).toBe(false);
+    expect(getService(BusPlugin).isActive()).toBe(false);
     manuallyDispatchProgrammaticEvent(window, "offline");
     await expect.waitForSteps(["offline"]);
     manuallyDispatchProgrammaticEvent(window, "online");
@@ -371,9 +376,9 @@ test("fallback on simple worker when shared worker failed to initialize", async 
 test("subscribe to single notification", async () => {
     await makeTestApp();
     startBusService();
-    getService("bus_service").addChannel("my_channel");
+    getService(BusPlugin).addChannel("my_channel");
     await waitForChannels(["my_channel"]);
-    getService("bus_service").subscribe("message_type", (payload) =>
+    getService(BusPlugin).subscribe("message_type", (payload) =>
         expect.step(`message - ${JSON.stringify(payload)}`)
     );
     MockServer.env["bus.bus"]._sendone("my_channel", "message_type", { body: "hello", id: 1 });
@@ -441,12 +446,12 @@ test("remove from main tab candidates when version is outdated", async () => {
     );
     await makeTestApp();
     patchWithCleanup(console, { warn: (message) => expect.step(message) });
-    getService("multi_tab").bus.addEventListener("no_longer_main_tab", () =>
+    getService(MultiTabPlugin).bus.addEventListener("no_longer_main_tab", () =>
         expect.step("no_longer_main_tab")
     );
     startBusService();
     await expect.waitForSteps(["BUS:CONNECT"]);
-    expect(await getService("multi_tab").isOnMainTab()).toBe(true);
+    expect(await getService(MultiTabPlugin).isOnMainTab()).toBe(true);
     MockServer.env["bus.bus"]._simulateDisconnection(
         WEBSOCKET_CLOSE_CODES.CLEAN,
         "OUTDATED_VERSION"
@@ -479,13 +484,13 @@ test("subscribe message is sent first", async () => {
     startBusService();
     await runAllTimers();
     await expect.waitForSteps(["subscribe"]);
-    getService("bus_service").send("some_event");
+    getService(BusPlugin).send("some_event");
     await expect.waitForSteps(["some_event"]);
     MockServer.env["bus.bus"]._simulateDisconnection(WEBSOCKET_CLOSE_CODES.CLEAN);
     await expect.waitForSteps(["BUS:DISCONNECT"]);
-    getService("bus_service").send("some_event");
-    getService("bus_service").send("some_other_event");
-    getService("bus_service").addChannel("channel_1");
+    getService(BusPlugin).send("some_event");
+    getService(BusPlugin).send("some_other_event");
+    getService(BusPlugin).addChannel("channel_1");
     await runAllTimers();
     await expect.waitForSteps([]);
     startBusService();
@@ -501,14 +506,14 @@ test("worker state is available from the bus service", async () => {
     await makeTestApp();
     startBusService();
     await expect.waitForSteps(["BUS:CONNECT"]);
-    expect(getService("bus_service").workerState).toBe(WORKER_STATE.CONNECTED);
+    expect(getService(BusPlugin).workerState()).toBe(WORKER_STATE.CONNECTED);
     MockServer.env["bus.bus"]._simulateDisconnection(WEBSOCKET_CLOSE_CODES.CLEAN);
     await expect.waitForSteps(["BUS:DISCONNECT"]);
     await runAllTimers();
-    expect(getService("bus_service").workerState).toBe(WORKER_STATE.DISCONNECTED);
+    expect(getService(BusPlugin).workerState()).toBe(WORKER_STATE.DISCONNECTED);
     startBusService();
     await expect.waitForSteps(["BUS:CONNECT"]);
-    expect(getService("bus_service").workerState).toBe(WORKER_STATE.CONNECTED);
+    expect(getService(BusPlugin).workerState()).toBe(WORKER_STATE.CONNECTED);
 });
 
 test("channel is kept until deleted as many times as added", async () => {
@@ -528,7 +533,7 @@ test("channel is kept until deleted as many times as added", async () => {
         },
     });
     startBusService();
-    const busService = getService("bus_service");
+    const busService = getService(BusPlugin);
     await expect.waitForSteps(["subscribe - []"]);
     busService.addChannel("foo");
     await expect.waitForSteps(["add channel - foo", "subscribe - [foo]"]);
@@ -559,7 +564,7 @@ test("subscription last id is captured from the initial call to update channel",
         expect.step(`subscribe - [${data.channels.toString()}] - ${data.last}`)
     );
     await startBusService();
-    const busService = getService("bus_service");
+    const busService = getService(BusPlugin);
     await expect.waitForSteps(["BUS:CONNECT"]);
     await advanceTime(120_000);
     await expect.waitForSteps(["subscribe - [] - 0"]);

@@ -1,16 +1,19 @@
 import { describe, expect, test } from "@odoo/hoot";
-import { multiTabSharedWorkerService } from "@bus/multi_tab_shared_worker_service";
+import { MultiTabSharedWorkerPlugin } from "@bus/multi_tab_shared_worker_plugin";
 import { getService, makeTestApp, patchWithCleanup } from "@web/../tests/web_test_helpers";
 import { browser } from "@web/core/browser/browser";
+import { usePlugin } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 
 registry.category("services").remove("multi_tab");
-registry.category("services").add("multi_tab", multiTabSharedWorkerService);
+registry.category("services").add("multi_tab", {
+    start() { return usePlugin(MultiTabSharedWorkerPlugin); }
+});
 describe.current.tags("desktop");
 
 test("main tab service(election worker) elects new main on pagehide", async () => {
     await makeTestApp({ forceNew: true });
-    const multiTab1 = getService("multi_tab");
+    const multiTab1 = getService(MultiTabSharedWorkerPlugin);
     expect(await multiTab1.isOnMainTab()).toBe(true);
     // Prevent second tab from receiving pagehide event.
     patchWithCleanup(browser, {
@@ -21,7 +24,7 @@ test("main tab service(election worker) elects new main on pagehide", async () =
         },
     });
     await makeTestApp({ forceNew: true });
-    const multiTab2 = getService("multi_tab");
+    const multiTab2 = getService(MultiTabSharedWorkerPlugin);
     expect(await multiTab2.isOnMainTab()).toBe(false);
     multiTab1.bus.addEventListener("become_main_tab", () => expect.step("tab1 become_main_tab"));
     multiTab1.bus.addEventListener("no_longer_main_tab", () =>
@@ -40,10 +43,10 @@ test("main tab service(election worker) elects new main on pagehide", async () =
 
 test("main tab service(election worker) elects new main after unregister main tab", async () => {
     await makeTestApp({ forceNew: true });
-    const multiTab1 = getService("multi_tab");
+    const multiTab1 = getService(MultiTabSharedWorkerPlugin);
     expect(await multiTab1.isOnMainTab()).toBe(true);
     await makeTestApp({ forceNew: true });
-    const multiTab2 = getService("multi_tab");
+    const multiTab2 = getService(MultiTabSharedWorkerPlugin);
     expect(await multiTab2.isOnMainTab()).toBe(false);
     multiTab1.bus.addEventListener("become_main_tab", () => expect.step("tab1 become_main_tab"));
     multiTab1.bus.addEventListener("no_longer_main_tab", () =>
