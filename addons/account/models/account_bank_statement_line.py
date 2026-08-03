@@ -459,6 +459,13 @@ class AccountBankStatementLine(models.Model):
         """ Undo the reconciliation made on the statement line and reset their journal items
         to their original states.
         """
+        partials = self.line_ids.matched_debit_ids + self.line_ids.matched_credit_ids
+        caba_moves = self.env['account.move'].search([
+            ('tax_cash_basis_rec_id', 'in', partials.ids),
+            *self.env['account.move']._check_company_domain(self.line_ids.company_id)
+        ])
+        caba_moves.line_ids._check_tax_lock_date()
+
         self.line_ids.remove_move_reconcile()
         self.payment_ids.unlink()
 
