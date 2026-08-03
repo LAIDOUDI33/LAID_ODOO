@@ -474,12 +474,7 @@ class TestPricelist(ProductVariantsCommon):
             4,
         )
 
-        with patch.object(
-            self.env.registry['product.template'],
-            '_duplicate_pricelist_rules_on_copy',
-            return_value=True,
-        ):
-            sofa_copy = self.product_template_sofa.copy()
+        sofa_copy = self.product_template_sofa.copy()
 
         product_sofa_red_copy = sofa_copy.product_variant_ids.filtered(
             lambda pp:
@@ -524,6 +519,45 @@ class TestPricelist(ProductVariantsCommon):
                     'fixed_price': 55,
                 }
             ],
+        )
+
+    def test_copy_product_variant_pricings_with_archived_variant(self):
+        """Ensure variant pricelist rules are copied to the correct variants even if
+        an archived variant changes the variant ordering, while archived variants'
+        rules are not copied.
+        """
+        self.product_sofa_green.action_archive()
+        self.env['product.pricelist.item'].create([
+            {
+                'product_id': self.product_sofa_blue.id,
+                'fixed_price': 33,
+            },
+            {
+                'product_id': self.product_sofa_red.id,
+                'fixed_price': 44,
+            },
+            {
+                'product_id': self.product_sofa_green.id,
+                'fixed_price': 55,
+            },
+        ])
+
+        sofa_copy = self.product_template_sofa.copy()
+        product_sofa_red_copy = sofa_copy.product_variant_ids.filtered(
+            lambda p:
+                p.product_template_attribute_value_ids.product_attribute_value_id
+                == self.color_attribute_red
+        )
+        product_sofa_blue_copy = sofa_copy.product_variant_ids.filtered(
+            lambda p:
+                p.product_template_attribute_value_ids.product_attribute_value_id
+                == self.color_attribute_blue
+        )
+
+        self.assertEqual(len(sofa_copy.pricelist_rule_ids), 2)
+        self.assertEqual(
+            sofa_copy.pricelist_rule_ids.product_id.ids,
+            [product_sofa_red_copy.id, product_sofa_blue_copy.id]
         )
 
     def test_pricelist_applied_on_product_variant(self):
