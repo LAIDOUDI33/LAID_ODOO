@@ -303,7 +303,7 @@ export class PosOrderline extends PosOrderlineAccounting {
             this.order_id.pricelist_id &&
             this.order_id.pricelist_id.item_ids
                 .map((rule) => rule.compute_price)
-                .includes("percentage")
+                .includes("formula")
         ) {
             return "without_discount";
         }

@@ -42,8 +42,8 @@ test("Nested Pricelists with different currencies", async () => {
     });
     const posRule = store.models["product.pricelist.item"].create({
         pricelist_id: posPricelist,
-        compute_price: "percentage",
-        percent_price: 25,
+        compute_price: "formula",
+        price_discount: 25,
         base: "pricelist",
         base_pricelist_id: basePricelist,
     });
@@ -175,8 +175,8 @@ test("Pricelist: Nested Pricelists (Pricelist of Pricelist)", async () => {
     });
     const baseRule = store.models["product.pricelist.item"].create({
         pricelist_id: basePricelist,
-        compute_price: "percentage",
-        percent_price: 10,
+        compute_price: "formula",
+        price_discount: 10,
         base: "list_price",
     });
     basePricelist.update({ item_ids: [baseRule] });

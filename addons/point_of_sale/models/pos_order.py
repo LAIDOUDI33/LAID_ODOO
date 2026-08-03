@@ -1264,7 +1264,7 @@ class PosOrder(models.Model):
         to_create = []
         is_percentage = self.pricelist_id and any(
             self.pricelist_id.item_ids.filtered(
-                lambda rule: rule.compute_price == "percentage",
+                lambda rule: rule._is_plain_discount_rule(),
             ),
         )
 

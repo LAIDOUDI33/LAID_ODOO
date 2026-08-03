@@ -357,18 +357,18 @@ class TestPointOfSaleHttpCommon(AccountTestInvoicingHttpCommon):
         env['product.pricelist'].create({
             'name': 'Percentage',
             'item_ids': [(0, 0, {
-                'compute_price': 'percentage',
-                'percent_price': 100,
+                'compute_price': 'formula',
+                'price_discount': 100,
                 'applied_on': '0_product_variant',
                 'product_id': cls.wall_shelf.product_variant_id.id,
             }), (0, 0, {
-                'compute_price': 'percentage',
-                'percent_price': 99,
+                'compute_price': 'formula',
+                'price_discount': 99,
                 'applied_on': '0_product_variant',
                 'product_id': cls.small_shelf.product_variant_id.id,
             }), (0, 0, {
-                'compute_price': 'percentage',
-                'percent_price': 0,
+                'compute_price': 'formula',
+                'price_discount': 0,
                 'applied_on': '0_product_variant',
                 'product_id': cls.magnetic_board.product_variant_id.id,
             })],
@@ -515,8 +515,8 @@ class TestPointOfSaleHttpCommon(AccountTestInvoicingHttpCommon):
             'name': 'Cost base',
             'item_ids': [(0, 0, {
                 'base': 'standard_price',
-                'compute_price': 'percentage',
-                'percent_price': 55,
+                'compute_price': 'formula',
+                'price_discount': 55,
             })],
         })
 
@@ -525,8 +525,8 @@ class TestPointOfSaleHttpCommon(AccountTestInvoicingHttpCommon):
             'item_ids': [(0, 0, {
                 'base': 'pricelist',
                 'base_pricelist_id': cost_base_pricelist.id,
-                'compute_price': 'percentage',
-                'percent_price': 15,
+                'compute_price': 'formula',
+                'price_discount': 15,
             })],
         })
 
@@ -535,8 +535,8 @@ class TestPointOfSaleHttpCommon(AccountTestInvoicingHttpCommon):
             'item_ids': [(0, 0, {
                 'base': 'pricelist',
                 'base_pricelist_id': pricelist_base_pricelist.id,
-                'compute_price': 'percentage',
-                'percent_price': 3,
+                'compute_price': 'formula',
+                'price_discount': 3,
             })],
         })
 
@@ -545,8 +545,8 @@ class TestPointOfSaleHttpCommon(AccountTestInvoicingHttpCommon):
             'item_ids': [(0, 0, {
                 'base': 'pricelist',
                 'base_pricelist_id': fixed_pricelist.id,
-                'compute_price': 'percentage',
-                'percent_price': 0.01,
+                'compute_price': 'formula',
+                'price_discount': 0.01,
             })],
         })
 
@@ -1025,9 +1025,9 @@ class TestUi(TestPointOfSaleHttpCommon):
         self.env['product.pricelist.item'].create({
             'pricelist_id': base_pricelist.id,
             'product_tmpl_id': test_product.id,
-            'compute_price': 'percentage',
+            'compute_price': 'formula',
             'applied_on': '1_product',
-            'percent_price': 30,
+            'price_discount': 30,
         })
 
         special_pricelist = self.env['product.pricelist'].create({
@@ -1037,9 +1037,9 @@ class TestUi(TestPointOfSaleHttpCommon):
             'pricelist_id': special_pricelist.id,
             'base': 'pricelist',
             'base_pricelist_id': base_pricelist.id,
-            'compute_price': 'percentage',
+            'compute_price': 'formula',
             'applied_on': '3_global',
-            'percent_price': 10,
+            'price_discount': 10,
         })
 
         self.main_pos_config.write({
@@ -1843,9 +1843,9 @@ class TestUi(TestPointOfSaleHttpCommon):
         })
         self.env['product.pricelist.item'].create({
             'pricelist_id': sale_10_pl.id,
-            'compute_price': 'percentage',
+            'compute_price': 'formula',
             'applied_on': '3_global',
-            'percent_price': 10,
+            'price_discount': 10,
         })
 
         self.main_pos_config.write({
@@ -2171,13 +2171,11 @@ class TestUi(TestPointOfSaleHttpCommon):
         })
         self.main_pos_config.pricelist_id.write({
             'item_ids': [Command.create({
-                'display_applied_on': '1_product',
                 'product_tmpl_id': product.product_tmpl_id.id,
                 'compute_price': 'fixed',
                 'fixed_price': 10.0,
                 'min_quantity': 3,
             }), Command.create({
-                'display_applied_on': '1_product',
                 'product_tmpl_id': product.product_tmpl_id.id,
                 'compute_price': 'fixed',
                 'fixed_price': 20.0,
@@ -2832,8 +2830,8 @@ class TestUi(TestPointOfSaleHttpCommon):
             'pricelist_id': percentage_pricelist.id,
             'base': 'pricelist',
             'base_pricelist_id': test_pricelist.id,
-            'compute_price': 'percentage',
-            'percent_price': 50,
+            'compute_price': 'formula',
+            'price_discount': 50,
             'applied_on': '3_global',
         })
 
