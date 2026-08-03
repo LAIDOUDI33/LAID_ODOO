@@ -57,8 +57,19 @@ class TestSelfOrderMobile(SelfOrderCommonTest):
             'self_ordering_service_mode': 'table',
         })
 
-        # Mobile, meal, table
-        self.start_tour(self_route, "self_mobile_meal_table_takeaway_in")
+        # Mobile, meal, table:
+        table = floor.table_ids[0]
+        dine_in_order = self.env['pos.order'].create({
+            'session_id': self.pos_config.current_session_id.id,
+            'table_id': table.id,
+            'amount_total': 0.0,
+            'amount_tax': 0.0,
+            'amount_return': 0.0,
+            'amount_paid': 0.0,
+        })
+        dine_in_order._ensure_access_token()
+        self_route_order = self.pos_config._get_self_order_route(order=dine_in_order)
+        self.start_tour(self_route_order, "self_mobile_meal_table_takeaway_in")
         last_order = self.env['pos.order'].search([], order="id desc", limit=1)
         html = last_order.order_receipt_generate_html()
         self.assertTrue("Service at Table" in html)
@@ -71,7 +82,17 @@ class TestSelfOrderMobile(SelfOrderCommonTest):
         })
 
         # Mobile, meal, counter
-        self.start_tour(self_route, "self_mobile_meal_counter_takeaway_in")
+        counter_order = self.env['pos.order'].create({
+            'session_id': self.pos_config.current_session_id.id,
+            'table_id': floor.table_ids[0].id,
+            'amount_total': 0.0,
+            'amount_tax': 0.0,
+            'amount_return': 0.0,
+            'amount_paid': 0.0,
+        })
+        counter_order._ensure_access_token()
+        self_route_counter_order = self.pos_config._get_self_order_route(order=counter_order)
+        self.start_tour(self_route_counter_order, "self_mobile_meal_counter_takeaway_in")
         self.start_tour(self_route, "self_mobile_meal_counter_takeaway_out")
 
         last_order = self.env['pos.order'].search([], order="id desc", limit=1)
@@ -358,6 +379,35 @@ class TestSelfOrderMobile(SelfOrderCommonTest):
         ):
             self.start_tour(self_route, 'test_delete_mobile_order_from_backend')
 
+    def test_self_order_pay_warns_on_stale_cart(self):
+        self.pos_config.write({
+            'self_ordering_mode': 'mobile',
+            'self_ordering_pay_after': 'meal',
+            'self_ordering_service_mode': 'table',
+            'use_presets': False,
+        })
+
+        self.pos_config.with_user(self.pos_user).open_ui()
+        self.pos_config.current_session_id.set_opening_control(0, '')
+
+        order = self.env['pos.order'].create({
+            'session_id': self.pos_config.current_session_id.id,
+            'table_id': self.pos_table_1.id,
+            'amount_total': 0.0,
+            'amount_tax': 0.0,
+            'amount_return': 0.0,
+            'amount_paid': 0.0,
+        })
+        order._ensure_access_token()
+        self_route = self.pos_config._get_self_order_route(order=order)
+
+        @http.route('/pos-self-order/test-modify-line-qty-from-backend/', auth='public', type='jsonrpc', website=True)
+        def modify_line_qty_from_backend(self, line_id, qty):
+            self.env['pos.order.line'].sudo().browse(line_id).write({'qty': qty})
+
+        with patch.object(PosSelfOrderController, 'modify_line_qty_from_backend', modify_line_qty_from_backend, create=True):
+            self.start_tour(self_route, 'self_order_mobile_pay_warns_on_stale_cart')
+
     def test_pos_self_order_table_transfer(self):
         """
         Verify that transferring a POS order to a new table clears
@@ -414,6 +464,28 @@ class TestSelfOrderMobile(SelfOrderCommonTest):
         self.assertEqual(self_order.self_ordering_table_id, self_order.table_id)
         empty_order = empty_orders[0]
         self.assertFalse(empty_order.lines, "Empty order should have no lines")
+
+    def test_pos_self_order_dynamic_qr(self):
+        self.browser_size = '1366x768'
+        self.pos_config.write({
+            'self_ordering_mode': 'mobile',
+            'self_ordering_pay_after': 'meal',
+            'self_ordering_service_mode': 'table',
+            'floor_ids': [(6, 0, [self.pos_main_floor.id])],
+        })
+
+        self.pos_config.with_user(self.pos_user).open_ui()
+        self.pos_config.current_session_id.set_opening_control(0, "")
+
+        self.start_tour('/pos/ui?config_id=%d' % self.pos_config.id, 'test_pos_self_order_dynamic_qr', login='pos_user')
+
+        order = self.pos_config.current_session_id.order_ids.filtered(lambda o: o.lines)
+        self.assertEqual(len(order), 1, "Expected exactly one order with lines")
+        self.assertTrue(order.access_token, "Clicking Dynamic QR should have generated an access_token for the order")
+
+        self_route = self.pos_config._get_self_order_route(order=order)
+        self.assertIn(f"/order/{order.access_token}", self_route)
+        self.start_tour(self_route, "self_order_mobile_join_via_qr")
 
     def test_self_order_mobile_not_visible_in_other_config(self):
         """Self-orders from config A should not appear in config B's ticket screen."""

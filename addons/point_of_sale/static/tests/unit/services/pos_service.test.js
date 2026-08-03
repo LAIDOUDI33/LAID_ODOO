@@ -770,4 +770,108 @@ describe("pos_store.js", () => {
         await store.setTip(numberBuffer.getFloat());
         expect(order.tip_amount).toBe(2.5);
     });
+
+    test("updateCustomerDisplayQrData", async () => {
+        const store = await setupPosEnv();
+        const qrCode = "https://example.com/qr-code";
+
+        store.updateCustomerDisplayQrData(qrCode, { extra: { amount: 10 } });
+        expect(store.customerDisplayQrData).toEqual({
+            title: "Scan the QR for payment",
+            qrCode,
+            amount: 10,
+        });
+
+        store.updateCustomerDisplayQrData(null);
+        expect(store.customerDisplayQrData).toBe(null);
+
+        store.updateCustomerDisplayQrData("correct-qr", {
+            extra: { qrCode: "stale-qr", amount: 10 },
+        });
+        expect(store.customerDisplayQrData).toEqual({
+            title: "Scan the QR for payment",
+            qrCode: "correct-qr",
+            amount: 10,
+        });
+
+        // title overrides the default
+        store.updateCustomerDisplayQrData(qrCode, { title: "Custom title" });
+        expect(store.customerDisplayQrData).toEqual({ title: "Custom title", qrCode });
+    });
+
+    test("updateCustomerDisplayQrData: merges a payment's getQrPopupProps", async () => {
+        const store = await setupPosEnv();
+        const order = await getFilledOrder(store);
+        const paymentMethod = store.models["pos.payment.method"].get(1);
+        const payment = createPaymentLine(store, order, paymentMethod, { qr_code: "stale-qr" });
+
+        store.updateCustomerDisplayQrData("fresh-qr", { payment });
+
+        expect(store.customerDisplayQrData).toEqual({
+            title: "Scan the QR for payment",
+            ...payment.getQrPopupProps(),
+            qrCode: "fresh-qr",
+        });
+    });
+
+    test("customerDisplayQrData falls back to the selected payment line's QR", async () => {
+        const store = await setupPosEnv();
+        const order = await getFilledOrder(store);
+        const paymentMethod = store.models["pos.payment.method"].get(1);
+        const payment = createPaymentLine(store, order, paymentMethod, {
+            qr_code: "data:image/png;base64,qr",
+            payment_status: "waitingScan",
+        });
+        order.selectPaymentline(payment);
+
+        expect(store.customerDisplayQrData).toEqual({
+            title: "Scan the QR for payment",
+            ...payment.getQrPopupProps(),
+        });
+    });
+
+    test("customerDisplayQrData ignores a QR payment that isn't selected", async () => {
+        const store = await setupPosEnv();
+        const order = await getFilledOrder(store);
+        const paymentMethod = store.models["pos.payment.method"].get(1);
+        createPaymentLine(store, order, paymentMethod, {
+            qr_code: "data:image/png;base64,qr",
+            payment_status: "waitingScan",
+        });
+        order.selectPaymentline(undefined);
+
+        expect(store.customerDisplayQrData).toBe(null);
+    });
+
+    test("customerDisplayQrData ignores the selected payment line when it isn't in progress", async () => {
+        const store = await setupPosEnv();
+        const order = await getFilledOrder(store);
+        const paymentMethod = store.models["pos.payment.method"].get(1);
+        const payment = createPaymentLine(store, order, paymentMethod, {
+            qr_code: "data:image/png;base64,qr",
+            payment_status: "done",
+        });
+        order.selectPaymentline(payment);
+
+        expect(store.customerDisplayQrData).toBe(null);
+    });
+
+    test("disableForSelfOrder", async () => {
+        const store = await setupPosEnv();
+        const order = store.addNewOrder();
+
+        expect(store.disableForSelfOrder).toBe(false);
+
+        order.source = "mobile";
+        expect(store.disableForSelfOrder).toBe(true);
+
+        order.source = "kiosk";
+        expect(store.disableForSelfOrder).toBe(true);
+
+        order.source = "pos";
+        expect(store.disableForSelfOrder).toBe(false);
+
+        store.setOrder(undefined);
+        expect(store.disableForSelfOrder).toBe(false);
+    });
 });

@@ -8,6 +8,7 @@ import * as LandingPage from "@pos_self_order/../tests/tours/utils/landing_page_
 import * as ProductPage from "@pos_self_order/../tests/tours/utils/product_page_util";
 import * as ConfirmationPage from "@pos_self_order/../tests/tours/utils/confirmation_page_util";
 import * as Dialog from "@point_of_sale/../tests/generic_helpers/dialog_util";
+import * as Notification from "@point_of_sale/../tests/generic_helpers/notification_util";
 import { negateStep } from "@point_of_sale/../tests/generic_helpers/utils";
 
 registry.category("web_tour.tours").add("self_mobile_each_table_takeaway_in", {
@@ -94,9 +95,8 @@ registry.category("web_tour.tours").add("self_mobile_each_counter_takeaway_out",
 
 registry.category("web_tour.tours").add("self_mobile_meal_table_takeaway_in", {
     steps: () => [
-        Utils.checkIsNoBtn("My Order"),
+        Utils.checkBtn("My Order"),
         Utils.clickBtn("Order Now"),
-        LandingPage.selectLocation("Test-In"),
         ProductPage.clickProduct("Coca-Cola"),
         ProductPage.checkOrderTotal("2.53"),
         ProductPage.checkProductQty("Coca-Cola", "1"),
@@ -124,6 +124,7 @@ registry.category("web_tour.tours").add("self_mobile_meal_table_takeaway_out", {
     steps: () => [
         Utils.checkIsNoBtn("My Order"),
         Utils.clickBtn("Order Now"),
+        negateStep(LandingPage.checkLocation("Test-In")),
         LandingPage.selectLocation("Test-Takeout"),
         ProductPage.clickProduct("Coca-Cola"),
         ProductPage.checkOrderTotal("2.53"),
@@ -154,9 +155,8 @@ registry.category("web_tour.tours").add("self_mobile_meal_table_takeaway_out", {
 
 registry.category("web_tour.tours").add("self_mobile_meal_counter_takeaway_in", {
     steps: () => [
-        Utils.checkIsNoBtn("My Order"),
+        Utils.checkBtn("My Order"),
         Utils.clickBtn("Order Now"),
-        LandingPage.selectLocation("Test-In"),
         ProductPage.clickProduct("Coca-Cola"),
         ProductPage.checkOrderTotal("2.53"),
         ProductPage.checkProductQty("Coca-Cola", "1"),
@@ -185,6 +185,7 @@ registry.category("web_tour.tours").add("self_mobile_meal_counter_takeaway_out",
     steps: () => [
         Utils.checkIsNoBtn("My Order"),
         Utils.clickBtn("Order Now"),
+        negateStep(LandingPage.checkLocation("Test-In")),
         LandingPage.selectLocation("Test-Takeout"),
         ProductPage.clickProduct("Coca-Cola"),
         ProductPage.checkOrderTotal("2.53"),
@@ -281,7 +282,7 @@ registry.category("web_tour.tours").add("self_order_mobile_each_cancel", {
 
 registry.category("web_tour.tours").add("SelfOrderOrderNumberTour", {
     steps: () => [
-        Utils.checkIsNoBtn("My Order"),
+        Utils.checkBtn("My Order"),
         Utils.clickBtn("Order Now"),
         ProductPage.clickProduct("Coca-Cola"),
         Utils.clickBtn("Checkout"),
@@ -456,6 +457,11 @@ registry.category("web_tour.tours").add("test_self_order_table_no_more_sharing-m
         ].flat(),
 });
 
+registry.category("web_tour.tours").add("self_order_mobile_join_via_qr", {
+    steps: () =>
+        [Utils.clickBtn("My Order"), CartPage.checkProduct("Coca-Cola", "2.53", "1")].flat(),
+});
+
 registry.category("web_tour.tours").add("self_order_mobile_no_access_token", {
     steps: () =>
         [
@@ -486,5 +492,44 @@ registry.category("web_tour.tours").add("test_delete_mobile_order_from_backend",
             },
             Utils.clickBtn("Order Now"),
             ProductPage.isShown(),
+        ].flat(),
+});
+
+registry.category("web_tour.tours").add("self_order_mobile_pay_warns_on_stale_cart", {
+    steps: () =>
+        [
+            Utils.clickBtn("Order Now"),
+            ProductPage.clickProduct("Coca-Cola"),
+            Utils.clickBtn("Checkout"),
+            CartPage.checkProduct("Coca-Cola", "2.53", "1"),
+            Utils.clickBtn("Order"),
+            ConfirmationPage.isShown(),
+            Utils.clickBtn("Ok"),
+            {
+                content: "Simulate another device changing the order's qty server-side",
+                trigger: "body",
+                run: async () => {
+                    const line = posmodel.currentOrder.lines[0];
+                    await rpc(`/pos-self-order/test-modify-line-qty-from-backend/`, {
+                        line_id: line.id,
+                        qty: 5,
+                    });
+                },
+            },
+            Utils.clickBtn("Order Now"),
+            ProductPage.clickProduct("Fanta"),
+            Utils.clickBtn("Checkout"),
+            CartPage.checkProduct("Fanta", "2.53", "1"),
+            Utils.clickBtn("Order"),
+            Notification.has(
+                "Your order was just updated. Please review your cart before paying.",
+                "warning"
+            ),
+            Utils.clickBtn("Order"),
+            ConfirmationPage.isShown(),
+            Utils.clickBtn("Ok"),
+            Utils.clickBtn("My Order"),
+            CartPage.checkProduct("Coca-Cola", "12.65", "5"),
+            CartPage.checkProduct("Fanta", "2.53", "1"),
         ].flat(),
 });

@@ -162,6 +162,23 @@ test("paySplittedOrder splits partial selection then calls pay", async () => {
     expect(store.getOpenOrders().length).toBe(2);
 });
 
+test("disables Transfer button for self-orders", async () => {
+    const store = await setupPosEnv();
+    const order = await getFilledOrder(store);
+    await mountWithCleanup(SplitBillScreen, {
+        props: {
+            orderUuid: order.uuid,
+        },
+    });
+
+    expect(".splitbill-screen .transfer-split-order").not.toHaveAttribute("disabled");
+
+    order.source = "mobile";
+    await animationFrame();
+
+    expect(".splitbill-screen .transfer-split-order").toHaveAttribute("disabled");
+});
+
 test("transferSplittedOrder splits partial selection then starts transfer", async () => {
     const store = await setupPosEnv();
     const order = await getFilledOrder(store);

@@ -1,4 +1,5 @@
 import { expect, test } from "@odoo/hoot";
+import { animationFrame } from "@odoo/hoot-dom";
 import { mountWithCleanup } from "@web/../tests/web_test_helpers";
 import { setupPosEnv } from "@point_of_sale/../tests/unit/utils";
 import { definePosModels } from "@point_of_sale/../tests/unit/data/generate_model_definitions";
@@ -28,4 +29,22 @@ test("showAddCourse", async () => {
         props: { showRemainingButtons: true },
     });
     expect(compWithRemainingButtons.showAddCourse).toBe(false);
+});
+
+test("disables Transfer/Merge, Transfer Course and Set Order Name for self-orders", async () => {
+    const store = await setupPosEnv();
+    const order = store.addNewOrder();
+    store.addCourse();
+    await mountWithCleanup(ControlButtons, { props: { showRemainingButtons: true } });
+
+    expect("button:contains('Transfer / Merge')").not.toHaveAttribute("disabled");
+    expect("button:contains('Transfer Course')").not.toHaveAttribute("disabled");
+    expect("button:contains('Set Order Name')").not.toHaveAttribute("disabled");
+
+    order.source = "mobile";
+    await animationFrame();
+
+    expect("button:contains('Transfer / Merge')").toHaveAttribute("disabled");
+    expect("button:contains('Transfer Course')").toHaveAttribute("disabled");
+    expect("button:contains('Set Order Name')").toHaveAttribute("disabled");
 });

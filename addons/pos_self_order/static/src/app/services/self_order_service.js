@@ -226,16 +226,22 @@ export class SelfOrder extends Reactive {
         }
     }
 
-    /**
-     * Return the current table based on the URL identifier
-     * This is the only way to be sure of the table the user is using
-     * If we rely on the order table, there could be mismatches if the user
-     * scanned another QR code after creating the order.
-     */
     get currentTable() {
+        if (this.config.self_ordering_pay_after === "meal") {
+            const order = this.getOrder();
+            return order?.self_ordering_table_id || order?.table_id || null;
+        }
         const tableIdentifier = this.router.getTableIdentifier();
         const table = this.models["restaurant.table"].find((t) => t.identifier === tableIdentifier);
         return table || null;
+    }
+
+    get currentTableIdentifier() {
+        if (this.config.self_ordering_pay_after === "meal") {
+            const order = this.getOrder();
+            return order?.self_ordering_table_id?.identifier || order?.table_id?.identifier || null;
+        }
+        return this.router.getTableIdentifier() ?? null;
     }
 
     get selfService() {
@@ -846,7 +852,7 @@ export class SelfOrder extends Reactive {
 
         try {
             this.currentOrder.setOrderPrices();
-            const tableIdentifier = this.router.getTableIdentifier();
+            const tableIdentifier = this.currentTableIdentifier;
             let uuid = this.selectedOrderUuid;
             if (this.shouldUpdateLastOrderChange()) {
                 this.currentOrder.updateLastOrderChange();
@@ -856,7 +862,7 @@ export class SelfOrder extends Reactive {
                 {
                     order: this.currentOrder.serializeForORM(),
                     access_token: this.access_token,
-                    table_identifier: tableIdentifier, // Always trust URL one, is the one user scanned
+                    table_identifier: tableIdentifier,
                 }
             );
             const result = this.models.connectNewData(data);
@@ -882,8 +888,8 @@ export class SelfOrder extends Reactive {
         }
     }
 
-    async getUserDataFromServer(tokens = []) {
-        const tableIdentifier = this.router.getTableIdentifier([]);
+    async getUserDataFromServer(tokens = [], { pushOrphanedLines = true } = {}) {
+        const tableIdentifier = this.currentTableIdentifier;
         const dbAccessToken = this.models["pos.order"]
             .filter((o) => o.state === "draft" && o.isSynced && o.access_token)
             .map((order) => ({
@@ -904,6 +910,8 @@ export class SelfOrder extends Reactive {
             return;
         }
 
+        const pendingDeltas = this._computePendingDeltas();
+
         try {
             const data = await rpc(`/pos-self-order/get-user-data/`, {
                 access_token: this.access_token,
@@ -911,23 +919,36 @@ export class SelfOrder extends Reactive {
                 table_identifier: tableIdentifier,
             });
             const result = this.models.connectNewData(data);
-            const openOrder = result["pos.order"]?.find((o) => o.state === "draft");
-            if (openOrder && this.router.activeSlot !== "confirmation") {
-                this.selectedOrderUuid = openOrder.uuid;
+            const requestedOrder = tokens.length
+                ? result["pos.order"]?.find(
+                      (o) => o.state === "draft" && tokens.includes(o.access_token)
+                  )
+                : undefined;
+            const openOrder =
+                requestedOrder ?? result["pos.order"]?.find((o) => o.state === "draft");
+            if (openOrder) {
+                if (this.router.activeSlot !== "confirmation") {
+                    this.selectedOrderUuid = openOrder.uuid;
 
-                // Remove all other open orders in draft and add orderline in the current order
-                const lineCmd = [];
-                for (const order of this.models["pos.order"].filter((o) => o.state === "draft")) {
-                    if (order.uuid !== openOrder.uuid) {
-                        lineCmd.push(...order.lines);
-                        order.delete();
+                    // Remove all other open orders in draft and add orderline in the current order
+                    const lineCmd = [];
+                    for (const order of this.models["pos.order"].filter(
+                        (o) => o.state === "draft"
+                    )) {
+                        if (order.uuid !== openOrder.uuid) {
+                            if (pushOrphanedLines) {
+                                lineCmd.push(...order.lines);
+                            }
+                            order.delete();
+                        }
+                    }
+
+                    if (pushOrphanedLines) {
+                        openOrder.update({ lines: [["link", ...lineCmd]] });
                     }
                 }
 
-                openOrder.update({
-                    lines: [["link", lineCmd]],
-                });
-                openOrder.recomputeChanges();
+                this._reapplyPendingDeltas(openOrder, pendingDeltas);
             }
             this.data.debouncedSynchronizeLocalDataInIndexedDB();
         } catch (error) {
@@ -936,6 +957,76 @@ export class SelfOrder extends Reactive {
                 this.models["pos.order"].map((order) => order.access_token)
             );
         }
+    }
+
+    /** Pending local qty edits not yet synced, keyed by line, to reapply after a refresh. */
+    _computePendingDeltas() {
+        const pendingDeltas = new Map();
+        for (const line of this.models["pos.order.line"].filter((l) => l.isSynced)) {
+            const delta = line.getPendingQtyDelta();
+            if (delta) {
+                pendingDeltas.set(line, delta);
+            }
+        }
+        return pendingDeltas;
+    }
+
+    /** Reapplies pending deltas on top of the refreshed qty, removing lines dropped to 0 or below. */
+    _reapplyPendingDeltas(openOrder, pendingDeltas) {
+        const refreshedBaselines = new Map();
+        for (const [line, delta] of pendingDeltas) {
+            if (line.order_id?.uuid !== openOrder.uuid) {
+                continue;
+            }
+            const refreshedQty = line.qty;
+            const newQty = refreshedQty + delta;
+            if (newQty <= 0) {
+                openOrder.removeOrderline(line);
+            } else {
+                line.qty = newQty;
+                refreshedBaselines.set(line.uuid, refreshedQty);
+            }
+        }
+
+        openOrder.recomputeChanges();
+        for (const [uuid, refreshedQty] of refreshedBaselines) {
+            if (openOrder.uiState.lineChanges[uuid]) {
+                openOrder.uiState.lineChanges[uuid].qty = refreshedQty;
+            }
+        }
+    }
+
+    /** Snapshot of the order's synced lines and general note, to detect server-side changes. */
+    _syncedOrderSnapshot(order) {
+        return JSON.stringify([
+            order.general_customer_note,
+            order.lines
+                .filter((l) => l.isSynced)
+                .map((l) => [l.id, l.product_id.id, l.qty, l.price_unit])
+                .sort((a, b) => a[0] - b[0]),
+        ]);
+    }
+
+    /** Refreshes the order and warns if it changed server-side, instead of paying silently. */
+    async canProceedToPay() {
+        const order = this.currentOrder;
+        if (!order.access_token) {
+            return true;
+        }
+        const before = this._syncedOrderSnapshot(order);
+        await this.getUserDataFromServer([order.access_token]);
+
+        const refreshedOrder = this.models["pos.order"].getBy("uuid", this.selectedOrderUuid);
+        const changed = refreshedOrder && this._syncedOrderSnapshot(refreshedOrder) !== before;
+
+        if (this.selectedOrderUuid !== order.uuid || changed) {
+            this.notification.add(
+                _t("Your order was just updated. Please review your cart before paying."),
+                { type: "warning" }
+            );
+            return false;
+        }
+        return true;
     }
 
     isOrder() {

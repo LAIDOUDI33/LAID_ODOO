@@ -20,16 +20,23 @@ export class NoteButton extends Component {
     }
 
     async onClick() {
-        const selectedOrderline = this.pos.getOrder().getSelectedOrderline();
+        const order = this.pos.getOrder();
+        const selectedOrderline = order.getSelectedOrderline();
         const selectedNote = this.currentNote || "";
         const payload = await this.openTextInput(selectedNote);
-        if (selectedOrderline) {
-            this.setChanges(selectedOrderline, payload);
-        } else {
-            const order = this.pos.getOrder();
-            order.general_customer_note = payload;
+        const confirmed = typeof payload === "string";
+
+        if (confirmed) {
+            if (selectedOrderline) {
+                await this.setChanges(selectedOrderline, payload);
+            } else {
+                order.general_customer_note = payload;
+                if (order.isSelfOrder) {
+                    await this.pos.syncAllOrders({ orders: [order] });
+                }
+            }
         }
-        return { confirmed: typeof payload === "string", inputNote: payload };
+        return { confirmed, inputNote: payload };
     }
 
     // Update line changes and set them

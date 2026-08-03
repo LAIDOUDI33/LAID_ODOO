@@ -23,6 +23,26 @@ registry.category("web_tour.tours").add("test_pos_self_order_preparation_changes
         ].flat(),
 });
 
+registry.category("web_tour.tours").add("test_pos_self_order_dynamic_qr", {
+    steps: () =>
+        [
+            Chrome.startPoS(),
+            FloorScreen.clickTable("1"),
+            ProductScreen.clickDisplayedProduct("Coca-Cola"),
+            ProductScreen.clickControlButton("Dynamic QR"),
+            {
+                content: "Dynamic QR popup is shown with a QR code",
+                trigger: ".o_qr_popup img.qr-code",
+            },
+            {
+                content: "Close the Dynamic QR popup",
+                trigger: ".o_qr_popup .btn-secondary:contains('Close')",
+                run: "click",
+            },
+            Chrome.flushPendingOrdersSync(),
+        ].flat(),
+});
+
 registry.category("web_tour.tours").add("test_pos_self_order_table_transfer", {
     steps: () =>
         [

@@ -67,8 +67,22 @@ class TestSelfOrderMobile(SelfOrderCommonTest, OnlinePaymentCommon):
         self.pos_config.current_session_id.set_opening_control(0, "")
         self_route = self.pos_config._get_self_order_route()
         self.start_tour(self_route, "self_mobile_online_payment_meal")
+
         self_route_table = self.pos_config._get_self_order_route(floor.table_ids[0].id)
-        self.start_tour(self_route_table, "self_mobile_online_payment_meal_table")
+        self.start_tour(self_route_table, "self_mobile_online_payment_meal")
+
+        table = floor.table_ids[0]
+        order = self.env['pos.order'].create({
+            'session_id': self.pos_config.current_session_id.id,
+            'table_id': table.id,
+            'amount_total': 0.0,
+            'amount_tax': 0.0,
+            'amount_return': 0.0,
+            'amount_paid': 0.0,
+        })
+        order._ensure_access_token()
+        self_route_order = self.pos_config._get_self_order_route(order=order)
+        self.start_tour(self_route_order, "self_mobile_online_payment_meal_dynamic_qr")
 
     def test_online_payment_kiosk_qr_code(self):
         """

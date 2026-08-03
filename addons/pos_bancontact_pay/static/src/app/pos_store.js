@@ -29,7 +29,7 @@ patch(PosStore.prototype, {
 
         // --- SUCCEEDED ---
         if (bancontact_status === "SUCCEEDED") {
-            paymentline.updateCustomerDisplayQrCode(null);
+            this.updateCustomerDisplayQrData(null);
             paymentline.setPaymentStatus("done");
             paymentline.qr_code = null;
 
@@ -60,7 +60,7 @@ patch(PosStore.prototype, {
             paymentline.payment_status !== "retry" &&
             ["AUTHORIZATION_FAILED", "FAILED", "EXPIRED", "CANCELLED"].includes(bancontact_status)
         ) {
-            paymentline.updateCustomerDisplayQrCode(null);
+            this.updateCustomerDisplayQrData(null);
             paymentline.setPaymentStatus("retry");
             paymentline.bancontact_id = null;
             paymentline.qr_code = null;

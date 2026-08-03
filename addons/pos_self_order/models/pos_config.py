@@ -255,31 +255,41 @@ class PosConfig(models.Model):
 
         return table_qr_code
 
-    def _get_self_order_route(self, table_id: int | None = None) -> str:
+    def _get_self_order_route(self, table_id: int | None = None, order=None) -> str:
         self.ensure_one()
         base_route = f"/pos-self/{self.id}"
-        table_route = ""
 
         if self.self_ordering_mode == 'consultation':
             return base_route
 
+        table_route = ""
         if self.self_ordering_mode == 'mobile':
-            table = self.env["restaurant.table"].search(
-                [("active", "=", True), ("id", "=", table_id)], limit=1
-            )
-
-            if table:
-                table_route = f"&table_identifier={table.identifier}"
+            if order:
+                base_route += f"/order/{order.access_token}"
+            else:
+                table = self.env["restaurant.table"].search([("active", "=", True), ("id", "=", table_id)], limit=1)
+                if table:
+                    table_route = f"&table_identifier={table.identifier}"
 
         return f"{base_route}?access_token={self.access_token}{table_route}"
 
-    def _get_self_order_url(self, table_id: int | None = None) -> str:
+    def _get_self_order_url(self, table_id: int | None = None, order=None) -> str:
         self.ensure_one()
-        long_url = self.get_base_url() + self._get_self_order_route(table_id)
-        return self.env['link.tracker'].search_or_create([{
-            'url': long_url,
-            'title': f"Self Order {self.name}" if not table_id else f"Self Order {self.name} - Table id {table_id}",
-        }]).short_url
+        long_url = self.get_base_url() + self._get_self_order_route(table_id, order=order)
+        title = f"Self Order {self.name}"
+        if order and order.tracking_number:
+            title += f" - Order {order.tracking_number}"
+        elif table_id:
+            title += f" - Table id {table_id}"
+        return self.env['link.tracker'].search_or_create([{'url': long_url, 'title': title}]).short_url
+
+    def get_dynamic_qr_url(self, order_id: int) -> str:
+        self.ensure_one()
+        order = self.env['pos.order'].browse(order_id)
+        if self.self_ordering_mode != 'mobile' or self.self_ordering_pay_after != 'meal' or not order.exists() or order.config_id != self or order.state != 'draft':
+            return False
+        order._ensure_access_token()
+        return self.get_base_url() + self._get_self_order_route(order=order)
 
     def preview_self_order_app(self):
         self.ensure_one()

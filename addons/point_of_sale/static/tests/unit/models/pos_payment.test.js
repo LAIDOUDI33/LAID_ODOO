@@ -1,42 +1,22 @@
 import { test, expect } from "@odoo/hoot";
 import { getFilledOrder, setupPosEnv, createPaymentLine } from "../utils";
 import { definePosModels } from "../data/generate_model_definitions";
-const { DateTime, Settings } = luxon;
 
 definePosModels();
 
-test("uiState", async () => {
-    const fixedTs = new Date("2025-01-09T12:00:00").valueOf();
-    const memoNow = Settings.now;
-    Settings.now = () => fixedTs;
-
+test("getQrPopupProps", async () => {
     const store = await setupPosEnv();
     const order = await getFilledOrder(store);
     const card = store.models["pos.payment.method"].get(2);
+    card.payment_provider = "some_provider";
     const paymentline = createPaymentLine(store, order, card);
+    paymentline.qr_code = "http://example.com/qr";
 
-    expect(paymentline.uiState).toEqual({
-        qrCode: null,
-        initStateDate: DateTime.fromMillis(fixedTs),
+    expect(paymentline.getQrPopupProps()).toMatchObject({
+        qrCode: "http://example.com/qr",
+        amount: "$\u00a010.00",
+        provider: "some_provider",
     });
-
-    Settings.now = memoNow;
-});
-
-test("updateCustomerDisplayQrCode", async () => {
-    const store = await setupPosEnv();
-    const order = await getFilledOrder(store);
-    const card = store.models["pos.payment.method"].get(2);
-    const paymentline = createPaymentLine(store, order, card);
-    const qrCode = "https://example.com/qr-code";
-
-    // Update QR code
-    paymentline.updateCustomerDisplayQrCode(qrCode);
-    expect(paymentline.uiState.qrCode).toBe(qrCode);
-
-    // Clear QR code
-    paymentline.updateCustomerDisplayQrCode(null);
-    expect(paymentline.uiState.qrCode).toBe(null);
 });
 
 test("isDone", async () => {

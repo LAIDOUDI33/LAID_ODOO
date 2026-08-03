@@ -6,11 +6,10 @@ import * as ProductPage from "@pos_self_order/../tests/tours/utils/product_page_
 import * as ConfirmationPage from "@pos_self_order/../tests/tours/utils/confirmation_page_util";
 import { negateStep } from "@point_of_sale/../tests/generic_helpers/utils";
 
-registry.category("web_tour.tours").add("self_mobile_online_payment_meal_table", {
+registry.category("web_tour.tours").add("self_mobile_online_payment_meal_dynamic_qr", {
     steps: () => [
-        Utils.checkIsNoBtn("My Order"),
+        Utils.checkBtn("My Order"),
         Utils.clickBtn("Order Now"),
-        LandingPage.selectLocation("Test-In"),
         ProductPage.clickProduct("Coca-Cola"),
         Utils.clickBtn("Checkout"),
         CartPage.checkProduct("Coca-Cola", "2.53", "1"),

@@ -47,7 +47,7 @@ export class CustomerDisplayPosAdapter {
         }
     }
 
-    formatOrderData(order) {
+    formatOrderData(order, qrData) {
         this.currency = order.currency;
         this.data = {
             finalized: order.finalized,
@@ -61,9 +61,9 @@ export class CustomerDisplayPosAdapter {
             change: order.change && formatCurrency(order.change, order.currency),
             paymentLines: order.payment_ids.map((pl) => this.getPaymentData(pl)),
             lines: order.lines.map((l) => this.getOrderlineData(l)),
-            qrPaymentData: this.getQrPaymentData(order),
             displayScreenSaver: false,
             processingValidation: order.processingValidation,
+            qrData,
         };
     }
 
@@ -90,15 +90,5 @@ export class CustomerDisplayPosAdapter {
             name: payment.payment_method_id.name,
             amount: formatCurrency(payment.amount, this.currency),
         };
-    }
-
-    getQrPaymentData(order) {
-        const qrPaymentData = order.getSelectedPaymentline()?.getQrPopupProps(true);
-        return qrPaymentData
-            ? {
-                  ...qrPaymentData,
-                  amount: formatCurrency(qrPaymentData.amount, this.currency),
-              }
-            : null;
     }
 }

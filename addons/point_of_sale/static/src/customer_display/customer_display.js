@@ -31,9 +31,9 @@ export class CustomerDisplay extends Component {
             ?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
 
-    get qrPaymentData() {
+    get qrData() {
         return {
-            ...this.order.qrPaymentData,
+            ...this.order.qrData,
             ...this.order.onlinePaymentData,
         };
     }

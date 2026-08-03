@@ -5,4 +5,9 @@ patch(PosPayment.prototype, {
     get transId() {
         return this.safaricom_transaction_id || "";
     },
+
+    getQrPopupProps() {
+        const base = super.getQrPopupProps();
+        return { ...base, name: this.payment_method_id.name };
+    },
 });

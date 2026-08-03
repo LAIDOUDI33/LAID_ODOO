@@ -25,6 +25,22 @@ test("uiState", async () => {
     });
 });
 
+test("isSelfOrder", async () => {
+    const store = await setupPosEnv();
+    const order = store.addNewOrder();
+
+    expect(order.isSelfOrder).toBe(false);
+
+    order.source = "mobile";
+    expect(order.isSelfOrder).toBe(true);
+
+    order.source = "kiosk";
+    expect(order.isSelfOrder).toBe(true);
+
+    order.source = "pos";
+    expect(order.isSelfOrder).toBe(false);
+});
+
 test("totalQuantity", async () => {
     const store = await setupPosEnv();
     const order = await getFilledOrder(store);
