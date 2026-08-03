@@ -276,7 +276,7 @@
                                 </group>
                             </group>
                         </page>
-                        <page name="page_invitations" string="Invitations" groups="base.group_no_one" invisible="is_draft or not user_can_edit">
+                        <page name="page_invitations" string="Invitations" groups="base.group_no_one" invisible="not user_can_edit">
                             <button name="action_sendmail" type="object" string="Send Invitations" icon="fa-envelope" class="oe_link"/>
                             <field name="attendee_ids" widget="one2many" mode="list,kanban" readonly="1">
                                 <list string="Invitation details" editable="top" create="false" delete="false">
