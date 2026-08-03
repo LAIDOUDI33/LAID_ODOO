@@ -428,7 +428,7 @@ class ResConfigSettings(models.TransientModel):
         self._call_peppol_proxy(
             endpoint=edi_user._get_peppol_proxy_endpoint('1/register_sender_as_receiver'),
             params={
-                'supported_identifiers': [],
+                'supported_identifiers': list(edi_user.company_id._peppol_supported_document_types()),
             },
         )
 
