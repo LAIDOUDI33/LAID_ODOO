@@ -149,6 +149,40 @@ class TestFlexibleResourceCalendar(TransactionCase):
         }, "week 31 (27/07 -> 02/08): 2 days off 31 & 01 (-16 hours), half day on 28 and 30 (-8 hours), 5 hours off on day 29 / hours = 40-(16+8+5) = 11 hours, no timeoff on week 32")
         self.assertTrue(self.fully_flex_resource.id not in hours_per_week)
 
+    def test_leave_duration_flexible_employee_without_hours_per_day(self):
+        """ A flexible employee with 40h/week but no hours per day must still get a
+        day count for his time off.
+
+        hours_per_day = 0 makes _attendance_intervals_batch allocate 0 hour to every
+        day of the request. Those zero length intervals are dropped by Intervals, so
+        _get_durations ends up with 0 day / 0 hour for a 3 days request, and
+        _action_validate then refuses the leave with "not supposed to work during
+        that period".
+        """
+        self.flex_employee.write({'tz': 'UTC', 'hours_per_day': 0.0})
+
+        leave_type = self.env['hr.work.entry.type'].create({
+            'name': 'Flexible Time Off',
+            'code': 'FLEXNOHOURS',
+            'requires_allocation': False,
+            'request_unit': 'half_day',
+            'unit_of_measure': 'day',
+        })
+
+        # Monday to Wednesday
+        leave = self.env['hr.leave'].with_context(mail_create_nolog=True, mail_notrack=True).create({
+            'name': 'Three days',
+            'work_entry_type_id': leave_type.id,
+            'employee_id': self.flex_employee.id,
+            'request_date_from': date(2025, 8, 11),
+            'request_date_to': date(2025, 8, 13),
+            'request_date_from_period': 'am',
+            'request_date_to_period': 'pm',
+        })
+
+        days, _hours = leave._get_durations()[leave.id]
+        self.assertEqual(days, 3.0, "3 requested days must be counted as 3 days, not 0")
+
     def test_get_unusal_days_for_fully_flexible_employees(self):
         """
         Test that _get_unusual_days return correct value for
