@@ -21,9 +21,9 @@ class PurchaseOrderLine(models.Model):
 
     name = fields.Text(
         string='Description', compute='_compute_price_unit_and_date_planned_and_name', store=True, readonly=False)
-    product_and_description = fields.Text(
+    label = fields.Text(
         string="Product & Description",
-        compute="_compute_product_and_description",
+        compute="_compute_label",
         inverse="_set_description",
     )
     sequence = fields.Integer(string='Sequence', default=10)
@@ -548,16 +548,16 @@ class PurchaseOrderLine(models.Model):
         return product.display_name
 
     @api.depends("product_id", "selected_seller_id", "partner_id.lang", "name")
-    def _compute_product_and_description(self):
+    def _compute_label(self):
         for line in self:
             display_name = line._get_product_display_name()
 
             if display_name and line.name:
-                line.product_and_description = f"{display_name}\n{line.name}"
+                line.label = f"{display_name}\n{line.name}"
             elif display_name:
-                line.product_and_description = display_name
+                line.label = display_name
             else:
-                line.product_and_description = line.name
+                line.label = line.name
 
     def _set_description(self):
         for line in self:
@@ -565,12 +565,12 @@ class PurchaseOrderLine(models.Model):
 
             if display_name:
                 line.name = (
-                    line.product_and_description
+                    line.label
                     .removeprefix(display_name)
                     .removeprefix("\n")
                 )
             else:
-                line.name = line.product_and_description
+                line.name = line.label
 
     @api.depends('uom_id', 'product_qty', 'product_id.uom_id')
     def _compute_product_uom_qty(self):

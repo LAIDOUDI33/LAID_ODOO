@@ -65,5 +65,5 @@ class TestPurchaseMatrixUi(TestMatrixCommon):
                 line.product_no_variant_attribute_value_ids = attribute_never.template_value_ids[0]
                 line.product_id = product_template.product_variant_id
         self.assertEqual(
-            purchase_order.order_line.product_and_description, "matrixFR\nPA4FR: PAV41FR"
+            purchase_order.order_line.label, "matrixFR\nPA4FR: PAV41FR"
         )

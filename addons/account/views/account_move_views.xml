@@ -1297,7 +1297,7 @@
                                         <field name="name" optional="show"/>
                                         <field
                                             string="Label"
-                                            name="product_and_description"
+                                            name="label"
                                             widget="account_label_text"
                                         />
                                         <field name="account_id"

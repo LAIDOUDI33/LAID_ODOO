@@ -277,7 +277,7 @@ class TestSalePurchase(TestCommonSalePurchaseNoChart):
         so.action_confirm()
 
         po = self.env['purchase.order'].search([('partner_id', '=', self.partner_vendor_service.id)], order='id desc', limit=1)
-        self.assertEqual(po.order_line.product_and_description, "[C01] Name01")
+        self.assertEqual(po.order_line.label, "[C01] Name01")
 
     def test_pol_custom_attribute(self):
         """

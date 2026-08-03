@@ -125,7 +125,7 @@ class AccountMoveLine(models.Model):
         values['line_description'] = (
             '%s (%s: %s @ %s)'
             % (
-                self.product_and_description,
+                self.label,
                 values['second_currency']['currency_name'],
                 float_repr(
                     values['second_currency']['price'], values['second_currency']['round_currency']
@@ -137,6 +137,6 @@ class AccountMoveLine(models.Model):
             )
             if values.get('second_currency')
             and not self.l10n_latam_document_type_id._is_doc_type_export()
-            else self.product_and_description
+            else self.label
         )
         return values

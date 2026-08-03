@@ -9,7 +9,7 @@ export class ProductLabelSectionAndNoteListRender extends SectionAndNoteListRend
     setup() {
         super.setup();
         this.descriptionColumn = "name";
-        this.productAndDescriptionColumn = "product_and_description";
+        this.productAndDescriptionColumn = "label";
         // product_template_id is added for purchase_product_matrix's PO view and sale's SO view
         this.productColumns = ["product_id", "product_template_id"];
         this.conditionalColumns = ["product_id", "quantity", "product_uom_id"];

@@ -144,10 +144,8 @@ class SaleOrderLine(models.Model):
     name = fields.Text(
         string="Description", compute="_compute_name", store=True, readonly=False, precompute=True
     )
-    product_and_description = fields.Text(
-        string="Product & Description",
-        compute="_compute_product_and_description",
-        inverse="_set_description",
+    label = fields.Text(
+        string="Product & Description", compute="_compute_label", inverse="_set_description"
     )
 
     product_uom_qty = fields.Float(
@@ -600,17 +598,15 @@ class SaleOrderLine(models.Model):
         return name
 
     @api.depends("product_id", "name", "order_id.partner_id")
-    def _compute_product_and_description(self):
+    def _compute_label(self):
         for line in self:
             lang_line = line.with_context(lang=line.order_id._get_lang())
             if lang_line.product_id and lang_line.name:
-                lang_line.product_and_description = (
-                    lang_line.product_id.display_name + "\n" + lang_line.name
-                )
+                lang_line.label = lang_line.product_id.display_name + "\n" + lang_line.name
             elif lang_line.product_id and not lang_line.name:
-                lang_line.product_and_description = lang_line.product_id.display_name
+                lang_line.label = lang_line.product_id.display_name
             else:
-                lang_line.product_and_description = lang_line.name
+                lang_line.label = lang_line.name
 
     def _set_description(self):
         for line in self:
@@ -618,11 +614,9 @@ class SaleOrderLine(models.Model):
                 display_name = line.product_id.with_context(
                     lang=line.order_id._get_lang()
                 ).display_name
-                line.name = line.product_and_description.removeprefix(display_name).removeprefix(
-                    "\n"
-                )
+                line.name = line.label.removeprefix(display_name).removeprefix("\n")
             else:
-                line.name = line.product_and_description
+                line.name = line.label
 
     @api.depends("display_type", "product_id")
     def _compute_product_uom_qty(self):

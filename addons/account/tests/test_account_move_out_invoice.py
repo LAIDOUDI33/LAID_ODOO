@@ -5133,7 +5133,7 @@ class TestAccountMoveOutInvoiceOnchanges(AccountTestInvoicingCommon):
 
         self.assertRecordValues(invoice.invoice_line_ids, [{
             'product_id': self.product_a.id,
-            'product_and_description': 'product_a',
+            'label': 'product_a',
         }])
 
     def test_out_invoice_fiscal_position_branch_taxes(self):

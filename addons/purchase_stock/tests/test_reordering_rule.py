@@ -111,7 +111,7 @@ class TestReorderingRule(TransactionCase):
         # On the po generated, the source document should be the name of the reordering rule
         self.assertEqual(order_point.name, purchase_order.origin, 'Source document on purchase order should be the name of the reordering rule.')
         self.assertEqual(purchase_order.order_line.product_qty, 10)
-        self.assertEqual(purchase_order.order_line.product_and_description, 'Product A')
+        self.assertEqual(purchase_order.order_line.label, 'Product A')
         self.assertEqual(purchase_order.user_id, buyer_id)
 
         # Increase the quantity on the RFQ before confirming it
@@ -717,7 +717,7 @@ class TestReorderingRule(TransactionCase):
         po_line = self.env["purchase.order.line"].search(
             [("product_id", "=", product.id)])
         self.assertTrue(po_line)
-        self.assertEqual("[A] product TEST", po_line.product_and_description)
+        self.assertEqual("[A] product TEST", po_line.label)
 
     def test_multi_lingual_orderpoints(self):
         """
@@ -789,13 +789,13 @@ class TestReorderingRule(TransactionCase):
 
         po_line = self.env['purchase.order.line'].search([('partner_id', '=', default_vendor.id), ('product_id', '=', product.id)], limit=1)
         self.assertRecordValues(
-            po_line, [{"product_and_description": "[A] produit en français", "product_qty": 5.0}]
+            po_line, [{"label": "[A] produit en français", "product_qty": 5.0}]
         )
         self.assertRecordValues(po_line.move_dest_ids, [{"product_uom_qty": 5.0}])
         orderpoint.qty_to_order_manual = 4.0
         orderpoint.with_user(french_user).action_replenish()
         self.assertRecordValues(
-            po_line, [{"product_and_description": "[A] produit en français", "product_qty": 9.0}]
+            po_line, [{"label": "[A] produit en français", "product_qty": 9.0}]
         )
         self.assertEqual(len(po_line.order_id.order_line), 1)
         self.assertRecordValues(po_line.move_dest_ids, [{"product_uom_qty": 5.0}, {"product_uom_qty": 4.0}])
@@ -806,7 +806,7 @@ class TestReorderingRule(TransactionCase):
         (orderpoint | dummy).invalidate_recordset()
         self.env['stock.rule'].run_scheduler()
         self.assertRecordValues(
-            po_line, [{"product_and_description": "[A] produit en français", "product_qty": 20.0}]
+            po_line, [{"label": "[A] produit en français", "product_qty": 20.0}]
         )
         self.assertEqual(len(po_line.order_id.order_line), 1)
 

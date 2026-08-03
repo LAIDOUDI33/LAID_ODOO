@@ -452,7 +452,7 @@ class SaleOrderLine(models.Model):
             milestones.write(write_vals)
         else:
             milestone = self.env['project.milestone'].create({
-                'name': self.product_and_description,
+                'name': self.label,
                 'project_id': project.id or self.order_id.project_id.id,
                 'sale_line_id': self.id,
                 'quantity_percentage': 1,

@@ -2231,7 +2231,7 @@ class TestSaleStock(TestSaleStockCommon, ValuationReconciliationTestCommon):
             }
         )
         self.assertEqual(
-            so.order_line.product_and_description,
+            so.order_line.label,
             'Product with description (red)\nSale description\nNo variant: extra',
         )
         so.order_line.name += '\nRandom sale notes'

@@ -846,7 +846,7 @@ class TestSaleToInvoice(TestSaleCommon):
             invoice.invoice_line_ids,
             [
                 {
-                    "product_and_description": "Meal Menu x 3",
+                    "label": "Meal Menu x 3",
                     "display_type": "line_section",
                     "product_id": False,
                     "quantity": 3,
@@ -854,7 +854,7 @@ class TestSaleToInvoice(TestSaleCommon):
                     "sequence": 0,
                 },
                 {
-                    "product_and_description": "Horse-meat burger",
+                    "label": "Horse-meat burger",
                     "display_type": "product",
                     "product_id": product_a.id,
                     "quantity": 3,
@@ -862,7 +862,7 @@ class TestSaleToInvoice(TestSaleCommon):
                     "sequence": 1,
                 },
                 {
-                    "product_and_description": "French fries",
+                    "label": "French fries",
                     "display_type": "product",
                     "product_id": product_b.id,
                     "quantity": 3,

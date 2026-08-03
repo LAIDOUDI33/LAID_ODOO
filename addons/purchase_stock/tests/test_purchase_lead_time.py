@@ -264,7 +264,7 @@ class TestPurchaseLeadTime(PurchaseTestCommon):
         purchase_order = self.env['purchase.order.line'].search([('product_id', '=', self.t_shirt.id)], limit=1).order_id
         self.assertEqual(len(purchase_order.order_line), 1, 'wrong number of order line is created')
         self.assertEqual(
-            purchase_order.order_line.product_and_description,
+            purchase_order.order_line.label,
             t_shirt.display_name + '\n' + 'Color (Red)',
             'wrong description in po lines',
         )
@@ -290,14 +290,14 @@ class TestPurchaseLeadTime(PurchaseTestCommon):
         self.assertEqual(
             purchase_order.order_line.filtered(
                 lambda x: x.product_qty == 15
-            ).product_and_description,
+            ).label,
             t_shirt.display_name + '\n' + 'Color (Red)',
             'wrong description in po lines',
         )
         self.assertEqual(
             purchase_order.order_line.filtered(
                 lambda x: x.product_qty == 10
-            ).product_and_description,
+            ).label,
             t_shirt.display_name + '\n' + 'Color (Green)',
             'wrong description in po lines',
         )

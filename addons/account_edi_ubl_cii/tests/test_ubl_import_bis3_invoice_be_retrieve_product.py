@@ -24,11 +24,11 @@ class TestUblImportBis3InvoiceBERetrieveProduct(TestUblImportBis3InvoiceBE):
         invoice = self._import_invoice_as_attachment_on(test_name='test_partial_import_product_name')
         self.assertRecordValues(invoice.invoice_line_ids, [
             {
-                'product_and_description': 'important product1\nimportant product',
+                'label': 'important product1\nimportant product',
                 'product_id': product.id,
             },
             {
-                'product_and_description': 'XYZ',
+                'label': 'XYZ',
                 'product_id': None,
             },
         ])
@@ -37,7 +37,7 @@ class TestUblImportBis3InvoiceBERetrieveProduct(TestUblImportBis3InvoiceBE):
         product = self._create_product(name='XYZ', barcode='12345678912345')
         invoice = self._import_invoice_as_attachment_on(test_name='test_partial_import_product_barcode')
         self.assertRecordValues(invoice.invoice_line_ids, [{
-            'product_and_description': 'XYZ',
+            'label': 'XYZ',
             'product_id': product.id,
         }])
 
@@ -45,7 +45,7 @@ class TestUblImportBis3InvoiceBERetrieveProduct(TestUblImportBis3InvoiceBE):
         product = self._create_product(name='XYZ', default_code='abcdefghij')
         invoice = self._import_invoice_as_attachment_on(test_name='test_partial_import_product_default_code')
         self.assertRecordValues(invoice.invoice_line_ids, [{
-            'product_and_description': '[abcdefghij] XYZ',
+            'label': '[abcdefghij] XYZ',
             'product_id': product.id,
         }])
 
@@ -55,7 +55,7 @@ class TestUblImportBis3InvoiceBERetrieveProduct(TestUblImportBis3InvoiceBE):
         product = self._create_product(name='XYZ', uom_id=self.env.ref('uom.product_uom_unit').id)
         invoice = self._import_invoice_as_attachment_on(test_name='test_partial_import_product_uom_category_mismatch')
         self.assertRecordValues(invoice.invoice_line_ids, [{
-            'product_and_description': 'XYZ',
+            'label': 'XYZ',
             'product_id': product.id,
             'product_uom_id': False,
         }])
@@ -80,6 +80,6 @@ class TestUblImportBis3InvoiceBERetrieveProduct(TestUblImportBis3InvoiceBE):
         )
         self.assertRecordValues(invoice, [{'partner_id': self.partner_be.id}])
         self.assertRecordValues(invoice.invoice_line_ids, [{
-            'product_and_description': "XYZ\nturlutututu",
+            'label': "XYZ\nturlutututu",
             'product_id': product.id,
         }])

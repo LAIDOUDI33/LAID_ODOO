@@ -388,11 +388,11 @@ class TestSaleOrder(SaleManagementCommon):
         # Create sale order form (and a way to retrieve line names)
         def get_form_field_names(form):
             return [
-                form.order_line.edit(0).product_and_description,
-                form.order_line.edit(1).product_and_description,
-                form.order_line.edit(2).product_and_description,
-                form.order_line.edit(3).product_and_description,
-                form.order_line.edit(4).product_and_description,
+                form.order_line.edit(0).label,
+                form.order_line.edit(1).label,
+                form.order_line.edit(2).label,
+                form.order_line.edit(3).label,
+                form.order_line.edit(4).label,
             ]
 
         order_form = Form(self.sale_order.browse())

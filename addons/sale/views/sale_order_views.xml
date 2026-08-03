@@ -740,7 +740,7 @@
                                 />
                                 <field name="name"/>
                                 <field
-                                    name="product_and_description"
+                                    name="label"
                                     widget="sol_label_text"
                                     context="{'partner_id': parent.partner_id}"
                                 />
