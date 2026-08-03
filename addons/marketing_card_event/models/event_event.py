@@ -12,6 +12,7 @@ class EventEvent(models.Model):
             'name': _('Send Cards'),
             'res_model': 'mailing.mailing',
             'context': {
+                'card_mailing_event_id': self.id,
                 'default_subject': self.name,
                 'default_mailing_model_id': self.env['ir.model']._get_id('event.registration'),
                 'default_body_arch': self.env['card.campaign']._action_share_get_default_body(),
