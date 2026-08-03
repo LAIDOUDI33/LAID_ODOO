@@ -157,6 +157,7 @@ class ProductTemplate(models.Model):
         inverse_name="product_tmpl_id",
         copy=True,
     )
+    computed_main_image_id = fields.Many2one("product.image")
 
     compare_list_price = fields.Monetary(
         string="Compare to Price",
@@ -272,6 +273,14 @@ class ProductTemplate(models.Model):
                 template.product_variant_ids.filtered("default_code").mapped("default_code")
             )
 
+    @api.depends("computed_main_image_id")
+    def _compute_image_1920(self):
+        super()._compute_image_1920()
+        for template in self.filtered("computed_main_image_id"):
+            template.with_context(
+                from_computed_image=True
+            ).image_1920 = template.computed_main_image_id.image_1920
+
     # === CRUD METHODS ===#
 
     @api.model_create_multi
@@ -284,6 +293,16 @@ class ProductTemplate(models.Model):
                 "suggest_accessory_products": not vals.get("accessory_product_ids"),
                 "suggest_alternative_products": not vals.get("alternative_product_ids"),
             })
+            if vals.get("image_1920"):
+                record.computed_main_image_id = self.env["product.image"].create({
+                    "name": record.name,
+                    "image_1920": vals.get("image_1920"),
+                    "sequence": 0,
+                    "product_tmpl_id": record.id,
+                })
+            elif vals.get("product_template_image_ids") and not vals.get("image_1920"):
+                record._update_computed_main_image()
+
         return records
 
     def write(self, vals):
@@ -301,7 +320,27 @@ class ProductTemplate(models.Model):
                     else v
                 ),
             )
-        return super().write(vals)
+
+        if vals.get("image_1920") and not self.env.context.get("from_computed_image"):
+            vals["computed_main_image_id"] = False
+
+        res = super().write(vals)
+
+        if vals.get("image_1920") and not self.env.context.get("from_computed_image"):
+            self._update_computed_main_image()
+
+        if "image_1920" in vals and not vals["image_1920"]:
+            images_to_unlink = self.env["product.image"]
+            for template in self:
+                if template.computed_main_image_id:
+                    images_to_unlink |= template.computed_main_image_id
+                else:
+                    template._update_computed_main_image()
+
+            if images_to_unlink:
+                images_to_unlink.unlink()
+
+        return res
 
     @api.ondelete(at_uninstall=False)
     def _unlink_if_not_donation_product(self):
@@ -359,6 +398,53 @@ class ProductTemplate(models.Model):
             "suggest_alternative_products": True,
         })
         self._update_suggested_products()
+
+    def _update_computed_main_image(self, restore_computed=None):
+        """Update image type assignments and the computed main image.
+
+        If the template has no manually assigned main image, already uses a computed
+        one, or its ID is marked in `restore_computed`, the first extra image
+        (by sequence) is used as the computed main image.
+
+        Otherwise, the manually assigned main image is preserved.
+        """
+        for template in self:
+            should_restore_computed = restore_computed is not None and restore_computed.get(
+                template.id, False
+            )
+
+            template_images = template.product_template_image_ids.sorted("sequence")
+            if not template_images:
+                if template.image_1920:
+                    image = self.env["product.image"].create({
+                        "name": template.name,
+                        "image_1920": template.image_1920,
+                        "product_tmpl_id": template.id,
+                    })
+                    template.computed_main_image_id = image
+                else:
+                    template.computed_main_image_id = False
+                continue
+
+            first_image = template_images[0]
+
+            if (
+                not template.image_1920
+                or template.computed_main_image_id
+                or should_restore_computed
+            ):
+                if first_image.video_url:
+                    raise ValidationError(
+                        template.env._("You can't use a video as the product's main image.")
+                    )
+                template.computed_main_image_id = first_image[0]
+            elif template.image_1920:
+                template.computed_main_image_id = self.env["product.image"].create({
+                    "name": template.name,
+                    "image_1920": template.image_1920,
+                    "sequence": first_image.sequence - 1,
+                    "product_tmpl_id": template.id,
+                })
 
     def _update_suggested_products(self):
         """Update the current product templates' optional, accessory, and alternative products.
@@ -1240,7 +1326,20 @@ class ProductTemplate(models.Model):
         Template Extra Images.
         """
         self.ensure_one()
-        return [self] + list(self.product_template_image_ids)
+        extra_images = list(self._get_all_extra_images_to_display() - self.computed_main_image_id)
+
+        return [self] + extra_images
+
+    def _get_all_extra_images_to_display(self):
+        """Return the extra images to display for this template on the website.
+
+        Note: self.ensure_one()
+
+        :rtype: product.image
+        :return: Recordset of extra images to display.
+        """
+        self.ensure_one()
+        return self.product_template_image_ids.sorted("sequence")
 
     def _get_product_page_documents(self, variant=None):
         self.ensure_one()
@@ -1619,6 +1718,26 @@ class ProductTemplate(models.Model):
         self.ensure_one()
 
         return bool(self.valid_product_template_attribute_line_ids)
+
+    def get_attribute_value_mapping(self):
+        """Return variant attribute values grouped by attribute.
+
+        :return: A list of dictionaries with the keys `id` (attribute id) and
+                `values` (list of active PTAV ids and names).
+        :rtype: list[dict]
+        """
+        attribute_value_mapping = []
+        for line in self.attribute_line_ids:
+            if line.attribute_id.create_variant == "no_variant":
+                continue
+            values = [
+                {"id": ptav.id, "name": ptav.name}
+                for ptav in line.product_template_value_ids
+                if ptav.ptav_active
+            ]
+            if values:
+                attribute_value_mapping.append({"id": line.attribute_id.id, "values": values})
+        return attribute_value_mapping
 
     def _has_multiple_uoms(self) -> bool:
         """Check if the product has multiple available uoms for the current website.

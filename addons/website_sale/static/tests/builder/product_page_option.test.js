@@ -121,6 +121,14 @@ test("Product page options", async () => {
         // converted image won't be used if original is not larger
         return dataURItoBlob(base64Image + "A".repeat(1000));
     });
+    onRpc("/html_editor/modify_image/1", () => {
+        expect.step("modify_image");
+        return {
+            image_src: "/web/image/hoot.png",
+            access_token: "1234",
+            public: false,
+        };
+    });
 
     await contains(":iframe .product_detail_img", { visible: false }).click();
     await contains("[data-action-id=replaceMedia]").click();
@@ -143,6 +151,8 @@ test("Product page options", async () => {
     await expect.waitForSteps([
         // Activate the carousel view and change the shop config
         "config",
+        // Modify the image
+        "modify_image",
         // Save the pending image width class changes
         "save",
         // Save the image changes
