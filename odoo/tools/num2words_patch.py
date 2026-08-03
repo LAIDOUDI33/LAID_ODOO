@@ -5,6 +5,10 @@ from collections import OrderedDict
 from decimal import ROUND_HALF_UP, Decimal
 from math import floor
 
+from num2words.lang_ES import Num2Word_ES
+from num2words.lang_ES_CO import Num2Word_ES_CO
+from num2words.lang_ES_VE import Num2Word_ES_VE
+
 # The following section of the code is used to monkey patch
 # the Arabic class of num2words package as there are some problems
 # upgrading the package to the newer version that fixed the bugs
@@ -708,3 +712,24 @@ def to_s(val):
         return unicode(val)
     except NameError:
         return str(val)
+
+
+SPANISH_APOCOPE_RE = re.compile(r'\b(veinti)?uno\b')
+
+
+def _spanish_apocope(text):
+    """Apocopate "uno"/"veintiuno" to "un"/"veintiún" before a masculine noun."""
+    return SPANISH_APOCOPE_RE.sub(lambda m: "veintiún" if m.group(1) else "un", text)
+
+
+class Num2Word_ES_Fixed(Num2Word_ES):
+    def to_cardinal(self, value):
+        return _spanish_apocope(super().to_cardinal(value))
+
+
+class Num2Word_ES_CO_Fixed(Num2Word_ES_Fixed, Num2Word_ES_CO):
+    pass
+
+
+class Num2Word_ES_VE_Fixed(Num2Word_ES_Fixed, Num2Word_ES_VE):
+    pass
