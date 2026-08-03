@@ -120,6 +120,29 @@ export class AttendeeCalendarController extends CalendarController {
         }
     }
 
+    openRecurringDeletionWizard(record) {
+        this.actionService.doAction(
+            {
+                type: "ir.actions.act_window",
+                res_model: "calendar.popover.delete.wizard",
+                views: [[false, "form"]],
+                view_mode: "form",
+                name: "Delete Recurring Event",
+                context: {
+                    default_calendar_event_id: record.id,
+                    default_attendee_id: record.attendeeId,
+                    form_view_ref: 'calendar.calendar_popover_delete_view',
+                },
+                target: "new",
+            },
+            {
+                onClose: () => {
+                    this.model.load();
+                },
+            }
+        );
+    }
+
     configureCalendarProviderSync(providerName) {
         this.actionService.doAction({
             name: _t("Connect your Calendar"),
