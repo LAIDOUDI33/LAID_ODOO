@@ -1223,6 +1223,7 @@ export class Record extends DataPoint {
                 const field = this.fields[fieldName];
                 if (["one2many", "many2many"].includes(field.type) && !field.relatedPropertyField) {
                     this._changes[fieldName]?._clearCommands();
+                    this._values[fieldName]?._clearCommands();
                 }
             }
             this._changes = markRaw({});
