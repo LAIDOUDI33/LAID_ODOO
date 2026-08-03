@@ -103,3 +103,110 @@ class AccountMove(models.Model):
         ])
         timesheets_sudo.write({'timesheet_invoice_id': False})
         return result
+<<<<<<< 2cc0fb92761caebf45b1e5056ecb7651c4dfeb06
+||||||| 8b0c50cfcfd8010c2f974ecc32dd406deef416be
+
+
+class AccountMoveLine(models.Model):
+    _inherit = 'account.move.line'
+
+    @api.model
+    def _timesheet_domain_get_invoiced_lines(self, sale_line_delivery):
+        """ Get the domain for the timesheet to link to the created invoice
+            :param sale_line_delivery: recordset of sale.order.line to invoice
+            :return a normalized domain
+        """
+        return [
+            ('so_line', 'in', sale_line_delivery.ids),
+            ('project_id', '!=', False),
+            '|', '|',
+                ('timesheet_invoice_id', '=', False),
+                '&',
+                    ('timesheet_invoice_id.state', '=', 'cancel'),
+                    ('timesheet_invoice_id.payment_state', '!=', 'invoicing_legacy'),
+                ('timesheet_invoice_id.payment_state', '=', 'reversed')
+        ]
+
+    def unlink(self):
+        move_line_read_group = self.env['account.move.line'].search_read([
+            ('move_id.move_type', '=', 'out_invoice'),
+            ('move_id.state', '=', 'draft'),
+            ('sale_line_ids.product_id.invoice_policy', '=', 'delivery'),
+            ('sale_line_ids.product_id.service_type', '=', 'timesheet'),
+            ('id', 'in', self.ids)],
+            ['move_id', 'sale_line_ids'])
+
+        sale_line_ids_per_move = defaultdict(lambda: self.env['sale.order.line'])
+        for move_line in move_line_read_group:
+            sale_line_ids_per_move[move_line['move_id'][0]] += self.env['sale.order.line'].browse(move_line['sale_line_ids'])
+
+        timesheet_read_group = self.sudo().env['account.analytic.line']._read_group([
+            ('timesheet_invoice_id.move_type', '=', 'out_invoice'),
+            ('timesheet_invoice_id.state', '=', 'draft'),
+            ('timesheet_invoice_id', 'in', self.move_id.ids)],
+            ['timesheet_invoice_id', 'so_line'],
+            ['id:array_agg'])
+
+        timesheet_ids = []
+        for timesheet_invoice, so_line, ids in timesheet_read_group:
+            if so_line.id in sale_line_ids_per_move[timesheet_invoice.id].ids:
+                timesheet_ids += ids
+
+        self.sudo().env['account.analytic.line'].browse(timesheet_ids).write({'timesheet_invoice_id': False})
+        return super().unlink()
+=======
+
+
+class AccountMoveLine(models.Model):
+    _inherit = 'account.move.line'
+
+    @api.model
+    def _timesheet_domain_get_invoiced_lines(self, sale_line_delivery):
+        """ Get the domain for the timesheet to link to the created invoice
+            :param sale_line_delivery: recordset of sale.order.line to invoice
+            :return a normalized domain
+        """
+        return [
+            ('so_line', 'in', sale_line_delivery.ids),
+            ('project_id', '!=', False),
+            '|', '|',
+                ('timesheet_invoice_id', '=', False),
+                '&',
+                    ('timesheet_invoice_id.state', '=', 'cancel'),
+                    ('timesheet_invoice_id.payment_state', '!=', 'invoicing_legacy'),
+                ('timesheet_invoice_id.payment_state', '=', 'reversed')
+        ]
+
+    def unlink(self):
+        move_line_read_group = self.env['account.move.line'].search_read([
+            ('move_id.move_type', '=', 'out_invoice'),
+            ('move_id.state', '=', 'draft'),
+            ('sale_line_ids.product_id.invoice_policy', '=', 'delivery'),
+            ('sale_line_ids.product_id.service_type', '=', 'timesheet'),
+            ('id', 'in', self.ids)],
+            ['move_id', 'sale_line_ids'])
+
+        sale_line_ids_per_move = defaultdict(lambda: self.env['sale.order.line'])
+        for move_line in move_line_read_group:
+            sale_line_ids_per_move[move_line['move_id'][0]] += self.env['sale.order.line'].browse(move_line['sale_line_ids'])
+
+        timesheet_read_group = self.sudo().env['account.analytic.line']._read_group([
+            ('timesheet_invoice_id.move_type', '=', 'out_invoice'),
+            ('timesheet_invoice_id.state', '=', 'draft'),
+            ('timesheet_invoice_id', 'in', self.move_id.ids)],
+            ['timesheet_invoice_id', 'so_line'],
+            ['id:array_agg'])
+
+        timesheet_ids = []
+        for timesheet_invoice, so_line, ids in timesheet_read_group:
+            if so_line.id in sale_line_ids_per_move[timesheet_invoice.id].ids:
+                timesheet_ids += ids
+
+        timesheets = self.sudo().env['account.analytic.line'].browse(timesheet_ids)
+        # Clearing the invoice link marks `so_line` to be recomputed, which can
+        # clear or reassign the allocation when the task/project sale order items
+        # no longer resolve. Deleting an invoice must not change what was delivered.
+        with self.env.protecting([timesheets._fields['so_line']], timesheets):
+            timesheets.write({'timesheet_invoice_id': False})
+        return super().unlink()
+>>>>>>> 66d949e6a2b92f15eb3996539e368404be32c34a
