@@ -89,17 +89,35 @@ export class AttendeeCalendarController extends CalendarController {
     /**
      * @override
      */
-    async deleteRecord(record) {
-        await this.deleteCalendarEvent({
-            resId: record.id,
-            currentAttendeeId: record.calendarAttendeeId,
-            currentStatus: record.attendeeStatus,
-            organizerId: record.rawRecord.user_id[0],
-            partnerIds: record.rawRecord.partner_ids,
-            recurrency: record.rawRecord.recurrency,
-            start: record.start,
-            deleteConfirmationDialogProps: this.deleteConfirmationDialogProps(record),
-        });
+    deleteRecord(record) {
+        if (
+            user.partnerId === record.attendeeId &&
+            user.partnerId === record.rawRecord.partner_id[0]
+        ) {
+            if (record.rawRecord.recurrency) {
+                this.openRecurringDeletionWizard(record);
+            } else if (user.partnerId === record.attendeeId &&
+                record.rawRecord.attendees_count == 1) {
+                super.deleteRecord(...arguments);
+            } else {
+                this.orm.call("calendar.event", "action_unlink_event", [
+                    record.id,
+                    record.attendeeId,
+                ])
+                .then((action) => {
+                    if (action && action.context) {
+                        this.actionService.doAction(action);
+                    } else {
+                        location.reload();
+                    }
+                });
+            }
+        } else {
+            // Decline event
+            this.orm
+                .call("calendar.attendee", "do_decline", [record.calendarAttendeeId])
+                .then(this.model.load.bind(this.model));
+        }
     }
 
     configureCalendarProviderSync(providerName) {
