@@ -54,18 +54,8 @@
         'views/mailing_templates_portal_management.xml',
         'views/mailing_templates_portal_unsubscribe.xml',
         'views/themes_templates.xml',
+        'views/themes_templates_blocks.xml',
         'views/snippets_themes.xml',
-        'views/snippets/mass_mailing_columns_snippets.xml',
-        'views/snippets/mass_mailing_footer_snippets.xml',
-        'views/snippets/mass_mailing_headers_snippets.xml',
-        'views/snippets/mass_mailing_headings_snippets.xml',
-        'views/snippets/mass_mailing_images_snippets.xml',
-        'views/snippets/mass_mailing_inner_snippets.xml',
-        'views/snippets/mass_mailing_marketing_snippets.xml',
-        'views/snippets/mass_mailing_masonry_snippets.xml',
-        'views/snippets/mass_mailing_people_snippets.xml',
-        'views/snippets/mass_mailing_text_snippets.xml',
-        'views/snippets/mass_mailing_website_snippets.xml',
         'security/ir.access.csv',
     ],
     'demo': [
@@ -83,6 +73,7 @@
             ('include', 'html_builder.assets'),
             ('remove', 'web/static/fonts/fonts.scss'),
             'mass_mailing/static/src/builder/**/*',
+            'mass_mailing/static/src/snippets/**/*.xml',
             ('remove', 'mass_mailing/static/src/builder/**/*.inside.scss'),
         ],
         # Minimal assets for mass_mailing isolated iframes from web.
@@ -119,6 +110,7 @@
             ('include', 'mass_mailing.assets_mail_themes'),
             'mass_mailing/static/src/scss/mass_mailing_mail.scss',
             'mass_mailing/static/src/iframe_assets/**/*',
+            'mass_mailing/static/src/snippets/**/*.scss',
         ],
         # Complete style assets required to view the mail content.
         # convert_inline ONLY uses this and inline styles.
