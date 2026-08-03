@@ -73,3 +73,15 @@ class HrEmployee(models.Model):
         context['create'] = context.get('create', True) and self.active
         action['context'] = context
         return action
+
+    def action_archive(self):
+        employees_to_archive = self.filtered('active')
+        res = super().action_archive()
+        if employees_to_archive:
+            future_timesheets = self.env['account.analytic.line'].search([
+                ('employee_id', 'in', employees_to_archive.ids),
+                ('date', '>', fields.Date.context_today(self)),
+            ])
+            if future_timesheets:
+                future_timesheets.unlink()
+        return res
