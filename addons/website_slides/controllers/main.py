@@ -454,6 +454,7 @@ class WebsiteSlides(WebsiteProfile):
         search_count, details, fuzzy_search_term = self.env.website._search_with_fuzzy(
             'slide_channel', search, offset=0, limit=page * page_size if page else 1000, order=order, options=options)
         channels_all = details[0].get('results', request.env['slide.channel'])
+        available_tags = channels_all.mapped('tag_ids')  # ← ADD THIS
         channels = channels_all[(page - 1) * page_size:page * page_size] if page else channels_all
         tag_groups = request.env['slide.channel.tag.group'].search(
             ['&', ('tag_ids', '!=', False), ('website_published', '=', True)])
@@ -488,6 +489,7 @@ class WebsiteSlides(WebsiteProfile):
                 step=page_size,
                 scope=3) if page else False,
             'structured_data': channels._render_jsonld(),
+            'available_tags': available_tags,  # ← ADD THIS
         })
 
         return render_values
@@ -1629,3 +1631,13 @@ class WebsiteSlides(WebsiteProfile):
         values.update(self._prepare_user_values(channel=channels[0] if len(channels) == 1 else True, **post))
         values.update(self._prepare_user_slides_profile(user))
         return values
+
+    @http.route('/slides/reload', type='jsonrpc', auth="public", website=True)
+    def slides_reload(self, **kwargs):
+        tags = kwargs.pop('tag', None)
+        kwargs['prevent_redirect'] = True
+        response = self.slides_channel(slug_tags=tags, **kwargs)
+        return {
+            'count': response.qcontext.get('search_count', 0),
+            'html': str(response.render()),
+        }

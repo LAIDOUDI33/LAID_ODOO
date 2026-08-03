@@ -363,3 +363,40 @@ class WebsiteCrmPartnerAssign(WebsitePartnership, GoogleMap):
             **post
         )
         return request.render("website_crm_partner_assign.index", values)
+
+    @http.route('/partners/crm/reload', type='jsonrpc', auth="public", website=True)
+    def partners_crm_reload(self, grade=None, country=None, industry=None, **kwargs):
+        Grade = request.env['res.partner.grade']
+        Country = request.env['res.country']
+        Industry = request.env['res.partner.industry']
+
+        current_grade = Grade.browse(int(grade)).exists() if grade else Grade.browse()
+
+        current_country = Country.browse()
+        country_all = False
+        if country == 'country_all=True':
+            country_all = True
+        elif country:
+            current_country = Country.browse(int(country)).exists() or Country.browse()
+
+        current_industry = Industry.browse()
+        if industry:
+            _, industry_id = request.env['ir.http']._unslug(industry)
+            if industry_id:
+                current_industry = Industry.browse(industry_id).exists() or Industry.browse()
+
+        # Pop country_all from kwargs — we pass it explicitly to avoid duplicate
+        kwargs.pop('country_all', None)
+
+        response = self.partners(
+            grade=current_grade,
+            country=current_country or None,
+            country_all=country_all,
+            industry_id=current_industry.id if current_industry else None,
+            **kwargs,
+        )
+        return {
+            # _get_partners_values sets 'partner_count' (line 317 in controller)
+            'count': len(response.qcontext['partners']),
+            'html': str(response.render()),
+        }
