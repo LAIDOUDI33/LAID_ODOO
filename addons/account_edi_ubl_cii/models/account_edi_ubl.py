@@ -3791,7 +3791,7 @@ class AccountEdiUBL(models.AbstractModel):
         ):
             invoice.write(to_write)
 
-    def _import_ubl_invoice_fix_taxes_amounts(self, collected_values):
+    def _import_ubl_invoice_fix_taxes_amounts(self, collected_values, force=False):
         AccountTax = self.env['account.tax']
         invoice = collected_values['invoice']
         tax_total_values = collected_values['tax_total_values']
@@ -3818,9 +3818,11 @@ class AccountEdiUBL(models.AbstractModel):
 
         # If we are too far away from the total retrieved in the xml, don't fix anything: the error is elsewhere.
         collected_values['are_taxes_complete'] = is_complete
+        if not is_complete:
+            return
         if (
-            not is_complete
-            or currency.compare_amounts(abs(invoice.amount_tax - total_tax_amount) - tolerance, 0.0) > 0
+            not force
+            and currency.compare_amounts(abs(invoice.amount_tax - total_tax_amount) - tolerance, 0.0) > 0
         ):
             return
 
@@ -3911,6 +3913,12 @@ class AccountEdiUBL(models.AbstractModel):
                     'tax_ids': [],
                 }),
             ]
+
+        # 'amount_untaxed' was just forced to match the file regardless of how far it was from
+        # Odoo's natural computation. Re-run the tax fix (bypassing its own tolerance) so
+        # 'amount_tax' is reconciled with that corrected 'amount_untaxed' too, instead of being
+        # left at a value that was computed against a different 'amount_untaxed'.
+        self._import_ubl_invoice_fix_taxes_amounts(collected_values, force=True)
 
     def _import_attachments(self, invoice, tree):
         """ EXTENDS 'account_edi_common': ATTEMPTS to create a PDF attachment when the XML file doesn't provide one."""
