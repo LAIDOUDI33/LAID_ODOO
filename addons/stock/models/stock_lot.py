@@ -305,22 +305,22 @@ class StockLot(models.Model):
 
     def action_lot_open_transfers(self):
         self.ensure_one()
-
+        list_view = self.env.ref('stock.stock_move_line_view_list')
         action = {
-            'res_model': 'stock.picking',
-            'type': 'ir.actions.act_window'
+            'name': self.env._("Delivery move lines of %s", self.display_name),
+            'res_model': 'stock.move.line',
+            'type': 'ir.actions.act_window',
+            'views': [(list_view.id, 'list'), (False, 'form')],
+            'view_mode': 'list,form',
+            'domain': [
+                ('lot_id', '=', self.id),
+                ('location_dest_usage', '=', 'customer'),
+                ('state', '=', 'done')
+            ],
+            'context': {
+                'default_lot_id': self.id,
+            }
         }
-        if len(self.delivery_ids) == 1:
-            action.update({
-                'view_mode': 'form',
-                'res_id': self.delivery_ids[0].id
-            })
-        else:
-            action.update({
-                'name': _("Delivery orders of %s", self.display_name),
-                'domain': [('id', 'in', self.delivery_ids.ids)],
-                'view_mode': 'list,form'
-            })
         return action
 
     @api.model

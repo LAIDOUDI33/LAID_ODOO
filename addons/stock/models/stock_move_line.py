@@ -724,6 +724,23 @@ class StockMoveLine(models.Model):
             'date': fields.Datetime.now(),
         })
 
+    def action_send_recall_email(self):
+        partners = self.mapped('picking_partner_id').filtered(lambda p: p)
+        lot = self.lot_id
+        return {
+            'name': _('Send Email'),
+            'type': 'ir.actions.act_window',
+            'res_model': 'mail.compose.message',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_composition_mode': 'mass_mail' if len(partners) > 1 else 'comment',
+                'default_partner_ids': partners.ids,
+                'default_model': 'stock.lot',
+                'default_res_ids': lot.ids,
+            }
+        }
+
     def _synchronize_quant(self, quantity, location, action="available", in_date=False, **quants_value):
         """ quantity should be express in product's UoM"""
         lot = quants_value.get('lot', self.lot_id)
