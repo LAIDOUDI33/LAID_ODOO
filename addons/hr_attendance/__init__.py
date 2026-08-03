@@ -10,3 +10,4 @@ def post_init_hook(env):
 
 def uninstall_hook(env):
     env['res.company']._check_hr_presence_control(False)
+    env['res.users']._sync_light_user_groups()
