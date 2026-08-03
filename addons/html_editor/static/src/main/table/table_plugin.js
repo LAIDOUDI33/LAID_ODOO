@@ -211,6 +211,14 @@ export class TablePlugin extends Plugin {
                 return true;
             }
         },
+        has_content_selection_predicates: (selection) => {
+            // Cells selected via ctrl+click keep the DOM selection collapsed
+            // inside a selected cell (see onMousedown). Report it as ranged so
+            // operations act on the whole cell selection at once.
+            if (closestElement(selection.anchorNode, ".o_selected_td")) {
+                return true;
+            }
+        },
         is_selection_blocker_predicates: (node) => {
             if (node.nodeName === "TABLE") {
                 return true;
@@ -811,7 +819,6 @@ export class TablePlugin extends Plugin {
         this.dependencies.selection.setSelection(selectionToRestore);
         this.tableGridMap?.delete(closestElement(row, "table"));
     }
-
 
     /**
      * @param {HTMLTableCellElement} cell
@@ -1472,12 +1479,20 @@ export class TablePlugin extends Plugin {
     onMousedown(ev) {
         this._currentMouseState = ev.type;
         this._lastMousedownPosition = [ev.x, ev.y];
+        delete this._isKeyDown;
         const isPointerInsideCell = this.isPointerInsideCell(ev);
         const td = closestElement(ev.target, isTableCell);
         if (isPointerInsideCell) {
-            if (
-                !isProtected(td) &&
-                !isProtecting(td) &&
+            const isUnprotectedCell = !isProtected(td) && !isProtecting(td);
+            if (isUnprotectedCell && ev.ctrlKey) {
+                td.classList.toggle("o_selected_td");
+                const table = closestElement(td, "table");
+                table.classList.toggle(
+                    "o_selected_table",
+                    table.querySelectorAll(".o_selected_td").length > 0
+                );
+            } else if (
+                isUnprotectedCell &&
                 ((isEmptyBlock(td) && ev.detail === 2) || ev.detail === 3)
             ) {
                 this.handleFirefoxSelection();

@@ -73,6 +73,7 @@ const NOT_A_NUMBER = /[^\d]/g;
  *
  * @typedef {((node: Node, formatName: string, options: { applyStyle: boolean, formatProps: object }) => Node | undefined)[]} formattable_node_providers
  * @typedef {((selection: EditorSelection) => boolean | undefined)[]} can_format_content_predicates
+ * @typedef {((selection: EditorSelection) => boolean | undefined)[]} has_content_selection_predicates
  * @typedef {((className: string) => boolean | undefined)[]} is_format_class_predicates
  * @typedef {((node: Node) => boolean | undefined)[]} is_formattable_node_predicates
  * @typedef {((node: Node) => boolean | undefined)[]} can_remove_format_predicates
@@ -353,7 +354,7 @@ export class FormatPlugin extends Plugin {
     removeAllFormats() {
         const sel = this.dependencies.selection.getEditableSelection();
         const targetedNodes = this.dependencies.selection.getTargetedNodes();
-        if (sel.isCollapsed) {
+        if (this.isSelectionCollapsed(sel)) {
             this.activeFormats = {}; // discard pending "apply" intents
             for (const spec of this.formatSpecs) {
                 if (spec.removeStyle && this.hasFormat(spec.id, targetedNodes)) {
@@ -449,6 +450,21 @@ export class FormatPlugin extends Plugin {
     }
 
     /**
+     * A DOM-collapsed selection can still target content when a plugin exposes
+     * a custom selection over it. Such a selection must be treated as a range
+     * so that formats are applied to the targeted content immediately rather
+     * than deferred to the next input.
+     *
+     * @param {EditorSelection} [sel]
+     * @returns {boolean}
+     */
+    isSelectionCollapsed(sel = this.dependencies.selection.getEditableSelection()) {
+        const hasContentSelection =
+            this.checkPredicates("has_content_selection_predicates", sel) ?? false;
+        return sel.isCollapsed && !hasContentSelection;
+    }
+
+    /**
      * Toggle or set a format on the current selection.
      *
      * For a non-collapsed selection, the format is applied immediately to the
@@ -465,7 +481,7 @@ export class FormatPlugin extends Plugin {
      */
     requestFormat(formatName, options) {
         const sel = this.dependencies.selection.getEditableSelection();
-        if (!sel.isCollapsed) {
+        if (!this.isSelectionCollapsed(sel)) {
             this.formatSelection(formatName, options);
             return;
         }

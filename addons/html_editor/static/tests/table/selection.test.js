@@ -414,6 +414,84 @@ describe("custom selection", () => {
     });
 });
 
+describe("ctrl+click multi-cell selection", () => {
+    /** Simulate a Ctrl+click at the center of a table cell. */
+    function ctrlClickCell(td) {
+        const rect = td.getBoundingClientRect();
+        return manuallyDispatchProgrammaticEvent(td, "mousedown", {
+            detail: 1,
+            ctrlKey: true,
+            clientX: rect.x + rect.width / 2,
+            clientY: rect.y + rect.height / 2,
+        });
+    }
+
+    test.tags("desktop");
+    test("should select and toggle non-adjacent cells with ctrl+click", async () => {
+        const { el } = await setupEditor(
+            unformat(`
+                <table class="table table-bordered o_table">
+                    <tbody>
+                        <tr><td>ab[]</td><td>cd</td><td>ef</td></tr>
+                    </tbody>
+                </table>`)
+        );
+        const [td0, td1, td2] = queryAll("td");
+
+        // Ctrl+click builds a non-contiguous selection.
+        await ctrlClickCell(td0);
+        await ctrlClickCell(td2);
+        await animationFrame();
+
+        expect(td0).toHaveClass("o_selected_td");
+        expect(td1).not.toHaveClass("o_selected_td");
+        expect(td2).toHaveClass("o_selected_td");
+        expect(el.querySelector("table")).toHaveClass("o_selected_table");
+
+        // Ctrl+clicking a selected cell again toggles it back out.
+        await ctrlClickCell(td0);
+        await animationFrame();
+
+        expect(td0).not.toHaveClass("o_selected_td");
+        expect(td2).toHaveClass("o_selected_td");
+    });
+
+    test.tags("desktop");
+    test("should format ctrl+click selected cells despite a collapsed selection", async () => {
+        const { el, editor } = await setupEditor(
+            unformat(`
+                <table class="table table-bordered o_table">
+                    <tbody>
+                        <tr><td>ab[]</td><td>cd</td><td>ef</td></tr>
+                    </tbody>
+                </table>`)
+        );
+        const [td0, , td2] = queryAll("td");
+
+        await ctrlClickCell(td0);
+        await ctrlClickCell(td2);
+        await animationFrame();
+
+        bold(editor);
+        await animationFrame();
+
+        expect(getContent(el)).toBe(
+            unformat(`
+                <p data-selection-placeholder=""><br></p>
+                <table class="table table-bordered o_table o_selected_table">
+                    <tbody>
+                        <tr>
+                            <td class="o_selected_td"><strong>ab[]</strong></td>
+                            <td>cd</td>
+                            <td class="o_selected_td"><strong>ef</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`)
+        );
+    });
+});
+
 describe("select a full table on cross over", () => {
     describe("select", () => {
         test("should select some characters and a table", async () => {
