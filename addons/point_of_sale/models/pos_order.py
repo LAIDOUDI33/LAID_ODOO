@@ -1019,6 +1019,8 @@ class PosOrder(models.Model):
                     if biggest_tax_aml_vals:
                         biggest_tax_aml_vals['amount_currency'] += amount_currency
                         biggest_tax_aml_vals['balance'] += balance
+                        total_amount_currency += amount_currency
+                        total_balance += balance
                 elif cash_rounding.strategy == 'add_invoice_line':
                     if -sign * amount_currency > 0.0 and cash_rounding.loss_account_id:
                         account_id = cash_rounding.loss_account_id.id
@@ -1033,6 +1035,66 @@ class PosOrder(models.Model):
                         'balance': balance,
                         'display_type': 'rounding',
                     })
+<<<<<<< 1d2c1c150e376c0f4bb674d029084c489e7bbadb
+||||||| 0133e46f89df7dce8c39d2bacd29579d57a83fad
+        # Stock.
+        if self.picking_ids.ids:
+            stock_moves = self.env['stock.move'].sudo().search([
+                ('picking_id', 'in', self.picking_ids.ids),
+                ('product_id.valuation', '=', 'real_time'),
+            ])
+            for stock_move in stock_moves:
+                product_accounts = stock_move.with_company(stock_move.company_id).product_id._get_product_accounts()
+                expense_account = product_accounts['expense']
+                stock_account = product_accounts['stock_valuation']
+                balance = stock_move.value if stock_move.is_out else -stock_move.value
+                aml_vals_list_per_nature['stock'].append({
+                    'name': _("Stock variation for %s", stock_move.product_id.name),
+                    'account_id': expense_account.id,
+                    'partner_id': commercial_partner.id,
+                    'currency_id': self.company_id.currency_id.id,
+                    'amount_currency': balance,
+                    'balance': balance,
+                })
+                aml_vals_list_per_nature['stock'].append({
+                    'name': _("Stock variation for %s", stock_move.product_id.name),
+                    'account_id': stock_account.id,
+                    'partner_id': commercial_partner.id,
+                    'currency_id': self.company_id.currency_id.id,
+                    'amount_currency': -balance,
+                    'balance': -balance,
+                })
+=======
+                    total_amount_currency += amount_currency
+                    total_balance += balance
+        # Stock.
+        if self.picking_ids.ids:
+            stock_moves = self.env['stock.move'].sudo().search([
+                ('picking_id', 'in', self.picking_ids.ids),
+                ('product_id.valuation', '=', 'real_time'),
+            ])
+            for stock_move in stock_moves:
+                product_accounts = stock_move.with_company(stock_move.company_id).product_id._get_product_accounts()
+                expense_account = product_accounts['expense']
+                stock_account = product_accounts['stock_valuation']
+                balance = stock_move.value if stock_move.is_out else -stock_move.value
+                aml_vals_list_per_nature['stock'].append({
+                    'name': _("Stock variation for %s", stock_move.product_id.name),
+                    'account_id': expense_account.id,
+                    'partner_id': commercial_partner.id,
+                    'currency_id': self.company_id.currency_id.id,
+                    'amount_currency': balance,
+                    'balance': balance,
+                })
+                aml_vals_list_per_nature['stock'].append({
+                    'name': _("Stock variation for %s", stock_move.product_id.name),
+                    'account_id': stock_account.id,
+                    'partner_id': commercial_partner.id,
+                    'currency_id': self.company_id.currency_id.id,
+                    'amount_currency': -balance,
+                    'balance': -balance,
+                })
+>>>>>>> b5c0657426cc29e4f707ffa0aa0537778596cc1f
 
         # sort self.payment_ids by is_split_transaction:
         for payment_id in self.payment_ids:
@@ -1047,8 +1109,8 @@ class PosOrder(models.Model):
                                     and not aml_entry['partner_id']]
 
             if aml_vals_entry_found and not is_split_transaction:
-                aml_vals_entry_found[0]['amount_currency'] += self.session_id._amount_converter(payment_id.amount, self.date_order, False)
-                aml_vals_entry_found[0]['balance'] += payment_id.amount
+                aml_vals_entry_found[0]['amount_currency'] += payment_id.amount
+                aml_vals_entry_found[0]['balance'] += self.session_id._amount_converter(payment_id.amount, self.date_order, True)
             else:
                 aml_vals_list_per_nature['payment_terms'].append({
                     'partner_id': commercial_partner.id if is_split_transaction else False,
@@ -1056,9 +1118,18 @@ class PosOrder(models.Model):
                     'account_id': reversed_move_receivable_account_id.id,
                     'currency_id': self.currency_id.id,
                     'amount_currency': payment_id.amount,
-                    'balance': self.session_id._amount_converter(payment_id.amount, self.date_order, False),
+                    'balance': self.session_id._amount_converter(payment_id.amount, self.date_order, True),
                     'display_type': 'payment_term',
                 })
+
+        # The other balances are converted and rounded per line, so the converted payment amounts
+        # can drift by a few cents in foreign currency. Put the residual on the last payment term
+        # line to keep the entry balanced.
+        payment_term_amls = aml_vals_list_per_nature['payment_terms']
+        if payment_term_amls and self.currency_id.is_zero(total_amount_currency + sum(aml['amount_currency'] for aml in payment_term_amls)):
+            residual_balance = company_currency.round(-total_balance - sum(aml['balance'] for aml in payment_term_amls))
+            if not company_currency.is_zero(residual_balance):
+                payment_term_amls[-1]['balance'] += residual_balance
 
         return aml_vals_list_per_nature
 
