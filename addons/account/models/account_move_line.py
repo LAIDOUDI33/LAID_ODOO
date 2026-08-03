@@ -641,8 +641,8 @@ class AccountMoveLine(models.Model):
     def _compute_name(self):
         def get_name(line):
             values = []
-            if line.move_id.partner_id.lang:
-                product = line.product_id.with_context(lang=line.move_id.partner_id.lang)
+            if lang := line.move_id._get_lang():
+                product = line.product_id.with_context(lang=lang)
             elif line.partner_id.lang:
                 product = line.product_id.with_context(lang=line.partner_id.lang)
             else:
@@ -685,12 +685,13 @@ class AccountMoveLine(models.Model):
     @api.depends("product_id", "name")
     def _compute_label(self):
         for line in self:
-            if line.product_id and line.name:
-                line.label = line.product_id.display_name + "\n" + line.name
-            elif line.product_id and not line.name:
-                line.label = line.product_id.display_name
+            lang_line = line.with_context(lang=line.move_id._get_lang())
+            if lang_line.product_id and lang_line.name:
+                lang_line.label = lang_line.product_id.display_name + "\n" + lang_line.name
+            elif lang_line.product_id and not lang_line.name:
+                lang_line.label = lang_line.product_id.display_name
             else:
-                line.label = line.name
+                lang_line.label = lang_line.name
 
     def _set_description(self):
         for line in self:
