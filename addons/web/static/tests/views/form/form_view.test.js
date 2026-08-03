@@ -27,7 +27,6 @@ import {
     onMounted,
     onPatched,
     onWillStart,
-    onWillUpdateProps,
     proxy,
     signal,
     useEffect,
@@ -3451,11 +3450,10 @@ test(`button in form view and long willStart`, async () => {
     let rpcCount = 0;
     class AsyncField extends CharField {
         setup() {
-            onWillStart(async () => {
-                expect.step("willStart");
-            });
-            onWillUpdateProps(async () => {
-                expect.step("willUpdateProps");
+            useEffect(async () => {
+                if (this.props.record) {
+                    expect.step("useEffect");
+                }
                 if (rpcCount === 1) {
                     return new Promise(() => {});
                 }
@@ -3486,13 +3484,13 @@ test(`button in form view and long willStart`, async () => {
         `,
         resId: 2,
     });
-    expect.verifySteps(["web_read1", "willStart"]);
+    expect.verifySteps(["web_read1", "useEffect"]);
 
     await contains(`.o_form_statusbar button.child_ids`).click();
-    expect.verifySteps(["web_read2", "willUpdateProps"]);
+    expect.verifySteps(["web_read2", "useEffect"]);
 
     await contains(`.o_form_statusbar button.child_ids`).click();
-    expect.verifySteps(["web_read3", "willUpdateProps"]);
+    expect.verifySteps(["web_read3", "useEffect"]);
 });
 
 test.tags("desktop");
@@ -12218,7 +12216,6 @@ test(`only re-render necessary fields after change`, async () => {
                 onMounted(() => expect.step(`[${prefix}] onMounted`));
                 onPatched(() => expect.step(`[${prefix}] onPatched`));
                 onWillStart(() => expect.step(`[${prefix}] onWillStart`));
-                onWillUpdateProps(() => expect.step(`[${prefix}] onWillUpdateProps`));
             },
         });
     }
@@ -12270,7 +12267,6 @@ test(`only re-render necessary fields after change (with onchange)`, async () =>
                 onMounted(() => expect.step(`[${prefix}] onMounted`));
                 onPatched(() => expect.step(`[${prefix}] onPatched`));
                 onWillStart(() => expect.step(`[${prefix}] onWillStart`));
-                onWillUpdateProps(() => expect.step(`[${prefix}] onWillUpdateProps`));
             },
         });
     }
