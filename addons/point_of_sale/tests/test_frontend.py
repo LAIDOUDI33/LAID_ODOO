@@ -3851,6 +3851,13 @@ class TestUi(TestPointOfSaleHttpCommon):
         self.main_pos_config.with_user(self.pos_user).open_ui()
         self.start_pos_tour('test_customer_search_prefilled_on_create')
 
+    def test_order_edit_logs(self):
+        self.start_pos_tour('test_order_edit_logs')
+        logged_messages = self.main_pos_config.current_session_id.order_ids.message_ids.mapped("body")
+        self.assertEqual(len(logged_messages), 3)
+        self.assertIn("Whiteboard Pen (add 2): Deleted line (quantity: 1.0)", logged_messages[0])
+        self.assertIn("Desk Organizer: Ordered quantity: 2.0→1", logged_messages[1])
+
     def test_dynamic_barcode_extra(self):
         """
         Tests that a dynamic product with extra price has the right price when
