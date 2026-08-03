@@ -124,6 +124,12 @@ async function updateShopContent(interaction, {
         const currentOffcanvas = document.querySelector('.o_website_offcanvas');
         setElementContent(currentOffcanvas, markup(newOffcanvas.innerHTML))
 
+        const newHeader = updatedShopPage.querySelector('#o_wsale_products_header');
+        const currentHeader = document.querySelector('#o_wsale_products_header');
+        if (newHeader && currentHeader) {
+            setElementContent(currentHeader, markup(newHeader.innerHTML))
+        }
+
         const applyBtn = document.querySelector('#o_wsale_offcanvas_product_count');
         if (applyBtn) {
             setElementContent(applyBtn, data.product_count)
