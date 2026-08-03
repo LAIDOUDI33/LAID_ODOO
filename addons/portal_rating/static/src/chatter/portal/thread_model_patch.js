@@ -8,7 +8,8 @@ export const REVIEW_LOAD_MORE_LIMIT = 10;
 patch(Thread.prototype, {
     setup() {
         super.setup();
-        this.selectedRating = false;
+        /** @type {number} */
+        this.selectedRating;
         this.ratingChatter = false;
         this.reviewChatter = false;
         this.rating_stats = undefined;
@@ -35,20 +36,10 @@ patch(Thread.prototype, {
         return super.getFetchNewMessagesAfter();
     },
 
-    async fetchNewMessages() {
-        await super.fetchNewMessages(...arguments);
-        if (this.ratingChatter) {
-            this.rating_stats = this.messages.at(-1)?.rating_stats ?? this.rating_stats;
-        }
-    },
-
     getFetchParams() {
         const params = super.getFetchParams(...arguments);
-        if (this.ratingChatter) {
-            params["rating_include"] = true;
-            if (this.selectedRating) {
-                params["rating_value"] = this.selectedRating;
-            }
+        if (this.ratingChatter && this.selectedRating) {
+            params["rating_value"] = this.selectedRating;
         }
         return params;
     },
