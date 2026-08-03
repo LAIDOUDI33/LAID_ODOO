@@ -1,5 +1,6 @@
-import { Interaction } from "@web/public/interaction";
+import { getCSSVariableValue, getHtmlStyle } from "@html_editor/utils/formatting";
 import { registry } from "@web/core/registry";
+import { Interaction } from "@web/public/interaction";
 
 export class MegaMenuDropdown extends Interaction {
     static selector = "header#top";
@@ -8,6 +9,7 @@ export class MegaMenuDropdown extends Interaction {
             "t-on-mouseenter": this.onHoverMegaMenu,
             "t-on-mousedown": this.onTriggerMegaMenu,
             "t-on-keyup": this.onTriggerMegaMenu,
+            "t-on-show.bs.dropdown": this.onMegaMenuShow,
         },
         _root: {
             "t-on-mousedown": this.onTriggerExtraMenu, // delegated to ".o_extra_menu_items"
@@ -26,6 +28,21 @@ export class MegaMenuDropdown extends Interaction {
                 this.desktopMegaMenuToggleEls.push(megaMenuToggleEl);
             }
         }
+        // Maps a header template to the selector of the element the mega menu
+        // must be anchored to (positioned below), overriding the default navbar
+        // anchor. These are headers with interactive elements in the navbar
+        // (between the mega menu toggle and the menus container) that the hover
+        // bridge must not overlap.
+        this.megaMenuAnchorSelectorOverrides = {
+            sales_one: ".o_main_nav .container",
+            sales_four: ".o_main_nav .container",
+        };
+        this.headerTemplate = getCSSVariableValue(
+            "header-template",
+            getHtmlStyle(this.el.ownerDocument)
+        ).replaceAll("'", "");
+        this.megaMenuAnchorSelector =
+            this.megaMenuAnchorSelectorOverrides[this.headerTemplate] || ".navbar";
         this.updateActiveMenuLinks();
     }
 
@@ -115,13 +132,15 @@ export class MegaMenuDropdown extends Interaction {
      */
     onHoverMegaMenu(ev) {
         // Hoverable menus are clicked in mobile view
+        const megaMenuToggleEl = ev.currentTarget;
         if (
             !this.el.classList.contains("o_hoverable_dropdown") ||
-            ev.currentTarget.closest(".o_header_mobile")
+            megaMenuToggleEl.closest(".o_header_mobile")
         ) {
             return;
         }
-        this.moveMegaMenu(ev.currentTarget);
+        this.moveMegaMenu(megaMenuToggleEl);
+        this.positionHoverBridge(megaMenuToggleEl);
     }
 
     /**
@@ -138,6 +157,59 @@ export class MegaMenuDropdown extends Interaction {
             .closest(".o_extra_menu_items")
             .querySelectorAll(".o_mega_menu_toggle");
         megaMenuToggleEls.forEach((el) => this.moveMegaMenu(el));
+    }
+
+    /**
+     * Sizes and positions the invisible hover bridge that fills the gap between
+     * the mega menu toggle and the mega menu. It prevents the mega menu from
+     * closing while the cursor travels across that gap.
+     *
+     * @param {Element} megaMenuToggleEl the mega menu dropdown
+     */
+    positionHoverBridge(megaMenuToggleEl) {
+        const anchorRect = megaMenuToggleEl
+            .closest(this.megaMenuAnchorSelector)
+            .getBoundingClientRect();
+
+        // Position the invisible hover bridge between the toggle and the mega
+        // menu to prevent the mega menu from closing unintentionally.
+        const toggleRect = megaMenuToggleEl.getBoundingClientRect();
+        megaMenuToggleEl.style.setProperty(
+            "--o-mega-menu-bridge-height",
+            `${Math.round(anchorRect.bottom - toggleRect.bottom)}px`
+        );
+        megaMenuToggleEl.style.setProperty(
+            "--o-mega-menu-bridge-top",
+            `${Math.round(toggleRect.bottom - anchorRect.top)}px`
+        );
+    }
+
+    /**
+     * Called when a mega menu dropdown is about to be shown.
+     *
+     * @param {Event} ev
+     */
+    onMegaMenuShow(ev) {
+        const megaMenuToggleEl = ev.currentTarget;
+        if (megaMenuToggleEl.closest(".o_header_mobile")) {
+            return;
+        }
+        // Ensure the mega menu is in the correct navbar before Bootstrap
+        // shows the dropdown. This is necessary because show.bs.dropdown
+        // fires synchronously during Dropdown.show() (triggered by
+        // HoverableDropdown.onMouseEnter on the outer .dropdown), before
+        // onHoverMegaMenu fires on the inner .o_mega_menu_toggle. Without
+        // this, the first hover after a mobile to desktop resize fails because
+        // the mega menu DOM is still in the mobile navbar.
+        this.moveMegaMenu(megaMenuToggleEl);
+        if (!(this.headerTemplate in this.megaMenuAnchorSelectorOverrides)) {
+            return;
+        }
+        const anchorRect = megaMenuToggleEl
+            .closest(this.megaMenuAnchorSelector)
+            .getBoundingClientRect();
+        const megaMenuEl = megaMenuToggleEl.parentElement.querySelector(".o_mega_menu");
+        megaMenuEl.style.top = `${anchorRect.bottom}px`;
     }
 }
 
