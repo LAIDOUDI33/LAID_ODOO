@@ -125,8 +125,24 @@ class ExhibitorController(WebsiteEventController):
     # FRONTEND FORM
     # ------------------------------------------------------------
 
+    def sitemap_event_exhibitor(env, rule, qs):
+        slug = env['ir.http']._slug
+        events = env['event.event'].search(
+            env.website.website_domain() & Domain('exhibitor_menu', '=', True))
+        # Only fetch what the loop reads: a bare search prefetches every column, `website_description` included.
+        sponsors = env['event.sponsor'].with_context(prefetch_fields=False).search_fetch(
+            [('event_id', 'in', events.ids), ('is_published', '=', True)],
+            ['name', 'event_id', 'write_date'])
+        sponsors_lastmod = sponsors._get_sitemap_lastmod_map()
+        # An event's slug is shared by all its sponsors, so build it once per event.
+        event_slugs = {event.id: slug(event) for event in sponsors.event_id}
+        for sponsor in sponsors:
+            loc = f'/event/{event_slugs[sponsor.event_id.id]}/exhibitor/{slug(sponsor)}'
+            if not qs or qs.lower() in loc.lower():
+                yield {'loc': loc, 'lastmod': sponsors_lastmod[sponsor.id].date()}
+
     @http.route(['''/event/<model("event.event", "[('exhibitor_menu', '=', True)]"):event>/exhibitor/<model("event.sponsor", "[('event_id', '=', event.id)]"):sponsor>'''],
-                type='http', auth="public", website=True, sitemap=True)
+                type='http', auth="public", website=True, sitemap=sitemap_event_exhibitor, sitemap_group="events")
     def event_exhibitor(self, event, sponsor, **options):
         if not sponsor.has_access('read'):
             raise Forbidden()

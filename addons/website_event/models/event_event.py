@@ -184,6 +184,14 @@ class EventEvent(models.Model):
         for event in self:
             event.event_register_url = tools.urls.urljoin(event.get_base_url(), f"{event.website_url}/register")
 
+    def _get_sitemap_lastmod_map(self):
+        res = super()._get_sitemap_lastmod_map()
+        for event, last in self.env['event.event.ticket']._read_group(
+            [('event_id', 'in', self.ids)], groupby=['event_id'], aggregates=['write_date:max'],
+        ):
+            res[event.id] = max(res[event.id], last)
+        return res
+
     @api.depends('event_type_id')
     def _compute_website_menu(self):
         """ Also ensure a value for website_menu as it is a trigger notably for

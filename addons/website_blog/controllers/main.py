@@ -184,14 +184,20 @@ class WebsiteBlog(http.Controller):
         def match(loc):
             return not qs or qs.lower() in loc.lower()
 
-        if len(blogs) > 1:
-            if match('/blog'):
-                yield {'loc': '/blog'}
+        blog_posts_lastmod = blogs._get_sitemap_lastmod_map()
+        for blog, last_post in env['blog.post']._read_group(
+            [('blog_id', 'in', blogs.ids), ('website_published', '=', True)],
+            groupby=['blog_id'], aggregates=['write_date:max'],
+        ):
+            blog_posts_lastmod[blog.id] = max(blog_posts_lastmod[blog.id], last_post)
+
+        if len(blogs) > 1 and match('/blog'):
+            yield {'loc': '/blog', 'lastmod': max(blog_posts_lastmod.values()).date()}
 
         for blog in blogs:
             loc = f'/blog/{slug(blog)}'
             if match(loc):
-                yield {'loc': loc}
+                yield {'loc': loc, 'lastmod': blog_posts_lastmod[blog.id].date()}
 
     @http.route([
         '/blog',
@@ -202,7 +208,7 @@ class WebsiteBlog(http.Controller):
         '''/blog/<model("blog.blog"):blog>/page/<int:page>''',
         '''/blog/<model("blog.blog"):blog>/tag/<string:tag>''',
         '''/blog/<model("blog.blog"):blog>/tag/<string:tag>/page/<int:page>''',
-    ], type='http', auth="public", website=True, sitemap=sitemap_blog, list_as_website_content=_lt("Blogs"))
+    ], type='http', auth="public", website=True, sitemap=sitemap_blog, sitemap_group="blogs", list_as_website_content=_lt("Blogs"))
     def blog(self, blog=None, tag=None, page=1, search=None, **opt):
         Blog = request.env['blog.blog']
         blogs = tools.lazy(lambda: Blog.search(self.env.website.website_domain(), order="sequence"))
@@ -239,7 +245,7 @@ class WebsiteBlog(http.Controller):
 
         return request.render("website_blog.blog_post_short", values)
 
-    @http.route(['''/blog/<model("blog.blog"):blog>/feed'''], type='http', auth="public", website=True, sitemap=True)
+    @http.route(['''/blog/<model("blog.blog"):blog>/feed'''], type='http', auth="public", website=True, sitemap=False)
     def blog_feed(self, blog, limit='15', **kwargs):
         v = {}
         v['blog'] = blog
@@ -262,23 +268,29 @@ class WebsiteBlog(http.Controller):
     def sitemap_blog_post(env, rule, qs):
         BlogPost = env['blog.post']
         IrHttp = env['ir.http']
-        posts = BlogPost.search([('website_published', '=', True)])
+        # Only fetch what the loop reads: a bare search prefetches every column, `content` HTML included.
+        posts = BlogPost.with_context(prefetch_fields=False).search_fetch(
+            [('website_published', '=', True)],
+            ['name', 'seo_name', 'blog_id', 'write_date'],
+        )
+        posts_lastmod = posts._get_sitemap_lastmod_map()
+        # A blog's slug is shared by all its posts, so build it once per blog.
+        blog_slugs = {blog.id: IrHttp._slug(blog) for blog in posts.blog_id}
 
         for post in posts:
             # Canonical path: /blog/<blog>/<post>
-            blog = post.blog_id
-            canonical_url = f"/blog/{IrHttp._slug(blog)}/{IrHttp._slug(post)}"
+            canonical_url = f"/blog/{blog_slugs[post.blog_id.id]}/{IrHttp._slug(post)}"
 
             if not qs or qs.lower() in canonical_url.lower():
                 # blog posts should also have lastmod for seo purposes.
                 yield {
                     "loc": canonical_url,
-                    "lastmod": (post.write_date or post.create_date).date(),
+                    "lastmod": posts_lastmod[post.id].date(),
                 }
 
     @http.route([
         '''/blog/<model("blog.blog"):blog>/<model("blog.post", "[('blog_id','=',blog.id)]"):blog_post>''',
-    ], type='http', auth="public", website=True, sitemap=sitemap_blog_post)
+    ], type='http', auth="public", website=True, sitemap=sitemap_blog_post, sitemap_group="blogs")
     def blog_post(self, blog, blog_post, tag_id=None, page=1, enable_editor=None, **post):
         """ Prepare all values to display the blog.
 

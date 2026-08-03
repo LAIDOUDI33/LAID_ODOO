@@ -21,7 +21,12 @@ class WebsiteEventController(http.Controller):
 
     def sitemap_event(env, rule, qs):
         if not qs or qs.lower() in '/events':
-            yield {'loc': '/events'}
+            events = env['event.event'].search(env.website.website_domain() & Domain('is_published', '=', True))
+            events_lastmod = events._get_sitemap_lastmod_map()
+            page = {'loc': '/events'}
+            if events_lastmod:
+                page['lastmod'] = max(events_lastmod.values()).date()
+            yield page
 
     # ------------------------------------------------------------
     # EVENT LIST
@@ -45,7 +50,7 @@ class WebsiteEventController(http.Controller):
             f'/{base}/tags/<string:slug_tags>',
             f'/{base}/tags/<string:slug_tags>/page/<int:page>',
         ]
-    ], type='http', auth="public", website=True, sitemap=sitemap_event, list_as_website_content=_lt("Events"))
+    ], type='http', auth="public", website=True, sitemap=sitemap_event, sitemap_group="events", list_as_website_content=_lt("Events"))
     def events(self, page=1, slug_tags=None, **searches):
         if (slug_tags or searches.get('tags', '[]').count(',') > 0) and request.httprequest.method == 'GET' and not searches.get('prevent_redirect'):
             # Previously, the tags were searched using GET, which caused issues with crawlers (too many hits)
@@ -225,7 +230,11 @@ class WebsiteEventController(http.Controller):
 
     def sitemap_events(env, rule, qs):
         slug = env['ir.http']._slug
-        events = env['event.event'].sudo().search([('website_published', '=', True)], order='id')
+        # Only fetch what the loop reads: a bare search prefetches every column, `description` HTML included.
+        events = env['event.event'].sudo().with_context(prefetch_fields=False).search_fetch(
+            env.website.website_domain() & Domain('website_published', '=', True),
+            ['name', 'seo_name', 'menu_id', 'write_date'], order='id')
+        events_lastmod = events._get_sitemap_lastmod_map()
 
         def matches_qs(loc):
             return not qs or qs.lower() in loc.lower()
@@ -239,9 +248,9 @@ class WebsiteEventController(http.Controller):
             if not matches_qs(final_url):
                 continue
 
-            yield {'loc': final_url}
+            yield {'loc': final_url, 'lastmod': events_lastmod[event.id].date()}
 
-    @http.route(['''/event/<model("event.event"):event>'''], type='http', auth="public", website=True, sitemap=sitemap_events, readonly=True)
+    @http.route(['''/event/<model("event.event"):event>'''], type='http', auth="public", website=True, sitemap=sitemap_events, sitemap_group="events", readonly=True)
     def event(self, event, **post):
         if event.menu_id and event.menu_id.child_id:
             target_url = event.menu_id.child_id[0].url

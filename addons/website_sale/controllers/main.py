@@ -191,15 +191,24 @@ class WebsiteSale(payment_portal.PaymentPortal):
             return
 
         if not qs or qs.lower() in SHOP_PATH:
-            yield {"loc": SHOP_PATH}
+            last = env["product.template"].search_read(
+                Domain(env.website.sale_product_domain()),
+                ["write_date"],
+                order="write_date desc, id desc",
+                limit=1,
+            )
+            page = {"loc": SHOP_PATH}
+            if last:
+                page["lastmod"] = last[0]["write_date"].date()
+            yield page
 
         Category = env["product.public.category"]
         dom = sitemap_qs2dom(qs, f"{SHOP_PATH}/category", Category._rec_name)
         dom &= env.website.website_domain()
-        for cat in Category.search(dom):
-            loc = cat.website_url
+        for cat in Category.search(dom).read(["write_date", "website_url"]):
+            loc = cat["website_url"]
             if not qs or qs.lower() in loc:
-                yield {"loc": loc}
+                yield {"loc": loc, "lastmod": cat["write_date"].date()}
 
     def sitemap_products(env, _rule, qs):  # noqa: N805
         if env.website and env.website.ecommerce_access == "logged_in" and not qs:
@@ -210,10 +219,15 @@ class WebsiteSale(payment_portal.PaymentPortal):
         ProductTemplate = env["product.template"]
         dom = sitemap_qs2dom(qs, SHOP_PATH, ProductTemplate._rec_name)
         dom &= Domain(env.website.sale_product_domain())
-        for product in ProductTemplate.with_context(prefetch_fields=False).search(dom):
+        # Only fetch what the loop reads: a bare search prefetches every column, descriptions included.
+        products = ProductTemplate.with_context(prefetch_fields=False).search_fetch(
+            dom, ["seo_name", "name", "default_code", "write_date"],
+        )
+        products_lastmod = products._get_sitemap_lastmod_map()
+        for product in products:
             loc = product.website_url
             if not qs or qs.lower() in loc:
-                yield {"loc": loc}
+                yield {"loc": loc, "lastmod": products_lastmod[product.id].date()}
 
     def _get_search_options(
         self,
@@ -299,6 +313,7 @@ class WebsiteSale(payment_portal.PaymentPortal):
         website=True,
         list_as_website_content=_lt("Shop"),
         sitemap=sitemap_shop,
+        sitemap_group="products",
         # Return a 404 instead of a 403 error in case of an access error.
         handle_params_access_error=lambda e, **_kwargs: NotFound.code,  # noqa: ARG005
     )
@@ -718,6 +733,7 @@ class WebsiteSale(payment_portal.PaymentPortal):
         auth="public",
         website=True,
         sitemap=sitemap_products,
+        sitemap_group="products",
         # Return a 404 instead of a 403 error in case of an access error.
         handle_params_access_error=lambda e, **_kwargs: NotFound.code,  # noqa: ARG005
     )

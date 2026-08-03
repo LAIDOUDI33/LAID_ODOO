@@ -3,6 +3,8 @@
 from odoo.fields import Command
 from odoo.tests import HttpCase, tagged
 
+from odoo.addons.website.tests.common import all_sitemap_urls
+
 
 @tagged("post_install", "-at_install")
 class TestSitemap(HttpCase):
@@ -36,7 +38,7 @@ class TestSitemap(HttpCase):
         prodA.product_tmpl_id.active = False
 
     def test_01_shop_route_sitemap(self):
-        resp = self.url_open("/sitemap.xml")
+        sitemap = all_sitemap_urls(self)
         level2_url = "/shop/category/level-0-%s/level-1-%s/level-2-%s" % (
             self.cats[0].id,
             self.cats[1].id,
@@ -44,7 +46,7 @@ class TestSitemap(HttpCase):
         )
         self.assertIn(
             level2_url,
-            resp.text,
+            sitemap,
             "Category entry in sitemap should be prefixed by its parent hierarchy.",
         )
         level2a_url = "/shop/category/level-0-%s/level-1-%s/level-2a-%s" % (
@@ -54,6 +56,6 @@ class TestSitemap(HttpCase):
         )
         self.assertNotIn(
             level2a_url,
-            resp.text,
+            sitemap,
             "Category entry with no active products should not be listed in sitemap.",
         )

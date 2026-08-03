@@ -358,8 +358,25 @@ class EventTrackController(http.Controller):
     # TRACK PAGE VIEW
     # ------------------------------------------------------------
 
+    def sitemap_event_track(env, rule, qs):
+        slug = env['ir.http']._slug
+        events = env['event.event'].search(
+            env.website.website_domain() & Domain('website_track', '=', True))
+        # Only fetch what the loop reads: a bare search prefetches every column, `description` HTML included.
+        tracks = env['event.track'].with_context(prefetch_fields=False).search_fetch(
+            [('event_id', 'in', events.ids), ('is_published', '=', True)],
+            ['name', 'seo_name', 'event_id', 'write_date'],
+        )
+        tracks_lastmod = tracks._get_sitemap_lastmod_map()
+        # An event's slug is shared by all its tracks, so build it once per event.
+        event_slugs = {event.id: slug(event) for event in tracks.event_id}
+        for track in tracks:
+            loc = f'/event/{event_slugs[track.event_id.id]}/track/{slug(track)}'
+            if not qs or qs.lower() in loc.lower():
+                yield {'loc': loc, 'lastmod': tracks_lastmod[track.id].date()}
+
     @http.route('''/event/<model("event.event", "[('website_track', '=', True)]"):event>/track/<model("event.track", "[('event_id', '=', event.id)]"):track>''',
-                type='http', auth="public", website=True, sitemap=True, readonly=True)
+                type='http', auth="public", website=True, sitemap=sitemap_event_track, sitemap_group="events", readonly=True)
     def event_track_page(self, event, track, **options):
         track = self._fetch_track(track.id, allow_sudo=False)
 

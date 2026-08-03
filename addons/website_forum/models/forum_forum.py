@@ -209,6 +209,15 @@ class ForumForum(models.Model):
             | Domain([('privacy', '=', 'private'), ('authorized_group_id', 'in', self.env.user.all_group_ids.ids)])
         )
 
+    def _get_sitemap_lastmod_map(self):
+        res = super()._get_sitemap_lastmod_map()
+        for forum, last_post in self.env['forum.post']._read_group(
+            [('forum_id', 'in', self.ids), ('parent_id', '=', False), ('can_view', '=', True)],
+            groupby=['forum_id'], aggregates=['write_date:max'],
+        ):
+            res[forum.id] = max(res[forum.id], last_post)
+        return res
+
     @api.depends_context('uid')
     def _compute_has_pending_post(self):
         domain = [

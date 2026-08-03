@@ -1,7 +1,24 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
+from urllib.parse import urlsplit
+
+from lxml import html
+
 from odoo.fields import Command
 from odoo.tests import HttpCase
+
+
+def all_sitemap_urls(case):
+    """Return the combined body of every sub-sitemap listed in /sitemap.xml.
+
+    /sitemap.xml is only an index; the URLs live in the sub-sitemaps it links
+    to. Search this union so a test doesn't depend on which section holds a URL.
+    """
+    index = html.fromstring(case.url_open('/sitemap.xml').content)
+    return '\n'.join(
+        case.url_open(urlsplit(loc).path).text
+        for loc in index.xpath('//loc/text()')
+    )
 
 
 class HttpCaseWithWebsiteUser(HttpCase):
