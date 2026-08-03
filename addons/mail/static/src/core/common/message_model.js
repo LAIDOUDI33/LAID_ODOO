@@ -135,6 +135,8 @@ export class Message extends Record {
      * @type {() => {} | undefined}
      */
     postFailRedo = undefined;
+    /** @type {string|undefined} */
+    postFailMessage = undefined;
     reactions = fields.Many("MessageReactions", {
         inverse: "message",
         /**
