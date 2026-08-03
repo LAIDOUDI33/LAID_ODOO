@@ -133,6 +133,15 @@ class PaymentTransaction(models.Model):
             "expand[]": "payment_method",
             **stripe_utils.include_shipping_address(self),
         }
+
+        # Add the mandatory ACSS mandate options to the pre-created PaymentIntent.
+        if self.payment_method_code == "acss_direct_debit":
+            payment_intent_payload.update({
+                "payment_method_options[acss_debit][mandate_options][payment_schedule]": "sporadic",
+                "payment_method_options[acss_debit][mandate_options][transaction_type]": "business",
+                "payment_method_options[acss_debit][verification_method]": "automatic",
+            })
+
         if self.operation in ["online_token", "offline"]:
             if not self.token_id.stripe_payment_method:  # Pre-SCA token, migrate it.
                 self.token_id._stripe_sca_migrate_customer()

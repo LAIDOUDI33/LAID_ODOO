@@ -351,6 +351,15 @@ class PaymentProvider(models.Model):
             ),
             "payment_methods_mapping": const.PAYMENT_METHODS_MAPPING,
         }
+        # ACSS Debit (Pre-authorized debit in Canada) does not support Stripe's deferred intent
+        # flow, so need to pass client_secret before.
+        if payment_method_sudo.code == "acss_direct_debit":
+            intent = self._send_api_request(
+                "POST",
+                "setup_intents",
+                data={"payment_method_types[]": "acss_debit", "usage": "off_session"},
+            )
+            inline_form_values["client_secret"] = intent["client_secret"]
         return json.dumps(inline_form_values)
 
     def _stripe_get_country(self, country_code):
