@@ -1,4 +1,5 @@
 import { Plugin } from "../plugin";
+import { isAndroid } from "@web/core/browser/feature_detection";
 
 export class InputPlugin extends Plugin {
     static id = "input";
@@ -22,6 +23,7 @@ export class InputPlugin extends Plugin {
         // and store it as a cached selection so that the `beforeinput` handler
         // can use this snapshot instead of calling `getSelection()` itself.
         if (selection?.rangeCount && selection.isCollapsed && ev.key === "Unidentified") {
+            this.isSwiftKeyEventChain = true;
             const range = selection.getRangeAt(0);
             this.dependencies.selection.setCachedSelection({
                 anchorNode: selection.anchorNode,
@@ -36,6 +38,13 @@ export class InputPlugin extends Plugin {
     }
 
     onBeforeInput(ev) {
+        // Avoid Gboard doing extra deleting when selecting a word suggestion.
+        // Also check if it's MS SwiftKey, as it doesn't have proper keydown property
+        if (isAndroid() && ev.inputType === "deleteContentBackward" && this?.isSwiftKeyEventChain) {
+            ev.preventDefault();
+            ev.stopPropagation();
+            return;
+        }
         const selection = this.document.getSelection();
         if (!this.editable.contains(selection?.anchorNode)) {
             ev.preventDefault();
@@ -47,7 +56,15 @@ export class InputPlugin extends Plugin {
     }
 
     onInput(ev) {
+        // Avoid Gboard doing extra deleting when selecting a word suggestion.
+        // Also check if it's MS SwiftKey, as it doesn't have proper keydown property
+        if (isAndroid() && ev.inputType === "deleteContentBackward" && this?.isSwiftKeyEventChain) {
+            ev.preventDefault();
+            ev.stopPropagation();
+            return;
+        }
         this.dependencies.history.addStep();
         this.dispatchTo("input_handlers", ev);
+        this.isSwiftKeyEventChain = false;
     }
 }
