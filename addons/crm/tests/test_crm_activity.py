@@ -181,3 +181,25 @@ class TestCrmMailActivity(TestCrmCommon):
         self.assertFalse(test_lead.activity_ids)
         test_lead.invalidate_recordset(fnames=["activity_type_id"])  # archive does not trigger recompute
         self.assertFalse(test_lead.activity_type_id)
+
+    def test_action_create_calendar_event_includes_customer(self):
+        """When creating a calendar event from an activity on a CRM opportunity,
+        the opportunity's partner_id should be automatically included as a default attendee."""
+        opportunity = self.env['crm.lead'].create({
+            'name': 'Test Opportunity',
+            'type': 'opportunity',
+            'partner_id': self.contact_1.id,
+            'user_id': self.user_sales_leads.id,
+            'team_id': self.sales_team_1.id,
+        })
+        activity = self.env['mail.activity'].create({
+            'activity_type_id': self.activity_type_1.id,
+            'res_id': opportunity.id,
+            'res_model_id': self.env['ir.model']._get_id('crm.lead'),
+        })
+        action_context = activity.action_create_calendar_event().get('context', {})
+        self.assertIn(
+            self.contact_1.id,
+            action_context.get('default_partner_ids', []),
+            "The opportunity's customer should be automatically added as a default meeting attendee.",
+        )
