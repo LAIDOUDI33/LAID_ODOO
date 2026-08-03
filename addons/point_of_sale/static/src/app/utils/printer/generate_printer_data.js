@@ -33,9 +33,9 @@ export class GeneratePrinterData {
 
     get commonExtraData() {
         return {
-            company_state_name: this.company.state_id?.name || "",
-            company_country_name: this.company.country_id?.name || "",
-            vat_label: this.company.country_id?.vat_label || "Tax ID",
+            company_state_name: this.company?.state_id?.name || "",
+            company_country_name: this.company?.country_id?.name || "",
+            vat_label: this.company?.country_id?.vat_label || "Tax ID",
         };
     }
 
@@ -288,7 +288,7 @@ export class GeneratePrinterData {
         return changes;
     }
 
-    generatePreparationChanges(orderChange, categoryIdsSet) {
+    generatePreparationChanges(orderChange, categoryIdsSet, opts = {}) {
         const isPartOfCombo = (line) =>
             line.combo_line_ids?.length ||
             line.combo_parent_uuid ||
@@ -305,11 +305,11 @@ export class GeneratePrinterData {
             return sequenceA - sequenceB;
         });
         orderChange.addedQuantity = [...comboChanges, ...normalChanges];
-        return filterChangeByCategories(categoryIdsSet, orderChange, this.models);
+        return filterChangeByCategories(categoryIdsSet, orderChange, this.models, opts);
     }
 
-    generatePreparationReceipts(orderChange, categoryIdsSet) {
-        const changes = this.generatePreparationChanges(orderChange, categoryIdsSet);
+    generatePreparationReceipts(orderChange, categoryIdsSet, opts = {}) {
+        const changes = this.generatePreparationChanges(orderChange, categoryIdsSet, opts);
         const receiptsData = [];
         if (changes.addedQuantity.length) {
             receiptsData.push(
@@ -355,19 +355,21 @@ export class GeneratePrinterData {
         let orderChange = override || order.getChanges({ cancelled: opts.cancelled });
         let reprint = false;
 
-        if (
-            !orderChange.addedQuantity.length &&
-            !orderChange.removedQuantity.length &&
-            !orderChange.noteUpdate.length &&
-            !orderChange.internal_note &&
-            !orderChange.general_customer_note &&
-            order.lastPrints.length
-        ) {
-            orderChange = [order.lastPrints.at(-1)];
-            reprint = true;
-        } else {
-            order.pushLastPrints(orderChange);
-            orderChange = [orderChange];
+        if (!opts.prepOrderLines) {
+            if (
+                !orderChange.addedQuantity.length &&
+                !orderChange.removedQuantity.length &&
+                !orderChange.noteUpdate.length &&
+                !orderChange.internal_note &&
+                !orderChange.general_customer_note &&
+                order.lastPrints.length
+            ) {
+                orderChange = [order.lastPrints.at(-1)];
+                reprint = true;
+            } else {
+                order.pushLastPrints(orderChange);
+                orderChange = [orderChange];
+            }
         }
 
         if (reprint && opts.orderDone) {
@@ -377,14 +379,13 @@ export class GeneratePrinterData {
         const receipts = [];
         const changes = orderChange.filter(Boolean);
         for (const change of changes) {
-            const data = this.generatePreparationReceipts(change, categoryIdsSet);
-
+            const data = this.generatePreparationReceipts(change, categoryIdsSet, opts);
             for (const changeData of data) {
                 receipts.push({
                     changes: changeData,
                     order: order.raw,
                     config: this.config.raw,
-                    company: this.company.raw,
+                    company: this.company?.raw,
                     partner: order.partner_id ? order.partner_id.raw : false,
                     preset: order.preset_id ? order.preset_id.raw : false,
                     extra_data: {
@@ -395,6 +396,8 @@ export class GeneratePrinterData {
                         general_customer_note: change.general_customer_note || false,
                         employee_name: order.employee_id?.name || order.user_id?.name || false,
                         preset_time: order.presetDateTime || false,
+                        // This is only used to generate a barcode on the preparation ticket.
+                        prepTicketBarcode: opts.prepBarcode || false,
                     },
                     conditions: {
                         module_pos_restaurant: this.config.module_pos_restaurant,
