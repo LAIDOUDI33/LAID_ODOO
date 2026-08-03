@@ -241,6 +241,7 @@ export class GeneratePrinterData {
             partner: this.order.partner_id ? this.order.partner_id.raw : false,
             preset: this.order.preset_id ? this.order.preset_id.raw : false,
             lines: this.generateLineData(),
+            total_item_count: this.order.totalItemQuantity,
             payments: this.generatePaymentData(),
             image: {
                 invoice_qr_code: useQrCode ? this.generateQrCode(url) : false,

@@ -12,20 +12,22 @@ from odoo.tools import (
     BinaryBytes,
 )
 
+from odoo.addons.point_of_sale.tests.common import CommonPosTest
+from odoo.addons.point_of_sale.tests.common_setup_methods import setup_product_combo_items
 from odoo.addons.point_of_sale.tests.test_frontend import TestPointOfSaleHttpCommon
 
 _logger = logging.getLogger(__name__)
 
 
 @tagged('post_install', '-at_install')
-class TestPosOrderReceipt(TestPointOfSaleHttpCommon):
+class TestPosOrderReceipt(TestPointOfSaleHttpCommon, CommonPosTest):
     _test_user_groups = None  # FIXME list needed groups
 
     @classmethod
     def setUpClass(self):
         super().setUpClass()
 
-        tax = self.env['account.tax'].create({
+        self.tax = self.env['account.tax'].create({
             'name': 'Tax 15%',
             'amount': 25,
             'price_include_override': 'tax_included',
@@ -41,7 +43,7 @@ class TestPosOrderReceipt(TestPointOfSaleHttpCommon):
             'name': 'Example Simple Product',
             'available_in_pos': True,
             'list_price': 5.80,
-            'taxes_id': [(6, 0, [tax.id])],
+            'taxes_id': [(6, 0, [self.tax.id])],
             'weight': 0.01,
             'to_weight': True,
             'pos_categ_ids': [(4, self.category.id)],
@@ -177,6 +179,7 @@ class TestPosOrderReceipt(TestPointOfSaleHttpCommon):
         self.comparator(backend['preset'], frontend['preset'], 'pos.preset')
         self.comparator(backend['conditions'], frontend['conditions'], 'conditions')
         self.comparator(backend['image'], frontend['image'], 'image')
+        self.assertEqual(backend['total_item_count'], frontend['total_item_count'])
 
         for taxes in zip(backend_taxes, frontend_taxes):
             self.comparator(taxes[0], taxes[1])
@@ -261,3 +264,37 @@ class TestPosOrderReceipt(TestPointOfSaleHttpCommon):
         with patch.object(self.env.registry['pos.order'], 'get_order_frontend_receipt_data', get_order_frontend_receipt_data, create=True):
             self.start_pos_tour("test_change_receipt_data")
             self.compare_change_receipt_data(data['frontend_data'], data['backend_data'])
+
+    def test_total_item_count(self):
+        setup_product_combo_items(self)
+        self.weighted_product = self.env['product.template'].create({
+            'name': 'Weighted Product',
+            'available_in_pos': True,
+            'list_price': 4.20,
+            'taxes_id': [(6, 0, [self.tax.id])],
+            'uom_id': self.env.ref('uom.product_uom_kgm').id,
+            'pos_categ_ids': [(4, self.category.id)],
+            'company_id': self.env.company.id,
+        })
+        self.main_pos_config.with_user(self.pos_user).open_ui()
+        order, _ = self.create_backend_pos_order({
+            'pos_config': self.main_pos_config,
+            'line_data': [
+                {'product_id': self.example_simple_product.product_variant_id.id, 'qty': 2, 'price_subtotal': 0.0, 'price_subtotal_incl': 0.0},
+                {'product_id': self.weighted_product.product_variant_id.id, 'qty': 2.5, 'price_subtotal': 0.0, 'price_subtotal_incl': 0.0},
+                {'product_id': self.office_combo.id, 'qty': 1, 'price_subtotal': 0.0, 'price_subtotal_incl': 0.0},
+            ],
+        })
+        order.lines.filtered(lambda line: line.product_id == self.office_combo).write({
+            "combo_line_ids": [
+                Command.create({
+                    "order_id": order.id,
+                    "product_id": item.product_id.id,
+                    "qty": 1,
+                    "price_subtotal": 0.0,
+                    "price_subtotal_incl": 0.0,
+                })
+                for item in self.desks_combo.combo_item_ids
+            ],
+        })
+        self.assertEqual(order.order_receipt_generate_data()["total_item_count"], 5)
