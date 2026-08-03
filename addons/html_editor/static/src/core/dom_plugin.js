@@ -79,6 +79,8 @@ function getConnectedParents(nodes) {
  * @typedef {((nodeToInsert: Node, container: HTMLElement) => nodeToInsert)[]} node_to_insert_processors
  *
  * @typedef {((el: HTMLElement) => boolean)[]} are_inlines_allowed_at_root_predicates
+ * @typedef {((block: HTMLElement) => boolean)[]} is_retagging_safe_predicates
+ * Allows to bypass the check in `isRetaggingSafe`, to handle the block in `on_will_set_tag_handlers`
  *
  * @typedef {string[]} system_attributes
  * @typedef {string[]} system_classes
@@ -679,14 +681,23 @@ export class DomPlugin extends Plugin {
      * @returns {boolean}
      */
     isRetaggingSafe(block) {
-        return !(
-            (isParagraphRelatedElement(block) ||
-                isListItemElement(block) ||
-                isPhrasingContent(block)) &&
-            this.dependencies.delete.isUnremovable(block)
+        return (
+            this.checkPredicates("is_retagging_safe_predicates", block) ??
+            !(
+                (isParagraphRelatedElement(block) ||
+                    isListItemElement(block) ||
+                    isPhrasingContent(block)) &&
+                (this.dependencies.delete.isUnremovable(block) ||
+                    !block.parentElement.isContentEditable)
+            )
         );
     }
 
+    /**
+     * Gets the list of blocks that will be affected by `setBlock`
+     *
+     * @returns {[HTMLElement]}
+     */
     getBlocksToSet() {
         const isCollapsed = this.dependencies.selection.getEditableSelection().isCollapsed;
         const targetedNodes = this.dependencies.selection.getTargetedNodes();
