@@ -981,6 +981,11 @@ export class PosOrder extends PosOrderAccounting {
             return;
         }
 
+        // A refund order has no preset: its fee lines are the cashier's to refund.
+        if (this.isRefund) {
+            return;
+        }
+
         if (!this.preset_id?.service_fee) {
             this.removeAllServiceFeeLines();
             return;
@@ -997,8 +1002,9 @@ export class PosOrder extends PosOrderAccounting {
             return;
         }
 
+        const feeLines = this.serviceFeeLines || [];
         const serviceFeeLinesMap = {};
-        (this.serviceFeeLines || []).forEach((line) => {
+        feeLines.forEach((line) => {
             const key = taxKey(line.tax_ids);
             serviceFeeLinesMap[key] = line;
         });
@@ -1009,6 +1015,14 @@ export class PosOrder extends PosOrderAccounting {
                 line.prepareBaseLineForTaxesComputationExtraValues()
             )
         );
+        // Reduction groups by {tax_ids, computation_key}, but serviceFeeLinesMap is
+        // keyed on tax_ids alone. Strip the key so one tax group yields one fee line.
+        baseLines.forEach((line) => {
+            line.computation_key = null;
+            if (line.extra_tax_data) {
+                line.extra_tax_data.computation_key = undefined;
+            }
+        });
 
         let priceUnit;
         if (preset.service_fee_based_on === "pre_discount") {
@@ -1019,10 +1033,37 @@ export class PosOrder extends PosOrderAccounting {
 
         accountTaxHelpers.add_tax_details_in_base_lines(baseLines, this.company_id);
         accountTaxHelpers.round_base_lines_tax_details(baseLines, this.company_id);
-        let amount = preset.service_fee_amount;
-        if (preset.service_fee_type === "percent") {
-            amount *= 100;
+        // The cashier can scale and price a fixed fee. Both are stamped into
+        // extra_tax_data because the fee splits into one line per tax group, where
+        // neither `qty` nor `price_unit` holds the whole fee: the edited line is the
+        // one whose qty no longer matches the stamp, a priced one is still "manual".
+        // A price is read as the preset's amount: a target total, taxes included.
+        let feeQty = 1;
+        let feeAmount = preset.service_fee_amount;
+        if (preset.service_fee_type === "fixed" && feeLines.length) {
+            const editedLine = feeLines.find(
+                (line) =>
+                    line.extra_tax_data?.service_fee_qty != null &&
+                    (line.qty || 1) !== line.extra_tax_data.service_fee_qty
+            );
+            feeQty = (editedLine || feeLines[0]).qty || 1;
+            const pricedLine = feeLines.find((line) => line.price_type === "manual");
+            // A stored amount only holds for the preset it was set on.
+            const stampedLine = feeLines.find(
+                (line) =>
+                    line.extra_tax_data?.service_fee_amount != null &&
+                    line.extra_tax_data.service_fee_preset_id === preset.id
+            );
+            if (pricedLine) {
+                feeAmount = pricedLine.price_unit;
+            } else if (stampedLine) {
+                feeAmount = stampedLine.extra_tax_data.service_fee_amount;
+            }
         }
+        const amount =
+            preset.service_fee_type === "percent"
+                ? preset.service_fee_amount * 100
+                : feeAmount * feeQty;
         const serviceFeeBaseLines = accountTaxHelpers.reduce_base_lines_to_target_amount(
             baseLines,
             this.company_id,
@@ -1035,15 +1076,42 @@ export class PosOrder extends PosOrderAccounting {
                 }),
             }
         );
+        accountTaxHelpers.fix_base_lines_tax_details_on_manual_tax_amounts(
+            serviceFeeBaseLines,
+            this.company_id
+        );
 
         for (const baseLine of serviceFeeBaseLines) {
-            const extraTaxData = accountTaxHelpers.export_base_line_extra_tax_data(baseLine);
             const key = taxKey(baseLine.tax_ids);
+            if (feeQty > 1) {
+                // Spread the scaled total over `feeQty` units. The exact per-tax
+                // totals travel with extra_tax_data, so per-unit rounding is safe.
+                baseLine.quantity = feeQty;
+                baseLine.price_unit = baseLine.price_unit / feeQty;
+            }
+            const extraTaxData = accountTaxHelpers.export_base_line_extra_tax_data(baseLine);
+            // Persist the cashier's quantity and amount for the next recompute.
+            extraTaxData.service_fee_qty = feeQty;
+            if (preset.service_fee_type === "fixed") {
+                extraTaxData.service_fee_amount = feeAmount;
+                extraTaxData.service_fee_preset_id = preset.id;
+            }
             const existingLine = serviceFeeLinesMap[key];
 
             if (existingLine) {
                 existingLine.extra_tax_data = extraTaxData;
+                // Reset `price_type` first: a manual price schedules this recompute
+                // (see pos_store), so the write-back would loop.
+                existingLine.price_type = "automatic";
                 existingLine.price_unit = baseLine.price_unit;
+                // Switching from a fixed preset to a percentage one drops the qty.
+                if (existingLine.qty !== feeQty) {
+                    existingLine.qty = feeQty;
+                }
+                // Keep the fee at the bottom of the order as courses come and go.
+                if (this.hasCourses?.()) {
+                    existingLine.course_id = this.getLastCourse();
+                }
                 delete serviceFeeLinesMap[key];
             } else {
                 priceUnit = baseLine.price_unit;
@@ -1053,8 +1121,8 @@ export class PosOrder extends PosOrderAccounting {
                     price_unit: priceUnit,
                     tax_ids: [["link", ...baseLine.tax_ids]],
                     product_tmpl_id: serviceFeeProduct.product_tmpl_id,
-                    qty: 1,
-                    price_type: "manual",
+                    qty: feeQty,
+                    price_type: "automatic",
                     // course_id is only available when pos_restaurant is installed
                     course_id: this.hasCourses?.() ? this.getLastCourse() : undefined,
                     extra_tax_data: extraTaxData,
