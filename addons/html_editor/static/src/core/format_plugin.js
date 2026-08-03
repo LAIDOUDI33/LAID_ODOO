@@ -418,35 +418,42 @@ export class FormatPlugin extends Plugin {
                 inlineAncestors.push(parentNode);
             }
 
-            while (
-                parentNode &&
-                !isBlock(parentNode) &&
-                !this.dependencies.split.isUnsplittable(parentNode) &&
-                (parentNode.classList.length === 0 || isClassListSplittable(parentNode.classList))
-            ) {
-                const isUselessZws =
-                    parentNode.tagName === "SPAN" &&
-                    parentNode.hasAttribute("data-oe-zws-empty-inline") &&
-                    parentNode.getAttributeNames().length === 1;
-
-                if (isUselessZws) {
-                    cursor.update(callbacksForCursorUpdate.unwrap(parentNode));
-                    unwrapContents(parentNode);
-                } else {
-                    const newLastAncestorInlineFormat = this.dependencies.split.splitAroundUntil(
-                        currentNode,
-                        parentNode
-                    );
-                    removeFormat(newLastAncestorInlineFormat, formatSpec, cursor);
-                    if (["setFontSizeClassName", "fontSize"].includes(formatName) && applyStyle) {
-                        removeClass(newLastAncestorInlineFormat, "o_default_font_size");
+            while (parentNode && !isBlock(parentNode)) {
+                const isNodeUnsplittable = this.dependencies.split.isUnsplittable(parentNode);
+                const isClassSplittable =
+                    parentNode.classList.length === 0 ||
+                    isClassListSplittable(parentNode.classList);
+                if (!isNodeUnsplittable && isClassSplittable) {
+                    const isUselessZws =
+                        parentNode.tagName === "SPAN" &&
+                        parentNode.hasAttribute("data-oe-zws-empty-inline") &&
+                        parentNode.getAttributeNames().length === 1;
+                    if (isUselessZws) {
+                        cursor.update(callbacksForCursorUpdate.unwrap(parentNode));
+                        unwrapContents(parentNode);
+                    } else {
+                        const newLastAncestorInlineFormat =
+                            this.dependencies.split.splitAroundUntil(currentNode, parentNode);
+                        removeFormat(newLastAncestorInlineFormat, formatSpec, cursor);
+                        if (newLastAncestorInlineFormat.isConnected) {
+                            inlineAncestors.push(newLastAncestorInlineFormat);
+                            currentNode = newLastAncestorInlineFormat;
+                        }
                     }
-                    if (newLastAncestorInlineFormat.isConnected) {
-                        inlineAncestors.push(newLastAncestorInlineFormat);
-                        currentNode = newLastAncestorInlineFormat;
+                } else {
+                    if (["setFontSizeClassName", "fontSize"].includes(formatName) && applyStyle) {
+                        removeClass(parentNode, "o_default_font_size");
+                    }
+                    if (
+                        !applyStyle &&
+                        isNodeUnsplittable &&
+                        this.dependencies.selection.areNodeContentsFullySelected(parentNode)
+                    ) {
+                        currentNode = currentNode.parentElement;
+                    } else {
+                        break;
                     }
                 }
-
                 parentNode = currentNode.parentElement;
             }
 
@@ -494,7 +501,28 @@ export class FormatPlugin extends Plugin {
                 }
             }
         }
+<<<<<<< 9a5e99b1025209de2a2cfe467720141f3f06a2dc
 
+||||||| a4a94d5cbe31350a14a597280f1535ad524faf91
+
+        for (const targetedFieldNode of tagetedFieldNodes) {
+            if (applyStyle) {
+                formatSpec.addStyle(targetedFieldNode, formatProps);
+            } else {
+                formatSpec.removeStyle(targetedFieldNode);
+            }
+        }
+
+=======
+        for (const targetedFieldNode of tagetedFieldNodes) {
+            if (applyStyle) {
+                formatSpec.addStyle(targetedFieldNode, formatProps);
+            } else {
+                formatSpec.removeStyle(targetedFieldNode);
+            }
+        }
+
+>>>>>>> f08ba6f1559d0f5c1e44fecbb3c9d52a7b615fa9
         if (zws) {
             const siblings = [...zws.parentElement.childNodes];
             if (
