@@ -132,9 +132,11 @@ class MrpSubcontractingPurchaseTest(TestAccountSubcontractingFlows):
             po.button_confirm()
             self.assertEqual(po.subcontracting_resupply_picking_count, 1)
             action1 = po.action_view_subcontracting_resupply()
-            picking = self.env[action1['res_model']].browse(action1['res_id'])
-            self.assertEqual(picking.subcontracting_source_purchase_count, 1)
-            action2 = picking.action_view_subcontracting_source_purchase()
+            resupply_picking = self.env[action1['res_model']].browse(action1['res_id'])
+            self.assertEqual(resupply_picking.subcontracting_source_purchase_count, 0)
+            receipt_picking = po.picking_ids
+            self.assertEqual(receipt_picking.subcontracting_source_purchase_count, 1)
+            action2 = receipt_picking.action_view_subcontracting_source_purchase()
             po_action2 = self.env[action2['res_model']].browse(action2['res_id'])
             self.assertEqual(po_action2, po)
 
