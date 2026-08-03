@@ -20,6 +20,16 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: hr_fleet
+#: model:ir.module.module,shortdesc:base.module_hr_fleet
+msgid "Fleet History"
+msgstr "Flottans historia"
+
+#. module: hr_fleet
+#: model:ir.module.module,summary:base.module_hr_fleet
+msgid "Get history of driven cars by employees"
+msgstr "Få en historik över de anställdas körda bilar"
+
+#. module: hr_fleet
 #: model_terms:ir.ui.view,arch_db:hr_fleet.fleet_vehicle_log_contract_view_form_inherit_hr
 msgid "<span class=\"o_stat_text\">Employee</span>"
 msgstr "<span class=\"o_stat_text\">Anställd</span>"

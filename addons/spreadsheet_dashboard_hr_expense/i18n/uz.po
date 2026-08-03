@@ -27,6 +27,19 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: spreadsheet_dashboard_hr_expense
+#: model:ir.module.module,description:base.module_spreadsheet_dashboard_hr_expense
+#: model:ir.module.module,summary:base.module_spreadsheet_dashboard_hr_expense
+#, fuzzy
+msgid "Spreadsheet"
+msgstr "Elektron jadval"
+
+#. module: spreadsheet_dashboard_hr_expense
+#: model:ir.module.module,shortdesc:base.module_spreadsheet_dashboard_hr_expense
+#, fuzzy
+msgid "Spreadsheet dashboard for expenses"
+msgstr "Xarajatlar uchun elektron jadval boshqaruv paneli"
+
+#. module: spreadsheet_dashboard_hr_expense
 #. odoo-javascript
 #: code:addons/spreadsheet_dashboard_hr_expense/data/files/expense_dashboard.json:0
 #, fuzzy

@@ -26,6 +26,34 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: project_timesheet_holidays
+#: model:ir.module.module,description:base.module_project_timesheet_holidays
+msgid ""
+"\n"
+"Bridge module to integrate leaves in timesheet\n"
+"================================================\n"
+"\n"
+"This module allows to automatically log timesheets when employees are\n"
+"on leaves. Project and task can be configured company-wide.\n"
+msgstr ""
+"\n"
+"Spojovací modul pro integraci dovolených do časových výkazů\n"
+"==========================================================\n"
+"\n"
+"Tento modul umožňuje automaticky zaznamenávat časové výkazy, když jsou "
+"zaměstnanci\n"
+"na dovolených. Projekt a úkol lze konfigurovat v celé společnosti.\n"
+
+#. module: project_timesheet_holidays
+#: model:ir.module.module,summary:base.module_project_timesheet_holidays
+msgid "Schedule timesheet when on time off"
+msgstr "Naplánujte si pracovní výkazy, když máte volné dny"
+
+#. module: project_timesheet_holidays
+#: model:ir.module.module,shortdesc:base.module_project_timesheet_holidays
+msgid "Timesheet when on Time Off"
+msgstr "Pracovní výkazy když jsou volné dny"
+
+#. module: project_timesheet_holidays
 #: model:ir.model,name:project_timesheet_holidays.model_account_analytic_line
 msgid "Analytic Line"
 msgstr "Analytická položka"

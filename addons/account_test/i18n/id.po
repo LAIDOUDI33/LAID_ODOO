@@ -24,6 +24,39 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 
 #. module: account_test
+#: model:ir.module.module,description:base.module_account_test
+msgid ""
+"\n"
+"Asserts on accounting.\n"
+"======================\n"
+"With this module you can manually check consistencies and inconsistencies of "
+"accounting module from menu Reporting/Accounting/Accounting Tests.\n"
+"\n"
+"You can write a query in order to create Consistency Test and you will get "
+"the result of the test\n"
+"in PDF format which can be accessed by Menu Reporting -> Accounting Tests, "
+"then select the test\n"
+"and print the report from Print button in header area.\n"
+msgstr ""
+"\n"
+"Asserts on accounting.\n"
+"======================\n"
+"Dengan modul ini Anda dapat secara manual memeriksa konsistensi dan "
+"ketidaksamaan untuk modul akuntansi dari menu Laporan/Akuntansi/Tes "
+"Akuntansi.\n"
+"\n"
+"Anda dapat menulis query untuk membuat Tes Konsistensi dan Anda akan "
+"mendapatkan hasil test\n"
+"dalam format PDF yang dapat diakses dari Menu Laporan -> Tes Akuntansi, lalu "
+"pilih tes \n"
+"dan cetak laporan dengan tombol Cetak di bagian header.\n"
+
+#. module: account_test
+#: model:ir.module.module,shortdesc:base.module_account_test
+msgid "Accounting Consistency Tests"
+msgstr "Tes Konsistensi Akuntansi"
+
+#. module: account_test
 #: model_terms:ir.ui.view,arch_db:account_test.report_accounttest
 msgid ""
 "<br/>\n"

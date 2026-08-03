@@ -19,6 +19,16 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: payment_flutterwave
+#: model:ir.module.module,summary:base.module_payment_flutterwave
+msgid "A Nigerian payment provider covering several African countries."
+msgstr ""
+
+#. module: payment_flutterwave
+#: model:ir.module.module,shortdesc:base.module_payment_flutterwave
+msgid "Payment Provider: Flutterwave"
+msgstr ""
+
+#. module: payment_flutterwave
 #: model:payment.method,name:payment_flutterwave.payment_method_amex
 msgid "American Express"
 msgstr ""

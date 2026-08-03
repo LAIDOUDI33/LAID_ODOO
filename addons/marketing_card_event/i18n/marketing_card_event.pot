@@ -16,6 +16,16 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: marketing_card_event
+#: model:ir.module.module,summary:base.module_marketing_card_event
+msgid "Generate dynamic shareable cards for entities linked to events."
+msgstr ""
+
+#. module: marketing_card_event
+#: model:ir.module.module,shortdesc:base.module_marketing_card_event
+msgid "Marketing Card For Events"
+msgstr ""
+
+#. module: marketing_card_event
 #: model:ir.model.fields,field_description:marketing_card_event.field_card_campaign__display_name
 #: model:ir.model.fields,field_description:marketing_card_event.field_event_event__display_name
 #: model:ir.model.fields,field_description:marketing_card_event.field_mailing_mailing__display_name

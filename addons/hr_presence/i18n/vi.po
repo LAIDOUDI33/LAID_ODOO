@@ -24,6 +24,37 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: hr_presence
+#: model:ir.module.module,description:base.module_hr_presence
+msgid ""
+"\n"
+"Control Employees Presence\n"
+"==========================\n"
+"\n"
+"Based on:\n"
+"    * The IP Address\n"
+"    * The User's Session\n"
+"    * The Sent Emails\n"
+"\n"
+"Allows to contact directly the employee in case of unjustified absence.\n"
+msgstr ""
+"\n"
+"Kiểm soát sự hiện diện của nhân viên\n"
+"===========================\n"
+"\n"
+"Dựa trên:\n"
+"     * Địa chỉ IP\n"
+"     * Phiên của người dùng\n"
+"     * Email đã gửi\n"
+"\n"
+"Cho phép liên hệ trực tiếp với nhân viên trong trường hợp vắng mặt không "
+"chính đáng.\n"
+
+#. module: hr_presence
+#: model:ir.module.module,shortdesc:base.module_hr_presence
+msgid "Employee Presence Control"
+msgstr "Kiểm soát Hiện diện của Nhân viên"
+
+#. module: hr_presence
 #: model:mail.template,body_html:hr_presence.mail_template_presence
 msgid ""
 "<div>\n"

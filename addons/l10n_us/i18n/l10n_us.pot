@@ -16,6 +16,11 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_us
+#: model:ir.module.module,shortdesc:base.module_l10n_us
+msgid "United States - Localizations"
+msgstr ""
+
+#. module: l10n_us
 #: model_terms:res.company,invoice_terms_html:l10n_us.demo_company_us
 msgid ""
 "All our contractual relations will be governed exclusively by United States "

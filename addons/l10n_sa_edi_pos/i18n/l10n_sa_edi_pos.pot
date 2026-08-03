@@ -16,6 +16,23 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_sa_edi_pos
+#: model:ir.module.module,description:base.module_l10n_sa_edi_pos
+msgid ""
+"\n"
+"E-invoice implementation for Saudi Arabia; Integration with ZATCA (POS)\n"
+msgstr ""
+
+#. module: l10n_sa_edi_pos
+#: model:ir.module.module,shortdesc:base.module_l10n_sa_edi_pos
+msgid "Saudi Arabia - E-invoicing (Simplified)"
+msgstr ""
+
+#. module: l10n_sa_edi_pos
+#: model:ir.module.module,summary:base.module_l10n_sa_edi_pos
+msgid "ZATCA E-Invoicing, support for PoS"
+msgstr ""
+
+#. module: l10n_sa_edi_pos
 #. odoo-javascript
 #: code:addons/l10n_sa_edi_pos/static/src/app/utils/order_payment_validation.js:0
 msgid "%s by going to Backend > Orders > Invoice"

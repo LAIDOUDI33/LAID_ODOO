@@ -28,6 +28,27 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: hr_gamification
+#: model:ir.module.module,shortdesc:base.module_hr_gamification
+msgid "HR Gamification"
+msgstr "HR Gamificació"
+
+#. module: hr_gamification
+#: model:ir.module.module,description:base.module_hr_gamification
+msgid ""
+"Use the HR resources for the gamification process.\n"
+"\n"
+"The HR officer can now manage challenges and badges.\n"
+"This allow the user to send badges to employees instead of simple users.\n"
+"Badge received are displayed on the user profile.\n"
+msgstr ""
+"Utilitzar els recursos de RRHH pel procés de gamificació.\n"
+"\n"
+"El responsable de RRHH podrà gestionar els desafiaments i insígnies.\n"
+"Això li permet enviar insígnies als treballadors en lloc de als usuaris "
+"simples.\n"
+"Les insígnies rebudes es mostren al perfil d'usuari.\n"
+
+#. module: hr_gamification
 #: model_terms:ir.actions.act_window,help:hr_gamification.goals_menu_groupby_action2
 msgid ""
 "A goal is defined by a user and a goal type.\n"

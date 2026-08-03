@@ -27,6 +27,156 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: mrp
+#. odoo-python
+#: code:addons/mrp/models/stock_warehouse.py:0
+#: model:ir.actions.client,name:mrp.action_mrp_display_fullscreen
+#: model:ir.model.fields.selection,name:mrp.selection__stock_picking_type__code__mrp_operation
+#: model:ir.module.module,shortdesc:base.module_mrp
+#: model:ir.ui.menu,name:mrp.menu_mrp_root
+#: model:res.groups.privilege,name:mrp.res_groups_privilege_manufacturing
+#: model_terms:ir.ui.view,arch_db:mrp.mrp_bom_line_view_search
+#: model_terms:ir.ui.view,arch_db:mrp.res_config_settings_view_form
+#: model_terms:ir.ui.view,arch_db:mrp.stock_move_line_view_search
+#: model_terms:ir.ui.view,arch_db:mrp.view_mrp_bom_filter
+#, fuzzy
+msgid "Manufacturing"
+msgstr "Ishlab chiqarish"
+
+#. module: mrp
+#: model:ir.module.module,summary:base.module_mrp
+#, fuzzy
+msgid "Manufacturing Orders & BOMs"
+msgstr "Ishlab chiqarish buyurtmalari va materiallar ro‘yxati"
+
+#. module: mrp
+#: model:ir.module.module,description:base.module_mrp
+#, fuzzy
+msgid ""
+"Odoo Manufacturing Resource Planning\n"
+"------------------------------------\n"
+"\n"
+"Manage Bill of Materials, plan manufacturing orders, track work orders with "
+"the\n"
+"Odoo <a href=\"https://www.odoo.com/app/manufacturing\">Open Source MRP</a> "
+"app.\n"
+"\n"
+"Get all your assembly or manufacturing operations managed by Odoo. Schedule\n"
+"manufacturing orders and work orders automatically. Review the proposed\n"
+"planning with the smart kanban and gantt views. Use the advanced analytics\n"
+"features to detect bottleneck in resources capacities and inventory "
+"locations.\n"
+"\n"
+"Schedule Manufacturing Orders Efficiently\n"
+"-----------------------------------------\n"
+"\n"
+"Get manufacturing orders and work orders scheduled automatically based on "
+"your\n"
+"procurement rules, quantities forecasted and dependent demand (demand for "
+"this\n"
+"part based on another part consuming it).\n"
+"\n"
+"Define Flexible Master Data\n"
+"---------------------------\n"
+"\n"
+"Get the flexibility to create multi-level bill of materials, optional "
+"routing,\n"
+"version changes and phantom bill of materials. You can use BoM for kits or "
+"for\n"
+"manufacturing orders.\n"
+"\n"
+"Get Flexibility In All Operations\n"
+"---------------------------------\n"
+"\n"
+"Edit manually all proposed operations at any level of the progress. With "
+"Odoo,\n"
+"you will not be frustrated by a rigid system.\n"
+"\n"
+"Schedule Work Orders\n"
+"--------------------\n"
+"\n"
+"Check resources capacities and fix bottlenecks.  Define routings and plan "
+"the\n"
+"working time and capacity of your resources. Quickly identify resource\n"
+"requirements and bottlenecks to ensure your production meets your delivery\n"
+"schedule dates.\n"
+"\n"
+"\n"
+"A Productive User Interface\n"
+"---------------------------\n"
+"\n"
+"Organize manufacturing orders and work orders the way you like it. Process "
+"next\n"
+"orders from the list view, control in the calendar view and edit the "
+"proposed\n"
+"schedule in the Gantt view.\n"
+"\n"
+"\n"
+"Inventory & Manufacturing Analytics\n"
+"-----------------------------------\n"
+"\n"
+"Track the evolution of the stock value, according to the level of "
+"manufacturing\n"
+"activities as they progress in the transformation process.\n"
+"\n"
+"Fully Integrated with Operations\n"
+"--------------------------------\n"
+"\n"
+"Get your manufacturing resource planning accurate with it's full "
+"integration\n"
+"with sales and purchases apps. The accounting integration allows real time\n"
+"accounting valuation and deeper reporting on costs and revenues on your\n"
+"manufacturing operations.\n"
+"\n"
+msgstr ""
+"Odoo ishlab chiqarish resurslarini rejalashtirish\n"
+"------------------------------------\n"
+"Odoo <a href=\"https://www.odoo.com/app/manufacturing\">Ochiq kodli MRP</a> "
+"ilovasi yordamida materiallar ro‘yxatini boshqaring, ishlab chiqarish "
+"buyurtmalarini rejalashtiring va ish buyurtmalarini kuzatib boring.  Barcha "
+"yig‘ish yoki ishlab chiqarish jarayonlaringizni Odoo orqali boshqaring. "
+"Ishlab chiqarish va ish buyurtmalarini avtomatik ravishda rejalashtiring. "
+"Taklif etilgan rejani zamonaviy kanban va gantt ko‘rinishlari orqali ko‘rib "
+"chiqing. Resurslar sig‘imi va zaxira joylashuvidagi muammolarni aniqlash "
+"uchun ilg‘or tahlil funksiyalaridan foydalaning.  Ishlab chiqarish "
+"buyurtmalarini samarali rejalashtirish\n"
+"-----------------------------------------\n"
+"Xarid qoidalaringiz, bashorat qilingan miqdorlar va bog‘liq talab (bu qismga "
+"bo‘lgan talab uni iste'mol qiladigan boshqa qismga asoslangan) asosida "
+"avtomatik ravishda rejalashtirilgan ishlab chiqarish va ish buyurtmalarini "
+"oling.  Moslashuvchan asosiy ma'lumotlarni belgilash\n"
+"---------------------------\n"
+"Ko‘p bosqichli materiallar ro‘yxatini yaratish, ixtiyoriy yo‘naltirish, "
+"versiya o‘zgartirishlari va vaqtinchalik materiallar ro‘yxatini yaratish "
+"imkoniyatiga ega bo‘ling. Materiallar ro‘yxatidan to‘plamlar uchun yoki "
+"ishlab chiqarish buyurtmalari uchun foydalanishingiz mumkin.  Barcha "
+"operatsiyalarda moslashuvchanlikni ta'minlash\n"
+"---------------------------------\n"
+"Jarayonning istalgan bosqichida barcha taklif etilgan operatsiyalarni qo‘lda "
+"tahrirlang. Odoo bilan siz qat'iy tizimdan xafa bo‘lmaysiz.  Ish "
+"buyurtmalarini rejalashtirish\n"
+"--------------------\n"
+"Resurslar quvvatini tekshiring va muammolarni bartaraf eting.  "
+"Yo‘nalishlarni belgilang hamda resurslaringizning ish vaqti va quvvatini "
+"rejalashtiring. Mahsulotingiz yetkazib berish muddatlariga mos kelishini "
+"ta'minlash uchun resurs talablari va to‘siqlarni tezda aniqlang.   Samarali "
+"foydalanuvchi interfeysi\n"
+"---------------------------\n"
+"Ishlab chiqarish va ish buyurtmalarini o‘zingizga qulay tarzda tashkil "
+"eting. Ro‘yxat ko‘rinishidan keyingi buyurtmalarni qayta ishlang, taqvim "
+"ko‘rinishida nazorat qiling va Gantt ko‘rinishida taklif qilingan jadvalni "
+"tahrirlang.   Tovar-moddiy zaxiralar va ishlab chiqarish tahlili\n"
+"-----------------------------------\n"
+"Ishlab chiqarish faoliyati darajasiga ko‘ra, qayta ishlash jarayonida "
+"ilgarilab borayotgan zaxiralar qiymatining o‘zgarishini kuzatib boring.  "
+"Operatsiyalar bilan to‘liq integratsiyalashgan\n"
+"--------------------------------\n"
+"Savdo va xarid ilovalalari bilan to‘liq integratsiyalashgan holda ishlab "
+"chiqarish resurslarini aniq rejalashtiring. Buxgalteriya hisobi "
+"integratsiyasi real vaqt rejimida moliyaviy baholash va ishlab chiqarish "
+"operatsiyalaringiz bo‘yicha xarajatlar hamda daromadlar to‘g‘risida "
+"chuqurroq hisobot berish imkonini beradi."
+
+#. module: mrp
 #: model:ir.model.fields,help:mrp.field_mrp_production__state
 #: model:ir.model.fields,help:mrp.field_mrp_workorder__production_state
 #, fuzzy
@@ -4026,21 +4176,6 @@ msgstr "Ishlab chiqarilgan mahsulotlar"
 #, fuzzy
 msgid "Manufactured in the last 365 days"
 msgstr "So‘nggi 365 kunda ishlab chiqarilgan"
-
-#. module: mrp
-#. odoo-python
-#: code:addons/mrp/models/stock_warehouse.py:0
-#: model:ir.actions.client,name:mrp.action_mrp_display_fullscreen
-#: model:ir.model.fields.selection,name:mrp.selection__stock_picking_type__code__mrp_operation
-#: model:ir.ui.menu,name:mrp.menu_mrp_root
-#: model:res.groups.privilege,name:mrp.res_groups_privilege_manufacturing
-#: model_terms:ir.ui.view,arch_db:mrp.mrp_bom_line_view_search
-#: model_terms:ir.ui.view,arch_db:mrp.res_config_settings_view_form
-#: model_terms:ir.ui.view,arch_db:mrp.stock_move_line_view_search
-#: model_terms:ir.ui.view,arch_db:mrp.view_mrp_bom_filter
-#, fuzzy
-msgid "Manufacturing"
-msgstr "Ishlab chiqarish"
 
 #. module: mrp
 #. odoo-javascript

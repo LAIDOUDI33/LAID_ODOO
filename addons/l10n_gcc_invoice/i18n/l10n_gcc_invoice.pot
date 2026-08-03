@@ -16,6 +16,18 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_gcc_invoice
+#: model:ir.module.module,description:base.module_l10n_gcc_invoice
+msgid ""
+"\n"
+"Adds Arabic as a secondary language on your invoice, credit note, debit note, vendor bill, and refund bill\n"
+msgstr ""
+
+#. module: l10n_gcc_invoice
+#: model:ir.module.module,shortdesc:base.module_l10n_gcc_invoice
+msgid "Gulf Cooperation Council - Invoice"
+msgstr ""
+
+#. module: l10n_gcc_invoice
 #: model_terms:ir.ui.view,arch_db:l10n_gcc_invoice.l10n_gcc_document_tax_totals_company_currency_template
 msgid "<span>Exchange Rate</span>"
 msgstr ""

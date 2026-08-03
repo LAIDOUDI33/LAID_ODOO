@@ -16,6 +16,18 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: website_sale_collect
+#: model:ir.module.module,description:base.module_website_sale_collect
+msgid ""
+"\n"
+"Allows customers to check in-store stock, pay on site, and pick up their orders at the shop.\n"
+msgstr ""
+
+#. module: website_sale_collect
+#: model:ir.module.module,shortdesc:base.module_website_sale_collect
+msgid "Click & Collect"
+msgstr ""
+
+#. module: website_sale_collect
 #. odoo-python
 #: code:addons/website_sale_collect/models/sale_order_line.py:0
 msgid ""

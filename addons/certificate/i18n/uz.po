@@ -27,6 +27,21 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: certificate
+#: model:ir.model,name:certificate.model_certificate_certificate
+#: model:ir.model.fields,field_description:certificate.field_certificate_certificate__content
+#: model:ir.module.module,shortdesc:base.module_certificate
+#: model_terms:ir.ui.view,arch_db:certificate.certificate_certificate_view_list
+#, fuzzy
+msgid "Certificate"
+msgstr "Sertifikat"
+
+#. module: certificate
+#: model:ir.module.module,summary:base.module_certificate
+#, fuzzy
+msgid "Manage certificate"
+msgstr "Sertifikatlarni boshqarish"
+
+#. module: certificate
 #. odoo-python
 #: code:addons/certificate/models/key.py:0
 #, fuzzy
@@ -81,14 +96,6 @@ msgstr "Mavjud sana"
 #: model_terms:ir.ui.view,arch_db:certificate.certificate_certificate_view_search
 msgid "CA certificates"
 msgstr ""
-
-#. module: certificate
-#: model:ir.model,name:certificate.model_certificate_certificate
-#: model:ir.model.fields,field_description:certificate.field_certificate_certificate__content
-#: model_terms:ir.ui.view,arch_db:certificate.certificate_certificate_view_list
-#, fuzzy
-msgid "Certificate"
-msgstr "Sertifikat"
 
 #. module: certificate
 #: model:ir.model.fields.selection,name:certificate.selection__certificate_certificate__scope__ca

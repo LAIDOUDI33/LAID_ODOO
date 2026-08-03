@@ -25,6 +25,42 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: resource
+#: model:ir.module.module,description:base.module_resource
+msgid ""
+"\n"
+"Module for resource management.\n"
+"===============================\n"
+"\n"
+"A resource represent something that can be scheduled (a developer on a task "
+"or a\n"
+"work center on manufacturing orders). This module manages a resource "
+"calendar\n"
+"associated to every resource. It also manages the leaves of every resource.\n"
+msgstr ""
+"\n"
+"Modulo per la gestione delle risorse\n"
+"=================================\n"
+"\n"
+"Una risorsa rappresenta un qualcosa che può essere pianificato (uno "
+"sviluppatore in\n"
+"una attività o un centro di lavoro negli ordini di produzione). Questo "
+"modulo gestisce le risorse\n"
+"attraverso un calendario associato e gestisce anche i relativi permessi o le "
+"ferie.\n"
+
+#. module: resource
+#: model:ir.model,name:resource.model_resource_resource
+#: model:ir.model.fields,field_description:resource.field_resource_calendar_leaves__resource_id
+#: model:ir.model.fields,field_description:resource.field_resource_mixin__resource_id
+#: model:ir.module.module,shortdesc:base.module_resource
+#: model:ir.ui.menu,name:resource.menu_resource_config
+#: model_terms:ir.ui.view,arch_db:resource.resource_resource_form
+#: model_terms:ir.ui.view,arch_db:resource.view_resource_calendar
+#: model_terms:ir.ui.view,arch_db:resource.view_resource_calendar_leaves_search
+msgid "Resource"
+msgstr "Risorsa"
+
+#. module: resource
 #: model_terms:ir.ui.view,arch_db:resource.view_resource_calendar_tree
 msgid "# Work Resources"
 msgstr "# Risorse lavorative"
@@ -591,17 +627,6 @@ msgstr "Nome utente correlato per gestire l'accesso alla risorsa."
 #: model_terms:ir.ui.view,arch_db:resource.view_resource_calendar_multi_create_form
 msgid "Repeat every"
 msgstr ""
-
-#. module: resource
-#: model:ir.model,name:resource.model_resource_resource
-#: model:ir.model.fields,field_description:resource.field_resource_calendar_leaves__resource_id
-#: model:ir.model.fields,field_description:resource.field_resource_mixin__resource_id
-#: model:ir.ui.menu,name:resource.menu_resource_config
-#: model_terms:ir.ui.view,arch_db:resource.resource_resource_form
-#: model_terms:ir.ui.view,arch_db:resource.view_resource_calendar
-#: model_terms:ir.ui.view,arch_db:resource.view_resource_calendar_leaves_search
-msgid "Resource"
-msgstr "Risorsa"
 
 #. module: resource
 #: model:ir.model,name:resource.model_resource_mixin

@@ -22,6 +22,18 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: resource_mail
+#: model:ir.module.module,description:base.module_resource_mail
+msgid ""
+"Integrate features developped in Mail in use case involving resources "
+"instead of users"
+msgstr "在涉及资源而非用户的使用案例中整合邮件中开发的功能"
+
+#. module: resource_mail
+#: model:ir.module.module,shortdesc:base.module_resource_mail
+msgid "Resource Mail"
+msgstr "资源邮件"
+
+#. module: resource_mail
 #. odoo-javascript
 #: code:addons/resource_mail/static/src/views/fields/many2many_avatar_resource/many2many_avatar_resource_field.xml:0
 msgid "Delete"

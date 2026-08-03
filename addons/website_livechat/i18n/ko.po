@@ -25,6 +25,21 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_livechat
+#: model:ir.module.module,description:base.module_website_livechat
+msgid "Allow website visitors to chat with the collaborators."
+msgstr "웹사이트 방문자와 공동 작업자의 채팅을 허용합니다."
+
+#. module: website_livechat
+#: model:ir.module.module,summary:base.module_website_livechat
+msgid "Chat with your website visitors"
+msgstr "웹사이트 방문자와 대화하기"
+
+#. module: website_livechat
+#: model:ir.module.module,shortdesc:base.module_website_livechat
+msgid "Website Live Chat"
+msgstr "웹사이트 실시간 채팅"
+
+#. module: website_livechat
 #: model:ir.model.fields,field_description:website_livechat.field_website_visitor__session_count
 msgid "# Sessions"
 msgstr "# 세션"

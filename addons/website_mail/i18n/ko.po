@@ -24,6 +24,26 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_mail
+#: model:ir.module.module,description:base.module_website_mail
+msgid ""
+"\n"
+"Module holding mail improvements for website. It holds the follow widget.\n"
+msgstr ""
+"\n"
+"웹 사이트에 대한 메일 개선을 보유하는 모듈. 팔로우 위젯을 보유하고 "
+"있습니다.\n"
+
+#. module: website_mail
+#: model:ir.module.module,shortdesc:base.module_website_mail
+msgid "Website Mail"
+msgstr "웹사이트 메일"
+
+#. module: website_mail
+#: model:ir.module.module,summary:base.module_website_mail
+msgid "Website Module for Mail"
+msgstr "웹사이트 메일 모듈"
+
+#. module: website_mail
 #: model_terms:ir.ui.view,arch_db:website_mail.follow
 msgid "<small>Follow</small><i class=\"oi oi-fw ms-1\"/>"
 msgstr "<small>팔로우</small><i class=\"oi oi-fw ms-1\"/>"

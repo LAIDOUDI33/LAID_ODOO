@@ -29,6 +29,299 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website
+#: model:ir.module.module,summary:base.module_website
+msgid "Enterprise website builder"
+msgstr "Enterprise websitebouwer"
+
+#. module: website
+#: model:ir.module.module,description:base.module_website
+msgid ""
+"Odoo Website Builder\n"
+"--------------------\n"
+"\n"
+"Get an awesome and <a href=\"https://www.odoo.com/app/website\">free "
+"website</a>,\n"
+"easily customizable with the Odoo <a href=\"https://www.odoo.com/app/"
+"website\">website builder</a>.\n"
+"\n"
+"Create enterprise grade website with our super easy builder. Use finely\n"
+"designed building blocks and edit everything inline.\n"
+"\n"
+"Benefit from out-of-the-box business features; e-Commerce, events, blogs, "
+"jobs\n"
+"announces, customer references, call-to-actions, etc.\n"
+"\n"
+"Edit Anything Inline\n"
+"--------------------\n"
+"\n"
+"Create beautiful websites with no technical knowledge. Odoo's unique *'edit\n"
+"inline'* approach makes website creation surprisingly easy. No more complex\n"
+"backend; just click anywhere to change any content.\n"
+"\n"
+"\"Want to change the price of a product? or put it in bold? Want to change "
+"a\n"
+"blog title?\" Just click and change. What you see is what you get. Really.\n"
+"\n"
+"Awesome. Astonishingly Beautiful.\n"
+"---------------------------------\n"
+"\n"
+"Odoo's building blocks allow to design modern websites that are not "
+"possible\n"
+"with traditional WYSIWYG page editors.\n"
+"\n"
+"Whether it's for products descriptions, blogs or static pages, you don't "
+"need\n"
+"to be a professional designer to create clean contents. Just drag and drop "
+"and\n"
+"customize predefined building blocks.\n"
+"\n"
+"Enterprise-Ready, out-of-the-box\n"
+"--------------------------------\n"
+"\n"
+"Activate ready-to-use enterprise features in just a click; e-commerce,\n"
+"call-to-actions, jobs announces, events, customer references, blogs, etc.\n"
+"\n"
+"Traditional eCommerce and CMS have poorly designed backends as it's not "
+"their\n"
+"core focus. With the Odoo integration, you benefit from the best management\n"
+"software to follow-up on your orders, your jobs applicants, your leads, "
+"etc.\n"
+"\n"
+"A Great Mobile Experience\n"
+"-------------------------\n"
+"\n"
+"Get a mobile friendly website thanks to our responsive design based on\n"
+"bootstrap. All your pages adapt automatically to the screen size. (mobile\n"
+"phones, tablets, desktop) You don't have to worry about mobile contents, it\n"
+"works by default.\n"
+"\n"
+"SEO tools at your finger tips\n"
+"-----------------------------\n"
+"\n"
+"The *Promote* tool suggests keywords according to Google most searched "
+"terms.\n"
+"Search Engine Optimization tools are ready to use, with no configuration\n"
+"required.\n"
+"\n"
+"Google Analytics tracks your shopping cart events by default. Sitemap and\n"
+"structured content are created automatically for Google indexation.\n"
+"\n"
+"Multi-Languages Made Easy\n"
+"-------------------------\n"
+"\n"
+"Get your website translated in multiple languages with no effort. Odoo "
+"proposes\n"
+"and propagates translations automatically across pages, following what you "
+"edit\n"
+"on the master page.\n"
+"\n"
+"Designer-Friendly Templates\n"
+"---------------------------\n"
+"\n"
+"Templates are awesome and easy to design. You don't need to develop to "
+"create\n"
+"new pages, themes or building blocks. We use a clean HTML structure, a\n"
+"[bootstrap](http://getbootstrap.com/) CSS.\n"
+"\n"
+"Customize every page on the fly with the integrated template editor. "
+"Distribute\n"
+"your work easily as an Odoo module.\n"
+"\n"
+"Fluid Grid Layouting\n"
+"--------------------\n"
+"\n"
+"Design perfect pages by drag and dropping building blocks. Move and scale "
+"them\n"
+"to fit the layout you are looking for.\n"
+"\n"
+"Building blocks are based on a responsive, mobile friendly fluid grid "
+"system\n"
+"that appropriately scales up to 12 columns as the device or viewport size\n"
+"increases.\n"
+"\n"
+"Professional Themes\n"
+"-------------------\n"
+"\n"
+"Design a custom theme or reuse pre-defined themes to customize the look and\n"
+"feel of your website.\n"
+"\n"
+"Test new color scheme easily; you can change your theme at any time in just "
+"a\n"
+"click.\n"
+"\n"
+"Integrated With Odoo Apps\n"
+"-------------------------\n"
+"\n"
+"### e-Commerce\n"
+"\n"
+"Promote products, sell online, optimize visitors' shopping experience.\n"
+"\n"
+"\n"
+"### Blog\n"
+"\n"
+"Write news, attract new visitors, build customer loyalty.\n"
+"\n"
+"\n"
+"### Online Events\n"
+"\n"
+"Schedule, organize, promote or sell events online; conferences, trainings, "
+"webinars, etc.\n"
+msgstr ""
+"Odoo Websitebouwer\n"
+"--------------------\n"
+"\n"
+"Krijg een geweldige en <a href=\"https://www.odoo.com/app/website\">gratis "
+"website</a>, gemakkelijk aan te passen met de <a href=\"https://www.odoo.com/"
+"app/website\">websitebouwer</a> van Odoo.\n"
+"\n"
+"Maak een enterprise-website met onze supereenvoudige websitebouwer. Gebruik "
+"elegant ontworpen bouwblokken en bewerk alles inline.\n"
+"\n"
+"Profiteer van kant-en-klare bedrijfsfuncties; e-commerce, evenementen, "
+"blogs, vacatures, aankondigingen, klantreferenties, call-to-actions, enz.\n"
+"\n"
+"Alles inline bewerken\n"
+"--------------------\n"
+"\n"
+"Maak prachtige websites zonder technische kennis. Odoo's unieke *'edit "
+"inline'*-aanpak maakt het ontwerpen van websites verrassend eenvoudig. Geen "
+"complexe backend, gewoon ergens klikken om de inhoud te wijzigen.\n"
+"\n"
+"\"Wil je de prijs van een product wijzigen? Of tekst vet maken? Wil je een "
+"blogtitel veranderen?\" Gewoon klikken en wijzigen. What you see is what you "
+"get. Echt waar.\n"
+"\n"
+"Geweldig. Verbazingwekkend mooi.\n"
+"---------------------------------\n"
+"\n"
+"De bouwblokken van Odoo maken het mogelijk om moderne websites te ontwerpen "
+"die niet mogelijk zijn met traditionele WYSIWYG-pagina-editors.\n"
+"\n"
+"Of het nu gaat om productbeschrijvingen, blogs of statische pagina's, je "
+"moet geen professionele ontwerper zijn om mooie content te maken. Gewoon "
+"vooraf gedefinieerde bouwblokken verslepen en aanpassen.\n"
+"\n"
+"Klaar voor Enterprise, kant-en-klaar\n"
+"--------------------------------\n"
+"\n"
+"Activeer met één klik kant-en-klare bedrijfsfuncties; e-commerce, call-to-"
+"actions, vacatures, evenementen, klantreferenties, blogs, etc.\n"
+"\n"
+"Traditionele e-commerces en CMS hebben slecht ontworpen backends omdat het "
+"niet hun hoofdfocus is. De Odoo-integratie bieden de beste beheersoftware om "
+"je orders, sollicitanten, leads, enz. op te volgen.\n"
+"\n"
+"Een geweldige mobiele ervaring\n"
+"-------------------------\n"
+"\n"
+"Krijg een mobielvriendelijke website dankzij ons responsieve ontwerp op "
+"basis van bootstrap. Al je pagina's passen zich automatisch aan de "
+"schermgrootte aan. (mobiele telefoons, tablets, desktop). Je hoeft je geen "
+"zorgen te maken over mobiele inhoud, want dat werkt standaard.\n"
+"\n"
+"SEO-tools binnen handbereik\n"
+"-----------------------------\n"
+"\n"
+"De tool *Promoten* stelt zoekwoorden voor volgens de meest gezochte termen "
+"van Google.\n"
+"Hulpprogramma's voor zoekmachineoptimalisatie zijn klaar voor gebruik, "
+"zonder configuratie.\n"
+"\n"
+"Google Analytics houdt standaard je winkelwagenactiviteit bij. Sitemap en "
+"gestructureerde inhoud worden automatisch gemaakt voor Google-indexering.\n"
+"\n"
+"Meerdere talen\n"
+"-------------------------\n"
+"\n"
+"Zet je website eenvoudig om in andere talen. Odoo stelt automatisch "
+"vertalingen voor over de verschillende pagina's op basis van wat je bewerkt "
+"op de hoofdpagina.\n"
+"\n"
+"Handige sjablonen\n"
+"---------------------------\n"
+"\n"
+"Sjablonen zijn geweldig en gemakkelijk te ontwerpen. Je hoeft niet te "
+"programmeren om nieuwe pagina's, thema's of bouwblokken te maken. We "
+"gebruiken een schone HTML-structuur, een [bootstrap](http://"
+"getbootstrap.com/) CSS.\n"
+"\n"
+"Pas elke pagina eenvoudig aan met de geïntegreerde sjablooneditor. Verdeel "
+"je werk zo eenvoudig als een Odoo-module.\n"
+"\n"
+"Fluid grid-systeem\n"
+"--------------------\n"
+"\n"
+"Ontwerp perfecte pagina's door bouwblokken te verslepen. Verplaats ze en pas "
+"de schaal aan om de gewenste lay-out te creëren.\n"
+"\n"
+"Bouwblokken zijn gebaseerd op een responsief, mobielvriendelijk fluid grid-"
+"systeem dat op de juiste manier wordt geschaald tot 12 kolommen als de "
+"grootte van het apparaat of de viewport toeneemt.\n"
+"\n"
+"Professionele thema's\n"
+"-------------------\n"
+"\n"
+"Ontwerp een aangepast thema of hergebruik vooraf gedefinieerde thema's om de "
+"uitstraling van je website aan te passen.\n"
+"\n"
+"Test eenvoudig een nieuw kleurenschema; je kunt je thema op elk moment "
+"wijzigen met slechts één klik.\n"
+"\n"
+"Geïntegreerd met Odoo-apps\n"
+"-------------------------\n"
+"\n"
+"### e-commerce\n"
+"\n"
+"Promoot producten, verkoop online, optimaliseer de winkelervaring van "
+"bezoekers.\n"
+"\n"
+"\n"
+"### Blog\n"
+"\n"
+"Schrijf nieuws, trek nieuwe bezoekers aan, zorg voor loyale klanten.\n"
+"\n"
+"\n"
+"### Online evenementen\n"
+"\n"
+"Online evenementen plannen, organiseren, promoten of verkopen; congressen, "
+"trainingen, webinars, etc.\n"
+
+#. module: website
+#. odoo-javascript
+#: code:addons/website/static/src/builder/plugins/snippets_powerbox_plugin.js:0
+#: code:addons/website/static/src/components/fields/redirect_field.xml:0
+#: model:ir.actions.act_url,name:website.action_website
+#: model:ir.model,name:website.model_website
+#: model:ir.model.fields,field_description:website.field_ir_asset__website_id
+#: model:ir.model.fields,field_description:website.field_ir_attachment__website_id
+#: model:ir.model.fields,field_description:website.field_ir_ui_view__website_id
+#: model:ir.model.fields,field_description:website.field_product_document__website_id
+#: model:ir.model.fields,field_description:website.field_res_company__website_id
+#: model:ir.model.fields,field_description:website.field_res_partner__website_id
+#: model:ir.model.fields,field_description:website.field_res_users__website_id
+#: model:ir.model.fields,field_description:website.field_website_controller_page__website_id
+#: model:ir.model.fields,field_description:website.field_website_menu__website_id
+#: model:ir.model.fields,field_description:website.field_website_multi_mixin__website_id
+#: model:ir.model.fields,field_description:website.field_website_page__website_id
+#: model:ir.model.fields,field_description:website.field_website_page_properties__website_id
+#: model:ir.model.fields,field_description:website.field_website_page_properties_base__website_id
+#: model:ir.model.fields,field_description:website.field_website_published_multi_mixin__website_id
+#: model:ir.model.fields,field_description:website.field_website_rewrite__website_id
+#: model:ir.model.fields,field_description:website.field_website_snippet_filter__website_id
+#: model:ir.model.fields,field_description:website.field_website_visitor__website_id
+#: model:ir.module.module,shortdesc:base.module_website
+#: model:ir.ui.menu,name:website.menu_website_configuration
+#: model:res.groups.privilege,name:website.res_groups_privilege_website
+#: model_terms:ir.ui.view,arch_db:website.digest_digest_view_form
+#: model_terms:ir.ui.view,arch_db:website.menu_search
+#: model_terms:ir.ui.view,arch_db:website.res_config_settings_view_form
+#: model_terms:ir.ui.view,arch_db:website.view_server_action_search_website
+#: model_terms:ir.ui.view,arch_db:website.website_controller_pages_search_view
+#: model_terms:ir.ui.view,arch_db:website.website_visitor_view_search
+msgid "Website"
+msgstr "Website"
+
+#. module: website
 #: model_terms:ir.ui.view,arch_db:website.s_quotes_carousel_compact
 #: model_terms:ir.ui.view,arch_db:website.s_quotes_carousel_minimal
 msgid ""
@@ -20393,40 +20686,6 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:website.s_services_pack
 msgid "Web design"
 msgstr ""
-
-#. module: website
-#. odoo-javascript
-#: code:addons/website/static/src/builder/plugins/snippets_powerbox_plugin.js:0
-#: code:addons/website/static/src/components/fields/redirect_field.xml:0
-#: model:ir.actions.act_url,name:website.action_website
-#: model:ir.model,name:website.model_website
-#: model:ir.model.fields,field_description:website.field_ir_asset__website_id
-#: model:ir.model.fields,field_description:website.field_ir_attachment__website_id
-#: model:ir.model.fields,field_description:website.field_ir_ui_view__website_id
-#: model:ir.model.fields,field_description:website.field_product_document__website_id
-#: model:ir.model.fields,field_description:website.field_res_company__website_id
-#: model:ir.model.fields,field_description:website.field_res_partner__website_id
-#: model:ir.model.fields,field_description:website.field_res_users__website_id
-#: model:ir.model.fields,field_description:website.field_website_controller_page__website_id
-#: model:ir.model.fields,field_description:website.field_website_menu__website_id
-#: model:ir.model.fields,field_description:website.field_website_multi_mixin__website_id
-#: model:ir.model.fields,field_description:website.field_website_page__website_id
-#: model:ir.model.fields,field_description:website.field_website_page_properties__website_id
-#: model:ir.model.fields,field_description:website.field_website_page_properties_base__website_id
-#: model:ir.model.fields,field_description:website.field_website_published_multi_mixin__website_id
-#: model:ir.model.fields,field_description:website.field_website_rewrite__website_id
-#: model:ir.model.fields,field_description:website.field_website_snippet_filter__website_id
-#: model:ir.model.fields,field_description:website.field_website_visitor__website_id
-#: model:ir.ui.menu,name:website.menu_website_configuration
-#: model:res.groups.privilege,name:website.res_groups_privilege_website
-#: model_terms:ir.ui.view,arch_db:website.digest_digest_view_form
-#: model_terms:ir.ui.view,arch_db:website.menu_search
-#: model_terms:ir.ui.view,arch_db:website.res_config_settings_view_form
-#: model_terms:ir.ui.view,arch_db:website.view_server_action_search_website
-#: model_terms:ir.ui.view,arch_db:website.website_controller_pages_search_view
-#: model_terms:ir.ui.view,arch_db:website.website_visitor_view_search
-msgid "Website"
-msgstr "Website"
 
 #. module: website
 #: model:ir.model.fields,field_description:website.field_res_partner__website_absolute_url

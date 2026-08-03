@@ -20,6 +20,16 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: project_stock
+#: model:ir.module.module,summary:base.module_project_stock
+msgid "Link Stock pickings to Project"
+msgstr ""
+
+#. module: project_stock
+#: model:ir.module.module,shortdesc:base.module_project_stock
+msgid "Project Stock"
+msgstr "Projekti varud"
+
+#. module: project_stock
 #: model:ir.model.fields,field_description:project_stock.field_project_project__display_name
 #: model:ir.model.fields,field_description:project_stock.field_stock_picking__display_name
 msgid "Display Name"

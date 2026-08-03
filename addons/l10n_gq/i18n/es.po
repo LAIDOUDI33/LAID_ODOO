@@ -20,6 +20,28 @@ msgstr ""
 "X-Generator: Weblate 5.12.2\n"
 
 #. module: l10n_gq
+#: model:ir.module.module,description:base.module_l10n_gq
+msgid ""
+"\n"
+"This module implements the tax for Guinea Equatorial.\n"
+"=================================================================\n"
+"\n"
+"The Chart of Accounts is from SYSCOHADA.\n"
+"\n"
+msgstr ""
+"\n"
+"Este módulo implementa los impuestos para Guinea Ecuatorial.\n"
+"=================================================================\n"
+"\n"
+"El plan contable es de SYSCOHADA.\n"
+"\n"
+
+#. module: l10n_gq
+#: model:ir.module.module,shortdesc:base.module_l10n_gq
+msgid "Guinea Equatorial - Accounting"
+msgstr "Guinea Ecuatorial - Contabilidad"
+
+#. module: l10n_gq
 #: model:ir.model,name:l10n_gq.model_account_chart_template
 msgid "Account Chart Template"
 msgstr "Plantilla de plan contable"

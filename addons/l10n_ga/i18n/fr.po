@@ -20,6 +20,28 @@ msgstr ""
 "X-Generator: Weblate 5.12.2\n"
 
 #. module: l10n_ga
+#: model:ir.module.module,description:base.module_l10n_ga
+msgid ""
+"\n"
+"This module implements the tax for Gabon.\n"
+"=================================================================\n"
+"\n"
+"The Chart of Accounts is from SYSCOHADA.\n"
+"\n"
+msgstr ""
+"\n"
+"Ce module implémente les impôts pour le Gabon.\n"
+"=================================================================\n"
+"\n"
+"Le plan comptable provient du SYSCOHADA.\n"
+"\n"
+
+#. module: l10n_ga
+#: model:ir.module.module,shortdesc:base.module_l10n_ga
+msgid "Gabon - Accounting"
+msgstr "Gabon - Comptabilité"
+
+#. module: l10n_ga
 #: model:ir.model,name:l10n_ga.model_account_chart_template
 msgid "Account Chart Template"
 msgstr "Modèle de Plan Comptable"

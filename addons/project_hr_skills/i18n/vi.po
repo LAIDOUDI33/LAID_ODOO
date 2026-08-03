@@ -21,6 +21,25 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: project_hr_skills
+#: model:ir.module.module,description:base.module_project_hr_skills
+msgid ""
+"\n"
+"Search project tasks according to the assignees' skills\n"
+msgstr ""
+"\n"
+"Tìm kiếm nhiệm vụ dự án theo kỹ năng của người được giao\n"
+
+#. module: project_hr_skills
+#: model:ir.module.module,shortdesc:base.module_project_hr_skills
+msgid "Project - Skills"
+msgstr "Dự án - Kỹ năng"
+
+#. module: project_hr_skills
+#: model:ir.module.module,summary:base.module_project_hr_skills
+msgid "Project skills"
+msgstr "Kỹ năng dự án"
+
+#. module: project_hr_skills
 #: model:ir.model,website_form_label:project_hr_skills.model_project_task
 msgid "Create a Task"
 msgstr ""

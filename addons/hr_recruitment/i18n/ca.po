@@ -45,6 +45,124 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: hr_recruitment
+#: model:ir.module.module,description:base.module_hr_recruitment
+msgid ""
+"Manage Recruitment and Job applications\n"
+"---------------------------------------\n"
+"\n"
+"Publish, promote and organize your job offers with the Odoo\n"
+"<a href=\"https://www.odoo.com/app/recruitment\">Open Source Recruitment "
+"Application</a>.\n"
+"\n"
+"Organize your job board, promote your job announces and keep track of\n"
+"application submissions easily. Follow every applicant and build up a "
+"database\n"
+"of skills and profiles with indexed documents.\n"
+"\n"
+"Post Your Jobs on Best Job Boards\n"
+"---------------------------------\n"
+"\n"
+"Connect automatically to most famous job board websites; linkedIn, Monster,\n"
+"Craigslist, ... Every job position has a new email address automatically\n"
+"assigned to route applications automatically to the right job position.\n"
+"\n"
+"Whether applicants contact you by email or using an online form, you get "
+"all\n"
+"the data indexed automatically (resumes, motivation letter) and you can "
+"answer\n"
+"in just a click, reusing templates of answers.\n"
+"\n"
+"Customize Your Recruitment Process\n"
+"----------------------------------\n"
+"\n"
+"Use the kanban view and customize the steps of your recruitments process;\n"
+"pre-qualification, first interview, second interview, negociaiton, ...\n"
+"\n"
+"Get accurate statistics on your recruitment pipeline. Get reports to "
+"compare\n"
+"the performance of your different investments on external job boards.\n"
+"\n"
+"Streamline Your Recruitment Process\n"
+"-----------------------------------\n"
+"\n"
+"Follow applicants in your recruitment process with the smart kanban view. "
+"Save\n"
+"time by automating some communications with email templates.\n"
+"\n"
+"Documents like resumes and motivation letters are indexed automatically,\n"
+"allowing you to easily find for specific skills and build up a database of\n"
+"profiles.\n"
+msgstr ""
+"Gestionar la contractació i les sol·licituds d'ocupació\n"
+"---------------------------------------\n"
+"\n"
+"Publica, promou i organitza les ofertes de feina amb l'Odoo\n"
+"<a href=\"https://www.odoo.com/app/recruitment\">Aplicació de reclutament de "
+"codi obert</a>.\n"
+"\n"
+"Organitzeu la vostra junta de treball, promogueu els vostres anuncis i feu "
+"un seguiment de\n"
+"trameses de les aplicacions fàcilment. Segueix cada sol·licitant i "
+"construeix una base de dades\n"
+"d'habilitats i perfils amb documents indexats.\n"
+"\n"
+"Publica els teus treballs en els millors portals d'ocupació\n"
+"---------------------------------\n"
+"\n"
+"Connecta't automàticament a les pàgines web d'ocupació més famoses; "
+"linkedIn, Monster,\n"
+"Craigslist, ... Cada posició de la feina té una adreça de correu electrònic "
+"nova automàticament\n"
+"assignat per a dirigir les sol·licituds automàticament al lloc de treball "
+"adequat.\n"
+"\n"
+"Si els sol·licitants us contacten per correu electrònic o si usen un "
+"formulari en línia, ho obteniu tot\n"
+"les dades indexades automàticament (resums, lletra de motivació) i podeu "
+"respondre\n"
+"només en un clic, reutilitzant plantilles de respostes.\n"
+"\n"
+"Personalitza el procés de contractació\n"
+"----------------------------------\n"
+"\n"
+"Utilitzeu la vista kanban i personalitzeu els passos del vostre procés de "
+"contractació;\n"
+"pre-qualificació, primera entrevista, segona entrevista, negociació ...\n"
+"\n"
+"Obtingui estadístiques precises sobre el seu procés de contractació. "
+"Obtingui informes per a comparar\n"
+"el rendiment de les seves diferents inversions en els consells "
+"d'administració de treball externs.\n"
+"\n"
+"Agiliti el seu procés de contractació\n"
+"-----------------------------------\n"
+"\n"
+"Segueix els sol·licitants en el vostre procés de contractació amb la vista "
+"kanban intel·ligent. Desa\n"
+"hora en automatitzar algunes comunicacions amb plantilles de correu "
+"electrònic.\n"
+"\n"
+"Documents com currículums i motivacions s'indexen automàticament,\n"
+"us permet trobar fàcilment habilitats específiques i construir una base de "
+"dades de\n"
+"perfils.\n"
+
+#. module: hr_recruitment
+#: model:ir.module.module,shortdesc:base.module_hr_recruitment
+#: model:ir.ui.menu,name:hr_recruitment.menu_hr_recruitment_root
+#: model:res.groups.privilege,name:hr_recruitment.res_groups_privilege_recruitment
+#: model_terms:ir.ui.view,arch_db:hr_recruitment.digest_digest_view_form
+#: model_terms:ir.ui.view,arch_db:hr_recruitment.hr_department_view_kanban
+#: model_terms:ir.ui.view,arch_db:hr_recruitment.res_config_settings_view_form
+msgid "Recruitment"
+msgstr "Procés de selecció"
+
+#. module: hr_recruitment
+#: model:ir.module.module,summary:base.module_hr_recruitment
+msgid "Track your recruitment pipeline"
+msgstr "Feu un seguiment del vostre canal de contractació"
+
+#. module: hr_recruitment
 #: model:ir.model.fields,field_description:hr_recruitment.field_hr_talent_pool__no_of_talents
 msgid "# Talents"
 msgstr "Nombre de talents"
@@ -2859,15 +2977,6 @@ msgstr "Seleccionador"
 #: model:ir.model.fields,field_description:hr_recruitment.field_hr_applicant__recruiter_email
 msgid "Recruiter Work Email"
 msgstr ""
-
-#. module: hr_recruitment
-#: model:ir.ui.menu,name:hr_recruitment.menu_hr_recruitment_root
-#: model:res.groups.privilege,name:hr_recruitment.res_groups_privilege_recruitment
-#: model_terms:ir.ui.view,arch_db:hr_recruitment.digest_digest_view_form
-#: model_terms:ir.ui.view,arch_db:hr_recruitment.hr_department_view_kanban
-#: model_terms:ir.ui.view,arch_db:hr_recruitment.res_config_settings_view_form
-msgid "Recruitment"
-msgstr "Procés de selecció"
 
 #. module: hr_recruitment
 #: model:ir.actions.act_window,name:hr_recruitment.hr_job_stage_act

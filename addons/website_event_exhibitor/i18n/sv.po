@@ -21,6 +21,16 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_event_exhibitor
+#: model:ir.module.module,shortdesc:base.module_website_event_exhibitor
+msgid "Event Exhibitors"
+msgstr "Utställare"
+
+#. module: website_event_exhibitor
+#: model:ir.module.module,summary:base.module_website_event_exhibitor
+msgid "Event: manage sponsors and exhibitors"
+msgstr "Evenemang: hantera sponsorer och utställare"
+
+#. module: website_event_exhibitor
 #. odoo-javascript
 #: code:addons/website_event_exhibitor/static/src/components/exhibitor_connect_closed_dialog/exhibitor_connect_closed_dialog.xml:0
 msgid ""

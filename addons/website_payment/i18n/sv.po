@@ -31,6 +31,27 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_payment
+#: model:ir.module.module,description:base.module_website_payment
+msgid ""
+"\n"
+"This is a bridge module that adds multi-website support for payment "
+"providers.\n"
+msgstr ""
+"\n"
+"Detta är en bryggmodul som ger betalningsleverantörer stöd för flera "
+"webbplatser.\n"
+
+#. module: website_payment
+#: model:ir.module.module,summary:base.module_website_payment
+msgid "Payment integration with website"
+msgstr "Betalningsintegration med webbplatsen"
+
+#. module: website_payment
+#: model:ir.module.module,shortdesc:base.module_website_payment
+msgid "Website Payment"
+msgstr "Betalning på webbplatsen"
+
+#. module: website_payment
 #: model_terms:ir.ui.view,arch_db:website_payment.res_config_settings_view_form
 msgid ""
 "<span class=\"oe_inline pe-0\">\n"

@@ -24,6 +24,28 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: mass_mailing_event_track
+#: model:ir.module.module,description:base.module_mass_mailing_event_track
+msgid ""
+"\n"
+"Mass mail event track speakers\n"
+"==============================\n"
+"\n"
+"Bridge module adding UX requirements to ease mass mailing of event track "
+"speakers.\n"
+msgstr ""
+"\n"
+"إرسال الرسائل الجماعية إلى متحدثي مسار الفعالية\n"
+"==============================\n"
+"\n"
+"تطبيق وسيط يضيف متطلبات تجربة المستخدم لتسهيل المراسلات الجماعية لمتحدثي مسار "
+"الفعالية الفعالية.\n"
+
+#. module: mass_mailing_event_track
+#: model:ir.module.module,shortdesc:base.module_mass_mailing_event_track
+msgid "Mass mailing on track speakers"
+msgstr "المراسلات الجماعية للمتحدثين في المسارات"
+
+#. module: mass_mailing_event_track
 #: model_terms:ir.ui.view,arch_db:mass_mailing_event_track.event_event_view_form_inherit_mass_mailing_track
 msgid "Contact Speakers"
 msgstr "تواصل مع المتحدثين"

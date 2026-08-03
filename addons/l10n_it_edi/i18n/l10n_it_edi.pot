@@ -16,6 +16,18 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_it_edi
+#: model:ir.module.module,description:base.module_l10n_it_edi
+msgid ""
+"\n"
+"E-invoice implementation\n"
+msgstr ""
+
+#. module: l10n_it_edi
+#: model:ir.module.module,shortdesc:base.module_l10n_it_edi
+msgid "Italy - E-invoicing"
+msgstr ""
+
+#. module: l10n_it_edi
 #: model:ir.model.fields,help:l10n_it_edi.field_account_bank_statement_line__l10n_it_convention_code
 #: model:ir.model.fields,help:l10n_it_edi.field_account_move__l10n_it_convention_code
 msgid ""

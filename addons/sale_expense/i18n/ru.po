@@ -25,6 +25,37 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: sale_expense
+#: model:ir.module.module,description:base.module_sale_expense
+msgid ""
+"\n"
+"Reinvoice Employee Expense\n"
+"==========================\n"
+"\n"
+"Create some products for which you can re-invoice the costs.\n"
+"This module allow to reinvoice employee expense, by setting the SO directly "
+"on the expense.\n"
+msgstr ""
+"\n"
+"Пересчет расходов сотрудников\n"
+"==========================\n"
+"\n"
+"Создайте продукты, для которых можно повторно выставлять счета за расходы.\n"
+"Этот модуль позволяет пересчитывать расходы сотрудников, устанавливая заказ "
+"на продажу (SO) непосредственно в документе расходов.\n"
+
+#. module: sale_expense
+#: model:ir.module.module,summary:base.module_sale_expense
+msgid "Quotation, Sales Orders, Delivery & Invoicing Control"
+msgstr ""
+"Коммерческое предложение, заказы на продажу, контроль доставки и выставления "
+"счетов"
+
+#. module: sale_expense
+#: model:ir.module.module,shortdesc:base.module_sale_expense
+msgid "Sales Expense"
+msgstr "Расходы на продажи"
+
+#. module: sale_expense
 #: model:ir.model.fields,field_description:sale_expense.field_sale_order__expense_count
 msgid "# of Expenses"
 msgstr "# Расходы"

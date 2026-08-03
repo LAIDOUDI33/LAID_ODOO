@@ -27,6 +27,18 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: auth_password_policy
+#: model:ir.module.module,summary:base.module_auth_password_policy
+#, fuzzy
+msgid "Implement basic password policy configuration & check"
+msgstr "Asosiy parol siyosatini sozlash va tekshirishni amalga oshirish"
+
+#. module: auth_password_policy
+#: model:ir.module.module,shortdesc:base.module_auth_password_policy
+#, fuzzy
+msgid "Password Policy"
+msgstr "Parol siyosati"
+
+#. module: auth_password_policy
 #: model:ir.model,name:auth_password_policy.model_res_config_settings
 #, fuzzy
 msgid "Config Settings"

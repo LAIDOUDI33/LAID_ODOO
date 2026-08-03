@@ -1,0 +1,39 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* base
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.4a1+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-05-12 08:36+0000\n"
+"PO-Revision-Date: 2026-05-12 08:36+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: l10n_account_edi_ubl_cii_tests
+#: model:ir.module.module,description:base.module_l10n_account_edi_ubl_cii_tests
+msgid ""
+"\n"
+"This module tests the module 'account_edi_ubl_cii', it is separated since dependencies to some\n"
+"localizations were required. Its name begins with 'l10n' to not overload runbot.\n"
+"\n"
+"The test files are separated by sources, they were taken from:\n"
+"\n"
+"* the factur-x doc (form the FNFE)\n"
+"* the peppol-bis-invoice-3 doc (the github repository: https://github.com/OpenPEPPOL/peppol-bis-invoice-3/tree/master/rules/examples contains examples)\n"
+"* odoo, these files pass all validation tests (using ecosio or the FNFE validator)\n"
+"\n"
+"We test that the external examples are correctly imported (currency, total amount and total tax match).\n"
+"We also test that generating xml from odoo with given parameters gives exactly the same xml as the expected,\n"
+"valid ones.\n"
+msgstr ""
+
+#. module: l10n_account_edi_ubl_cii_tests
+#: model:ir.module.module,shortdesc:base.module_l10n_account_edi_ubl_cii_tests
+msgid "Testing the Import/Export invoices with UBL/CII"
+msgstr ""

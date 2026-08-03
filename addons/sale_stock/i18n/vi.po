@@ -27,6 +27,46 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: sale_stock
+#: model:ir.module.module,description:base.module_sale_stock
+msgid ""
+"\n"
+"Manage sales quotations and orders\n"
+"==================================\n"
+"\n"
+"This module makes the link between the sales and warehouses management "
+"applications.\n"
+"\n"
+"Preferences\n"
+"-----------\n"
+"* Shipping: Choice of delivery at once or partial delivery\n"
+"* Invoicing: choose how invoices will be paid\n"
+"* Incoterms: International Commercial terms\n"
+"\n"
+msgstr ""
+"\n"
+"Quản lý báo giá bán hàng và đơn hàng\n"
+"==================================\n"
+"\n"
+"Phân hệ này tạo mối liên kết giữa các ứng dụng bán hàng và quản lý kho.\n"
+"\n"
+"Tùy chọn\n"
+"-----------\n"
+"* Vận chuyển: Lựa chọn giao hàng một lần hoặc giao hàng từng phần\n"
+"* Hóa đơn: Chọn cách thanh toán hóa đơn\n"
+"* Incoterms: Điều khoản thương mại quốc tế\n"
+"\n"
+
+#. module: sale_stock
+#: model:ir.module.module,summary:base.module_sale_stock
+msgid "Quotation, Sales Orders, Delivery & Invoicing Control"
+msgstr "Báo giá, Đơn bán hàng, Giao hàng & Kiểm soát hóa đơn"
+
+#. module: sale_stock
+#: model:ir.module.module,shortdesc:base.module_sale_stock
+msgid "Sales and Warehouse Management"
+msgstr "Quản lý bán hàng và kho"
+
+#. module: sale_stock
 #: model:ir.actions.report,print_report_name:sale_stock.action_report_return_label
 msgid "\"Return - %s\" % (object.name)"
 msgstr ""

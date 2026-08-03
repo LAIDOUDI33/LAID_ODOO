@@ -16,6 +16,17 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: project_sms
+#: model:ir.module.module,shortdesc:base.module_project_sms
+msgid "Project - SMS"
+msgstr ""
+
+#. module: project_sms
+#: model:ir.module.module,description:base.module_project_sms
+#: model:ir.module.module,summary:base.module_project_sms
+msgid "Send text messages when project/task stage move"
+msgstr ""
+
+#. module: project_sms
 #: model:ir.model,website_form_label:project_sms.model_project_task
 msgid "Create a Task"
 msgstr ""

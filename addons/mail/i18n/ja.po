@@ -32,6 +32,148 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: mail
+#: model:ir.module.module,description:base.module_mail
+msgid ""
+"\n"
+"\n"
+"Chat, mail gateway and private channel.\n"
+"=======================================\n"
+"\n"
+"Communicate with your colleagues/customers/guest within Odoo.\n"
+"\n"
+"Discuss/Chat\n"
+"------------\n"
+"User-friendly \"Discuss\" features that allows one 2 one or group "
+"communication\n"
+"(text chat/voice call/video call), invite guests and share documents with\n"
+"them, all real-time.\n"
+"\n"
+"Mail gateway\n"
+"------------\n"
+"Sending information and documents made simplified. You can send emails\n"
+"from Odoo itself, and that too with great possibilities. For example,\n"
+"design a beautiful email template for the invoices, and use the same\n"
+"for all your customers, no need to do the same exercise every time.\n"
+"\n"
+"Chatter\n"
+"-------\n"
+"Do all the contextual conversation on a document. For example on an\n"
+"applicant, directly post an update to send email to the applicant,\n"
+"schedule the next interview call, attach the contract, add HR officer\n"
+"to the follower list to notify them for important events(with help of\n"
+"subtypes),...\n"
+"\n"
+"\n"
+"Retrieve incoming email on POP/IMAP servers.\n"
+"============================================\n"
+"Enter the parameters of your POP/IMAP account(s), and any incoming emails "
+"on\n"
+"these accounts will be automatically downloaded into your Odoo system. All\n"
+"POP3/IMAP-compatible servers are supported, included those that require an\n"
+"encrypted SSL/TLS connection.\n"
+"This can be used to easily create email-based workflows for many email-"
+"enabled Odoo documents, such as:\n"
+"\n"
+"* CRM Leads/Opportunities\n"
+"* CRM Claims\n"
+"* Project Issues\n"
+"* Project Tasks\n"
+"* Human Resource Recruitment (Applicants)\n"
+"\n"
+"Just install the relevant application, and you can assign any of these "
+"document\n"
+"types (Leads, Project Issues) to your incoming email accounts. New emails "
+"will\n"
+"automatically spawn new documents of the chosen type, so it's a snap to "
+"create a\n"
+"mailbox-to-Odoo integration. Even better: these documents directly act as "
+"mini\n"
+"conversations synchronized by email. You can reply from within Odoo, and "
+"the\n"
+"answers will automatically be collected when they come back, and attached to "
+"the\n"
+"same *conversation* document.\n"
+"For more specific needs, you may also assign custom-defined actions\n"
+"(technically: Server Actions) to be triggered for each incoming mail.\n"
+msgstr ""
+"\n"
+"\n"
+"チャット、メールゲートウェイ、プライベートチャネル。\n"
+"=======================================\n"
+"\n"
+"Odoo内で同僚・顧客・ゲストとコミュニケーションをとることができます。\n"
+"\n"
+"ディスカス/チャット\n"
+"------------\n"
+"1対1またはグループでのコミュニケーション（テキストチャット/音声通話/ビデオ通"
+"話）を可能にする使いやすい「ディスカス」機能。\n"
+"ゲストを招待し、ドキュメントを共有することもでき、すべてリアルタイムで行えま"
+"す。\n"
+"\n"
+"メールゲートウェイ\n"
+"------------\n"
+"情報やドキュメントの送信が簡素化されました。Odooから直接メールを送信でき、\n"
+"その機能も非常に充実しています。例えば、\n"
+"請求書用の美しいメールテンプレートを作成し、すべての顧客に\n"
+"同じものを使用できます。毎回同じ作業を行う必要はありません。\n"
+"\n"
+"チャター\n"
+"-------\n"
+"ドキュメント上で文脈に沿った会話をすべて行えます。例えば、\n"
+"応募者に関するドキュメント上で、直接更新情報を投稿して応募者にメールを送信し"
+"たり、\n"
+"次回の面接の電話をスケジュールしたり、契約書を添付したり、\n"
+"サブタイプを活用して、フォロワー一覧に追加して、重要なイベントを\n"
+"通知したりできます。\n"
+"\n"
+"\n"
+"POP/IMAPサーバから受信メールを取得します。\n"
+"============================================\n"
+"POP/IMAPアカウントのパラメータを入力するだけで、\n"
+"これらのアカウントに届くすべての受信メールが自動的にOdooシステムに"
+"ダウンロードされます。\n"
+"SSL/TLS暗号化接続を必要とするサーバを含め、\n"
+"すべてのPOP3/IMAP対応サーバがサポートされています。\n"
+"これにより、以下のようなメール対応のOdooドキュメントに対して、\n"
+"メールベースのワークフローを簡単に作成できます：\n"
+"\n"
+"* CRMリード/案件\n"
+"* CRMクレーム\n"
+"* プロジェクト課題\n"
+"* プロジェクトタスク\n"
+"* 人事採用(応募者)\n"
+"\n"
+"関連するアプリケーションをインストールするだけで、これらのドキュメント\n"
+"タイプ(リード、プロジェクト課題など)を受信メールアカウントに割り当てることが"
+"できます。新しいメールが届くと、\n"
+"選択したタイプの新しいドキュメントが自動的に作成されるため、メールボックスと"
+"Odooの連携を\n"
+"簡単に構築できます。 さらに便利な点は、これらのドキュメントがメールによって同"
+"期される\n"
+"「ミニ会話」として直接機能することです。Odoo内から返信すると、\n"
+"返信メールが自動的に収集され、同じ *会話* ドキュメントに添付されます。\n"
+"より具体的なニーズに対応するため、受信メールごとにトリガされる\n"
+"カスタム定義のアクション(技術的には「サーバアクション」)を割り当てることも可"
+"能です。\n"
+
+#. module: mail
+#: model:ir.module.module,summary:base.module_mail
+msgid "Chat, mail gateway and private channels"
+msgstr "チャット、メールゲートウェイ、プライベートチャネル"
+
+#. module: mail
+#. odoo-javascript
+#: code:addons/mail/static/src/discuss/call/common/change_layout_dialog.js:0
+#: model:ir.actions.client,name:mail.action_discuss
+#: model:ir.module.module,shortdesc:base.module_mail
+#: model:ir.ui.menu,name:mail.mail_menu_technical
+#: model:ir.ui.menu,name:mail.main_menu_discuss
+#: model:ir.ui.menu,name:mail.menu_root_discuss
+#: model_terms:ir.ui.view,arch_db:mail.res_config_settings_view_form
+msgid "Discuss"
+msgstr "ディスカス"
+
+#. module: mail
 #: model:ir.model.fields,help:mail.field_ir_actions_server__followers_type
 #: model:ir.model.fields,help:mail.field_ir_cron__followers_type
 msgid ""
@@ -4449,17 +4591,6 @@ msgstr "終了"
 #: code:addons/mail/static/src/discuss/call/common/rtc_service.js:0
 msgid "Disconnected from the call by the server"
 msgstr "サーバによって通話が切断されました"
-
-#. module: mail
-#. odoo-javascript
-#: code:addons/mail/static/src/discuss/call/common/change_layout_dialog.js:0
-#: model:ir.actions.client,name:mail.action_discuss
-#: model:ir.ui.menu,name:mail.mail_menu_technical
-#: model:ir.ui.menu,name:mail.main_menu_discuss
-#: model:ir.ui.menu,name:mail.menu_root_discuss
-#: model_terms:ir.ui.view,arch_db:mail.res_config_settings_view_form
-msgid "Discuss"
-msgstr "ディスカス"
 
 #. module: mail
 #: model:ir.model.fields,field_description:mail.field_mail_call_artifact__discuss_call_history_id

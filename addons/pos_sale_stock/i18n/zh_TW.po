@@ -19,6 +19,16 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: pos_sale_stock
+#: model:ir.module.module,summary:base.module_pos_sale_stock
+msgid "Link module between PoS Stock and Sales"
+msgstr ""
+
+#. module: pos_sale_stock
+#: model:ir.module.module,shortdesc:base.module_pos_sale_stock
+msgid "POS - Sales Stock"
+msgstr ""
+
+#. module: pos_sale_stock
 #: model_terms:ir.ui.view,arch_db:pos_sale_stock.message_body
 msgid "Delivered from"
 msgstr ""

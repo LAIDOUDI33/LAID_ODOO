@@ -27,6 +27,18 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: pos_qfpay
+#: model:ir.module.module,summary:base.module_pos_qfpay
+#, fuzzy
+msgid "Integrate your POS with the QFPay terminal in Hong Kong"
+msgstr "POS tizimingizni Gonkongdagi QFPay terminali bilan integratsiya qiling"
+
+#. module: pos_qfpay
+#: model:ir.module.module,shortdesc:base.module_pos_qfpay
+#, fuzzy
+msgid "POS QFPay"
+msgstr "POS QFPay"
+
+#. module: pos_qfpay
 #: model:ir.model.fields.selection,name:pos_qfpay.selection__pos_payment_method__qfpay_payment_type__alipay
 #, fuzzy
 msgid "Alipay"

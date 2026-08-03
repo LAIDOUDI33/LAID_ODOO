@@ -28,6 +28,78 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: hr_expense
+#: model:ir.module.module,description:base.module_hr_expense
+msgid ""
+"\n"
+"Manage expenses by Employees\n"
+"============================\n"
+"\n"
+"This application allows you to manage your employees' daily expenses. It "
+"gives you access to your employees’ fee notes and give you the right to "
+"complete and validate or refuse the notes. After validation it creates an "
+"invoice for the employee.\n"
+"Employee can encode their own expenses and the validation flow puts it "
+"automatically in the accounting after validation by managers.\n"
+"\n"
+"\n"
+"The whole flow is implemented as:\n"
+"---------------------------------\n"
+"* Draft expense\n"
+"* Submitted by the employee to his manager\n"
+"* Approved by his manager\n"
+"* Validation by the accountant and accounting entries creation\n"
+"\n"
+"This module also uses analytic accounting and is compatible with the invoice "
+"on timesheet module so that you are able to automatically re-invoice your "
+"customers' expenses if your work by project.\n"
+msgstr ""
+"\n"
+"จัดการค่าใช้จ่ายโดยพนักงาน\n"
+"============================\n"
+"\n"
+"แอปพลิเคชันนี้ช่วยให้คุณสามารถจัดการค่าใช้จ่ายประจำวันของพนักงานของคุณได้ ซึ่งจะช่วยให้คุณเข้าถึงบัน"
+"ทึกค่าธรรมเนียมของพนักงานของคุณและให้คุณสิทธิ์ในการกรอกข้อมูลและตรวจสอบหรือปฏิเสธบันทึก หลังจา"
+"กการตรวจสอบเสร็จสิ้น แอปจะสร้างใบแจ้งหนี้สำหรับพนักงาน\n"
+"พนักงานสามารถป้อนข้อมูลค่าใช้จ่ายของตนเองได้และกระบวนการตรวจสอบจะนำเข้าสู่บัญชีโดยอัตโนมัติหลั"
+"งจากการตรวจสอบโดยผู้จัดการ\n"
+"\n"
+"\n"
+"กระบวนการทั้งหมดถูกนำมาใช้ในรูปแบบดังต่อไปนี้:\n"
+"---------------------------------\n"
+"* การร่างค่าใช้จ่าย\n"
+"* พนักงานส่งถึงผู้จัดการของเขา\n"
+"* ได้รับการอนุมัติจากผู้จัดการของเขา\n"
+"* การตรวจสอบโดยนักบัญชีและการสร้างรายการบัญชี\n"
+"\n"
+"โมดูลนี้ยังใช้บัญชีวิเคราะห์และเข้ากันได้กับโมดูลใบแจ้งหนี้ในระบบบันทึกเวลา เพื่อให้คุณสามารถสร้างใบแ"
+"จ้งหนี้ค่าใช้จ่ายของลูกค้าโดยอัตโนมัติหากคุณทำงานตามโปรเจ็กต์\n"
+
+#. module: hr_expense
+#. odoo-python
+#: code:addons/hr_expense/models/account_move.py:0
+#: code:addons/hr_expense/models/account_payment.py:0
+#: model:ir.model.fields,field_description:hr_expense.field_product_product__can_be_expensed
+#: model:ir.model.fields,field_description:hr_expense.field_product_template__can_be_expensed
+#: model:ir.module.module,shortdesc:base.module_hr_expense
+#: model:ir.ui.menu,name:hr_expense.menu_hr_expense_root
+#: model:product.template,name:hr_expense.product_product_no_cost_product_template
+#: model:res.groups.privilege,name:hr_expense.res_groups_privilege_expenses
+#: model_terms:ir.ui.view,arch_db:hr_expense.hr_department_view_kanban
+#: model_terms:ir.ui.view,arch_db:hr_expense.hr_expense_view_activity
+#: model_terms:ir.ui.view,arch_db:hr_expense.hr_expense_view_expenses_analysis_tree
+#: model_terms:ir.ui.view,arch_db:hr_expense.hr_expense_view_form
+#: model_terms:ir.ui.view,arch_db:hr_expense.product_template_search_view_inherit_hr_expense
+#: model_terms:ir.ui.view,arch_db:hr_expense.res_config_settings_view_form
+#: model_terms:ir.ui.view,arch_db:hr_expense.view_move_form_inherit_expense
+msgid "Expenses"
+msgstr "รายจ่าย"
+
+#. module: hr_expense
+#: model:ir.module.module,summary:base.module_hr_expense
+msgid "Submit, validate and reinvoice employee expenses"
+msgstr "ส่ง ตรวจสอบ และออกใบแจ้งหนี้ค่าใช้จ่ายพนักงานอีกครั้ง"
+
+#. module: hr_expense
 #: model:ir.model.fields,help:hr_expense.field_hr_expense__has_existing_bill
 msgid ""
 " - When a bill already exists, the payment will use the supplier payable "
@@ -885,25 +957,6 @@ msgstr ""
 #: code:addons/hr_expense/models/hr_expense.py:0
 msgid "Expense split"
 msgstr "แยกค่าใช้จ่าย"
-
-#. module: hr_expense
-#. odoo-python
-#: code:addons/hr_expense/models/account_move.py:0
-#: code:addons/hr_expense/models/account_payment.py:0
-#: model:ir.model.fields,field_description:hr_expense.field_product_product__can_be_expensed
-#: model:ir.model.fields,field_description:hr_expense.field_product_template__can_be_expensed
-#: model:ir.ui.menu,name:hr_expense.menu_hr_expense_root
-#: model:product.template,name:hr_expense.product_product_no_cost_product_template
-#: model:res.groups.privilege,name:hr_expense.res_groups_privilege_expenses
-#: model_terms:ir.ui.view,arch_db:hr_expense.hr_department_view_kanban
-#: model_terms:ir.ui.view,arch_db:hr_expense.hr_expense_view_activity
-#: model_terms:ir.ui.view,arch_db:hr_expense.hr_expense_view_expenses_analysis_tree
-#: model_terms:ir.ui.view,arch_db:hr_expense.hr_expense_view_form
-#: model_terms:ir.ui.view,arch_db:hr_expense.product_template_search_view_inherit_hr_expense
-#: model_terms:ir.ui.view,arch_db:hr_expense.res_config_settings_view_form
-#: model_terms:ir.ui.view,arch_db:hr_expense.view_move_form_inherit_expense
-msgid "Expenses"
-msgstr "รายจ่าย"
 
 #. module: hr_expense
 #: model:ir.actions.act_window,name:hr_expense.hr_expense_actions_all

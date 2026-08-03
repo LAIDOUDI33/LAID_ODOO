@@ -19,6 +19,16 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: payment_aps
+#: model:ir.module.module,summary:base.module_payment_aps
+msgid "An Amazon payment provider covering the MENA region."
+msgstr ""
+
+#. module: payment_aps
+#: model:ir.module.module,shortdesc:base.module_payment_aps
+msgid "Payment Provider: Amazon Payment Services"
+msgstr "पेमेंट प्रोवाइडर: Amazon पेमेंट सर्विस"
+
+#. module: payment_aps
 #: model:ir.model.fields,field_description:payment_aps.field_payment_provider__aps_access_code
 msgid "APS Access Code"
 msgstr ""

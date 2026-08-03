@@ -16,6 +16,26 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_lt
+#: model:ir.module.module,description:base.module_l10n_lt
+msgid ""
+"\n"
+"Chart of Accounts (COA) Template for Lithuania's Accounting.\n"
+"\n"
+"This module also includes:\n"
+"\n"
+"* List of available banks in Lithuania.\n"
+"* Tax groups.\n"
+"* Most common Lithuanian Taxes.\n"
+"* Fiscal positions.\n"
+"* Account Tags.\n"
+msgstr ""
+
+#. module: l10n_lt
+#: model:ir.module.module,shortdesc:base.module_l10n_lt
+msgid "Lithuania - Accounting"
+msgstr ""
+
+#. module: l10n_lt
 #: model:account.account.tag,name:l10n_lt.account_account_tag_1_net_turnover
 msgid "1. Net turnover"
 msgstr ""

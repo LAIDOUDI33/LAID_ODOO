@@ -26,6 +26,22 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: auth_oauth
+#: model:ir.module.module,description:base.module_auth_oauth
+msgid ""
+"\n"
+"Allow users to login through OAuth2 Provider.\n"
+"=============================================\n"
+msgstr ""
+"\n"
+"Permite utilizatorilor sa se conecteze prin OAuth2 Provider.\n"
+"=============================================\n"
+
+#. module: auth_oauth
+#: model:ir.module.module,shortdesc:base.module_auth_oauth
+msgid "OAuth2 Authentication"
+msgstr "Autentificare OAuth2"
+
+#. module: auth_oauth
 #. odoo-python
 #: code:addons/auth_oauth/controllers/main.py:0
 msgid "Access Denied"

@@ -16,6 +16,18 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_kz
+#: model:ir.module.module,description:base.module_l10n_kz
+msgid ""
+"\n"
+"This provides a base chart of accounts and taxes template for use in Odoo for Kazakhstan.\n"
+msgstr ""
+
+#. module: l10n_kz
+#: model:ir.module.module,shortdesc:base.module_l10n_kz
+msgid "Kazakhstan - Accounting"
+msgstr ""
+
+#. module: l10n_kz
 #: model:ir.model,name:l10n_kz.model_account_chart_template
 msgid "Account Chart Template"
 msgstr ""

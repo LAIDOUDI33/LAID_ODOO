@@ -26,6 +26,45 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: event
+#: model:ir.module.module,description:base.module_event
+msgid ""
+"\n"
+"Organization and management of Events.\n"
+"======================================\n"
+"\n"
+"The event module allows you to efficiently organize events and all related "
+"tasks: planning, registration tracking,\n"
+"attendances, etc.\n"
+"\n"
+"Key Features\n"
+"------------\n"
+"* Manage your Events and Registrations\n"
+"* Use emails to automatically confirm and send acknowledgments for any event "
+"registration\n"
+msgstr ""
+"\n"
+"活動的組織和管理.\n"
+"======================================\n"
+"\n"
+" 活動模組允許您有效地組織活動及所有相關任務:計劃、登記追蹤、\n"
+" 出勤等.\n"
+"\n"
+" 關鍵功能\n"
+"------------\n"
+"* 管理您的活動和報名\n"
+"* 使用電子郵件自動確認，並向所有活動註冊使用者發送致謝信\n"
+
+#. module: event
+#: model:ir.module.module,shortdesc:base.module_event
+msgid "Events Organization"
+msgstr "活動"
+
+#. module: event
+#: model:ir.module.module,summary:base.module_event
+msgid "Trainings, Conferences, Meetings, Exhibitions, Registrations"
+msgstr "培訓，研討會，會議，展覽，活動報名"
+
+#. module: event
 #: model:ir.model.fields,field_description:event.field_event_question__event_count
 #: model:ir.model.fields,field_description:event.field_res_partner__event_count
 #: model:ir.model.fields,field_description:event.field_res_users__event_count

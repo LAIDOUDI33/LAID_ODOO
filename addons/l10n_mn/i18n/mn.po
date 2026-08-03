@@ -20,6 +20,25 @@ msgstr ""
 "X-Generator: Weblate 5.12.2\n"
 
 #. module: l10n_mn
+#: model:ir.module.module,description:base.module_l10n_mn
+msgid ""
+"\n"
+"This is the module to manage the accounting chart for Mongolia.\n"
+"===============================================================\n"
+"\n"
+"    * the Mongolia Official Chart of Accounts,\n"
+"    * the Tax Code Chart for Mongolia\n"
+"    * the main taxes used in Mongolia\n"
+"\n"
+"Financial requirement contributor: Baskhuu Lodoikhuu. BumanIT LLC\n"
+msgstr ""
+
+#. module: l10n_mn
+#: model:ir.module.module,shortdesc:base.module_l10n_mn
+msgid "Mongolia - Accounting"
+msgstr ""
+
+#. module: l10n_mn
 #: model:account.report.line,name:l10n_mn.vat_report_lineA
 msgid "A. CALCULATION OF VAT ON GOODS, WORKS AND SERVICES SOLD FOR THAT MONTH"
 msgstr "А. ТУХАЙН САРЫН БОРЛУУЛСАН БАРАА, АЖИЛ, ҮЙЛЧИЛГЭЭНИЙ НӨАТ-ЫН ТООЦОО"

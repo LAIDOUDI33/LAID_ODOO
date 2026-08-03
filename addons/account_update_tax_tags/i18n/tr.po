@@ -20,6 +20,36 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: account_update_tax_tags
+#: model:ir.module.module,description:base.module_account_update_tax_tags
+msgid ""
+"\n"
+"This module allows updating tax grids on existing accounting entries.\n"
+"In debug mode a button to update your entries' tax grids will be available\n"
+"in Accounting settings.\n"
+"This is typically useful after some legal changes were done on the tax "
+"report,\n"
+"requiring a new tax configuration.\n"
+msgstr ""
+"\n"
+"Bu modül, mevcut muhasebe kayıtlarındaki vergi tablolarının güncellenmesini "
+"sağlar.\n"
+"Hata ayıklama modunda, muhasebe ayarlarında kayıtlarınızın vergi tablolarını "
+"güncellemek için\n"
+"bir düğme mevcuttur.\n"
+"Bu, vergi raporlarında yapılan bazı yasal değişikliklerden sonra\n"
+"yeni bir vergi yapılandırması gerektiğinde özellikle kullanışlıdır.\n"
+
+#. module: account_update_tax_tags
+#: model:ir.module.module,shortdesc:base.module_account_update_tax_tags
+msgid "Account - Allow updating tax grids"
+msgstr "Muhasebe - Vergi tablolarını güncellemeye izin ver"
+
+#. module: account_update_tax_tags
+#: model:ir.module.module,summary:base.module_account_update_tax_tags
+msgid "Allow updating tax grids on existing entries"
+msgstr "Mevcut kayıtlar üzerinde vergi tablolarını güncellemeye izin verin"
+
+#. module: account_update_tax_tags
 #: model:ir.model.fields,field_description:account_update_tax_tags.field_account_update_tax_tags_wizard__company_id
 msgid "Company"
 msgstr "Firma"

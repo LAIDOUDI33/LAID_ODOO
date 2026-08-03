@@ -27,6 +27,20 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_event_crm
+#: model:ir.module.module,description:base.module_website_event_crm
+#, fuzzy
+msgid "Allow per-order lead creation mode"
+msgstr ""
+"Har bir buyurtma uchun alohida potensial mijoz yaratish rejimiga ruxsat "
+"berish"
+
+#. module: website_event_crm
+#: model:ir.module.module,shortdesc:base.module_website_event_crm
+#, fuzzy
+msgid "Website Events CRM"
+msgstr "Veb-sayt tadbirlari CRM"
+
+#. module: website_event_crm
 #: model:ir.model.fields,field_description:website_event_crm.field_event_registration__display_name
 #, fuzzy
 msgid "Display Name"

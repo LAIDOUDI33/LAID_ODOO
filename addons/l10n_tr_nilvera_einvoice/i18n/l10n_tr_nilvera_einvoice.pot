@@ -16,6 +16,25 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_tr_nilvera_einvoice
+#: model:ir.module.module,description:base.module_l10n_tr_nilvera_einvoice
+msgid ""
+"\n"
+"For sending and receiving electronic invoices to Nilvera.\n"
+"\n"
+"Features include:\n"
+"\n"
+"- Support for invoice scenarios: Basic, Export, and Public Sector\n"
+"- Support for invoice types: Sales, Withholding, Tax Exempt, and Registered for Export\n"
+"- Configuration of withholding reasons and exemption reasons\n"
+"- Addition of Tax Offices.\n"
+msgstr ""
+
+#. module: l10n_tr_nilvera_einvoice
+#: model:ir.module.module,shortdesc:base.module_l10n_tr_nilvera_einvoice
+msgid "Türkiye - Nilvera E-Invoice"
+msgstr ""
+
+#. module: l10n_tr_nilvera_einvoice
 #: model:l10n_tr_nilvera_einvoice.account.tax.code,name:l10n_tr_nilvera_einvoice.account_tax_code_316
 msgid "11/1-a Contract Services for Customers in Free Zones"
 msgstr ""

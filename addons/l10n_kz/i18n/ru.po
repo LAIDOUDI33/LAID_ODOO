@@ -21,6 +21,22 @@ msgstr ""
 "X-Generator: Weblate 5.12.2\n"
 
 #. module: l10n_kz
+#: model:ir.module.module,description:base.module_l10n_kz
+msgid ""
+"\n"
+"This provides a base chart of accounts and taxes template for use in Odoo "
+"for Kazakhstan.\n"
+msgstr ""
+"\n"
+"Этот модуль предоставляет базовый план счетов и шаблон налогов для "
+"использования в Odoo в Казахстане.\n"
+
+#. module: l10n_kz
+#: model:ir.module.module,shortdesc:base.module_l10n_kz
+msgid "Kazakhstan - Accounting"
+msgstr "Казахстан — Бухгалтерия"
+
+#. module: l10n_kz
 #: model:ir.model,name:l10n_kz.model_account_chart_template
 msgid "Account Chart Template"
 msgstr "План счетов бухгалтерского учета"

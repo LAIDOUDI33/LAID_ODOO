@@ -25,6 +25,25 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_profile
+#: model:ir.module.module,summary:base.module_website_profile
+msgid "Access the website profile of the users"
+msgstr "Auf das Website-Profil der Benutzer zugreifen"
+
+#. module: website_profile
+#: model:ir.module.module,description:base.module_website_profile
+msgid ""
+"Allows to access the website profile of the users and see their statistics "
+"(karma, badges, etc..)"
+msgstr ""
+"Ermöglicht den Zugriff auf das Website-Profil der Benutzer und die Anzeige "
+"ihrer Statistiken (Karma, Abzeichen etc.)."
+
+#. module: website_profile
+#: model:ir.module.module,shortdesc:base.module_website_profile
+msgid "Website profile"
+msgstr "Website-Profil"
+
+#. module: website_profile
 #: model_terms:ir.ui.view,arch_db:website_profile.email_validation_banner
 msgid ""
 "!<br/>\n"

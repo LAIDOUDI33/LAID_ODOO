@@ -16,6 +16,16 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: website_mail_group
+#: model:ir.module.module,summary:base.module_website_mail_group
+msgid "Add a website snippet for the mail groups."
+msgstr ""
+
+#. module: website_mail_group
+#: model:ir.module.module,shortdesc:base.module_website_mail_group
+msgid "Website Mail Group"
+msgstr ""
+
+#. module: website_mail_group
 #: model_terms:ir.ui.view,arch_db:website_mail_group.mail_group_view_form
 msgid ""
 "<i class=\"o_button_icon oi oi-fw text-success\" data-icon=\"public\" "

@@ -27,6 +27,31 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: attachment_indexation
+#: model:ir.module.module,description:base.module_attachment_indexation
+#, fuzzy
+msgid ""
+"\n"
+"Attachments list and document indexation\n"
+"========================================\n"
+"* Show attachment on the top of the forms\n"
+"* Document Indexation: odt, pdf, xlsx, docx\n"
+"\n"
+"The `pdfminer.six` Python library has to be installed in order to index PDF "
+"files\n"
+msgstr ""
+"Ilovalar ro‘yxati va hujjatlarni indekslash "
+"========================================== * Shakllarning yuqori qismida "
+"ilovani ko‘rsatish * Hujjatlarni indekslash: odt, pdf, xlsx, docx PDF "
+"fayllarini indekslash uchun 'pdfminer.six' Python kutubxonasini o‘rnatish "
+"zarur"
+
+#. module: attachment_indexation
+#: model:ir.module.module,shortdesc:base.module_attachment_indexation
+#, fuzzy
+msgid "Attachments List and Document Indexation"
+msgstr "Ilovalar ro‘yxati va hujjatlarni indekslash"
+
+#. module: attachment_indexation
 #: model:ir.model,name:attachment_indexation.model_ir_attachment
 #, fuzzy
 msgid "Attachment"

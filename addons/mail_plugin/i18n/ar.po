@@ -22,6 +22,26 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: mail_plugin
+#: model:ir.module.module,summary:base.module_mail_plugin
+msgid "Allows integration with mail plugins."
+msgstr "يسمح بالدمج مع المكونات الإضافية للبريد."
+
+#. module: mail_plugin
+#: model:ir.module.module,description:base.module_mail_plugin
+msgid ""
+"Integrate Odoo with your mailbox, get information about contacts directly "
+"inside your mailbox, log content of emails as internal notes"
+msgstr ""
+"قم بدمج أودو مع صندوق البريد الخاص بك. احصل على المعلومات حول جهات الاتصال "
+"مباشرة داخل صندوق البريد الخاص بك، وقم بتسجيل محتوى رسائل البريد الإلكتروني "
+"كملاحظات داخلية"
+
+#. module: mail_plugin
+#: model:ir.module.module,shortdesc:base.module_mail_plugin
+msgid "Mail Plugin"
+msgstr "المكون الإضافي للبريد الإلكتروني"
+
+#. module: mail_plugin
 #. odoo-python
 #: code:addons/mail_plugin/controllers/mail_plugin.py:0
 msgid "%(name)s #%(id)s"

@@ -27,6 +27,52 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: gamification
+#: model:ir.module.module,description:base.module_gamification
+msgid ""
+"\n"
+"Gamification process\n"
+"====================\n"
+"The Gamification module provides ways to evaluate and motivate the users of "
+"Odoo.\n"
+"\n"
+"The users can be evaluated using goals and numerical objectives to reach.\n"
+"**Goals** are assigned through **challenges** to evaluate and compare "
+"members of a team with each others and through time.\n"
+"\n"
+"For non-numerical achievements, **badges** can be granted to users. From a "
+"simple \"thank you\" to an exceptional achievement, a badge is an easy way "
+"to exprimate gratitude to a user for their good work.\n"
+"\n"
+"Both goals and badges are flexibles and can be adapted to a large range of "
+"modules and actions. When installed, this module creates easy goals to help "
+"new users to discover Odoo and configure their user profile.\n"
+msgstr ""
+"\n"
+"Процес гемифікації\n"
+"====================\n"
+"Модуль геміфікації забезпечує способи оцінювання та мотивації користувачів "
+"Odoo.\n"
+"\n"
+"Користувачі можуть оцінюватися за допомогою цілей та чисельних цілей, щоб "
+"досягти їх.\n"
+"**Цілі** призначаються за допомогою **завдань**, щоб оцінювати та "
+"порівнювати членів команди з кожним іншим та через час.\n"
+"\n"
+"Для нечисленних досягнень, **значки** можуть бути надані користувачам. Від "
+"простого \"дякую\" до виняткового досягнення значок - це простий спосіб "
+"виразити подяку користувача за їхню хорошу роботу.\n"
+"\n"
+"Обидві цілі та значки - це гнучкі елементи, які можуть бути адаптовані до "
+"широкого кола модулів та дій. Після встановлення цей модуль створює легкі "
+"цілі, щоб допомогти новим користувачам знаходити Odoo та налаштовувати їх "
+"профіль користувача.\n"
+
+#. module: gamification
+#: model:ir.module.module,shortdesc:base.module_gamification
+msgid "Gamification"
+msgstr "Геміфікація"
+
+#. module: gamification
 #: model:ir.model.fields,field_description:gamification.field_gamification_challenge__user_count
 #: model:ir.model.fields,field_description:gamification.field_gamification_karma_rank__rank_users_count
 msgid "# Users"

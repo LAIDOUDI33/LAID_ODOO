@@ -20,6 +20,28 @@ msgstr ""
 "X-Generator: Weblate 5.12.2\n"
 
 #. module: l10n_cg
+#: model:ir.module.module,description:base.module_l10n_cg
+msgid ""
+"\n"
+"This module implements the tax for Congo.\n"
+"===========================================================\n"
+"\n"
+"The Chart of Accounts is from SYSCOHADA.\n"
+"\n"
+msgstr ""
+"\n"
+"Ce module implémente les impôts pour le Congo.\n"
+"===========================================================\n"
+"\n"
+"Le plan comptable provient du SYSCOHADA.\n"
+"\n"
+
+#. module: l10n_cg
+#: model:ir.module.module,shortdesc:base.module_l10n_cg
+msgid "Congo - Accounting"
+msgstr "Congo - Comptabilité"
+
+#. module: l10n_cg
 #: model:ir.model,name:l10n_cg.model_account_chart_template
 msgid "Account Chart Template"
 msgstr "Modèle de Plan Comptable"

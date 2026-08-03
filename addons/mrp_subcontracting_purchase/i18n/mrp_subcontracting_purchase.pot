@@ -16,6 +16,18 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: mrp_subcontracting_purchase
+#: model:ir.module.module,description:base.module_mrp_subcontracting_purchase
+msgid ""
+"\n"
+"This bridge module adds some smart buttons between Purchase and Subcontracting\n"
+msgstr ""
+
+#. module: mrp_subcontracting_purchase
+#: model:ir.module.module,shortdesc:base.module_mrp_subcontracting_purchase
+msgid "Purchase and Subcontracting Management"
+msgstr ""
+
+#. module: mrp_subcontracting_purchase
 #. odoo-python
 #: code:addons/mrp_subcontracting_purchase/models/stock_move.py:0
 msgid "%(value)s for %(quantity)s %(unit)s from %(production)s"

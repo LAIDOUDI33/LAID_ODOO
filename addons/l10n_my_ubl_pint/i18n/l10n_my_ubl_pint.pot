@@ -16,6 +16,18 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_my_ubl_pint
+#: model:ir.module.module,description:base.module_l10n_my_ubl_pint
+msgid ""
+"\n"
+"The UBL PINT e-invoicing format for Malaysia is based on the Peppol International (PINT) model for Billing.\n"
+msgstr ""
+
+#. module: l10n_my_ubl_pint
+#: model:ir.module.module,shortdesc:base.module_l10n_my_ubl_pint
+msgid "Malaysia - UBL PINT"
+msgstr ""
+
+#. module: l10n_my_ubl_pint
 #: model_terms:ir.ui.view,arch_db:l10n_my_ubl_pint.view_company_form_inherit_l10n_my_ubl_pint
 #: model_terms:ir.ui.view,arch_db:l10n_my_ubl_pint.view_partner_form_inherit_l10n_my_ubl_pint
 msgid "A01-2345-67891012"

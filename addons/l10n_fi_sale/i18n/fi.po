@@ -20,6 +20,16 @@ msgstr ""
 "X-Generator: Weblate 5.12.2\n"
 
 #. module: l10n_fi_sale
+#: model:ir.module.module,shortdesc:base.module_l10n_fi_sale
+msgid "Finland - Sale"
+msgstr "Suomi - Myynti"
+
+#. module: l10n_fi_sale
+#: model:ir.module.module,description:base.module_l10n_fi_sale
+msgid "Finland Sale"
+msgstr "Suomi, myynti"
+
+#. module: l10n_fi_sale
 #: model:ir.model.fields,field_description:l10n_fi_sale.field_sale_order__display_name
 msgid "Display Name"
 msgstr "Näyttönimi"

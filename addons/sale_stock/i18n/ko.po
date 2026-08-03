@@ -26,6 +26,46 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: sale_stock
+#: model:ir.module.module,description:base.module_sale_stock
+msgid ""
+"\n"
+"Manage sales quotations and orders\n"
+"==================================\n"
+"\n"
+"This module makes the link between the sales and warehouses management "
+"applications.\n"
+"\n"
+"Preferences\n"
+"-----------\n"
+"* Shipping: Choice of delivery at once or partial delivery\n"
+"* Invoicing: choose how invoices will be paid\n"
+"* Incoterms: International Commercial terms\n"
+"\n"
+msgstr ""
+"\n"
+"판매 견적 및 주문 관리\n"
+"==================================\n"
+"\n"
+"이 모듈은 판매 관리와 창고 관리 프로그램을 연결합니다.\n"
+"\n"
+"환경 설정\n"
+"-----------\n"
+"* 배송: 일괄 배송 또는 부분 배송\n"
+"* 청구서 발행: 청구서의 결제 방법 선택\n"
+"* 인코텀즈: 국제상업용어\n"
+"\n"
+
+#. module: sale_stock
+#: model:ir.module.module,summary:base.module_sale_stock
+msgid "Quotation, Sales Orders, Delivery & Invoicing Control"
+msgstr "견적, 판매 주문, 납품 및 청구 관리"
+
+#. module: sale_stock
+#: model:ir.module.module,shortdesc:base.module_sale_stock
+msgid "Sales and Warehouse Management"
+msgstr "판매 및 창고 관리"
+
+#. module: sale_stock
 #: model:ir.actions.report,print_report_name:sale_stock.action_report_return_label
 msgid "\"Return - %s\" % (object.name)"
 msgstr ""

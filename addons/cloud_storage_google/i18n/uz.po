@@ -27,6 +27,18 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: cloud_storage_google
+#: model:ir.module.module,shortdesc:base.module_cloud_storage_google
+#, fuzzy
+msgid "Cloud Storage Google"
+msgstr "Google bulutli saqlash"
+
+#. module: cloud_storage_google
+#: model:ir.module.module,summary:base.module_cloud_storage_google
+#, fuzzy
+msgid "Store chatter attachments in the Google cloud"
+msgstr "Chat ilovalarini Google bulutida saqlash"
+
+#. module: cloud_storage_google
 #. odoo-python
 #: code:addons/cloud_storage_google/models/ir_attachment.py:0
 #, fuzzy

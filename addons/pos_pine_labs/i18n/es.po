@@ -21,6 +21,49 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: pos_pine_labs
+#: model:ir.module.module,description:base.module_pos_pine_labs
+msgid ""
+"\n"
+"Allow Pine Labs POS payments\n"
+"==============================\n"
+"\n"
+"This module is available only for companies that use INR currency.\n"
+"It enables customers to pay for their orders using debit/credit cards and "
+"UPI through Pine Labs POS terminals.\n"
+"A Pine Labs merchant account is required to process transactions.\n"
+"Features include:\n"
+"\n"
+"* Quick payments by swiping, scanning, or tapping your credit/debit card or "
+"UPI QR code at the payment terminal.\n"
+"* Supported cards: Visa, MasterCard, RuPay.\n"
+msgstr ""
+"\n"
+"Permita pagos con el TPV de Pine Labs\n"
+"==============================\n"
+"\n"
+"Este módulo solo está disponible para empresas que usan la moneda INR.\n"
+"Con este módulo, los clientes podrán pagar sus pedidos usando tarjetas de "
+"débito o crédito y la UPI a través de los terminales de pago de Pine Labs "
+"POS.\n"
+"Se necesita una cuenta de comerciante de Pine Labs para poder procesar las "
+"transacciones.\n"
+"Las funciones incluyen:\n"
+"\n"
+"* Pagos rápidos al deslizar, escanear o tocar la tarjeta de débito o crédito "
+"y el código QR UPI en el terminal de pago.\n"
+"* Tarjetas compatibles: Visa, MasterCard, RuPay.\n"
+
+#. module: pos_pine_labs
+#: model:ir.module.module,summary:base.module_pos_pine_labs
+msgid "Integrate your POS with Pine Labs payment terminals"
+msgstr "Integre su TPV con los terminales de pago de Pine Labs"
+
+#. module: pos_pine_labs
+#: model:ir.module.module,shortdesc:base.module_pos_pine_labs
+msgid "POS Pine Labs"
+msgstr "TPV - Pine Labs"
+
+#. module: pos_pine_labs
 #: model:ir.model.fields,help:pos_pine_labs.field_pos_payment_method__pine_labs_client
 msgid "A client id issued directly to the merchant by Pine Labs."
 msgstr "Un ID de cliente emitido al comerciante por Pine Labs."

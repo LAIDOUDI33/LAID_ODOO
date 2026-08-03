@@ -16,6 +16,17 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: calendar_sms
+#: model:ir.module.module,shortdesc:base.module_calendar_sms
+msgid "Calendar - SMS"
+msgstr ""
+
+#. module: calendar_sms
+#: model:ir.module.module,description:base.module_calendar_sms
+#: model:ir.module.module,summary:base.module_calendar_sms
+msgid "Send text messages as event reminders"
+msgstr ""
+
+#. module: calendar_sms
 #: model:ir.model,name:calendar_sms.model_calendar_event
 msgid "Calendar Event"
 msgstr ""

@@ -21,6 +21,21 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: stock_fleet
+#: model:ir.module.module,shortdesc:base.module_stock_fleet
+msgid "Stock Transport"
+msgstr "재고 운송"
+
+#. module: stock_fleet
+#: model:ir.module.module,summary:base.module_stock_fleet
+msgid "Stock Transport: Dispatch Management System"
+msgstr "재고 운송: 배차 관리 시스템"
+
+#. module: stock_fleet
+#: model:ir.module.module,description:base.module_stock_fleet
+msgid "Transport Management: organize packs in your fleet, or carriers."
+msgstr "운송 관리:  차량 또는 화물 운송업체를 통해 소포를 정리합니다."
+
+#. module: stock_fleet
 #. odoo-python
 #: code:addons/stock_fleet/models/fleet_vehicle_model.py:0
 msgid "%(display_name)s (%(load_capacity)s)"

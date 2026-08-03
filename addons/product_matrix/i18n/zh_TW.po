@@ -23,6 +23,25 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: product_matrix
+#: model:ir.module.module,description:base.module_product_matrix
+msgid ""
+"\n"
+"Please refer to Sale Matrix or Purchase Matrix for the use of this module.\n"
+msgstr ""
+"\n"
+"請參閱銷售矩陣或採購矩陣以使用此模塊。\n"
+
+#. module: product_matrix
+#: model:ir.module.module,shortdesc:base.module_product_matrix
+msgid "Product Matrix"
+msgstr "產品矩陣"
+
+#. module: product_matrix
+#: model:ir.module.module,summary:base.module_product_matrix
+msgid "Technical module: Matrix Implementation"
+msgstr "技術模塊：矩陣實施"
+
+#. module: product_matrix
 #: model_terms:ir.ui.view,arch_db:product_matrix.matrix
 msgid ""
 "<small>Switch to the \"else\" condition of this block to view or edit the "

@@ -24,6 +24,34 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: product_email_template
+#: model:ir.module.module,description:base.module_product_email_template
+msgid ""
+"\n"
+"Add email templates to products to be sent on invoice confirmation\n"
+"==================================================================\n"
+"\n"
+"With this module, link your products to a template to send complete "
+"information and tools to your customer.\n"
+"For instance when invoicing a training, the training agenda and materials "
+"will automatically be sent to your customers.'\n"
+msgstr ""
+"\n"
+"เพิ่มเทมเพลตอีเมลให้กับผลิตภัณฑ์ที่จะส่งในการยืนยันใบแจ้งหนี้\n"
+"==================================================================\n"
+"\n"
+"ด้วยโมดูลนี้ คุณสามารถเชื่อมโยงผลิตภัณฑ์ของคุณเข้ากับเทมเพลตเพื่อส่งข้อมูลและเครื่องมือที่ครบถ้วนให้กับ"
+"ลูกค้าของคุณ\n"
+"ตัวอย่างเช่น เมื่อออกใบแจ้งหนี้การฝึกอบรม กำหนดการการฝึกอบรมและเอกสารการฝึกอบรมจะถูกส่งไปยั"
+"งลูกค้าของคุณโดยอัตโนมัติ'\n"
+
+#. module: product_email_template
+#: model:ir.model.fields,field_description:product_email_template.field_product_product__email_template_id
+#: model:ir.model.fields,field_description:product_email_template.field_product_template__email_template_id
+#: model:ir.module.module,shortdesc:base.module_product_email_template
+msgid "Product Email Template"
+msgstr "เทมเพลตอีเมลสินค้า"
+
+#. module: product_email_template
 #: model_terms:ir.ui.view,arch_db:product_email_template.product_template_form_view
 msgid "Automatic Email at Invoice"
 msgstr "อีเมลอัตโนมัติในใบแจ้งหนี้"
@@ -60,12 +88,6 @@ msgstr "รายการสมุดรายวัน"
 #: model:ir.model,name:product_email_template.model_product_template
 msgid "Product"
 msgstr "สินค้า"
-
-#. module: product_email_template
-#: model:ir.model.fields,field_description:product_email_template.field_product_product__email_template_id
-#: model:ir.model.fields,field_description:product_email_template.field_product_template__email_template_id
-msgid "Product Email Template"
-msgstr "เทมเพลตอีเมลสินค้า"
 
 #. module: product_email_template
 #: model_terms:ir.ui.view,arch_db:product_email_template.product_template_form_view

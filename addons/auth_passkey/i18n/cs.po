@@ -21,6 +21,36 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: auth_passkey
+#: model:ir.module.module,description:base.module_auth_passkey
+msgid ""
+"\n"
+"The implementation of Passkeys using the webauthn protocol.\n"
+"===========================================================\n"
+"\n"
+"Passkeys are a secure alternative to a username and a password.\n"
+"When a user logs in with a Passkey, MFA will not be required.\n"
+msgstr ""
+"\n"
+"Implementace přístupových klíčů s použitím protokolu WebAuthn.\n"
+"===========================================================\n"
+"\n"
+"Přístupové klíče jsou alternativou k uživatelskému jménu a heslu.\n"
+"¨Když se uživatel přihlašuje s použitím přístupového klíče, MFA nebude "
+"vyžadovaná.\n"
+
+#. module: auth_passkey
+#: model:ir.module.module,summary:base.module_auth_passkey
+msgid "Log in with a Passkey"
+msgstr "Přihlásit se pomoci Passkey"
+
+#. module: auth_passkey
+#: model:ir.module.module,shortdesc:base.module_auth_passkey
+#: model_terms:ir.ui.view,arch_db:auth_passkey.auth_passkey_users_form
+#: model_terms:ir.ui.view,arch_db:auth_passkey.auth_passkey_users_preferences
+msgid "Passkeys"
+msgstr "Hesla"
+
+#. module: auth_passkey
 #: model_terms:ir.ui.view,arch_db:auth_passkey.auth_passkey_users_form
 #: model_terms:ir.ui.view,arch_db:auth_passkey.auth_passkey_users_preferences
 #, fuzzy
@@ -173,12 +203,6 @@ msgstr "Nebo zvolte jinou metodu:"
 #, fuzzy
 msgid "Passkey"
 msgstr "Přístupový klíč"
-
-#. module: auth_passkey
-#: model_terms:ir.ui.view,arch_db:auth_passkey.auth_passkey_users_form
-#: model_terms:ir.ui.view,arch_db:auth_passkey.auth_passkey_users_preferences
-msgid "Passkeys"
-msgstr "Hesla"
 
 #. module: auth_passkey
 #: model:ir.model,name:auth_passkey.model_res_users_identitycheck

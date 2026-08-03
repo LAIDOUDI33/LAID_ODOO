@@ -23,6 +23,48 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: event_sale
+#: model:ir.module.module,description:base.module_event_sale
+msgid ""
+"\n"
+"Creating registration with sales orders.\n"
+"========================================\n"
+"\n"
+"This module allows you to automate and connect your registration creation "
+"with\n"
+"your main sale flow and therefore, to enable the invoicing feature of "
+"registrations.\n"
+"\n"
+"It defines a new kind of service products that offers you the possibility "
+"to\n"
+"choose an event category associated with it. When you encode a sales order "
+"for\n"
+"that product, you will be able to choose an existing event of that category "
+"and\n"
+"when you confirm your sales order it will automatically create a "
+"registration for\n"
+"this event.\n"
+msgstr ""
+"\n"
+"Tạo đăng ký với đơn đặt hàng.\n"
+"========================================\n"
+"\n"
+"Phân hệ này cho phép bạn tự động hóa và kết nối việc tạo đăng ký với\n"
+"quy trình bán hàng chính của bạn và qua đó, kích hoạt tính năng lập hóa đơn "
+"đăng ký.\n"
+"\n"
+"Phân hệ này thể hiện một loại sản phẩm dịch vụ mới cung cấp cho bạn khả "
+"năng\n"
+"chọn một thể loại sự kiện liên quan. Khi bạn mã hóa đơn bán hàng cho\n"
+"sản phẩm đó, bạn sẽ có thể chọn một sự kiện hiện có của thể loại này và\n"
+"khi bạn xác nhận đơn bán hàng, đăng ký sự kiện sẽ được tạo\n"
+"tự động.\n"
+
+#. module: event_sale
+#: model:ir.module.module,shortdesc:base.module_event_sale
+msgid "Events Sales"
+msgstr "Doanh số Sự kiện"
+
+#. module: event_sale
 #: model_terms:ir.ui.view,arch_db:event_sale.event_registration_change_exception
 msgid ""
 ".\n"

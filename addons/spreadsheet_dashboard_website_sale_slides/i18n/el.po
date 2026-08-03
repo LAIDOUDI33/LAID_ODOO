@@ -20,6 +20,17 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: spreadsheet_dashboard_website_sale_slides
+#: model:ir.module.module,description:base.module_spreadsheet_dashboard_website_sale_slides
+#: model:ir.module.module,summary:base.module_spreadsheet_dashboard_website_sale_slides
+msgid "Spreadsheet"
+msgstr "Υπολογιστικό φύλλο"
+
+#. module: spreadsheet_dashboard_website_sale_slides
+#: model:ir.module.module,shortdesc:base.module_spreadsheet_dashboard_website_sale_slides
+msgid "Spreadsheet dashboard for eLearning"
+msgstr ""
+
+#. module: spreadsheet_dashboard_website_sale_slides
 #. odoo-javascript
 #: code:addons/spreadsheet_dashboard_website_sale_slides/data/files/elearning_dashboard.json:0
 #: code:addons/spreadsheet_dashboard_website_sale_slides/data/files/elearning_sample_dashboard.json:0

@@ -21,6 +21,35 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: auth_passkey
+#: model:ir.module.module,description:base.module_auth_passkey
+msgid ""
+"\n"
+"The implementation of Passkeys using the webauthn protocol.\n"
+"===========================================================\n"
+"\n"
+"Passkeys are a secure alternative to a username and a password.\n"
+"When a user logs in with a Passkey, MFA will not be required.\n"
+msgstr ""
+"\n"
+"การใช้งาน Passkeys โดยใช้โปรโตคอล webauthn\n"
+"===========================================================\n"
+"\n"
+"รหัสผ่านเป็นทางเลือกที่ปลอดภัยแทนชื่อผู้ใช้และรหัสผ่าน\n"
+"เมื่อผู้ใช้เข้าสู่ระบบด้วยรหัสผ่าน จะไม่จำเป็นต้องใช้ MFA\n"
+
+#. module: auth_passkey
+#: model:ir.module.module,summary:base.module_auth_passkey
+msgid "Log in with a Passkey"
+msgstr "เข้าสู่ระบบด้วยรหัสผ่าน"
+
+#. module: auth_passkey
+#: model:ir.module.module,shortdesc:base.module_auth_passkey
+#: model_terms:ir.ui.view,arch_db:auth_passkey.auth_passkey_users_form
+#: model_terms:ir.ui.view,arch_db:auth_passkey.auth_passkey_users_preferences
+msgid "Passkeys"
+msgstr "รหัสผ่าน"
+
+#. module: auth_passkey
 #: model_terms:ir.ui.view,arch_db:auth_passkey.auth_passkey_users_form
 #: model_terms:ir.ui.view,arch_db:auth_passkey.auth_passkey_users_preferences
 #, fuzzy
@@ -160,12 +189,6 @@ msgstr "หรือเลือกวิธีอื่น:"
 #: model:ir.model,name:auth_passkey.model_auth_passkey_key
 #: model:ir.model.fields.selection,name:auth_passkey.selection__res_users_identitycheck__auth_method__webauthn
 msgid "Passkey"
-msgstr "รหัสผ่าน"
-
-#. module: auth_passkey
-#: model_terms:ir.ui.view,arch_db:auth_passkey.auth_passkey_users_form
-#: model_terms:ir.ui.view,arch_db:auth_passkey.auth_passkey_users_preferences
-msgid "Passkeys"
 msgstr "รหัสผ่าน"
 
 #. module: auth_passkey

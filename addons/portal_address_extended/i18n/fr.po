@@ -20,6 +20,35 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: portal_address_extended
+#: model:ir.module.module,description:base.module_portal_address_extended
+msgid ""
+"\n"
+"Extended Addresses Management (Customer Portal)\n"
+"===============================================\n"
+"\n"
+"This bridge module adds support for city dropdowns\n"
+"in the customer portal for the countries where cities are enforced.\n"
+"\n"
+msgstr ""
+"\n"
+"Gestion étendue des adresses (Portail client)\n"
+"===============================================\n"
+"\n"
+"Ce module passerelle ajoute la prise en charge des listes déroulantes de "
+"villes\n"
+"dans le portail client pour les pays où les villes sont obligatoires.\n"
+
+#. module: portal_address_extended
+#: model:ir.module.module,summary:base.module_portal_address_extended
+msgid "Add extra fields on addresses for Customer Portal"
+msgstr "Ajouter des champs supplémentaires aux adresses pour le portail client"
+
+#. module: portal_address_extended
+#: model:ir.module.module,shortdesc:base.module_portal_address_extended
+msgid "Extended Addresses - Customer portal"
+msgstr "Adresses étendues - Portail client"
+
+#. module: portal_address_extended
 #: model_terms:ir.ui.view,arch_db:portal_address_extended.address_extended_form_fields
 msgid "City"
 msgstr "Ville"

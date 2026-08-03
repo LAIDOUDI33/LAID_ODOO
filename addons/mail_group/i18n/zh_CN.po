@@ -21,6 +21,27 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: mail_group
+#: model:ir.module.module,description:base.module_mail_group
+msgid ""
+"\n"
+"Manage your mailing lists from Odoo.\n"
+msgstr ""
+"\n"
+"从 Odoo 管理您的邮件列表。\n"
+
+#. module: mail_group
+#: model:ir.model,name:mail_group.model_mail_group
+#: model:ir.module.module,shortdesc:base.module_mail_group
+#: model_terms:ir.ui.view,arch_db:mail_group.mail_group_view_form
+msgid "Mail Group"
+msgstr "邮件组"
+
+#. module: mail_group
+#: model:ir.module.module,summary:base.module_mail_group
+msgid "Manage your mailing lists"
+msgstr "管理邮件列表"
+
+#. module: mail_group
 #: model_terms:ir.ui.view,arch_db:mail_group.mail_group_view_list
 msgid "#Members"
 msgstr "成员"
@@ -800,12 +821,6 @@ msgstr "让人们线上订阅您的名单，或在这里手动添加他们。"
 #: model:ir.model.fields,field_description:mail_group.field_mail_group__alias_incoming_local
 msgid "Local-part based incoming detection"
 msgstr "收件时检测本地的别名域"
-
-#. module: mail_group
-#: model:ir.model,name:mail_group.model_mail_group
-#: model_terms:ir.ui.view,arch_db:mail_group.mail_group_view_form
-msgid "Mail Group"
-msgstr "邮件组"
 
 #. module: mail_group
 #: model:res.groups,name:mail_group.group_mail_group_manager

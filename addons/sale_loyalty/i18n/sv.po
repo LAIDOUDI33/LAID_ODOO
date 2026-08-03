@@ -21,6 +21,22 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: sale_loyalty
+#: model:ir.module.module,description:base.module_sale_loyalty
+msgid "Integrate discount and loyalty programs mechanisms in sales orders."
+msgstr ""
+"Integrera mekanismer för rabatt- och lojalitetsprogram i försäljningsorder."
+
+#. module: sale_loyalty
+#: model:ir.module.module,shortdesc:base.module_sale_loyalty
+msgid "Sale Loyalty"
+msgstr "Lojalitet vid försäljning"
+
+#. module: sale_loyalty
+#: model:ir.module.module,summary:base.module_sale_loyalty
+msgid "Use discounts and loyalty programs in sales orders"
+msgstr "Använd rabatter och lojalitetsprogram i försäljningsorder"
+
+#. module: sale_loyalty
 #. odoo-python
 #: code:addons/sale_loyalty/models/sale_order.py:0
 msgid " - On products with the following taxes: %(taxes)s"

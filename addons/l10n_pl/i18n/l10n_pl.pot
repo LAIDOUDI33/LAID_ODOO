@@ -16,6 +16,26 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_pl
+#: model:ir.module.module,description:base.module_l10n_pl
+msgid ""
+"\n"
+"This is the module to manage the accounting chart and taxes for Poland in Odoo.\n"
+"==================================================================================\n"
+"\n"
+"To jest moduł do tworzenia wzorcowego planu kont, podatków, obszarów podatkowych i\n"
+"rejestrów podatkowych. Moduł ustawia też konta do kupna i sprzedaży towarów\n"
+"zakładając, że wszystkie towary są w obrocie hurtowym.\n"
+"\n"
+"Niniejszy moduł jest przeznaczony dla odoo 8.0.\n"
+"Wewnętrzny numer wersji OpenGLOBE 1.02\n"
+msgstr ""
+
+#. module: l10n_pl
+#: model:ir.module.module,shortdesc:base.module_l10n_pl
+msgid "Poland - Accounting"
+msgstr ""
+
+#. module: l10n_pl
 #: model:ir.model,name:l10n_pl.model_account_chart_template
 msgid "Account Chart Template"
 msgstr ""

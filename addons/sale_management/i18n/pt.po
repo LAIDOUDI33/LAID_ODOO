@@ -33,6 +33,53 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: sale_management
+#: model:ir.module.module,description:base.module_sale_management
+msgid ""
+"\n"
+"Manage sales quotations and orders\n"
+"==================================\n"
+"\n"
+"This application allows you to manage your sales goals in an effective and "
+"efficient manner by\n"
+"keeping track of all sales orders and history.\n"
+"\n"
+"It handles the full sales workflow:\n"
+"\n"
+"* **Quotation** -> **Sales order** -> **Invoice**\n"
+"\n"
+"Preferences (only with Warehouse Management installed)\n"
+"------------------------------------------------------\n"
+"\n"
+"If you also installed the Warehouse Management, you can deal with the "
+"following preferences:\n"
+"\n"
+"* Shipping: Choice of delivery at once or partial delivery\n"
+"* Invoicing: choose how invoices will be paid\n"
+"* Incoterms: International Commercial terms\n"
+"\n"
+"\n"
+"With this module you can personnalize the sales order and invoice report "
+"with\n"
+"categories, subtotals or page-breaks.\n"
+"\n"
+"The Dashboard for the Sales Manager will include\n"
+"------------------------------------------------\n"
+"* My Quotations\n"
+"* Monthly Turnover (Graph)\n"
+msgstr ""
+
+#. module: sale_management
+#: model:ir.module.module,summary:base.module_sale_management
+msgid "From quotations to invoices"
+msgstr "De cotações a faturas"
+
+#. module: sale_management
+#: model:ir.module.module,shortdesc:base.module_sale_management
+#: model_terms:ir.ui.view,arch_db:sale_management.digest_digest_view_form
+msgid "Sales"
+msgstr "Vendas"
+
+#. module: sale_management
 #: model:ir.model.fields,field_description:sale_management.field_sale_order_template__active
 msgid "Active"
 msgstr "Ativo"
@@ -406,11 +453,6 @@ msgid ""
 msgstr ""
 "Solicite uma assinatura online ao cliente para confirmar os pedidos "
 "automaticamente."
-
-#. module: sale_management
-#: model_terms:ir.ui.view,arch_db:sale_management.digest_digest_view_form
-msgid "Sales"
-msgstr "Vendas"
 
 #. module: sale_management
 #: model:ir.model,name:sale_management.model_sale_order

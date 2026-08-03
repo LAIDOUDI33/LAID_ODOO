@@ -22,6 +22,40 @@ msgstr ""
 "X-Generator: Weblate 5.16.2\n"
 
 #. module: l10n_sa
+#: model:ir.module.module,description:base.module_l10n_sa
+msgid ""
+"\n"
+"Saudi Arabia Accounting Module\n"
+"===========================================================\n"
+"Saudi Arabia Accounting Basic Charts and Localization\n"
+"\n"
+"Activates:\n"
+"\n"
+"- Chart of Accounts\n"
+"- Taxes\n"
+"- VAT Return\n"
+"- Withholding Return\n"
+"- Fiscal Positions\n"
+msgstr ""
+"\n"
+"تطبيق المحاسبة في المملكة العربية السعودية\n"
+"===========================================================\n"
+"المخططات الأساسية للمحاسبة والأقلمة في المملكة العربية السعودية\n"
+"\n"
+"يؤدي إلى تفعيل:\n"
+"\n"
+"- شجرة الحسابات\n"
+"- الضرائب\n"
+"- إقرار ضريبة القيمة المضافة\n"
+"- إقرار الضريبة المقتطعة\n"
+"- الأوضاع المالية\n"
+
+#. module: l10n_sa
+#: model:ir.module.module,shortdesc:base.module_l10n_sa
+msgid "Saudi Arabia - Accounting"
+msgstr "المملكة العربية السعودية - المحاسبة"
+
+#. module: l10n_sa
 #: model:account.report.line,name:l10n_sa.tax_report_withholding_tax_line_rent
 msgid " 1. Rent (5%)"
 msgstr ""

@@ -16,6 +16,25 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_tw_edi_ecpay
+#: model:ir.module.module,description:base.module_l10n_tw_edi_ecpay
+msgid ""
+"\n"
+"Taiwan - E-invoicing\n"
+"=====================\n"
+"This module allows the user to send their invoices to the Ecpay system.\n"
+msgstr ""
+
+#. module: l10n_tw_edi_ecpay
+#: model:ir.module.module,summary:base.module_l10n_tw_edi_ecpay
+msgid "E-invoicing using ECpay"
+msgstr ""
+
+#. module: l10n_tw_edi_ecpay
+#: model:ir.module.module,shortdesc:base.module_l10n_tw_edi_ecpay
+msgid "Taiwan - E-invoicing"
+msgstr ""
+
+#. module: l10n_tw_edi_ecpay
 #: model:ir.model.fields,help:l10n_tw_edi_ecpay.field_account_bank_statement_line__l10n_tw_edi_carrier_type
 #: model:ir.model.fields,help:l10n_tw_edi_ecpay.field_account_move__l10n_tw_edi_carrier_type
 msgid ""

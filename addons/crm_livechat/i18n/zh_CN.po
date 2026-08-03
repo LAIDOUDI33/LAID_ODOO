@@ -24,6 +24,21 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: crm_livechat
+#: model:ir.module.module,summary:base.module_crm_livechat
+msgid "Create lead from livechat conversation"
+msgstr "从实时聊天会话创建线索"
+
+#. module: crm_livechat
+#: model:ir.module.module,description:base.module_crm_livechat
+msgid "Create new lead with using /lead command in the channel"
+msgstr "在通道中使用 /lead 命令创建新的线索"
+
+#. module: crm_livechat
+#: model:ir.module.module,shortdesc:base.module_crm_livechat
+msgid "CRM Livechat"
+msgstr "客户关系管理即时聊天"
+
+#. module: crm_livechat
 #. odoo-python
 #: code:addons/crm_livechat/models/chatbot_script_step.py:0
 msgid "%s's New Lead"

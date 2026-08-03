@@ -16,6 +16,24 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_il
+#: model:ir.module.module,description:base.module_l10n_il
+msgid ""
+"\n"
+"This is the latest basic Israelian localisation necessary to run Odoo in Israel:\n"
+"================================================================================\n"
+"\n"
+"This module consists of:\n"
+" - Generic Israel Chart of Accounts\n"
+" - Taxes and tax report\n"
+" - Multiple Fiscal positions\n"
+msgstr ""
+
+#. module: l10n_il
+#: model:ir.module.module,shortdesc:base.module_l10n_il
+msgid "Israel - Accounting"
+msgstr ""
+
+#. module: l10n_il
 #: model:ir.model,name:l10n_il.model_account_chart_template
 msgid "Account Chart Template"
 msgstr ""

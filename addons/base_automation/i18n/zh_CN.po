@@ -26,6 +26,40 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: base_automation
+#: model:ir.module.module,description:base.module_base_automation
+msgid ""
+"\n"
+"This module allows to implement automation rules for any object.\n"
+"================================================================\n"
+"\n"
+"Use automation rules to automatically trigger actions for various screens.\n"
+"\n"
+"**Example:** A lead created by a specific user may be automatically set to a "
+"specific\n"
+"Sales Team, or an opportunity which still has status pending after 14 days "
+"might\n"
+"trigger an automatic reminder email.\n"
+msgstr ""
+"\n"
+"该模块允许为任何对象实施自动化规则。\n"
+"================================================================\n"
+"\n"
+"使用自动化规则自动触发各种屏幕的操作。\n"
+"\n"
+"**例如：** 由特定用户创建的线索可自动设置为特定的\n"
+"销售团队，或者在 14 天后仍处于待定状态的机会可能会\n"
+"触发自动提醒电子邮件。\n"
+
+#. module: base_automation
+#: model:ir.actions.act_window,name:base_automation.base_automation_act
+#: model:ir.module.module,shortdesc:base.module_base_automation
+#: model:ir.ui.menu,name:base_automation.menu_base_automation_form
+#: model_terms:ir.ui.view,arch_db:base_automation.view_base_automation_kanban
+#: model_terms:ir.ui.view,arch_db:base_automation.view_base_automation_tree
+msgid "Automation Rules"
+msgstr "自动化规则"
+
+#. module: base_automation
 #. odoo-javascript
 #: code:addons/base_automation/static/src/base_automation_error_dialog.xml:0
 #, fuzzy
@@ -225,14 +259,6 @@ msgstr "自动化规则"
 #: model:ir.model.fields,field_description:base_automation.field_base_automation__name
 msgid "Automation Rule Name"
 msgstr "自动化规则名称"
-
-#. module: base_automation
-#: model:ir.actions.act_window,name:base_automation.base_automation_act
-#: model:ir.ui.menu,name:base_automation.menu_base_automation_form
-#: model_terms:ir.ui.view,arch_db:base_automation.view_base_automation_kanban
-#: model_terms:ir.ui.view,arch_db:base_automation.view_base_automation_tree
-msgid "Automation Rules"
-msgstr "自动化规则"
 
 #. module: base_automation
 #: model:ir.actions.server,name:base_automation.ir_cron_data_base_automation_check_ir_actions_server

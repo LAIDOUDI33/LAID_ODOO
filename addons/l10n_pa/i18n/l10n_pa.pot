@@ -16,6 +16,24 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_pa
+#: model:ir.module.module,description:base.module_l10n_pa
+msgid ""
+"\n"
+"Panamenian accounting chart and tax localization.\n"
+"\n"
+"Plan contable panameño e impuestos de acuerdo a disposiciones vigentes\n"
+"\n"
+"Con la Colaboración de\n"
+"- AHMNET CORP http://www.ahmnet.com\n"
+"\n"
+msgstr ""
+
+#. module: l10n_pa
+#: model:ir.module.module,shortdesc:base.module_l10n_pa
+msgid "Panama - Accounting"
+msgstr ""
+
+#. module: l10n_pa
 #: model:ir.model,name:l10n_pa.model_account_chart_template
 msgid "Account Chart Template"
 msgstr ""

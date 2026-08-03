@@ -22,6 +22,25 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: hr_holidays_attendance
+#: model:ir.module.module,description:base.module_hr_holidays_attendance
+msgid ""
+"\n"
+"Convert employee's extra hours to leave allocations.\n"
+msgstr ""
+"\n"
+"将员工的额外工时转换为假期分配。\n"
+
+#. module: hr_holidays_attendance
+#: model:ir.module.module,summary:base.module_hr_holidays_attendance
+msgid "Attendance Holidays"
+msgstr "节假日"
+
+#. module: hr_holidays_attendance
+#: model:ir.module.module,shortdesc:base.module_hr_holidays_attendance
+msgid "HR Attendance Holidays"
+msgstr "人力资源出勤假期"
+
+#. module: hr_holidays_attendance
 #. odoo-python
 #: code:addons/hr_holidays_attendance/models/hr_work_entry_type.py:0
 msgid "%s hours available"

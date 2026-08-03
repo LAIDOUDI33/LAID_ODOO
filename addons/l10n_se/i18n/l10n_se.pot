@@ -16,6 +16,22 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_se
+#: model:ir.module.module,description:base.module_l10n_se
+msgid ""
+"\n"
+"Swedish Accounting\n"
+"------------------\n"
+"\n"
+"This is the base module to manage the accounting chart for Sweden in Odoo.\n"
+"It also includes the invoice OCR payment reference handling.\n"
+msgstr ""
+
+#. module: l10n_se
+#: model:ir.module.module,shortdesc:base.module_l10n_se
+msgid "Sweden - Accounting"
+msgstr ""
+
+#. module: l10n_se
 #: model:ir.model,name:l10n_se.model_account_chart_template
 msgid "Account Chart Template"
 msgstr ""

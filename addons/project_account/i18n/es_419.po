@@ -22,6 +22,33 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: project_account
+#: model:ir.module.module,description:base.module_project_account
+msgid ""
+"\n"
+"Allows the computation of some section for the project profitability\n"
+"==================================================================================================\n"
+"This module allows the computation of the 'Vendor Bills', 'Other Costs' and "
+"'Other Revenues' section for the project profitability, in the project "
+"update view.\n"
+msgstr ""
+"\n"
+"Permite el cálculo de algunas secciones para la rentabilidad del proyecto\n"
+"==================================================================================================\n"
+"Este módulo permite el cálculo de las secciones 'Facturas de proveedores', "
+"'Otros costos' y 'Otros ingresos' para la rentabilidad del proyecto en la "
+"vista de actualización del proyecto.\n"
+
+#. module: project_account
+#: model:ir.module.module,shortdesc:base.module_project_account
+msgid "Project - Account"
+msgstr "Proyecto - Cuenta"
+
+#. module: project_account
+#: model:ir.module.module,summary:base.module_project_account
+msgid "project profitability items computation"
+msgstr "Cálculo de elementos de rentabilidad del proyecto"
+
+#. module: project_account
 #: model:ir.embedded.actions,name:project_account.project_embedded_action_analytic_items
 #: model:ir.embedded.actions,name:project_account.project_embedded_action_analytic_items_dashboard
 msgid "Analytic Items"

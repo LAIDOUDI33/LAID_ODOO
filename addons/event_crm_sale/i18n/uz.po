@@ -27,6 +27,22 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: event_crm_sale
+#: model:ir.module.module,description:base.module_event_crm_sale
+#, fuzzy
+msgid ""
+"Add information of sale order linked to the registration for the creation of "
+"the lead."
+msgstr ""
+"Potensial mijoz yaratish uchun ro‘yxatdan o‘tishga bog‘langan savdo "
+"buyurtmasi haqidagi ma'lumotni qo‘shing"
+
+#. module: event_crm_sale
+#: model:ir.module.module,shortdesc:base.module_event_crm_sale
+#, fuzzy
+msgid "Event CRM Sale"
+msgstr "Tadbir CRM sotuvi"
+
+#. module: event_crm_sale
 #: model:ir.model.fields,field_description:event_crm_sale.field_event_registration__display_name
 #, fuzzy
 msgid "Display Name"

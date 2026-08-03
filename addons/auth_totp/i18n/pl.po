@@ -22,6 +22,46 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: auth_totp
+#: model:ir.module.module,description:base.module_auth_totp
+msgid ""
+"\n"
+"Two-Factor Authentication (TOTP)\n"
+"================================\n"
+"Allows users to configure two-factor authentication on their user account\n"
+"for extra security, using time-based one-time passwords (TOTP).\n"
+"\n"
+"Once enabled, the user will need to enter a 6-digit code as provided\n"
+"by their authenticator app before being granted access to the system.\n"
+"All popular authenticator apps are supported.\n"
+"\n"
+"Note: logically, two-factor prevents password-based RPC access for users\n"
+"where it is enabled. In order to be able to execute RPC scripts, the user\n"
+"can setup API keys to replace their main password.\n"
+msgstr ""
+"\n"
+"Uwierzytelnianie dwuskładnikowe (TOTP)\n"
+"================================\n"
+"Umożliwia użytkownikom skonfigurowanie uwierzytelniania dwuskładnikowego na "
+"ich koncie użytkownika\n"
+"dla dodatkowego bezpieczeństwa, przy użyciu jednorazowych haseł czasowych "
+"(TOTP).\n"
+"\n"
+"Po włączeniu tej funkcji użytkownik będzie musiał wprowadzić 6-cyfrowy kod "
+"podany\n"
+"przez aplikację uwierzytelniającą przed uzyskaniem dostępu do systemu.\n"
+"Obsługiwane są wszystkie popularne aplikacje uwierzytelniające.\n"
+"\n"
+"Uwaga: logicznie rzecz biorąc, dwuskładnikowość uniemożliwia dostęp RPC "
+"oparty na haśle dla użytkowników\n"
+"gdzie jest on włączony. Aby móc wykonywać skrypty RPC, użytkownik\n"
+"może skonfigurować klucze API, aby zastąpić swoje główne hasło.\n"
+
+#. module: auth_totp
+#: model:ir.module.module,shortdesc:base.module_auth_totp
+msgid "Two-Factor Authentication (TOTP)"
+msgstr "Uwierzytelnianie dwuskładnikowe (TOTP)"
+
+#. module: auth_totp
 #. odoo-python
 #: code:addons/auth_totp/controllers/home.py:0
 msgid "%(browser)s on %(platform)s"

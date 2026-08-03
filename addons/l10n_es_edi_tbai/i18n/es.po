@@ -20,6 +20,41 @@ msgstr ""
 "X-Generator: Weblate 5.16.2\n"
 
 #. module: l10n_es_edi_tbai
+#: model:ir.module.module,description:base.module_l10n_es_edi_tbai
+msgid ""
+"\n"
+"This module sends invoices and vendor bills to the \"Diputaciones\n"
+"Forales\" of Araba/Álava, Bizkaia and Gipuzkoa.\n"
+"\n"
+"Invoices and bills get converted to XML and regularly sent to the\n"
+"Basque government servers which provides them with a unique identifier.\n"
+"A hash chain ensures the continuous nature of the invoice/bill\n"
+"sequences. QR codes are added to emitted (sent/printed) invoices,\n"
+"bills and tickets to allow anyone to check they have been declared.\n"
+"\n"
+"You need to configure your certificate and the tax agency.\n"
+msgstr ""
+"\n"
+"Este módulo envía las facturas del cliente y los proveedores a las "
+"diputaciones\n"
+"forales de Araba (Álava), Bizkaia y Gipuzkoa.\n"
+"\n"
+"Las facturas se convierten a formato XML y se envían con frecuencia a los\n"
+"servidores del Gobierno Vasco, allí se les proporciona un identificador "
+"único.\n"
+"Una cadena hash asegura la continuación de la secuencia en\n"
+"las facturas y también se añaden códigos QR a las facturas emitidas "
+"(enviadas o impresas)\n"
+"y los recibos para que cualquiera pueda comprobar que se declararon.\n"
+"\n"
+"Debe configurar su certificado y agencia tributaria.\n"
+
+#. module: l10n_es_edi_tbai
+#: model:ir.module.module,shortdesc:base.module_l10n_es_edi_tbai
+msgid "Spain - TicketBAI"
+msgstr "España - TicketBAI"
+
+#. module: l10n_es_edi_tbai
 #: model:ir.model.fields.selection,name:l10n_es_edi_tbai.selection__l10n_es_edi_tbai_document__state__accepted
 msgid "Accepted"
 msgstr "Aceptado"

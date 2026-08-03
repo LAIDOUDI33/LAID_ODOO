@@ -27,6 +27,38 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: auth_passkey
+#: model:ir.module.module,description:base.module_auth_passkey
+#, fuzzy
+msgid ""
+"\n"
+"The implementation of Passkeys using the webauthn protocol.\n"
+"===========================================================\n"
+"\n"
+"Passkeys are a secure alternative to a username and a password.\n"
+"When a user logs in with a Passkey, MFA will not be required.\n"
+msgstr ""
+"Webauthn protokoli orqali Passkey tizimini joriy etish. "
+"=============================================================\n"
+"\n"
+"Passkey tizimi foydalanuvchi nomi va parolning xavfsiz muqobili hisoblanadi. "
+"Foydalanuvchi Passkey bilan tizimga kirganida, ko‘p faktorli "
+"autentifikatsiya (MFA) talab qilinmaydi."
+
+#. module: auth_passkey
+#: model:ir.module.module,summary:base.module_auth_passkey
+#, fuzzy
+msgid "Log in with a Passkey"
+msgstr "Maxsus kalit bilan kirish"
+
+#. module: auth_passkey
+#: model:ir.module.module,shortdesc:base.module_auth_passkey
+#: model_terms:ir.ui.view,arch_db:auth_passkey.auth_passkey_users_form
+#: model_terms:ir.ui.view,arch_db:auth_passkey.auth_passkey_users_preferences
+#, fuzzy
+msgid "Passkeys"
+msgstr "Kirish kalitlari"
+
+#. module: auth_passkey
 #: model_terms:ir.ui.view,arch_db:auth_passkey.auth_passkey_users_form
 #: model_terms:ir.ui.view,arch_db:auth_passkey.auth_passkey_users_preferences
 #, fuzzy
@@ -190,13 +222,6 @@ msgstr "Yoki boshqa usulni tanlang:"
 #, fuzzy
 msgid "Passkey"
 msgstr "Kirish kaliti"
-
-#. module: auth_passkey
-#: model_terms:ir.ui.view,arch_db:auth_passkey.auth_passkey_users_form
-#: model_terms:ir.ui.view,arch_db:auth_passkey.auth_passkey_users_preferences
-#, fuzzy
-msgid "Passkeys"
-msgstr "Kirish kalitlari"
 
 #. module: auth_passkey
 #: model:ir.model,name:auth_passkey.model_res_users_identitycheck

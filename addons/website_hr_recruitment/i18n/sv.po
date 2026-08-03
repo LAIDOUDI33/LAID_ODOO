@@ -32,6 +32,25 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_hr_recruitment
+#: model:ir.module.module,summary:base.module_website_hr_recruitment
+msgid "Manage your online hiring process"
+msgstr "Hantera din rekryteringsprocess online"
+
+#. module: website_hr_recruitment
+#: model:ir.module.module,shortdesc:base.module_website_hr_recruitment
+msgid "Online Jobs"
+msgstr "Jobb på nätet"
+
+#. module: website_hr_recruitment
+#: model:ir.module.module,description:base.module_website_hr_recruitment
+msgid ""
+"This module allows to publish your available job positions on your website "
+"and keep track of application submissions easily."
+msgstr ""
+"Med den här modulen kan du publicera lediga jobb på din webbplats och enkelt "
+"hålla koll på inkomna ansökningar."
+
+#. module: website_hr_recruitment
 #. odoo-python
 #: code:addons/website_hr_recruitment/models/hr_job.py:0
 msgid ""

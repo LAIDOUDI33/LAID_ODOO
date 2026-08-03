@@ -24,6 +24,20 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: hr_timesheet_attendance
+#: model:ir.module.module,description:base.module_hr_timesheet_attendance
+msgid ""
+"\n"
+"Module linking the attendance module to the timesheet app.\n"
+msgstr ""
+"\n"
+"Phân hệ liên kết phân hệ chấm công với ứng dụng bảng chấm công.\n"
+
+#. module: hr_timesheet_attendance
+#: model:ir.module.module,shortdesc:base.module_hr_timesheet_attendance
+msgid "Timesheets/attendances reporting"
+msgstr "Báo cáo Bảng công/Chấm công"
+
+#. module: hr_timesheet_attendance
 #: model:ir.model.fields,field_description:hr_timesheet_attendance.field_hr_timesheet_attendance_report__attendance_cost
 msgid "Attendance Cost"
 msgstr "Attendance Cost"

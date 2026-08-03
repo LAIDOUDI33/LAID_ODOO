@@ -20,6 +20,33 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_mass_mailing_event
+#: model:ir.module.module,description:base.module_website_mass_mailing_event
+msgid ""
+"\n"
+"Add pre-filled event snippets for the mass_mailing html builder, with links "
+"to the matching website event page.\n"
+"The snippet is linked to specified events and will load a snapshot of their "
+"data to be sent by email.\n"
+msgstr ""
+"\n"
+"Adicione snippets de eventos pré-preenchidos para o construtor html de "
+"mass_mailing, com links para a página do evento correspondente no site.\n"
+"O snippet está vinculado a eventos específicos e carregará um instantâneo de "
+"seus dados para serem enviados por e-mail.\n"
+
+#. module: website_mass_mailing_event
+#: model:ir.module.module,summary:base.module_website_mass_mailing_event
+msgid "Add pre-filled snippets in mass_mailing with an event snapshot"
+msgstr ""
+"Adicionar snippets pré-preenchidos no mass_mailing com um instantâneo do "
+"evento"
+
+#. module: website_mass_mailing_event
+#: model:ir.module.module,shortdesc:base.module_website_mass_mailing_event
+msgid "Mass mailing on website events"
+msgstr "Envio em massa de e-mails sobre eventos do site"
+
+#. module: website_mass_mailing_event
 #: model_terms:ir.ui.view,arch_db:website_mass_mailing_event.s_event_aside
 #: model_terms:ir.ui.view,arch_db:website_mass_mailing_event.s_event_card
 #: model_terms:ir.ui.view,arch_db:website_mass_mailing_event.s_event_columns

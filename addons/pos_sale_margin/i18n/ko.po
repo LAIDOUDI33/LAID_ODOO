@@ -21,6 +21,29 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: pos_sale_margin
+#: model:ir.module.module,description:base.module_pos_sale_margin
+msgid ""
+"\n"
+"\n"
+"This module adds enable you to view the margin of your Point of Sale orders "
+"in the Sales Margin report.\n"
+msgstr ""
+"\n"
+"\n"
+"이 모듈을 추가하시면 판매 마진 보고서에서 POS 주문 마진을 확인할 수 "
+"있습니다.\n"
+
+#. module: pos_sale_margin
+#: model:ir.module.module,summary:base.module_pos_sale_margin
+msgid "Link module between Point of Sale and Sales Margin"
+msgstr "POS 모듈과 판매 마진 사이의 연결 모듈"
+
+#. module: pos_sale_margin
+#: model:ir.module.module,shortdesc:base.module_pos_sale_margin
+msgid "POS - Sale Margin"
+msgstr "POS - 판매 마진"
+
+#. module: pos_sale_margin
 #: model:ir.model.fields,field_description:pos_sale_margin.field_sale_report__display_name
 msgid "Display Name"
 msgstr "표시명"

@@ -24,6 +24,31 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: pos_discount
+#: model:ir.module.module,description:base.module_pos_discount
+msgid ""
+"\n"
+"\n"
+"This module allows the cashier to quickly give percentage-based\n"
+"discount to a customer.\n"
+"\n"
+msgstr ""
+"\n"
+"\n"
+"이 모듈을 사용하면 간단하게 캐셔 쪽에서 고객에게 할인율을\n"
+"안내해 줄 수 있습니다.\n"
+"\n"
+
+#. module: pos_discount
+#: model:ir.module.module,shortdesc:base.module_pos_discount
+msgid "Point of Sale Discounts"
+msgstr "POS 할인"
+
+#. module: pos_discount
+#: model:ir.module.module,summary:base.module_pos_discount
+msgid "Simple Discounts in the Point of Sale "
+msgstr "POS 간편 할인 "
+
+#. module: pos_discount
 #: model_terms:ir.ui.view,arch_db:pos_discount.pos_session_sales_details
 msgid "<strong>Amount of global discounts</strong>:"
 msgstr "<strong>전체 할인 금액</strong>:"

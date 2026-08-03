@@ -20,6 +20,18 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: pos_account_tax_python
+#: model:ir.module.module,description:base.module_pos_account_tax_python
+msgid "Add code to manage custom taxes to the POS assets bundle"
+msgstr ""
+"Agregar un código para gestionar los impuestos personalizados para los "
+"activos del Punto de venta"
+
+#. module: pos_account_tax_python
+#: model:ir.module.module,shortdesc:base.module_pos_account_tax_python
+msgid "Allow custom taxes in POS"
+msgstr "Permitir impuestos en el Punto de venta"
+
+#. module: pos_account_tax_python
 #: model:ir.model.fields,field_description:pos_account_tax_python.field_account_tax__display_name
 msgid "Display Name"
 msgstr "Nombre en pantalla"

@@ -16,6 +16,20 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_bo
+#: model:ir.module.module,description:base.module_l10n_bo
+msgid ""
+"\n"
+"Bolivian accounting chart and tax localization.\n"
+"\n"
+"Plan contable boliviano e impuestos de acuerdo a disposiciones vigentes\n"
+msgstr ""
+
+#. module: l10n_bo
+#: model:ir.module.module,shortdesc:base.module_l10n_bo
+msgid "Bolivia - Accounting"
+msgstr ""
+
+#. module: l10n_bo
 #: model:ir.model,name:l10n_bo.model_account_chart_template
 msgid "Account Chart Template"
 msgstr ""

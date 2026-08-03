@@ -32,6 +32,35 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: sale_timesheet
+#: model:ir.module.module,description:base.module_sale_timesheet
+msgid ""
+"\n"
+"Allows to sell timesheets in your sales order\n"
+"=============================================\n"
+"\n"
+"This module set the right product on all timesheet lines\n"
+"according to the order/contract you work on. This allows to\n"
+"have real delivered quantities in sales orders.\n"
+msgstr ""
+"\n"
+"Борлуулалтын захиалга дээр цагийн хуудас зарах боломжийг олгодог\n"
+"====================================================================\n"
+"\n"
+"Энэ модуль нь таны ажиллаж буй захиалга/гэрээний дагуу бүх цагийн хуудсын \n"
+"мөрүүд дээр зөв барааг тохируулдаг. Энэ нь борлуулалтын захиалгууд дээр \n"
+"бодит хүргэсэн тоог оруулах боломжийг олгодог.\n"
+
+#. module: sale_timesheet
+#: model:ir.module.module,shortdesc:base.module_sale_timesheet
+msgid "Sales Timesheet"
+msgstr "Борлуулалтын Цагийн хуудас"
+
+#. module: sale_timesheet
+#: model:ir.module.module,summary:base.module_sale_timesheet
+msgid "Sell based on timesheets"
+msgstr "Цагийн хуудас дээр суурилсан борлуулалт"
+
+#. module: sale_timesheet
 #. odoo-python
 #: code:addons/sale_timesheet/models/sale_order.py:0
 msgid ""

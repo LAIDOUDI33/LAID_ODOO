@@ -20,6 +20,16 @@ msgstr ""
 "X-Generator: Weblate 5.12.2\n"
 
 #. module: l10n_it_edi_sale
+#: model:ir.module.module,shortdesc:base.module_l10n_it_edi_sale
+msgid "Italy - Sale E-invoicing"
+msgstr "Italia - Fatturazione elettronica Vendite"
+
+#. module: l10n_it_edi_sale
+#: model:ir.module.module,description:base.module_l10n_it_edi_sale
+msgid "Sale modifications for Italy E-invoicing"
+msgstr "Modifiche relative alle vendite per la e-fatturazione in Italia"
+
+#. module: l10n_it_edi_sale
 #: model:ir.model.fields.selection,name:l10n_it_edi_sale.selection__sale_order__l10n_it_origin_document_type__agreement
 msgid "Agreement"
 msgstr "Convenzione"

@@ -20,6 +20,24 @@ msgstr ""
 "X-Generator: Weblate 5.12.2\n"
 
 #. module: l10n_kr
+#: model:ir.module.module,description:base.module_l10n_kr
+msgid ""
+"\n"
+"Accounting Module for the Republic of Korea\n"
+"===========================================\n"
+"This provides a base chart of accounts and taxes template for use in Odoo.\n"
+msgstr ""
+"\n"
+"대한민국용 회계 모듈\n"
+"===========================================\n"
+"Odoo에서 사용할 수 있는 기본 계정과 세금 템플릿을 제공합니다.\n"
+
+#. module: l10n_kr
+#: model:ir.module.module,shortdesc:base.module_l10n_kr
+msgid "Republic of Korea - Accounting"
+msgstr "대한민국 - 회계"
+
+#. module: l10n_kr
 #: model_terms:ir.ui.view,arch_db:l10n_kr.kr_partner_address_form
 msgid "-city/-gun/-gu, -eup/myun"
 msgstr "시/군/구"

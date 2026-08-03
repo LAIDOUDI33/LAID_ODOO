@@ -27,6 +27,29 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: sale_product_matrix
+#: model:ir.module.module,description:base.module_sale_product_matrix
+#, fuzzy
+msgid ""
+"\n"
+"This module allows to fill Sales Order rapidly\n"
+"by choosing product variants quantity through a Grid Entry.\n"
+msgstr ""
+"Ushbu modul mahsulot variantlari miqdorini Panjara kiritish orqali tanlash "
+"yo‘li bilan Sotuv buyurtmalarini tezkor to‘ldirish imkonini beradi."
+
+#. module: sale_product_matrix
+#: model:ir.module.module,summary:base.module_sale_product_matrix
+#, fuzzy
+msgid "Add variants to Sales Order through a grid entry."
+msgstr "Jadval kiritish orqali savdo buyurtmasiga variantlarni qo‘shing"
+
+#. module: sale_product_matrix
+#: model:ir.module.module,shortdesc:base.module_sale_product_matrix
+#, fuzzy
+msgid "Sale Matrix"
+msgstr "Sotish matritsasi"
+
+#. module: sale_product_matrix
 #: model:ir.model.fields.selection,name:sale_product_matrix.selection__product_template__product_add_mode__configurator
 msgid "Configurator"
 msgstr ""

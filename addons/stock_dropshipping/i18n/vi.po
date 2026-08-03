@@ -25,6 +25,44 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: stock_dropshipping
+#: model:ir.module.module,description:base.module_stock_dropshipping
+msgid ""
+"\n"
+"Manage drop shipping orders\n"
+"===========================\n"
+"\n"
+"This module adds a pre-configured Drop Shipping operation type\n"
+"as well as a procurement route that allow configuring Drop\n"
+"Shipping products and orders.\n"
+"\n"
+"When drop shipping is used the goods are directly transferred\n"
+"from vendors to customers (direct delivery) without\n"
+"going through the retailer's warehouse. In this case no\n"
+"internal transfer document is needed.\n"
+"\n"
+msgstr ""
+"\n"
+"Quản lý đơn đặt hàng trung gian\n"
+"===========================\n"
+"\n"
+"Phân hệ này thêm loại hoạt động Bán hàng Trung gian được cấu hình trước\n"
+"cũng như một lộ trình mua sắm cho phép cấu hình sản phẩm và \n"
+"đơn đặt hàng Trung gian.\n"
+"\n"
+"Khi hình thức bán hàng trung gian được sử dụng, hàng hóa được chuyển trực "
+"tiếp\n"
+"từ nhà cung cấp đến khách hàng (giao hàng trực tiếp) mà không cần\n"
+"đi qua kho của nhà bán lẻ. Trường hợp này không cần đến\n"
+"tài liệu chuyển hàng nội bộ.\n"
+"\n"
+
+#. module: stock_dropshipping
+#: model:ir.module.module,shortdesc:base.module_stock_dropshipping
+#: model:ir.module.module,summary:base.module_stock_dropshipping
+msgid "Drop Shipping"
+msgstr "Bán hàng Trung gian"
+
+#. module: stock_dropshipping
 #: model:ir.model,name:stock_dropshipping.model_res_company
 msgid "Company"
 msgstr "Công ty"

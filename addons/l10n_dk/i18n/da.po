@@ -20,6 +20,26 @@ msgstr ""
 "X-Generator: Weblate 5.12.2\n"
 
 #. module: l10n_dk
+#: model:ir.module.module,description:base.module_l10n_dk
+msgid ""
+"\n"
+"\n"
+"Localization Module for Denmark\n"
+"===============================\n"
+"\n"
+"This is the module to manage the **accounting chart for Denmark**. Cover "
+"both one-man business as well as I/S, IVS, ApS and A/S\n"
+"Also provides Nemhandel registration and invoice sending throught the Odoo "
+"Access Point\n"
+"\n"
+msgstr ""
+
+#. module: l10n_dk
+#: model:ir.module.module,shortdesc:base.module_l10n_dk
+msgid "Denmark - Accounting"
+msgstr "Danmark - regnskab"
+
+#. module: l10n_dk
 #. odoo-python
 #: code:addons/l10n_dk/wizard/account_move_send_wizard.py:0
 msgid " (Demo)"

@@ -20,6 +20,27 @@ msgstr ""
 "X-Generator: Weblate 5.12.2\n"
 
 #. module: l10n_in_sale_stock
+#: model:ir.module.module,description:base.module_l10n_in_sale_stock
+msgid ""
+"\n"
+"Get the warehouse address if the invoice is created from the Sale Order\n"
+"In Indian EDI we send shipping address details if available\n"
+"\n"
+"So this module is to get the warehouse address if the invoice is created "
+"from Sale Order\n"
+msgstr ""
+
+#. module: l10n_in_sale_stock
+#: model:ir.module.module,summary:base.module_l10n_in_sale_stock
+msgid "Get warehouse address if the invoice is created from Sale Order"
+msgstr ""
+
+#. module: l10n_in_sale_stock
+#: model:ir.module.module,shortdesc:base.module_l10n_in_sale_stock
+msgid "India Sales and Warehouse Management"
+msgstr ""
+
+#. module: l10n_in_sale_stock
 #: model:ir.model.fields,field_description:l10n_in_sale_stock.field_account_move__display_name
 #: model:ir.model.fields,field_description:l10n_in_sale_stock.field_stock_move__display_name
 #: model:ir.model.fields,field_description:l10n_in_sale_stock.field_stock_picking__display_name

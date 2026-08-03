@@ -21,6 +21,28 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: stock_delivery
+#: model:ir.module.module,description:base.module_stock_delivery
+msgid ""
+"\n"
+"Allows you to add delivery methods in pickings.\n"
+"===============================================\n"
+"\n"
+"When creating invoices from picking, the system is able to add and compute "
+"the shipping line.\n"
+msgstr ""
+"\n"
+"Ermöglicht Ihnen, Liefermethoden in Kommissionierungen hinzuzufügen.\n"
+"===============================================\n"
+"\n"
+"Beim Erstellen von Rechnungen aus der Kommissionierung heraus ist das System "
+"in der Lage, die Versandzeile hinzuzufügen und zu berechnen.\n"
+
+#. module: stock_delivery
+#: model:ir.module.module,shortdesc:base.module_stock_delivery
+msgid "Delivery - Stock"
+msgstr "Lieferung - Bestand"
+
+#. module: stock_delivery
 #. odoo-python
 #: code:addons/stock_delivery/models/sale_order.py:0
 msgid "%(name)s (Estimated Cost: %(cost)s)"

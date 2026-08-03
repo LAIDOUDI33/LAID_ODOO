@@ -16,6 +16,11 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: auth_totp_portal
+#: model:ir.module.module,shortdesc:base.module_auth_totp_portal
+msgid "TOTPortal"
+msgstr ""
+
+#. module: auth_totp_portal
 #. odoo-javascript
 #: code:addons/auth_totp_portal/static/src/interactions/totp_enable.js:0
 msgid " Copy"

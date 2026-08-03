@@ -20,6 +20,11 @@ msgstr ""
 "X-Generator: Weblate 5.12.2\n"
 
 #. module: l10n_es_edi_tbai_pos
+#: model:ir.module.module,shortdesc:base.module_l10n_es_edi_tbai_pos
+msgid "Spain - Point of Sale + TicketBAI"
+msgstr "España - Punto de venta y TicketBAI"
+
+#. module: l10n_es_edi_tbai_pos
 #: model_terms:ir.ui.view,arch_db:l10n_es_edi_tbai_pos.pos_order_receipt
 msgid "<span>TicketBai QR Code</span><br/>"
 msgstr ""

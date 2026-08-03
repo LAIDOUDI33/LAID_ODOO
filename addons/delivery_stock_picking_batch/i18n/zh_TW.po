@@ -23,6 +23,30 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: delivery_stock_picking_batch
+#: model:ir.module.module,description:base.module_delivery_stock_picking_batch
+msgid ""
+"\n"
+"This module makes the link between the batch pickings and carrier "
+"applications.\n"
+"\n"
+"Allows to prepare batches depending on their carrier\n"
+msgstr ""
+"\n"
+"該模塊將批量採摘和載體應用聯繫起來。\n"
+"\n"
+"允許根據載體準備批次\n"
+
+#. module: delivery_stock_picking_batch
+#: model:ir.module.module,summary:base.module_delivery_stock_picking_batch
+msgid "Batch Transfer, Carrier"
+msgstr "批量傳輸，載體"
+
+#. module: delivery_stock_picking_batch
+#: model:ir.module.module,shortdesc:base.module_delivery_stock_picking_batch
+msgid "Delivery Stock Picking Batch"
+msgstr "送貨取貨批次"
+
+#. module: delivery_stock_picking_batch
 #: model:ir.model.fields,help:delivery_stock_picking_batch.field_stock_picking_type__batch_max_weight
 msgid ""
 "A transfer will not be automatically added to batches that will exceed this "

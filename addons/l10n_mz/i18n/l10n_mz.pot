@@ -16,6 +16,18 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_mz
+#: model:ir.module.module,description:base.module_l10n_mz
+msgid ""
+"\n"
+"Mozambican Accounting localization\n"
+msgstr ""
+
+#. module: l10n_mz
+#: model:ir.module.module,shortdesc:base.module_l10n_mz
+msgid "Mozambique - Accounting"
+msgstr ""
+
+#. module: l10n_mz
 #: model:account.report.line,name:l10n_mz.l10n_mz_tax_report_line_credits
 msgid ""
 " Use of credits from previous periods. Important: values ​​can only be "

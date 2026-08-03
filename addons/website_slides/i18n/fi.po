@@ -50,6 +50,52 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_slides
+#: model:ir.module.module,description:base.module_website_slides
+msgid ""
+"\n"
+"Create Online Courses\n"
+"=====================\n"
+"\n"
+"Featuring\n"
+"\n"
+" * Integrated course and lesson management\n"
+" * Fullscreen navigation\n"
+" * Support Youtube videos, Google documents, PDF, images, articles\n"
+" * Test knowledge with quizzes\n"
+" * Filter and Tag\n"
+" * Statistics\n"
+msgstr ""
+"\n"
+"Luo verkkokursseja\n"
+"=====================\n"
+"\n"
+"Sisältää\n"
+"\n"
+" * Integroitu kurssien ja oppituntien hallinta\n"
+" * Navigointi koko näytön alueella\n"
+" * Tukee Youtube-videoita, Google-dokumentteja, PDF-tiedostoja, kuvia ja "
+"artikkeleita\n"
+" * Testaa tietoja tietovisojen avulla\n"
+" * Suodatuksen ja tunnisteiden lisäämismahdollisuus\n"
+" * Tilastot\n"
+
+#. module: website_slides
+#. odoo-python
+#: code:addons/website_slides/controllers/main.py:0
+#: model:ir.module.module,shortdesc:base.module_website_slides
+#: model:ir.ui.menu,name:website_slides.website_slides_menu_root
+#: model:res.groups.privilege,name:website_slides.res_groups_privilege_elearning
+#: model_terms:ir.ui.view,arch_db:website_slides.digest_digest_view_form
+#: model_terms:ir.ui.view,arch_db:website_slides.res_config_settings_view_form
+msgid "eLearning"
+msgstr "Verkko-oppiminen"
+
+#. module: website_slides
+#: model:ir.module.module,summary:base.module_website_slides
+msgid "Manage and publish an eLearning platform"
+msgstr "Hallinnoi ja julkaise verkko-oppimisen alusta"
+
+#. module: website_slides
 #: model:ir.model.fields,field_description:website_slides.field_slide_channel__members_engaged_count
 msgid "# Active Attendees"
 msgstr "# Aktiiviset osallistujat"
@@ -7280,16 +7326,6 @@ msgstr "esimerkiksi: Mikä antaa tietokoneelle virtaa?"
 #: model_terms:ir.ui.view,arch_db:website_slides.slide_channel_tag_group_view_form
 msgid "e.g. Your Level"
 msgstr "esim. Tasosi"
-
-#. module: website_slides
-#. odoo-python
-#: code:addons/website_slides/controllers/main.py:0
-#: model:ir.ui.menu,name:website_slides.website_slides_menu_root
-#: model:res.groups.privilege,name:website_slides.res_groups_privilege_elearning
-#: model_terms:ir.ui.view,arch_db:website_slides.digest_digest_view_form
-#: model_terms:ir.ui.view,arch_db:website_slides.res_config_settings_view_form
-msgid "eLearning"
-msgstr "Verkko-oppiminen"
 
 #. module: website_slides
 #: model:ir.model.fields,field_description:website_slides.field_res_partner__slide_channel_ids

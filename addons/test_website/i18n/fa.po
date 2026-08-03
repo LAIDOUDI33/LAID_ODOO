@@ -1,0 +1,69 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# * base
+#
+# Translators:
+# arya sadeghi <aryasadeghy@gmail.com>, 2023
+# saeed raesi <saeed.raesi2020@gmail.com>, 2023
+# M.Hossein S.Farvashani <Farvashani@gmail.com>, 2023
+# Zahed Alfak <tamass4116@gmail.com>, 2023
+# mehdi samadi <mehsamadi@gmail.com>, 2023
+# Arash Sardari <arashss77@gmail.com>, 2023
+# سید محمد آذربرا <mohammadazarbara98@gmail.com>, 2023
+# Sepehr Khoshnood <sepehr.kho@gmail.com>, 2023
+# Hamid Darabi, 2023
+# Farid Hariri <fhari1234@gmail.com>, 2023
+# elaheh pourrezaie <elaheh.pourrezaie@hotmail.com>, 2023
+# Mohsen Mohammadi <iammohsen.123@gmail.com>, 2023
+# Hanna Kheradroosta, 2023
+# Mohammad Tahmasebi <hit.tah75@gmail.com>, 2023
+# Ali Reza Feizi Derakhshi, 2023
+# Hamed Mohammadi <hamed@dehongi.com>, 2023
+# Martin Trigaux, 2023
+# fardin mardani, 2023
+# "Tiffany Chang (tic)" <tic@odoo.com>, 2025.
+# Weblate <noreply-mt-weblate@weblate.org>, 2025.
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 16.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-05-12 08:36+0000\n"
+"PO-Revision-Date: 2026-06-21 06:59+0000\n"
+"Last-Translator: Anonymous <noreply@weblate.org>\n"
+"Language-Team: Persian <https://translate.odoo.com/projects/odoo-master/base/"
+"fa/>\n"
+"Language: fa\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=2; plural=n > 1;\n"
+"X-Generator: Weblate 2026.6.1\n"
+
+#. module: test_website
+#: model:ir.module.module,description:base.module_test_website
+msgid ""
+"This module contains tests related to website. Those are\n"
+"present in a separate module as we are testing module install/uninstall/"
+"upgrade\n"
+"and we don't want to reload the website module every time, including it's "
+"possible\n"
+"dependencies. Neither we want to add in website module some routes, views "
+"and\n"
+"models which only purpose is to run tests."
+msgstr ""
+"این ماژول شامل تست های مربوط به وب سایت می باشد. آنها در حالیکه\n"
+"در حال آزمایش نصب/حذف/ ارتقاء ماژول هستند در ماژول جداگانه ای وجود دارند\n"
+"و ما نمی خواهیم هر بار ماژول وب سایت را مجدداً بارگیری کنیم، حتی اگر ممکن "
+"باشد\n"
+"وابستگی ها ما نمی خواهیم به ماژول وب سایت برخی از مسیرها، نماها و\n"
+"مدل هایی را اضافه کنیم که تنها هدفشان اجرای آزمایش است."
+
+#. module: test_website
+#: model:ir.module.module,shortdesc:base.module_test_website
+msgid "Website Test"
+msgstr "تست وبسایت"
+
+#. module: test_website
+#: model:ir.module.module,summary:base.module_test_website
+msgid "Website Test, mainly for module install/uninstall tests"
+msgstr "تست وب سایت، عمدتاً برای تست های نصب/حذف ماژول"

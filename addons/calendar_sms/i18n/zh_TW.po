@@ -24,6 +24,17 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: calendar_sms
+#: model:ir.module.module,shortdesc:base.module_calendar_sms
+msgid "Calendar - SMS"
+msgstr "日曆 - 短信"
+
+#. module: calendar_sms
+#: model:ir.module.module,description:base.module_calendar_sms
+#: model:ir.module.module,summary:base.module_calendar_sms
+msgid "Send text messages as event reminders"
+msgstr "發送短信作為事件提醒"
+
+#. module: calendar_sms
 #: model:ir.model,name:calendar_sms.model_calendar_event
 msgid "Calendar Event"
 msgstr "日曆活動"

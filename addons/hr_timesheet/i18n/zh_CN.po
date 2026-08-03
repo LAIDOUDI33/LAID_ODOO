@@ -28,6 +28,43 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: hr_timesheet
+#: model:ir.module.module,description:base.module_hr_timesheet
+msgid ""
+"\n"
+"This module implements a timesheet system.\n"
+"==========================================\n"
+"\n"
+"Each employee can encode and track their time spent on the different "
+"projects.\n"
+"\n"
+"Lots of reporting on time and employee tracking are provided.\n"
+"\n"
+"It is completely integrated with the cost accounting module. It allows you "
+"to set\n"
+"up a management by affair.\n"
+msgstr ""
+"\n"
+"该模块实现了一个时间表系统。\n"
+"==========================================\n"
+"\n"
+"每位员工都可以对自己在不同项目上花费的时间进行编码和跟踪。\n"
+"\n"
+"提供大量时间报告和员工跟踪。\n"
+"\n"
+"它与成本会计模块完全集成。它允许你设置\n"
+"事务管理。\n"
+
+#. module: hr_timesheet
+#: model:ir.module.module,shortdesc:base.module_hr_timesheet
+msgid "Task Logs"
+msgstr "任务日志"
+
+#. module: hr_timesheet
+#: model:ir.module.module,summary:base.module_hr_timesheet
+msgid "Track employee time on tasks"
+msgstr "跟踪员工执行任务的时间"
+
+#. module: hr_timesheet
 #. odoo-python
 #: code:addons/hr_timesheet/models/project_project.py:0
 msgid "%(effective)s %(uom_name)s"

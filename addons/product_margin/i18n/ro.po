@@ -24,6 +24,30 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: product_margin
+#: model:ir.module.module,description:base.module_product_margin
+msgid ""
+"\n"
+"Adds a reporting menu in products that computes sales, purchases, margins "
+"and other interesting indicators based on invoices.\n"
+"=============================================================================================================================\n"
+"\n"
+"The wizard to launch the report has several options to help you get the data "
+"you need.\n"
+msgstr ""
+"\n"
+"Adăuga un meniu de raportare in produse, care calculează vânzările, "
+"achizițiile, marjele și alți indicatori interesanți bazați pe facturi.\n"
+"=============================================================================================================================\n"
+"\n"
+"Wizardul pentru lansarea raportului are mai multe optiuni pentru a va ajuta "
+"sa obtineti datele de care aveti nevoie.\n"
+
+#. module: product_margin
+#: model:ir.module.module,shortdesc:base.module_product_margin
+msgid "Margins by Products"
+msgstr "Marje dupa produse"
+
+#. module: product_margin
 #: model:ir.model.fields,field_description:product_margin.field_product_product__purchase_num_invoiced
 msgid "# Invoiced in Purchase"
 msgstr "# Facturat în achiziție"

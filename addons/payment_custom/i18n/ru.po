@@ -24,6 +24,18 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: payment_custom
+#: model:ir.module.module,summary:base.module_payment_custom
+msgid "A payment provider for custom flows like wire transfers."
+msgstr ""
+"Платёжный провайдер для пользовательских процессов, таких как банковские "
+"переводы."
+
+#. module: payment_custom
+#: model:ir.module.module,shortdesc:base.module_payment_custom
+msgid "Payment Provider: Custom Payment Modes"
+msgstr "Платежный провайдер: Пользовательские способы оплаты"
+
+#. module: payment_custom
 #: model_terms:ir.ui.view,arch_db:payment_custom.custom_state_header
 msgid ""
 "<small class=\"text-center text-wrap lh-sm\">Scan me in your banking app</"

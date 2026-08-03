@@ -21,6 +21,17 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: spreadsheet_dashboard_pos_restaurant
+#: model:ir.module.module,description:base.module_spreadsheet_dashboard_pos_restaurant
+#: model:ir.module.module,summary:base.module_spreadsheet_dashboard_pos_restaurant
+msgid "Spreadsheet"
+msgstr "Fogli di calcolo"
+
+#. module: spreadsheet_dashboard_pos_restaurant
+#: model:ir.module.module,shortdesc:base.module_spreadsheet_dashboard_pos_restaurant
+msgid "Spreadsheet dashboard for restaurants"
+msgstr "Dashboard fogli di calcolo per ristoranti"
+
+#. module: spreadsheet_dashboard_pos_restaurant
 #. odoo-javascript
 #: code:addons/spreadsheet_dashboard_pos_restaurant/data/files/pos_restaurant_dashboard.json:0
 msgid "# Tables"

@@ -27,6 +27,60 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: lunch
+#: model:ir.module.module,description:base.module_lunch
+msgid ""
+"\n"
+"The base module to manage lunch.\n"
+"================================\n"
+"\n"
+"Many companies order sandwiches, pizzas and other, from usual vendors, for "
+"their employees to offer them more facilities.\n"
+"\n"
+"However lunches management within the company requires proper administration "
+"especially when the number of employees or vendors is important.\n"
+"\n"
+"The “Lunch Order” module has been developed to make this management easier "
+"but also to offer employees more tools and usability.\n"
+"\n"
+"In addition to a full meal and vendor management, this module offers the "
+"possibility to display warning and provides quick order selection based on "
+"employee’s preferences.\n"
+"\n"
+"If you want to save your employees' time and avoid them to always have coins "
+"in their pockets, this module is essential.\n"
+msgstr ""
+"\n"
+"管理午餐的基础模块。\n"
+"================================\n"
+"\n"
+"许多公司为了给员工提供更多便利，会从一般供应商那里订购三明治、披萨等。\n"
+"\n"
+"然而，公司内部的午餐管理需要适当的管理，尤其是当员工或供应商的数量非常重要时"
+"。\n"
+"\n"
+"开发 \"午餐订购 \"模块的目的就是为了简化管理，同时为员工提供更多的工具和可用"
+"性。\n"
+"\n"
+"除了全面的膳食和供应商管理外，该模块还可以显示警告，并根据员工的喜好提供快速"
+"订单选择。\n"
+"\n"
+"如果您想节省员工的时间，避免他们口袋里总是装着硬币，那么这个模块是必不可少的"
+"。\n"
+
+#. module: lunch
+#: model:ir.module.module,summary:base.module_lunch
+msgid "Handle lunch orders of your employees"
+msgstr "处理员工的午餐订单"
+
+#. module: lunch
+#: model:ir.module.module,shortdesc:base.module_lunch
+#: model:ir.ui.menu,name:lunch.menu_lunch
+#: model:res.groups.privilege,name:lunch.res_groups_privilege_lunch
+#: model_terms:ir.ui.view,arch_db:lunch.res_config_settings_view_form
+msgid "Lunch"
+msgstr "午餐"
+
+#. module: lunch
 #: model_terms:lunch.product,description:lunch.product_temaki
 msgid "1 Avocado - 1 Salmon - 1 Eggs - 1 Tuna"
 msgstr "1个牛油果 - 1条鲑鱼 - 1个鸡蛋 - 1条金枪鱼"
@@ -1122,13 +1176,6 @@ msgstr "位置名称"
 #: model:ir.ui.menu,name:lunch.lunch_location_menu
 msgid "Locations"
 msgstr "地点"
-
-#. module: lunch
-#: model:ir.ui.menu,name:lunch.menu_lunch
-#: model:res.groups.privilege,name:lunch.res_groups_privilege_lunch
-#: model_terms:ir.ui.view,arch_db:lunch.res_config_settings_view_form
-msgid "Lunch"
-msgstr "午餐"
 
 #. module: lunch
 #: model:ir.model,name:lunch.model_lunch_alert

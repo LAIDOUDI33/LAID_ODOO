@@ -22,6 +22,28 @@ msgstr ""
 "X-Generator: Weblate 5.16.2\n"
 
 #. module: l10n_kw
+#: model:ir.module.module,description:base.module_l10n_kw
+msgid ""
+"\n"
+"This is the base module to manage the accounting chart for Kuwait in Odoo.\n"
+"==============================================================================\n"
+"Kuwait accounting basic charts and localization.\n"
+"Activates:\n"
+"- Chart of accounts\n"
+msgstr ""
+"\n"
+"هذا هو التطبيق الأساسي لإدارة شجرة الحسابات للكويت في أودو.\n"
+"==============================================================================\n"
+"شجرة الحسابات الأساسية والأقلمة للمحاسبة الكويتية.\n"
+"تؤدي إلى تنشيط كل من:\n"
+"- شجرة الحسابات\n"
+
+#. module: l10n_kw
+#: model:ir.module.module,shortdesc:base.module_l10n_kw
+msgid "Kuwait - Accounting"
+msgstr "الكويت - المحاسبة"
+
+#. module: l10n_kw
 #: model:ir.model,name:l10n_kw.model_account_chart_template
 msgid "Account Chart Template"
 msgstr "قالب شجرة الحسابات"

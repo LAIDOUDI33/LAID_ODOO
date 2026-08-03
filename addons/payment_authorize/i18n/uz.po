@@ -27,6 +27,18 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: payment_authorize
+#: model:ir.module.module,summary:base.module_payment_authorize
+#, fuzzy
+msgid "An payment provider covering the US, Australia, and Canada."
+msgstr "AQSH, Avstraliya va Kanadani qamrab oluvchi to‘lov provayderi."
+
+#. module: payment_authorize
+#: model:ir.module.module,shortdesc:base.module_payment_authorize
+#, fuzzy
+msgid "Payment Provider: Authorize.Net"
+msgstr "To‘lov provayderi: Authorize.Net"
+
+#. module: payment_authorize
 #: model_terms:ir.ui.view,arch_db:payment_authorize.inline_form
 #, fuzzy
 msgid "ABA Routing Number"

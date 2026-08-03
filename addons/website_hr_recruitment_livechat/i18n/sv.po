@@ -20,6 +20,27 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_hr_recruitment_livechat
+#: model:ir.module.module,description:base.module_website_hr_recruitment_livechat
+msgid ""
+"\n"
+"A chatbot to help the user be guided through recruitment process on the "
+"website and land on the right jobs position.\n"
+msgstr ""
+"\n"
+"En chatbot som hjälper användaren att bli guidad genom rekryteringsprocessen "
+"på webbplatsen och landa på rätt jobbposition.\n"
+
+#. module: website_hr_recruitment_livechat
+#: model:ir.module.module,summary:base.module_website_hr_recruitment_livechat
+msgid "Chatbot for the HR Recruitment"
+msgstr "Chatbot för HR-rekrytering"
+
+#. module: website_hr_recruitment_livechat
+#: model:ir.module.module,shortdesc:base.module_website_hr_recruitment_livechat
+msgid "Website IM Livechat HR Recruitment"
+msgstr "Webbplats IM Livechat HR Rekrytering"
+
+#. module: website_hr_recruitment_livechat
 #: model_terms:chatbot.script.step,message:website_hr_recruitment_livechat.chatbot_script_website_hr_recruitment_rd_chat_hr
 #: model_terms:chatbot.script.step,message:website_hr_recruitment_livechat.chatbot_script_website_hr_recruitment_sales_chat_hr
 #: model_terms:chatbot.script.step,message:website_hr_recruitment_livechat.chatbot_script_website_hr_recruitment_service_community_chat_hr

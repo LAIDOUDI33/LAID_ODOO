@@ -23,6 +23,27 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: purchase_product_matrix
+#: model:ir.module.module,description:base.module_purchase_product_matrix
+msgid ""
+"\n"
+"This module allows to fill Purchase Orders rapidly\n"
+"by choosing product variants quantity through a Grid Entry.\n"
+msgstr ""
+"\n"
+"该模块可通过网格输入选择产品变体数量，快速填写采购订单。\n"
+"通过网格输入选择产品变体数量。\n"
+
+#. module: purchase_product_matrix
+#: model:ir.module.module,summary:base.module_purchase_product_matrix
+msgid "Add variants to your purchase orders through an Order Grid Entry."
+msgstr "通过订单网格输入将变量添加到采购订单中。"
+
+#. module: purchase_product_matrix
+#: model:ir.module.module,shortdesc:base.module_purchase_product_matrix
+msgid "Purchase Matrix"
+msgstr "采购矩阵"
+
+#. module: purchase_product_matrix
 #: model:ir.model.fields,field_description:purchase_product_matrix.field_purchase_order_line__product_template_attribute_value_ids
 msgid "Attribute Values"
 msgstr "属性值"

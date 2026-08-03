@@ -21,6 +21,34 @@ msgstr ""
 "X-Generator: Weblate 5.12.2\n"
 
 #. module: api_doc
+#: model:ir.module.module,description:base.module_api_doc
+msgid ""
+"\n"
+"Odoo Dynamic API Documentation\n"
+"==============================\n"
+"\n"
+"This module provides a dynamic documentation page for developpers at the\n"
+"/doc URL. The documentation is generated using the database to list the\n"
+"models and their fields and methods. It also provides a playground to run\n"
+"the methods over HTTP, with examples in various programming languages.\n"
+msgstr ""
+"\n"
+"Odoo Dynamic API ドキュメント\n"
+"==============================\n"
+"\n"
+"このモジュールは、開発者向けに /doc URL で動的なドキュメントページを提供しま"
+"す。\n"
+"ドキュメントはデータベースを使用して生成され、モデルとそのフィールドや"
+"メソッドを一覧表示します。\n"
+"また、HTTP経由でメソッドを実行できるプレイグラウンドを提供し、様々な"
+"プログラミング言語での使用例を示します。\n"
+
+#. module: api_doc
+#: model:ir.module.module,shortdesc:base.module_api_doc
+msgid "API Documentation"
+msgstr "APIドキュメント"
+
+#. module: api_doc
 #. odoo-javascript
 #: code:addons/api_doc/static/src/components/doc_modal_api_key.xml:0
 msgid "API key"

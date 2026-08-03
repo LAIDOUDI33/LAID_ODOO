@@ -16,6 +16,16 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_ph
+#: model:ir.module.module,shortdesc:base.module_l10n_ph
+msgid "Philippines - Accounting"
+msgstr ""
+
+#. module: l10n_ph
+#: model:ir.module.module,summary:base.module_l10n_ph
+msgid "This is the module to manage the accounting chart for The Philippines."
+msgstr ""
+
+#. module: l10n_ph
 #: model:account.report.line,name:l10n_ph.l10n_ph_2550Q_2550q_15
 msgid "15 Net VAT Payable(Excess Input Tax)"
 msgstr ""

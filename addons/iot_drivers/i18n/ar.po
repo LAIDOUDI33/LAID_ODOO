@@ -1,0 +1,61 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# * base
+#
+# Translators:
+# Niyas Raphy, 2022
+# Martin Trigaux, 2023
+# Malaz Abuidris <msea@odoo.com>, 2023
+# "Tiffany Chang (tic)" <tic@odoo.com>, 2025.
+# "Dylan Kiss (dyki)" <dyki@odoo.com>, 2025.
+# "Malaz Siddig Elsayed Abuidris (msea)" <msea@odoo.com>, 2025, 2026.
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 16.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-05-12 08:36+0000\n"
+"PO-Revision-Date: 2026-06-21 19:23+0000\n"
+"Last-Translator: Anonymous <noreply@weblate.org>\n"
+"Language-Team: Arabic <https://translate.odoo.com/projects/odoo-master/base/"
+"ar/>\n"
+"Language: ar\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
+"&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
+"X-Generator: Weblate 2026.6.1\n"
+
+#. module: iot_drivers
+#: model:ir.module.module,description:base.module_iot_drivers
+msgid ""
+"\n"
+"Hardware Poxy\n"
+"=============\n"
+"\n"
+"This module allows you to remotely use peripherals connected to this "
+"server.\n"
+"\n"
+"This modules only contains the enabling framework. The actual devices "
+"drivers\n"
+"are found in other modules that must be installed separately.\n"
+"\n"
+msgstr ""
+"\n"
+"جهاز الوكيل\n"
+"=============\n"
+"\n"
+"يتيح لك هذا التطبيق استخدام الملحقات المتصلة بهذا الخادم عن بعد.\n"
+"يحتوي هذا التطبيق فقط على إطار عمل التمكين. يمكن إيجاد مشغلات\n"
+"الأجهزة الفعلية في التطبيقات الأخرى والتي يجب تثبيتها على حدة.\n"
+"\n"
+
+#. module: iot_drivers
+#: model:ir.module.module,summary:base.module_iot_drivers
+msgid "Connect the Web Client to Hardware Peripherals"
+msgstr "توصيل عميل الويب بملحقات الجهاز"
+
+#. module: iot_drivers
+#: model:ir.module.module,shortdesc:base.module_iot_drivers
+msgid "Hardware Proxy"
+msgstr "وكيل الجهاز"

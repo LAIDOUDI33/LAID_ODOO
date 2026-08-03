@@ -20,6 +20,29 @@ msgstr ""
 "X-Generator: Weblate 5.12.2\n"
 
 #. module: l10n_ci
+#: model:ir.module.module,description:base.module_l10n_ci
+msgid ""
+"\n"
+"This module implements the taxes for Ivory Coast.\n"
+"=================================================================\n"
+"\n"
+"The Chart of Accounts is from SYSCOHADA.\n"
+"\n"
+msgstr ""
+"\n"
+"Ce module implémente les impôts pour la Côte d'Ivoire\n"
+".\n"
+"=================================================================\n"
+"\n"
+"Le plan comptable provient du SYSCOHADA.\n"
+"\n"
+
+#. module: l10n_ci
+#: model:ir.module.module,shortdesc:base.module_l10n_ci
+msgid "Ivory Coast - Accounting"
+msgstr "Côte d’Ivoire - Comptabilité"
+
+#. module: l10n_ci
 #: model:ir.model,name:l10n_ci.model_account_chart_template
 msgid "Account Chart Template"
 msgstr "Modèle de Plan Comptable"

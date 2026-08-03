@@ -20,6 +20,23 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: onboarding
+#: model:ir.module.module,description:base.module_onboarding
+msgid ""
+"\n"
+"This module allows to manage onboardings and their progress\n"
+"================================================================================\n"
+msgstr ""
+"\n"
+"Phân hệ này cho phép quản lý hoạt động onboarding và tiến độ của hoạt động "
+"này\n"
+"================================================================================\n"
+
+#. module: onboarding
+#: model:ir.module.module,shortdesc:base.module_onboarding
+msgid "Onboarding Toolbox"
+msgstr "Hộp công cụ onboarding"
+
+#. module: onboarding
 #: model:ir.model.fields,help:onboarding.field_onboarding_onboarding__progress_ids
 msgid "All Onboarding Progress Records (across companies)."
 msgstr "Tất cả bản ghi tiến độ onboarding (trên các công ty)."

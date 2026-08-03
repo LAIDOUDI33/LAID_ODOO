@@ -16,6 +16,16 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: project_mrp_sale
+#: model:ir.module.module,shortdesc:base.module_project_mrp_sale
+msgid "MRP Project Sale"
+msgstr ""
+
+#. module: project_mrp_sale
+#: model:ir.module.module,summary:base.module_project_mrp_sale
+msgid "Technical Bridge"
+msgstr ""
+
+#. module: project_mrp_sale
 #: model:ir.model,name:project_mrp_sale.model_account_analytic_line
 msgid "Analytic Line"
 msgstr ""

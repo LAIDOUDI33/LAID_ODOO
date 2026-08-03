@@ -16,6 +16,25 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_in_purchase_stock
+#: model:ir.module.module,description:base.module_l10n_in_purchase_stock
+msgid ""
+"\n"
+"Get the warehouse address if the bill is created from the Purchase Order\n"
+"\n"
+"So this module is to get the warehouse address if the bill is created from Purchase Order\n"
+msgstr ""
+
+#. module: l10n_in_purchase_stock
+#: model:ir.module.module,summary:base.module_l10n_in_purchase_stock
+msgid "Get warehouse address if the bill is created from Purchase Order"
+msgstr ""
+
+#. module: l10n_in_purchase_stock
+#: model:ir.module.module,shortdesc:base.module_l10n_in_purchase_stock
+msgid "India Purchase and Warehouse Management"
+msgstr ""
+
+#. module: l10n_in_purchase_stock
 #: model:ir.model.fields,field_description:l10n_in_purchase_stock.field_account_move__display_name
 #: model:ir.model.fields,field_description:l10n_in_purchase_stock.field_stock_move__display_name
 #: model:ir.model.fields,field_description:l10n_in_purchase_stock.field_stock_picking__display_name

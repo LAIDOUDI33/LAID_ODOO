@@ -20,6 +20,26 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: pos_sale_loyalty
+#: model:ir.module.module,description:base.module_pos_sale_loyalty
+msgid ""
+"\n"
+"This module correct some behaviors when both module are installed.\n"
+msgstr ""
+"\n"
+"Este módulo corrige algunos comportamientos cuando ambos módulos están "
+"instalados.\n"
+
+#. module: pos_sale_loyalty
+#: model:ir.module.module,summary:base.module_pos_sale_loyalty
+msgid "Link module between pos_sale and pos_loyalty"
+msgstr "Módulo de enlace entre pos_sale y pos_loyalty"
+
+#. module: pos_sale_loyalty
+#: model:ir.module.module,shortdesc:base.module_pos_sale_loyalty
+msgid "POS - Sales Loyality"
+msgstr "TPV - Fidelidad de ventas"
+
+#. module: pos_sale_loyalty
 #: model:ir.model.fields,field_description:pos_sale_loyalty.field_sale_order_line__display_name
 msgid "Display Name"
 msgstr "Nombre para mostrar"

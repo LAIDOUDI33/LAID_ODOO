@@ -19,6 +19,16 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: pos_safaricom
+#: model:ir.module.module,summary:base.module_pos_safaricom
+msgid "Integrate your POS with the Safaricom Payment Provider"
+msgstr ""
+
+#. module: pos_safaricom
+#: model:ir.module.module,shortdesc:base.module_pos_safaricom
+msgid "POS Safaricom"
+msgstr ""
+
+#. module: pos_safaricom
 #. odoo-javascript
 #: code:addons/pos_safaricom/static/src/app/components/popups/mpesa_transaction_popup.xml:0
 msgid "'Search by name or phone or transaction id...'"

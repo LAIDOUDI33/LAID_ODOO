@@ -22,6 +22,20 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: project_todo
+#: model:ir.module.module,summary:base.module_project_todo
+msgid "Organize your work with memos and to-do lists"
+msgstr "メモとTo Doリストで業務を整理"
+
+#. module: project_todo
+#. odoo-javascript
+#. odoo-python
+#: code:addons/project_todo/models/res_users.py:0
+#: code:addons/project_todo/static/src/webclient/share_target/todo_share_target_item.js:0
+#: model:ir.module.module,shortdesc:base.module_project_todo
+msgid "To-Do"
+msgstr "To Do"
+
+#. module: project_todo
 #: model_terms:ir.ui.view,arch_db:project_todo.todo_user_onboarding
 msgid ""
 "&amp;#128075; <br/>\n"
@@ -698,14 +712,6 @@ msgid ""
 "The To-do description lacks any past content that could be restored at the "
 "moment."
 msgstr "To Do の説明には、現時点で復元できる過去のコンテンツが一切ありません。"
-
-#. module: project_todo
-#. odoo-javascript
-#. odoo-python
-#: code:addons/project_todo/models/res_users.py:0
-#: code:addons/project_todo/static/src/webclient/share_target/todo_share_target_item.js:0
-msgid "To-Do"
-msgstr "To Do"
 
 #. module: project_todo
 #: model:ir.ui.menu,name:project_todo.menu_todo_todos

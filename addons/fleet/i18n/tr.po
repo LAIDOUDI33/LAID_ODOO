@@ -42,6 +42,58 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: fleet
+#: model:ir.module.module,description:base.module_fleet
+msgid ""
+"\n"
+"Vehicle, leasing, insurances, cost\n"
+"==================================\n"
+"With this module, Odoo helps you managing all your vehicles, the\n"
+"contracts associated to those vehicle as well as services, costs\n"
+"and many other features necessary to the management of your fleet\n"
+"of vehicle(s)\n"
+"\n"
+"Main Features\n"
+"-------------\n"
+"* Add vehicles to your fleet\n"
+"* Manage contracts for vehicles\n"
+"* Reminder when a contract reach its expiration date\n"
+"* Add services, odometer values for all vehicles\n"
+"* Show all costs associated to a vehicle or to a type of service\n"
+"* Analysis graph for costs\n"
+msgstr ""
+"\n"
+"Araç, kiralama, sigortalar, maliyet\n"
+"==================================\n"
+"Bu modül sayesinde Odoo, tüm araçlarınızı, bu araçlara ait sözleşmeleri,\n"
+"hizmetleri, maliyetleri ve filo yönetimi için\n"
+"gerekli birçok özelliği kolayca yönetmenizi\n"
+"sağlar\n"
+"\n"
+"Temel Özellikler\n"
+"-------------\n"
+"* Filonuza araç ekleyin\n"
+"* Araçlara ait sözleşmeleri yönetin\n"
+"* Sözleşmenin sona erme tarihine ulaşıldığında hatırlatıcı alın\n"
+"* Tüm araçlara ait hizmetleri ve kilometre bilgilerini kaydedin\n"
+"* Bir araca veya hizmet türüne bağlı tüm maliyetleri görüntüleyin\n"
+"* Maliyetlere ilişkin analiz grafikleri\n"
+
+#. module: fleet
+#: model:ir.module.module,shortdesc:base.module_fleet
+#: model:ir.ui.menu,name:fleet.fleet_vehicle_menu
+#: model:ir.ui.menu,name:fleet.fleet_vehicles
+#: model:ir.ui.menu,name:fleet.menu_root
+#: model:res.groups.privilege,name:fleet.res_groups_privilege_fleet
+#: model_terms:ir.ui.view,arch_db:fleet.res_config_settings_view_form
+msgid "Fleet"
+msgstr "Filo"
+
+#. module: fleet
+#: model:ir.module.module,summary:base.module_fleet
+msgid "Manage your fleet and track car costs"
+msgstr "Filonuzu yönetin ve araç maliyetlerini takip edin"
+
+#. module: fleet
 #: model_terms:ir.ui.view,arch_db:fleet.fleet_vehicle_view_kanban
 msgid "<i class=\"oi\" data-icon=\"location_on\" title=\"Location\"/>"
 msgstr "<i class=\"oi\" data-icon=\"location_on\" title=\"Location\"/>"
@@ -1123,15 +1175,6 @@ msgstr "Sözleşme Başlangıç Tarihi"
 #: model_terms:ir.ui.view,arch_db:fleet.fleet_vehicle_view_form
 msgid "Fiscality"
 msgstr "Mali Önem"
-
-#. module: fleet
-#: model:ir.ui.menu,name:fleet.fleet_vehicle_menu
-#: model:ir.ui.menu,name:fleet.fleet_vehicles
-#: model:ir.ui.menu,name:fleet.menu_root
-#: model:res.groups.privilege,name:fleet.res_groups_privilege_fleet
-#: model_terms:ir.ui.view,arch_db:fleet.res_config_settings_view_form
-msgid "Fleet"
-msgstr "Filo"
 
 #. module: fleet
 #: model:ir.model,name:fleet.model_fleet_vehicle_cost_report

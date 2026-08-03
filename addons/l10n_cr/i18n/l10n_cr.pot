@@ -16,6 +16,28 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_cr
+#: model:ir.module.module,description:base.module_l10n_cr
+msgid ""
+"\n"
+"Chart of accounts for Costa Rica.\n"
+"=================================\n"
+"\n"
+"Includes:\n"
+"---------\n"
+"    * account.account.template\n"
+"    * account.tax.template\n"
+"    * account.chart.template\n"
+"\n"
+"Everything is in English with Spanish translation. Further translations are welcome,\n"
+"please go to http://translations.launchpad.net/openerp-costa-rica.\n"
+msgstr ""
+
+#. module: l10n_cr
+#: model:ir.module.module,shortdesc:base.module_l10n_cr
+msgid "Costa Rica - Accounting"
+msgstr ""
+
+#. module: l10n_cr
 #: model:ir.model,name:l10n_cr.model_account_chart_template
 msgid "Account Chart Template"
 msgstr ""

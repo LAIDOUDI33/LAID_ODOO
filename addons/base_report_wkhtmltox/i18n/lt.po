@@ -21,6 +21,27 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: base_report_wkhtmltox
+#: model:ir.module.module,description:base.module_base_report_wkhtmltox
+msgid ""
+"\n"
+"This module is the implementation of the wkhtmltopdf and\n"
+"wlhtmltoimage rendering engine for Odoo.\n"
+"\n"
+"learn more about it here:\n"
+"https://wkhtmltopdf.org/\n"
+msgstr ""
+
+#. module: base_report_wkhtmltox
+#: model:ir.module.module,shortdesc:base.module_base_report_wkhtmltox
+msgid "Report Engine: wkhtmltopdf/wkhtmltoimage"
+msgstr ""
+
+#. module: base_report_wkhtmltox
+#: model:ir.module.module,summary:base.module_base_report_wkhtmltox
+msgid "wkhtmltopdf rendering engine"
+msgstr ""
+
+#. module: base_report_wkhtmltox
 #: model:ir.model.fields,field_description:base_report_wkhtmltox.field_ir_actions_report__display_name
 msgid "Display Name"
 msgstr ""

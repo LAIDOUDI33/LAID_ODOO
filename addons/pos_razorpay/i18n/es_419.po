@@ -22,6 +22,46 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: pos_razorpay
+#: model:ir.module.module,description:base.module_pos_razorpay
+msgid ""
+"\n"
+"Allow Razorpay POS payments\n"
+"==============================\n"
+"\n"
+"This module allows customers to pay for their orders with debit/credit\n"
+"cards and UPI. The transactions are processed by Razorpay POS. A Razorpay "
+"merchant account is necessary. It allows the\n"
+"following:\n"
+"\n"
+"* Fast payment by just swiping/scanning a credit/debit card or a QR code "
+"while on the payment screen\n"
+"* Supported cards: Visa, MasterCard, Rupay, UPI\n"
+msgstr ""
+"\n"
+"Permita pagos en el Punto de venta con Razorpay\n"
+"==============================\n"
+"\n"
+"Este módulo permite que los clientes paguen sus órdenes con tarjetas de "
+"crédito, tarjetas de débito\n"
+"y UPI. El PdV de Razorpay procesa las transacciones. Es necesario tener una "
+"cuenta de comerciante de Razorpay que le permitirá hacer lo siguiente:\n"
+"\n"
+"* Pagar rápido, solo tendrá que escanear o deslizar la tarjeta de débito o "
+"crédito. También podrá escanear un código QR mientras está en la pantalla de "
+"pago\n"
+"* Tarjetas compatibles: Visa, Mastercard, Rupay, UPI\n"
+
+#. module: pos_razorpay
+#: model:ir.module.module,summary:base.module_pos_razorpay
+msgid "Integrate your POS with a Razorpay payment terminal"
+msgstr "Integre su PdV con una terminal de pago Razorpay"
+
+#. module: pos_razorpay
+#: model:ir.module.module,shortdesc:base.module_pos_razorpay
+msgid "POS Razorpay"
+msgstr "PdV Razorpay"
+
+#. module: pos_razorpay
 #. odoo-javascript
 #: code:addons/pos_razorpay/static/src/app/utls/payment/payment_razorpay.js:0
 msgid ""

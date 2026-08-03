@@ -27,6 +27,38 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: product_expiry
+#: model:ir.module.module,description:base.module_product_expiry
+#, fuzzy
+msgid ""
+"\n"
+"Track different dates on products and production lots.\n"
+"======================================================\n"
+"\n"
+"Following dates can be tracked:\n"
+"-------------------------------\n"
+"    - end of life\n"
+"    - best before date\n"
+"    - removal date\n"
+"    - alert date\n"
+"\n"
+"Also implements the removal strategy First Expiry First Out (FEFO) widely "
+"used, for example, in food industries.\n"
+msgstr ""
+"Mahsulotlar va ishlab chiqarish partiyalaridagi turli sanalarni kuzatib "
+"boring. ==================================================== Quyidagi "
+"sanalarni kuzatish mumkin: ------------------------------ - foydalanish "
+"muddatining tugashi - eng yaxshi holatda saqlanish muddati - chiqarib "
+"tashlash sanasi - ogohlantirish sanasi Shuningdek, u, masalan, oziq-ovqat "
+"sanoatida keng qo‘llaniladigan Birinchi Muddat Tugashi - Birinchi Chiqish "
+"(FEFO) chiqarib tashlash strategiyasini amalga oshiradi."
+
+#. module: product_expiry
+#: model:ir.module.module,shortdesc:base.module_product_expiry
+#, fuzzy
+msgid "Products Expiration Date"
+msgstr "Mahsulotlarning yaroqlilik muddati"
+
+#. module: product_expiry
 #. odoo-python
 #: code:addons/product_expiry/models/production_lot.py:0
 #, fuzzy

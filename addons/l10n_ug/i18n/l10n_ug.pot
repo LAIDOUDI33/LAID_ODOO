@@ -16,6 +16,24 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_ug
+#: model:ir.module.module,description:base.module_l10n_ug
+msgid ""
+"\n"
+"This is the basic Ugandian localisation necessary to run Odoo in UG:\n"
+"================================================================================\n"
+"    - Chart of accounts\n"
+"    - Taxes\n"
+"    - Fiscal positions\n"
+"    - Default settings\n"
+"    - Tax report\n"
+msgstr ""
+
+#. module: l10n_ug
+#: model:ir.module.module,shortdesc:base.module_l10n_ug
+msgid "Uganda - Accounting"
+msgstr ""
+
+#. module: l10n_ug
 #: model:account.report.line,name:l10n_ug.C1
 msgid "1. Zero Rated Sales Local"
 msgstr ""

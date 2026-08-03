@@ -19,12 +19,12 @@ msgstr ""
 #. module: test_translation
 #: model:ir.module.module,description:base.module_test_translation
 msgid "A module to test translation."
-msgstr ""
+msgstr "Un module pour tester les traductions."
 
 #. module: test_translation
 #: model:ir.module.module,shortdesc:base.module_test_translation
 msgid "Test Translation"
-msgstr ""
+msgstr "Tester la traduction"
 
 #. module: test_translation
 #: model:ir.model,name:test_translation.model_test_translation_related_translation_4

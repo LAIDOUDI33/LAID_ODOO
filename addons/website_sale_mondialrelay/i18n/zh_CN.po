@@ -1,0 +1,52 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# * base
+#
+# Translators:
+# 山西清水欧度(QQ:54773801) <54773801@qq.com>, 2022
+# lonely落叶 <liu--qiong@hotmail.com>, 2022
+# Benson <Benson.Dr@Gmail.com>, 2022
+# 深圳 JM <3440895@qq.com>, 2022
+# Jeffery CHEN <jeffery9@gmail.com>, 2023
+# Emily Jia <eji@odoo.com>, 2023
+# Martin Trigaux, 2023
+# Raymond Yu <cl_yu@hotmail.com>, 2023
+# "Tiffany Chang (tic)" <tic@odoo.com>, 2025.
+# "Chloe Wang (chwa)" <chwa@odoo.com>, 2025, 2026.
+# 何彬 <vnsoft.he@gmail.com>, 2025.
+# Weblate <noreply-mt-weblate@weblate.org>, 2025.
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 16.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-05-12 08:36+0000\n"
+"PO-Revision-Date: 2026-06-21 12:58+0000\n"
+"Last-Translator: Anonymous <noreply@weblate.org>\n"
+"Language-Team: Chinese (Simplified Han script) <https://translate.odoo.com/"
+"projects/odoo-master/base/zh_Hans/>\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Weblate 2026.6.1\n"
+
+#. module: website_sale_mondialrelay
+#: model:ir.module.module,description:base.module_website_sale_mondialrelay
+msgid ""
+"\n"
+"This module allow your customer to choose a Point Relais® and use it as "
+"shipping address.\n"
+msgstr ""
+"\n"
+"该模块允许客户选择一个 Point Relais®，并将其作为发货地址。\n"
+
+#. module: website_sale_mondialrelay
+#: model:ir.module.module,shortdesc:base.module_website_sale_mondialrelay
+msgid "eCommerce Mondialrelay Delivery"
+msgstr "电子商务 Mondialrelay 配送"
+
+#. module: website_sale_mondialrelay
+#: model:ir.module.module,summary:base.module_website_sale_mondialrelay
+msgid "Let's choose Point Relais® on your ecommerce"
+msgstr "让我们在您的电子商务中选择 Point Relais® 吧"

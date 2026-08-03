@@ -17,6 +17,47 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_syscohada
+#: model:ir.module.module,description:base.module_l10n_syscohada
+msgid ""
+"\n"
+"This module implements the accounting chart for OHADA area.\n"
+"===========================================================\n"
+"\n"
+"It allows any company or association to manage its financial accounting.\n"
+"\n"
+"Countries that use OHADA are the following:\n"
+"-------------------------------------------\n"
+"    Benin, Burkina Faso, Cameroon, Central African Republic, Comoros, "
+"Congo,\n"
+"\n"
+"    Ivory Coast, Gabon, Guinea, Guinea Bissau, Equatorial Guinea, Mali, "
+"Niger,\n"
+"\n"
+"    Democratic Republic of the Congo, Senegal, Chad, Togo.\n"
+msgstr ""
+"\n"
+"Ce module implémente le plan comptable des pays de l'OHADA.\n"
+"===========================================================\n"
+"\n"
+"Il permet à toute entreprise ou association de gérer sa comptabilité "
+"financière.\n"
+"\n"
+"Les pays qui utilisent l'OHADA sont les suivants :\n"
+"-------------------------------------------\n"
+"    Bénin, Burkina Faso, Cameroun, République centrafricaine, Comores, "
+"Congo,\n"
+"\n"
+"    Côte d'Ivoire, Gabon, Guinée, Guinée Bissau, Guinée équatoriale, Mali, "
+"Niger,\n"
+"\n"
+"    République démocratique du Congo, Sénégal, Tchad, Togo.\n"
+
+#. module: l10n_syscohada
+#: model:ir.module.module,shortdesc:base.module_l10n_syscohada
+msgid "OHADA - Accounting"
+msgstr "OHADA - Comptabilité"
+
+#. module: l10n_syscohada
 #: model:ir.model,name:l10n_syscohada.model_account_chart_template
 msgid "Account Chart Template"
 msgstr ""

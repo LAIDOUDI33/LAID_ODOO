@@ -20,6 +20,16 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: payment_iyzico
+#: model:ir.module.module,summary:base.module_payment_iyzico
+msgid "A payment provider covering Turkey."
+msgstr ""
+
+#. module: payment_iyzico
+#: model:ir.module.module,shortdesc:base.module_payment_iyzico
+msgid "Payment Provider: Iyzico"
+msgstr ""
+
+#. module: payment_iyzico
 #: model_terms:ir.ui.view,arch_db:payment_iyzico.payment_provider_form
 msgid "API Key"
 msgstr ""

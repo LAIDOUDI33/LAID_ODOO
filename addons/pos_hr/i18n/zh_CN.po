@@ -24,6 +24,29 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: pos_hr
+#: model:ir.module.module,description:base.module_pos_hr
+msgid ""
+"\n"
+"This module allows Employees (and not users) to log in to the Point of Sale "
+"application using a barcode, a PIN number or both.\n"
+"The actual till still requires one user but an unlimited number of employees "
+"can log on to that till and process sales.\n"
+msgstr ""
+"\n"
+"该模块允许员工（而非用户）使用条形码、PIN 码或两者登录POS应用程序。\n"
+"实际的收银台仍需要一个用户，但可以有不限数量的员工登录该收银台并处理销售。\n"
+
+#. module: pos_hr
+#: model:ir.module.module,summary:base.module_pos_hr
+msgid "Link module between Point of Sale and HR"
+msgstr "POS和人力资源之间的连接模块"
+
+#. module: pos_hr
+#: model:ir.module.module,shortdesc:base.module_pos_hr
+msgid "POS - HR"
+msgstr "POS - 人力资源"
+
+#. module: pos_hr
 #: model_terms:ir.ui.view,arch_db:pos_hr.single_employee_sales_report
 msgid "Abigal Peterson"
 msgstr "Abigal Peterson"

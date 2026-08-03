@@ -20,6 +20,39 @@ msgstr ""
 "X-Generator: Weblate 5.16.2\n"
 
 #. module: l10n_fi
+#: model:ir.module.module,description:base.module_l10n_fi
+msgid ""
+"\n"
+"This is the Odoo module to manage the accounting in Finland.\n"
+"============================================================\n"
+"\n"
+"After installing this module, you'll have access to:\n"
+"    * Finnish chart of account\n"
+"    * Fiscal positions\n"
+"    * Invoice Payment Reference Types (Finnish Standard Reference & Finnish "
+"Creditor Reference (RF))\n"
+"    * Finnish Reference format for Sale Orders\n"
+"\n"
+"Set the payment reference type from the Sales Journal.\n"
+msgstr ""
+"\n"
+"Tämä on Odoo-moduuli kirjanpidon hallinnoimiseen Suomessa.\n"
+"============================================================\n"
+"\n"
+"Asennettuasi tämän moduulin, saat käyttöösi seuraavat toiminnot:\n"
+"    * Suomalainen tilikartta\n"
+"    * Verokantasäännöt\n"
+"    * Laskun maksuviitetyypit (Suomen standardiviite & velkojan viite (RF))\n"
+"    * Suomalainen viitemuoto myyntitilauksille\n"
+"\n"
+"Määritä maksuviitetyyppi Myyntipäiväkirjasta.\n"
+
+#. module: l10n_fi
+#: model:ir.module.module,shortdesc:base.module_l10n_fi
+msgid "Finland - Accounting"
+msgstr "Suomi - Kirjanpito"
+
+#. module: l10n_fi
 #: model:ir.model,name:l10n_fi.model_account_chart_template
 msgid "Account Chart Template"
 msgstr "Tilikartan mallipohja"

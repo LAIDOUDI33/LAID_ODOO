@@ -25,6 +25,56 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: product
+#: model:ir.module.module,description:base.module_product
+msgid ""
+"\n"
+"This is the base module for managing products and pricelists in Odoo.\n"
+"========================================================================\n"
+"\n"
+"Products support variants, different pricing methods, vendors information,\n"
+"make to stock/order, different units of measure, packaging and properties.\n"
+"\n"
+"Pricelists support:\n"
+"-------------------\n"
+"    * Multiple-level of discount (by product, category, quantities)\n"
+"    * Compute price based on different criteria:\n"
+"        * Other pricelist\n"
+"        * Cost price\n"
+"        * List price\n"
+"        * Vendor price\n"
+"\n"
+"Pricelists preferences by product and/or partners.\n"
+"\n"
+"Print product labels with barcode.\n"
+msgstr ""
+"\n"
+"Это базовый модуль для управления товарами и прайс-листами в Odoo.\n"
+"========================================================================\n"
+"\n"
+"Продукты поддерживают варианты, различные методы ценообразования, информацию "
+"о поставщиках,\n"
+"производство под склад/заказ, различные единицы измерения, упаковку и "
+"свойства.\n"
+"\n"
+"Поддержка прайс-листов:\n"
+"-------------------\n"
+"    * Многоуровневые скидки (по продуктам, категориям, количеству)\n"
+"    * Расчет цены на основе различных критериев:\n"
+"        * Другой прайс-лист\n"
+"        * Себестоимость\n"
+"        * Розничная цена\n"
+"        * Цена поставщика\n"
+"\n"
+"Предпочтения прайс-листов по продуктам и/или партнерам.\n"
+"\n"
+"Печать этикеток товаров со штрих-кодом.\n"
+
+#. module: product
+#: model:ir.module.module,shortdesc:base.module_product
+msgid "Products & Pricelists"
+msgstr "Продукты и прейскуранты"
+
+#. module: product
 #: model:ir.model.fields,field_description:product.field_product_pricelist_item__product_variant_count
 #: model:ir.model.fields,field_description:product.field_product_product__product_variant_count
 #: model:ir.model.fields,field_description:product.field_product_template__product_variant_count

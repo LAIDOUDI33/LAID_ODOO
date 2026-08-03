@@ -21,6 +21,32 @@ msgstr ""
 "X-Generator: Weblate 5.12.2\n"
 
 #. module: l10n_lb_account
+#: model:ir.module.module,description:base.module_l10n_lb_account
+msgid ""
+"\n"
+"This is the base module to manage the accounting chart for Lebanon in Odoo.\n"
+"==============================================================================\n"
+"Lebanon accounting basic charts,taxes and localization.\n"
+"Activates:\n"
+"* Chart of Accounts\n"
+"* Taxes\n"
+"* Fiscal Positions\n"
+msgstr ""
+"\n"
+"هذا هو التطبيق الأساسي لإدارة شجرة الحسابات للبنان في أودو.\n"
+"==============================================================================\n"
+"شجرة الحسابات الأساسية والضرائب والأقلمة للمحاسبة في لبنان.\n"
+"تؤدي إلى تنشيط كل من:\n"
+"* شجرة الحسابات\n"
+"* الضرائب\n"
+"* الأوضاع المالية\n"
+
+#. module: l10n_lb_account
+#: model:ir.module.module,shortdesc:base.module_l10n_lb_account
+msgid "Lebanon - Accounting"
+msgstr "لبنان - المحاسبة"
+
+#. module: l10n_lb_account
 #: model:ir.model,name:l10n_lb_account.model_account_chart_template
 msgid "Account Chart Template"
 msgstr "نموذج مخطط الحساب"

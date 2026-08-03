@@ -27,6 +27,29 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_customer
+#: model:ir.module.module,description:base.module_website_customer
+#, fuzzy
+msgid ""
+"\n"
+"Publish your customers as business references on your website to attract new "
+"potential prospects.\n"
+msgstr ""
+"Yangi potensial mijozlarni jalb etish maqsadida, o‘z mijozlaringizni veb-"
+"saytingizda biznes ma'lumotnomalar sifatida e'lon qiling."
+
+#. module: website_customer
+#: model:ir.module.module,shortdesc:base.module_website_customer
+#, fuzzy
+msgid "Customer References"
+msgstr "Mijoz ma'lumotnomasi"
+
+#. module: website_customer
+#: model:ir.module.module,summary:base.module_website_customer
+#, fuzzy
+msgid "Publish your customer references"
+msgstr "Mijozlaringiz haqidagi ma'lumotlarni nashr eting"
+
+#. module: website_customer
 #: model_terms:ir.ui.view,arch_db:website_customer.index
 #, fuzzy
 msgid ""

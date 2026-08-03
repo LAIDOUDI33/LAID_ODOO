@@ -20,6 +20,32 @@ msgstr ""
 "X-Generator: Weblate 5.12.2\n"
 
 #. module: l10n_mu_account
+#: model:ir.module.module,description:base.module_l10n_mu_account
+msgid ""
+"\n"
+"This is the base module to manage the accounting chart for the Republic of "
+"Mauritius in Odoo.\n"
+"==============================================================================================\n"
+"    - Chart of accounts\n"
+"    - Taxes\n"
+"    - Fiscal positions\n"
+"    - Default settings\n"
+msgstr ""
+"\n"
+"Il s'agit du module de base pour gérer le plan comptable de la République de "
+"Maurice dans Odoo.\n"
+"==============================================================================================\n"
+"    - Plan comptable\n"
+"    - Impôts\n"
+"    - Positions fiscales\n"
+"    - Paramètres par défaut\n"
+
+#. module: l10n_mu_account
+#: model:ir.module.module,shortdesc:base.module_l10n_mu_account
+msgid "Mauritius - Accounting"
+msgstr "Ile Maurice - Comptabilité"
+
+#. module: l10n_mu_account
 #: model:account.report.line,name:l10n_mu_account.mu_tr_T1
 msgid "1. Taxable supplies"
 msgstr ""

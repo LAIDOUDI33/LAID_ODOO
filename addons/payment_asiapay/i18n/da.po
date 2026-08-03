@@ -20,6 +20,16 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: payment_asiapay
+#: model:ir.module.module,summary:base.module_payment_asiapay
+msgid "An payment provider based in Hong Kong covering most Asian countries."
+msgstr ""
+
+#. module: payment_asiapay
+#: model:ir.module.module,shortdesc:base.module_payment_asiapay
+msgid "Payment Provider: AsiaPay"
+msgstr "Betalingsudbyder: AsiaPay"
+
+#. module: payment_asiapay
 #: model:payment.method,name:payment_asiapay.payment_method_alipay
 msgid "Alipay"
 msgstr ""

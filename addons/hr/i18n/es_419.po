@@ -23,6 +23,268 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: hr
+#: model:ir.module.module,summary:base.module_hr
+msgid "Centralize employee information"
+msgstr "Centralice la información de los empleados"
+
+#. module: hr
+#. odoo-javascript
+#. odoo-python
+#: code:addons/hr/models/hr_department.py:0
+#: code:addons/hr/static/src/views/hr_employee_action_helper/hr_employee_action_helper.js:0
+#: model:ir.actions.act_window,name:hr.hr_employee_public_action
+#: model:ir.actions.act_window,name:hr.open_view_employee_list
+#: model:ir.actions.act_window,name:hr.open_view_employee_list_my
+#: model:ir.model.fields,field_description:hr.field_hr_employee_category__employee_ids
+#: model:ir.model.fields,field_description:hr.field_hr_employee_type__employees_count
+#: model:ir.model.fields,field_description:hr.field_hr_job__employee_ids
+#: model:ir.model.fields,field_description:hr.field_res_partner__employee_ids
+#: model:ir.module.module,shortdesc:base.module_hr
+#: model:ir.ui.menu,name:hr.menu_hr_root
+#: model:res.groups.privilege,name:hr.res_groups_privilege_employees
+#: model_terms:ir.ui.view,arch_db:hr.hr_contract_type_view_tree
+#: model_terms:ir.ui.view,arch_db:hr.hr_department_hierarchy_view
+#: model_terms:ir.ui.view,arch_db:hr.hr_department_view_kanban
+#: model_terms:ir.ui.view,arch_db:hr.hr_employee_list_activites_view
+#: model_terms:ir.ui.view,arch_db:hr.hr_employee_list_view
+#: model_terms:ir.ui.view,arch_db:hr.hr_employee_public_view_search
+#: model_terms:ir.ui.view,arch_db:hr.hr_employee_public_view_tree
+#: model_terms:ir.ui.view,arch_db:hr.hr_employee_view_activity
+#: model_terms:ir.ui.view,arch_db:hr.hr_version_search_view_enhanced
+#: model_terms:ir.ui.view,arch_db:hr.res_config_settings_view_form
+#: model_terms:ir.ui.view,arch_db:hr.res_partner_view_search
+#: model_terms:ir.ui.view,arch_db:hr.view_department_form
+#: model_terms:ir.ui.view,arch_db:hr.view_department_tree
+#: model_terms:ir.ui.view,arch_db:hr.view_employee_filter
+#: model_terms:ir.ui.view,arch_db:hr.view_employee_tree
+msgid "Employees"
+msgstr "Empleados"
+
+#. module: hr
+#: model:ir.module.module,description:base.module_hr
+msgid ""
+"Odoo Human Resources\n"
+"--------------------\n"
+"\n"
+"With Odoo <a href=\"https://www.odoo.com/app/employees\">Human Resources</"
+"a>,\n"
+"manage the most important asset in your company: People\n"
+"\n"
+"Get all your HR operations managed easily: knowledge sharing, recruitments,\n"
+"appraisals, timesheets, contracts, attendances, payroll, etc.\n"
+"\n"
+"Each need is provided by a specific app that you activate on demand.\n"
+"\n"
+"Manage Your Employees\n"
+"---------------------\n"
+"\n"
+"Oversee all important information in your company address book. Some\n"
+"information are restricted to HR managers, others are public to easily look\n"
+"colleagues.\n"
+"\n"
+"Record employee contracts and get alerts when they have to be renewed.\n"
+"\n"
+"Streamline Your Recruitment Process\n"
+"-----------------------------------\n"
+"\n"
+"Index resumes, track applicants, search profiles with <a href=\"https://"
+"www.odoo.com/app/employees\">Odoo HR</a>.\n"
+"\n"
+"Post job offers and keep track of each application received. Follow "
+"applicants\n"
+"in your recruitment process with the smart kanban view.\n"
+"\n"
+"Save time by automating some communications with email templates. Resumes "
+"are\n"
+"indexed automatically, allowing you to easily find for specific profiles.\n"
+"\n"
+"Enterprise Social Network\n"
+"-------------------------\n"
+"\n"
+"Break down information silos. Share knowledge and best practices amongst "
+"all\n"
+"employees. Follow specific people or documents and join groups of interests "
+"to\n"
+"share expertise and documents.\n"
+"\n"
+"Interact with your coworkers in real time with website live chat.\n"
+"\n"
+"Track time and attendances\n"
+"--------------------------\n"
+"\n"
+"Keep track of the time spent by project, client or task. It's easy to "
+"record\n"
+"timesheets or check attendances for each employee. Get your analytic "
+"accounting\n"
+"posted automatically based on time spent on your projects.\n"
+"\n"
+"Time Off Management\n"
+"-------------------\n"
+"\n"
+"Keep track of the vacation days accrued by each employee. Employees enter "
+"their\n"
+"requests (paid time off, sick time off, etc), for managers to approve and\n"
+"validate. It's all done in just a few clicks. The agenda of each employee "
+"is\n"
+"updated accordingly.\n"
+"\n"
+"Keep Track of Employee Expenses\n"
+"-------------------------------\n"
+"\n"
+"Get rid of the paper work and follow employee's expenses directly in Odoo.\n"
+"Don't loose time or money by controlling the full flow: expense validation,\n"
+"reimbursement of employees, posting in the accounting and re-invoicing to\n"
+"customers.\n"
+"\n"
+"Follow Periodic Appraisals\n"
+"--------------------------\n"
+"\n"
+"Set-up appraisals plans and/or surveys for your employees and watch their\n"
+"evolution. Define steps for interviews and Odoo will notify managers or\n"
+"subordinates automatically to prepare appraisals. Keep track of the progress "
+"of\n"
+"your staff periodically.\n"
+"\n"
+"Boost Engagement With Gamification\n"
+"----------------------------------\n"
+"\n"
+"### Define clear objective and provide real time feedback\n"
+"\n"
+"Inspire achievement with challenges, goals and rewards. Define clear "
+"objectives\n"
+"and provide real time feedback and tangible results. Showcase the top\n"
+"performers to the entire channel and publicly recognize a job well done.\n"
+"\n"
+"### Leaderboards\n"
+"\n"
+"Promote leaders and competition amongst Sales Team with performance ratios.\n"
+"\n"
+"### Personal Objectives\n"
+"\n"
+"Assign clear goals to users to align them with the company objectives.\n"
+"\n"
+"### Team Targets\n"
+"\n"
+"Compare revenues with forecasts and budgets in real time.\n"
+"\n"
+msgstr ""
+"Recursos humanos de Odoo\n"
+"--------------------\n"
+"\n"
+"Las aplicaciones de <a href=\"https://www.odoo.com/app/employees\">recursos "
+"humanos</a> de Odoo te permitirán\n"
+"gestionar el activo más importante de tu empresa: las personas.\n"
+"\n"
+"Gestiona todas tus operaciones de RR. HH. con facilidad: intercambio de "
+"información, reclutamiento,\n"
+"evaluaciones, registro de horas, contratos, asistencias, recibos de nómina, "
+"y mucho más.\n"
+"\n"
+"Tenemos una aplicación para cada necesidad y puedes activarlas bajo pedido.\n"
+"\n"
+"Gestiona a tus empleados\n"
+"---------------------\n"
+"\n"
+"Consulta toda la información importante en la libreta de direcciones de tu "
+"empresa. Habrá\n"
+"información a la que solo podrán acceder los gerentes de recursos humanos y "
+"otra que será pública para\n"
+"el resto de los empleados.\n"
+"\n"
+"Registra los contratos de los empleados y recibe alertas cuando debas "
+"renovarlos.\n"
+"\n"
+"Optimiza tu proceso de reclutamiento\n"
+"-----------------------------------\n"
+"\n"
+"Indexa currículums, dale seguimiento a los postulantes y busca los perfiles "
+"adecuados con las aplicaciones de <a href=\"https://www.odoo.com/app/"
+"employees\">RR. HH. de Odoo</a>.\n"
+"\n"
+"Publica ofertas de trabajo y lleva seguimiento de las postulaciones "
+"recibidas. La vista inteligente de kanban\n"
+"te permitirá monitorear sus procesos.\n"
+"\n"
+"Crea plantillas de correo electrónico automatizadas y ahorra tiempo. El "
+"sistema almacena los currículums\n"
+"en automático para que puedas encontrar perfiles específicos con facilidad.\n"
+"\n"
+"Red social empresarial\n"
+"-------------------------\n"
+"\n"
+"Olvídate de los silos de información y compártela junto con las mejores "
+"prácticas entre todos los\n"
+"empleados. Sigue a personas o documentos específicos y únete a grupos de "
+"interés para\n"
+"compartir tus experiencias y documentos.\n"
+"\n"
+"Interactúa con tus compañeros de trabajo en tiempo real con el chat en vivo "
+"del sitio web.\n"
+"\n"
+"Lleva seguimiento del tiempo y las asistencias\n"
+"--------------------------\n"
+"\n"
+"Monitorea el tiempo dedicado a cada proyecto, cliente o tarea. Registra\n"
+"horas o verifica las asistencias de cada empleado con facilidad. Registra tu "
+"contabilidad analítica\n"
+"de manera automática según el tiempo invertido en los proyectos.\n"
+"\n"
+"Gestiona los permisos\n"
+"-----------------\n"
+"\n"
+"Lleva control de los permisos acumulados por cada empleado. Los empleados "
+"ingresan su solicitud\n"
+"(permiso pagado, permiso por enfermedad, etc.) para que los gerentes la "
+"aprueben y\n"
+"validen. Este proceso solo toma unos cuantos clics y el sistema actualiza la "
+"agenda de cada empleado\n"
+"de forma automática.\n"
+"\n"
+"Lleva registro de los gastos de tus empleados\n"
+"-------------------------------\n"
+"\n"
+"Olvídate del papeleo y monitorea los gastos de tus empleados desde Odoo.\n"
+"Controla todo el flujo en Odoo sin perder tiempo ni dinero: valida gastos,\n"
+"reembolsa a tus empleados, registra tu contabilidad y factura a\n"
+"tus clientes.\n"
+"\n"
+"Realiza evaluaciones periódicas\n"
+"--------------------------\n"
+"\n"
+"Define planes de evaluación o encuestas para observar el progreso de tus "
+"empleados. \n"
+"Configura pasos para las entrevistas y Odoo notificará a los gerentes\n"
+"en automático para que preparen las evaluaciones. Lleva seguimiento de los "
+"avances de\n"
+"tu personal.\n"
+"\n"
+"Impulsa el compromiso con la ludificación\n"
+"----------------------------------\n"
+"\n"
+"### Define objetivos claros y proporciona retroalimentación en tiempo real\n"
+"\n"
+"Motiva a tu equipo con desafíos, metas y recompensas. Define objetivos "
+"claros\n"
+"y proporciona retroalimentación en tiempo real con resultados tangibles. "
+"Muestra a las personas que mejor lo hicieron\n"
+"para que todo el canal reconozca su buen trabajo.\n"
+"\n"
+"### Tablas de clasificación\n"
+"\n"
+"Promueve a tus líderes y fomenta la sana competencia entre los diferentes "
+"equipos de ventas con índices de desempeño.\n"
+"\n"
+"### Objetivos personales\n"
+"\n"
+"Asigna metas claras a los usuarios para alinearlos con los objetivos de la "
+"empresa.\n"
+"\n"
+"### Objetivos por equipo\n"
+"\n"
+"Compara los ingresos con los pronósticos y los presupuestos en tiempo real.\n"
+"\n"
+
+#. module: hr
 #. odoo-python
 #: code:addons/hr/models/hr_employee.py:0
 msgid " Records"
@@ -2449,38 +2711,6 @@ msgstr "Horas laborables del empleado"
 #: model:ir.model.fields,help:hr.field_hr_version__wage
 msgid "Employee's monthly gross wage."
 msgstr "Salario bruto mensual del empleado."
-
-#. module: hr
-#. odoo-javascript
-#. odoo-python
-#: code:addons/hr/models/hr_department.py:0
-#: code:addons/hr/static/src/views/hr_employee_action_helper/hr_employee_action_helper.js:0
-#: model:ir.actions.act_window,name:hr.hr_employee_public_action
-#: model:ir.actions.act_window,name:hr.open_view_employee_list
-#: model:ir.actions.act_window,name:hr.open_view_employee_list_my
-#: model:ir.model.fields,field_description:hr.field_hr_employee_category__employee_ids
-#: model:ir.model.fields,field_description:hr.field_hr_employee_type__employees_count
-#: model:ir.model.fields,field_description:hr.field_hr_job__employee_ids
-#: model:ir.model.fields,field_description:hr.field_res_partner__employee_ids
-#: model:ir.ui.menu,name:hr.menu_hr_root
-#: model:res.groups.privilege,name:hr.res_groups_privilege_employees
-#: model_terms:ir.ui.view,arch_db:hr.hr_contract_type_view_tree
-#: model_terms:ir.ui.view,arch_db:hr.hr_department_hierarchy_view
-#: model_terms:ir.ui.view,arch_db:hr.hr_department_view_kanban
-#: model_terms:ir.ui.view,arch_db:hr.hr_employee_list_activites_view
-#: model_terms:ir.ui.view,arch_db:hr.hr_employee_list_view
-#: model_terms:ir.ui.view,arch_db:hr.hr_employee_public_view_search
-#: model_terms:ir.ui.view,arch_db:hr.hr_employee_public_view_tree
-#: model_terms:ir.ui.view,arch_db:hr.hr_employee_view_activity
-#: model_terms:ir.ui.view,arch_db:hr.hr_version_search_view_enhanced
-#: model_terms:ir.ui.view,arch_db:hr.res_config_settings_view_form
-#: model_terms:ir.ui.view,arch_db:hr.res_partner_view_search
-#: model_terms:ir.ui.view,arch_db:hr.view_department_form
-#: model_terms:ir.ui.view,arch_db:hr.view_department_tree
-#: model_terms:ir.ui.view,arch_db:hr.view_employee_filter
-#: model_terms:ir.ui.view,arch_db:hr.view_employee_tree
-msgid "Employees"
-msgstr "Empleados"
 
 #. module: hr
 #: model:ir.model.fields,field_description:hr.field_res_partner__employees_count

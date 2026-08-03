@@ -16,6 +16,16 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: project_purchase_stock
+#: model:ir.module.module,description:base.module_project_purchase_stock
+msgid "Add a project link between POs and their generated stock pickings."
+msgstr ""
+
+#. module: project_purchase_stock
+#: model:ir.module.module,shortdesc:base.module_project_purchase_stock
+msgid "Project - Purchase - Stock"
+msgstr ""
+
+#. module: project_purchase_stock
 #: model:ir.model.fields,field_description:project_purchase_stock.field_purchase_order_line__display_name
 #: model:ir.model.fields,field_description:project_purchase_stock.field_stock_move__display_name
 #: model:ir.model.fields,field_description:project_purchase_stock.field_stock_rule__display_name

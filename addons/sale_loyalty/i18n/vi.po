@@ -22,6 +22,24 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: sale_loyalty
+#: model:ir.module.module,description:base.module_sale_loyalty
+msgid "Integrate discount and loyalty programs mechanisms in sales orders."
+msgstr ""
+"Tích hợp cơ chế chiết khấu và chương trình khách hàng thân thiết trong đơn "
+"mua hàng."
+
+#. module: sale_loyalty
+#: model:ir.module.module,shortdesc:base.module_sale_loyalty
+msgid "Sale Loyalty"
+msgstr "Chương trình khách hàng thân thiết trong bán hàng"
+
+#. module: sale_loyalty
+#: model:ir.module.module,summary:base.module_sale_loyalty
+msgid "Use discounts and loyalty programs in sales orders"
+msgstr ""
+"Sử dụng triết khấu và chương trình khách hàng thân thiết trong đơn bán hàng"
+
+#. module: sale_loyalty
 #. odoo-python
 #: code:addons/sale_loyalty/models/sale_order.py:0
 msgid " - On products with the following taxes: %(taxes)s"

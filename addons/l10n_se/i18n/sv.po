@@ -20,6 +20,28 @@ msgstr ""
 "X-Generator: Weblate 5.12.2\n"
 
 #. module: l10n_se
+#: model:ir.module.module,description:base.module_l10n_se
+msgid ""
+"\n"
+"Swedish Accounting\n"
+"------------------\n"
+"\n"
+"This is the base module to manage the accounting chart for Sweden in Odoo.\n"
+"It also includes the invoice OCR payment reference handling.\n"
+msgstr ""
+"\n"
+"Svensk redovisning\n"
+"------------------\n"
+"\n"
+"Detta är basmodulen för att hantera kontoplanen för Sverige i Odoo.\n"
+"Den innehåller även OCR-hantering av fakturor och betalningsreferenser.\n"
+
+#. module: l10n_se
+#: model:ir.module.module,shortdesc:base.module_l10n_se
+msgid "Sweden - Accounting"
+msgstr "Sverige - Redovisning"
+
+#. module: l10n_se
 #: model:ir.model,name:l10n_se.model_account_chart_template
 msgid "Account Chart Template"
 msgstr "Kontoplan"

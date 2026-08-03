@@ -20,6 +20,18 @@ msgstr ""
 "X-Generator: Weblate 5.12.2\n"
 
 #. module: l10n_hk
+#: model:ir.module.module,shortdesc:base.module_l10n_hk
+msgid "Hong Kong - Accounting"
+msgstr "香港 - 會計"
+
+#. module: l10n_hk
+#: model:ir.module.module,description:base.module_l10n_hk
+msgid ""
+"This is the base module to manage chart of accounting and localization for "
+"Hong Kong "
+msgstr "基本模組，用於管理香港會計賬目總表及本地化功能 "
+
+#. module: l10n_hk
 #: model:ir.model,name:l10n_hk.model_account_chart_template
 msgid "Account Chart Template"
 msgstr "賬目總表範本"

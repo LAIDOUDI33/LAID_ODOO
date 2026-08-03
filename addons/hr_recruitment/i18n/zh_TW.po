@@ -26,6 +26,109 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: hr_recruitment
+#: model:ir.module.module,description:base.module_hr_recruitment
+msgid ""
+"Manage Recruitment and Job applications\n"
+"---------------------------------------\n"
+"\n"
+"Publish, promote and organize your job offers with the Odoo\n"
+"<a href=\"https://www.odoo.com/app/recruitment\">Open Source Recruitment "
+"Application</a>.\n"
+"\n"
+"Organize your job board, promote your job announces and keep track of\n"
+"application submissions easily. Follow every applicant and build up a "
+"database\n"
+"of skills and profiles with indexed documents.\n"
+"\n"
+"Post Your Jobs on Best Job Boards\n"
+"---------------------------------\n"
+"\n"
+"Connect automatically to most famous job board websites; linkedIn, Monster,\n"
+"Craigslist, ... Every job position has a new email address automatically\n"
+"assigned to route applications automatically to the right job position.\n"
+"\n"
+"Whether applicants contact you by email or using an online form, you get "
+"all\n"
+"the data indexed automatically (resumes, motivation letter) and you can "
+"answer\n"
+"in just a click, reusing templates of answers.\n"
+"\n"
+"Customize Your Recruitment Process\n"
+"----------------------------------\n"
+"\n"
+"Use the kanban view and customize the steps of your recruitments process;\n"
+"pre-qualification, first interview, second interview, negociaiton, ...\n"
+"\n"
+"Get accurate statistics on your recruitment pipeline. Get reports to "
+"compare\n"
+"the performance of your different investments on external job boards.\n"
+"\n"
+"Streamline Your Recruitment Process\n"
+"-----------------------------------\n"
+"\n"
+"Follow applicants in your recruitment process with the smart kanban view. "
+"Save\n"
+"time by automating some communications with email templates.\n"
+"\n"
+"Documents like resumes and motivation letters are indexed automatically,\n"
+"allowing you to easily find for specific skills and build up a database of\n"
+"profiles.\n"
+msgstr ""
+"管理招聘和工作申請\n"
+"--------------------------------------\n"
+"\n"
+"使用 Odoo 發布、推廣和組織您的工作機會\n"
+"<a href=\"https://www.odoo.com/app/recruitment\">開放源碼招聘應用程式</a>.\n"
+"\n"
+"組織您的工作委員會，宣傳您的工作公告並追踪\n"
+"輕鬆提交申請. 關注每一位申請者，建立資料庫\n"
+"具有索引文檔的技能和個人資料.\n"
+"\n"
+"在最佳工作板上發布您的工作\n"
+"---------------------------------\n"
+"\n"
+"自動連接到最著名的工作委員會網站； linkedIn, 怪物,\n"
+"Craigslist, ... 每個工作職位都會自動擁有一個新的電子郵件地址\n"
+"分配以將應用程序自動路由到正確的工作職位.\n"
+"\n"
+"無論申請人是通過電子郵件還是使用在線表格與您聯繫，您都可以獲得\n"
+"自動索引的資料(簡歷，動機信)，你可以回答\n"
+"只需點擊一下，即可重複使用答案模板.\n"
+"\n"
+"定制您的招聘流程\n"
+"----------------------------------\n"
+"\n"
+"使用看板檢視並自定義招聘流程的步驟;\n"
+"資格預審, 第一次面試, 第二次面試, negociaiton, ...\n"
+"\n"
+"獲取有關您的招聘渠道的準確統計資料. 獲取報告進行比較\n"
+"您在外部工作委員會上的不同投資的表現.\n"
+"\n"
+"簡化您的招聘流程\n"
+"----------------------------------\n"
+"\n"
+"使用智能看板檢視在招聘過程中追踪申請人. 保存\n"
+"通過使用電子郵件模板自動進行一些通信來節省時間.\n"
+"\n"
+"簡歷和動機信等文檔會自動編入索引，\n"
+"讓您輕鬆找到特定技能並建立資料庫設定文件.\n"
+
+#. module: hr_recruitment
+#: model:ir.module.module,shortdesc:base.module_hr_recruitment
+#: model:ir.ui.menu,name:hr_recruitment.menu_hr_recruitment_root
+#: model:res.groups.privilege,name:hr_recruitment.res_groups_privilege_recruitment
+#: model_terms:ir.ui.view,arch_db:hr_recruitment.digest_digest_view_form
+#: model_terms:ir.ui.view,arch_db:hr_recruitment.hr_department_view_kanban
+#: model_terms:ir.ui.view,arch_db:hr_recruitment.res_config_settings_view_form
+msgid "Recruitment"
+msgstr "招聘"
+
+#. module: hr_recruitment
+#: model:ir.module.module,summary:base.module_hr_recruitment
+msgid "Track your recruitment pipeline"
+msgstr "追蹤您的招聘渠道"
+
+#. module: hr_recruitment
 #: model:ir.model.fields,field_description:hr_recruitment.field_hr_talent_pool__no_of_talents
 msgid "# Talents"
 msgstr "人才數目"
@@ -2715,15 +2818,6 @@ msgstr "招募人員"
 #: model:ir.model.fields,field_description:hr_recruitment.field_hr_applicant__recruiter_email
 msgid "Recruiter Work Email"
 msgstr ""
-
-#. module: hr_recruitment
-#: model:ir.ui.menu,name:hr_recruitment.menu_hr_recruitment_root
-#: model:res.groups.privilege,name:hr_recruitment.res_groups_privilege_recruitment
-#: model_terms:ir.ui.view,arch_db:hr_recruitment.digest_digest_view_form
-#: model_terms:ir.ui.view,arch_db:hr_recruitment.hr_department_view_kanban
-#: model_terms:ir.ui.view,arch_db:hr_recruitment.res_config_settings_view_form
-msgid "Recruitment"
-msgstr "招聘"
 
 #. module: hr_recruitment
 #: model:ir.actions.act_window,name:hr_recruitment.hr_job_stage_act

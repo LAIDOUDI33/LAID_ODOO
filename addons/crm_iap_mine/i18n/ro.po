@@ -30,6 +30,17 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: crm_iap_mine
+#: model:ir.module.module,summary:base.module_crm_iap_mine
+msgid "Generate Leads/Opportunities based on country, industries, size, etc."
+msgstr "Generați pistele/opportunități pe baza țării, industriei, mărimea, etc."
+
+#. module: crm_iap_mine
+#: model:ir.module.module,shortdesc:base.module_crm_iap_mine
+#: model:ir.ui.menu,name:crm_iap_mine.crm_menu_lead_generation
+msgid "Lead Generation"
+msgstr "Generare Pistă"
+
+#. module: crm_iap_mine
 #. odoo-python
 #: code:addons/crm_iap_mine/models/crm_iap_lead_mining_request.py:0
 msgid ""
@@ -627,11 +638,6 @@ msgstr "Pistă"
 #: model:ir.model.fields,field_description:crm_iap_mine.field_crm_iap_lead_mining_request__lead_credits
 msgid "Lead Credits"
 msgstr "Credite piste"
-
-#. module: crm_iap_mine
-#: model:ir.ui.menu,name:crm_iap_mine.crm_menu_lead_generation
-msgid "Lead Generation"
-msgstr "Generare Pistă"
 
 #. module: crm_iap_mine
 #: model:ir.model.fields,field_description:crm_iap_mine.field_crm_lead__lead_mining_request_id

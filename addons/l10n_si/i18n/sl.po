@@ -21,6 +21,20 @@ msgstr ""
 "X-Generator: Weblate 5.12.2\n"
 
 #. module: l10n_si
+#: model:ir.module.module,description:base.module_l10n_si
+msgid ""
+"\n"
+"Chart of accounts and taxes for Slovenia.\n"
+msgstr ""
+"\n"
+"Kontni načrt in davki za Slovenijo.\n"
+
+#. module: l10n_si
+#: model:ir.module.module,shortdesc:base.module_l10n_si
+msgid "Slovenian - Accounting"
+msgstr "Slovensko Računovodstvo"
+
+#. module: l10n_si
 #: model:account.report.line,name:l10n_si.tax_report_pr_17a
 msgid "17a. 22%"
 msgstr ""

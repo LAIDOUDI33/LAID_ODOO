@@ -16,6 +16,21 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_gr
+#: model:ir.module.module,description:base.module_l10n_gr
+msgid ""
+"\n"
+"This is the base module to manage the accounting chart for Greece.\n"
+"==================================================================\n"
+"\n"
+"Greek accounting chart and localization.\n"
+msgstr ""
+
+#. module: l10n_gr
+#: model:ir.module.module,shortdesc:base.module_l10n_gr
+msgid "Greece - Accounting"
+msgstr ""
+
+#. module: l10n_gr
 #: model:ir.model,name:l10n_gr.model_account_chart_template
 msgid "Account Chart Template"
 msgstr ""

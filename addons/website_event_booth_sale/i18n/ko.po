@@ -21,6 +21,25 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_event_booth_sale
+#: model:ir.module.module,description:base.module_website_event_booth_sale
+msgid ""
+"\n"
+"Use the e-commerce to sell your event booths.\n"
+msgstr ""
+"\n"
+"이커머스를 통해 행사 부스를 판매하십시오.\n"
+
+#. module: website_event_booth_sale
+#: model:ir.module.module,summary:base.module_website_event_booth_sale
+msgid "Events, sell your booths online"
+msgstr "행사이며, 온라인으로 부스를 판매합니다."
+
+#. module: website_event_booth_sale
+#: model:ir.module.module,shortdesc:base.module_website_event_booth_sale
+msgid "Online Event Booth Sale"
+msgstr "온라인 행사 부스 판매"
+
+#. module: website_event_booth_sale
 #: model_terms:ir.ui.view,arch_db:website_event_booth_sale.event_booth_registration
 msgid "<span>Total</span>"
 msgstr "<span>전체</span>"

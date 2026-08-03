@@ -27,6 +27,27 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: delivery
+#: model:ir.module.module,description:base.module_delivery
+#, fuzzy
+msgid ""
+"\n"
+"Allows you to add delivery methods in sale orders.\n"
+"==================================================\n"
+"You can define your own carrier for prices.\n"
+"The system is able to add and compute the shipping line.\n"
+msgstr ""
+"Sotuv buyurtmalariga yetkazib berish usullarini kiritish imkonini beradi. "
+"================================================== Narxlar uchun o‘z "
+"tashuvchingizni belgilashingiz mumkin. Tizim jo‘natish qatorini qo‘shish va "
+"hisoblash imkoniyatiga ega."
+
+#. module: delivery
+#: model:ir.module.module,shortdesc:base.module_delivery
+#, fuzzy
+msgid "Delivery Costs"
+msgstr "Yetkazib berish xarajatlari"
+
+#. module: delivery
 #: model:ir.actions.report,print_report_name:delivery.action_report_delivery_note
 msgid ""
 "\n"

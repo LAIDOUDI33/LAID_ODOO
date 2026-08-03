@@ -23,6 +23,28 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: mass_mailing_event_track
+#: model:ir.module.module,description:base.module_mass_mailing_event_track
+msgid ""
+"\n"
+"Mass mail event track speakers\n"
+"==============================\n"
+"\n"
+"Bridge module adding UX requirements to ease mass mailing of event track "
+"speakers.\n"
+msgstr ""
+"\n"
+"이벤트 연사에게 일괄적으로 메일 보내기\n"
+"==============================\n"
+"\n"
+"이벤트 연사에게 일괄적으로 메일 발송을 용이하게 하기 위해 UX 요구 사항을 "
+"추가하는 연결 모듈.\n"
+
+#. module: mass_mailing_event_track
+#: model:ir.module.module,shortdesc:base.module_mass_mailing_event_track
+msgid "Mass mailing on track speakers"
+msgstr "강연자 그룹에 일괄 메일 보내기"
+
+#. module: mass_mailing_event_track
 #: model_terms:ir.ui.view,arch_db:mass_mailing_event_track.event_event_view_form_inherit_mass_mailing_track
 msgid "Contact Speakers"
 msgstr "강연자 연락처"

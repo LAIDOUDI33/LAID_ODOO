@@ -21,6 +21,23 @@ msgstr ""
 "X-Generator: Weblate 5.14.3\n"
 
 #. module: l10n_ar_pos
+#: model:ir.module.module,description:base.module_l10n_ar_pos
+msgid ""
+"\n"
+"This module brings the technical requirement for the Argentinean "
+"regulation.\n"
+"Install this if you are using the Point of Sale app in Argentina.\n"
+msgstr ""
+"\n"
+"Este módulo aporta los requisitos técnicos para la regulación argentina.\n"
+"Instálelo si está usando la aplicación Punto de venta en Argentina.\n"
+
+#. module: l10n_ar_pos
+#: model:ir.module.module,shortdesc:base.module_l10n_ar_pos
+msgid "Argentinean - Point of Sale with AR Doc"
+msgstr "Argentina - Punto de venta con documentación argentina"
+
+#. module: l10n_ar_pos
 #: model:ir.model,name:l10n_ar_pos.model_l10n_ar_afip_responsibility_type
 msgid "ARCA Responsibility Type"
 msgstr "Tipo de responsabilidad de ARCA"

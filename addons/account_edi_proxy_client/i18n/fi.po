@@ -21,6 +21,41 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: account_edi_proxy_client
+#: model:ir.module.module,description:base.module_account_edi_proxy_client
+msgid ""
+"\n"
+"This module adds generic features to register an Odoo DB on the proxy "
+"responsible for receiving data (via requests from web-services).\n"
+"- An edi_proxy_user has a unique identification on a specific proxy type "
+"(e.g. l10n_it_edi, peppol) which\n"
+"allows to identify him when receiving a document addressed to him. It is "
+"linked to a specific company on a specific\n"
+"Odoo database.\n"
+"- Encryption features allows to decrypt all the user's data when receiving "
+"it from the proxy.\n"
+"- Authentication offers an additionnal level of security to avoid "
+"impersonification, in case someone gains to the user's database.\n"
+msgstr ""
+"\n"
+"Tämä moduuli lisää yleisiä ominaisuuksia Odoo tietokannan rekisteröimiseksi "
+"välityspalvelimeen, joka vastaa tietojen vastaanottamisesta (web-palveluiden "
+"pyyntöjen kautta).\n"
+"- Edi_proxy_user -käyttäjällä on yksilöllinen tunniste tietyssä proxy-"
+"tyypissä (esim. l10n_it_edi, peppol), joka\n"
+"jonka avulla hänet voidaan tunnistaa, kun hän vastaanottaa hänelle osoitetun "
+"asiakirjan. Se on liitetty tiettyyn yritykseen tietyssä\n"
+"Odoo-tietokannassa.\n"
+"- Salausominaisuuksien avulla voidaan purkaa kaikki käyttäjän tiedot, kun ne "
+"vastaanotetaan välityspalvelimelta.\n"
+"- Tunnistaminen tarjoaa lisäturvatason, jolla vältetään toisena henkilönä "
+"esiintymistä, jos joku pääsee käsiksi käyttäjän tietokantaan.\n"
+
+#. module: account_edi_proxy_client
+#: model:ir.module.module,shortdesc:base.module_account_edi_proxy_client
+msgid "Proxy features for account_edi"
+msgstr "Account_edi:n välityspalvelimen ominaisuudet"
+
+#. module: account_edi_proxy_client
 #. odoo-python
 #: code:addons/account_edi_proxy_client/models/account_edi_proxy_user.py:0
 msgid ""

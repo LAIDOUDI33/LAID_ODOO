@@ -16,6 +16,18 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_jp_ubl_pint
+#: model:ir.module.module,description:base.module_l10n_jp_ubl_pint
+msgid ""
+"\n"
+"The UBL PINT e-invoicing format for Japan is based on the Peppol International (PINT) model for Billing.\n"
+msgstr ""
+
+#. module: l10n_jp_ubl_pint
+#: model:ir.module.module,shortdesc:base.module_l10n_jp_ubl_pint
+msgid "Japan - UBL PINT"
+msgstr ""
+
+#. module: l10n_jp_ubl_pint
 #: model:ir.model,name:l10n_jp_ubl_pint.model_res_partner
 msgid "Contact"
 msgstr ""

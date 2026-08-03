@@ -27,6 +27,28 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: base_import_module
+#: model:ir.module.module,description:base.module_base_import_module
+#, fuzzy
+msgid ""
+"\n"
+"Import a custom data module\n"
+"===========================\n"
+"\n"
+"This module allows authorized users to import a custom data module (.xml "
+"files and static assests)\n"
+"for customization purpose.\n"
+msgstr ""
+"Maxsus ma'lumotlar modulini import qilish ============================= Bu "
+"modul vakolatli foydalanuvchilarga moslash maqsadida maxsus ma'lumotlar "
+"modulini (.xml fayllari va statik resurslar) import qilish imkonini beradi."
+
+#. module: base_import_module
+#: model:ir.module.module,shortdesc:base.module_base_import_module
+#, fuzzy
+msgid "Base import module"
+msgstr "Asosiy import moduli"
+
+#. module: base_import_module
 #. odoo-python
 #: code:addons/base_import_module/models/ir_module.py:0
 #, fuzzy

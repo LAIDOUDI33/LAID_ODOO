@@ -27,6 +27,32 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_sale_mass_mailing
+#: model:ir.module.module,description:base.module_website_sale_mass_mailing
+#, fuzzy
+msgid ""
+"\n"
+"Allows anonymous shoppers of your eCommerce to sign up for a newsletter "
+"during the checkout\n"
+"process.\n"
+msgstr ""
+"eCommerce do‘koningizning noma'lum xaridorlariga hisob-kitob jarayonida "
+"yangiliklar tasmasi uchun obuna bo‘lish imkonini bering."
+
+#. module: website_sale_mass_mailing
+#: model:ir.module.module,shortdesc:base.module_website_sale_mass_mailing
+#, fuzzy
+msgid "Checkout Newsletter"
+msgstr "Buyurtmani yakunlash axborotnomasi"
+
+#. module: website_sale_mass_mailing
+#: model:ir.module.module,summary:base.module_website_sale_mass_mailing
+#, fuzzy
+msgid "Let new customers sign up for a newsletter during checkout"
+msgstr ""
+"Yangi mijozlarga to‘lov paytida axborot byulleteniga obuna bo‘lish imkonini "
+"bering"
+
+#. module: website_sale_mass_mailing
 #: model:ir.model,name:website_sale_mass_mailing.model_res_config_settings
 #, fuzzy
 msgid "Config Settings"

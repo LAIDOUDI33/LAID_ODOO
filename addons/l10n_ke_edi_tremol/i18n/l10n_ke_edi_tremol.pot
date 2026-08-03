@@ -16,6 +16,19 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_ke_edi_tremol
+#: model:ir.module.module,description:base.module_l10n_ke_edi_tremol
+msgid ""
+"\n"
+"This module integrates with the Kenyan G03 Tremol control unit device to the KRA through TIMS.\n"
+msgstr ""
+
+#. module: l10n_ke_edi_tremol
+#: model:ir.module.module,shortdesc:base.module_l10n_ke_edi_tremol
+#: model:ir.module.module,summary:base.module_l10n_ke_edi_tremol
+msgid "Kenya Tremol Device EDI Integration"
+msgstr ""
+
+#. module: l10n_ke_edi_tremol
 #: model_terms:ir.ui.view,arch_db:l10n_ke_edi_tremol.l10n_ke_invoice
 msgid "<b>Date and Time of Signing: </b><br/>"
 msgstr ""

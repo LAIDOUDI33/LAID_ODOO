@@ -28,6 +28,17 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: bus
+#: model:ir.module.module,shortdesc:base.module_bus
+msgid "IM Bus"
+msgstr "Rozhraní okamžitých zpráv"
+
+#. module: bus
+#: model:ir.module.module,description:base.module_bus
+msgid "Instant Messaging Bus allow you to send messages to users, in live."
+msgstr ""
+"Funkce Instant Messaging Bus vám umožňuje okamžitě posílat zprávy uživatelům."
+
+#. module: bus
 #: model:ir.model,name:bus.model_res_groups
 msgid "Access Groups"
 msgstr "Přístupové skupiny"

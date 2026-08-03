@@ -21,6 +21,47 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: pos_pine_labs
+#: model:ir.module.module,description:base.module_pos_pine_labs
+msgid ""
+"\n"
+"Allow Pine Labs POS payments\n"
+"==============================\n"
+"\n"
+"This module is available only for companies that use INR currency.\n"
+"It enables customers to pay for their orders using debit/credit cards and "
+"UPI through Pine Labs POS terminals.\n"
+"A Pine Labs merchant account is required to process transactions.\n"
+"Features include:\n"
+"\n"
+"* Quick payments by swiping, scanning, or tapping your credit/debit card or "
+"UPI QR code at the payment terminal.\n"
+"* Supported cards: Visa, MasterCard, RuPay.\n"
+msgstr ""
+"\n"
+"Salli Pine Labsin Kassajärjestelmän maksut\n"
+"==============================\n"
+"\n"
+"Tämä moduuli on saatavilla vain yrityksille, jotka käyttävät INR-valuuttaa.\n"
+"Sen avulla asiakkaat voivat maksaa tilauksensa pankki-/luottokortilla ja UPI-"
+"maksulla Pine Labsin Kassajärjestelmän maksupäätteiden kautta.\n"
+"Pine Labs -myyjätili vaaditaan näiden maksutapahtumien käsittelyyn.\n"
+"Ominaisuudet sisältävät:\n"
+"\n"
+"* Nopeat maksut pyyhkäisemällä, skannaamalla tai napauttamalla pankki-/"
+"luottokorttia tai UPI QR-koodia maksupäätteessä.\n"
+"* Tuetut kortit: Visa, MasterCard, RuPay.\n"
+
+#. module: pos_pine_labs
+#: model:ir.module.module,summary:base.module_pos_pine_labs
+msgid "Integrate your POS with Pine Labs payment terminals"
+msgstr "Integroi Kassajärjestelmäsi Pine Labsin maksupäätteiden kanssa"
+
+#. module: pos_pine_labs
+#: model:ir.module.module,shortdesc:base.module_pos_pine_labs
+msgid "POS Pine Labs"
+msgstr "Kassajärjestelmä Pine Labs"
+
+#. module: pos_pine_labs
 #: model:ir.model.fields,help:pos_pine_labs.field_pos_payment_method__pine_labs_client
 msgid "A client id issued directly to the merchant by Pine Labs."
 msgstr "Pine Labsin suoraan kauppiaalle myöntämä asiakastunnus."

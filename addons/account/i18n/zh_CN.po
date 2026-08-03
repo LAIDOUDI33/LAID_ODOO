@@ -41,6 +41,46 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: account
+#: model:ir.module.module,description:base.module_account
+msgid ""
+"\n"
+"Invoicing & Payments\n"
+"====================\n"
+"The specific and easy-to-use Invoicing system in Odoo allows you to keep "
+"track of your accounting, even when you are not an accountant. It provides "
+"an easy way to follow up on your vendors and customers.\n"
+"\n"
+"You could use this simplified accounting in case you work with an (external) "
+"account to keep your books, and you still want to keep track of payments. "
+"This module also offers you an easy method of registering payments, without "
+"having to encode complete abstracts of account.\n"
+msgstr ""
+"\n"
+"发票与付款\n"
+"====================\n"
+"Odoo 中具体易用的发票系统可让您跟踪您的账目，即使您不是会计。它提供了一种跟进"
+"供应商和客户的简便方法。\n"
+"\n"
+"如果您使用（外部）账户记账，但仍想跟踪付款情况，您可以使用这一简化的会计功能"
+"。该模块还为您提供了一种登记付款的简便方法，无需对完整的账户摘要进行编码。\n"
+
+#. module: account
+#: model:ir.module.module,summary:base.module_account
+msgid "Invoices & Payments"
+msgstr "结算 & 支付"
+
+#. module: account
+#: model:ir.module.module,shortdesc:base.module_account
+#: model:ir.ui.menu,name:account.account_invoicing_menu
+#: model:ir.ui.menu,name:account.menu_finance
+#: model:res.groups,name:account.group_account_invoice
+#: model_terms:ir.ui.view,arch_db:account.digest_digest_view_form
+#: model_terms:ir.ui.view,arch_db:account.res_config_settings_view_form
+#: model_terms:ir.ui.view,arch_db:account.view_partner_property_form
+msgid "Invoicing"
+msgstr "发票"
+
+#. module: account
 #: model:ir.model.fields,help:account.field_account_journal__type
 msgid ""
 "\n"
@@ -11054,16 +11094,6 @@ msgstr "发票、付款和基本发票报告。"
 #: code:addons/account/models/partner.py:0
 msgid "Invoices/Bills/Mandates"
 msgstr "发票/账单/授权"
-
-#. module: account
-#: model:ir.ui.menu,name:account.account_invoicing_menu
-#: model:ir.ui.menu,name:account.menu_finance
-#: model:res.groups,name:account.group_account_invoice
-#: model_terms:ir.ui.view,arch_db:account.digest_digest_view_form
-#: model_terms:ir.ui.view,arch_db:account.res_config_settings_view_form
-#: model_terms:ir.ui.view,arch_db:account.view_partner_property_form
-msgid "Invoicing"
-msgstr "发票"
 
 #. module: account
 #: model:ir.model.fields.selection,name:account.selection__account_invoice_report__payment_state__invoicing_legacy

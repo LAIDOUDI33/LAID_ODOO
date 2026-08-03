@@ -17,6 +17,11 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_din5008_expense
+#: model:ir.module.module,shortdesc:base.module_l10n_din5008_expense
+msgid "DIN 5008 - Expenses"
+msgstr "DIN 5008 - Dépenses"
+
+#. module: l10n_din5008_expense
 #: model_terms:ir.ui.view,arch_db:l10n_din5008_expense.report_expense
 msgid "Expenses Report"
 msgstr "Rapport de dépenses"

@@ -27,6 +27,18 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: pos_event
+#: model:ir.module.module,summary:base.module_pos_event
+#, fuzzy
+msgid "Link module between Point of Sale and Event"
+msgstr "Savdo nuqtasi va tadbir orasidagi bog‘lovchi modul"
+
+#. module: pos_event
+#: model:ir.module.module,shortdesc:base.module_pos_event
+#, fuzzy
+msgid "POS - Event"
+msgstr "POS - Tadbir"
+
+#. module: pos_event
 #. odoo-javascript
 #: code:addons/pos_event/static/src/app/components/popup/event_configurator_popup/event_configurator_popup.js:0
 #, fuzzy

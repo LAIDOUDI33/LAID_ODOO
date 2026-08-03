@@ -20,6 +20,22 @@ msgstr ""
 "X-Generator: Weblate 5.14.3\n"
 
 #. module: l10n_mr
+#: model:ir.module.module,description:base.module_l10n_mr
+msgid ""
+"\n"
+"Mauritania basic package that contains the chart of accounts, the taxes, tax "
+"reports, etc.\n"
+msgstr ""
+"\n"
+"Pack de base pour la Mauritanie contenant le plan comptable, les taxes, les "
+"déclarations fiscales, etc.\n"
+
+#. module: l10n_mr
+#: model:ir.module.module,shortdesc:base.module_l10n_mr
+msgid "Mauritania - Accounting"
+msgstr "Mauritanie - Comptabilité"
+
+#. module: l10n_mr
 #: model:ir.model,name:l10n_mr.model_account_chart_template
 msgid "Account Chart Template"
 msgstr "Plan Comptable"

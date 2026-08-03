@@ -27,6 +27,24 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: mass_mailing_sale
+#: model:ir.module.module,summary:base.module_mass_mailing_sale
+#, fuzzy
+msgid "Add sale order UTM info on mass mailing"
+msgstr "Ommaviy pochta xabarlarida savdo buyurtmasi UTM ma'lumotlarini qo‘shing"
+
+#. module: mass_mailing_sale
+#: model:ir.module.module,shortdesc:base.module_mass_mailing_sale
+#, fuzzy
+msgid "Mass mailing on sale orders"
+msgstr "Savdo buyurtmalariga ommaviy xat yuborish"
+
+#. module: mass_mailing_sale
+#: model:ir.module.module,description:base.module_mass_mailing_sale
+#, fuzzy
+msgid "UTM and mass mailing on sale orders"
+msgstr "Sotuv buyurtmalari bo‘yicha UTM va ommaviy xabar yuborish"
+
+#. module: mass_mailing_sale
 #: model_terms:ir.ui.view,arch_db:mass_mailing_sale.s_product_aside
 #: model_terms:ir.ui.view,arch_db:mass_mailing_sale.s_product_card
 #: model_terms:ir.ui.view,arch_db:mass_mailing_sale.s_product_columns

@@ -21,6 +21,31 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: mrp_landed_costs
+#: model:ir.module.module,description:base.module_mrp_landed_costs
+msgid ""
+"\n"
+"This module allows you to easily add extra costs on manufacturing order\n"
+"and decide the split of these costs among their stock moves in order to\n"
+"take them into account in your stock valuation.\n"
+msgstr ""
+"\n"
+"Module này cho phép bạn dễ dàng thêm các chi phí bổ sung vào đơn đặt hàng "
+"sản xuất\n"
+"và quyết định cách phân bổ các chi phí này giữa các hoạt động di chuyển hàng "
+"tồn kho để\n"
+"được tính toán trong việc định giá hàng tồn kho của bạn.\n"
+
+#. module: mrp_landed_costs
+#: model:ir.module.module,summary:base.module_mrp_landed_costs
+msgid "Landed Costs on Manufacturing Order"
+msgstr "Chi phí Mua hàng trong Lệnh Sản xuất"
+
+#. module: mrp_landed_costs
+#: model:ir.module.module,shortdesc:base.module_mrp_landed_costs
+msgid "Landed Costs On MO"
+msgstr "Chi phí Mua hàng trong MO"
+
+#. module: mrp_landed_costs
 #: model:ir.model.fields,field_description:mrp_landed_costs.field_stock_landed_cost__target_model
 msgid "Apply On"
 msgstr "Áp dụng cho"

@@ -22,6 +22,36 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: survey
+#: model:ir.module.module,description:base.module_survey
+msgid ""
+"\n"
+"Create beautiful surveys and visualize answers\n"
+"==============================================\n"
+"\n"
+"It depends on the answers or reviews of some questions by different users. "
+"A\n"
+"survey may have multiple pages. Each page may contain multiple questions "
+"and\n"
+"each question may have multiple answers. Different users may give different\n"
+"answers of question and according to that survey is done. Partners are also\n"
+"sent mails with personal token for the invitation of the survey.\n"
+msgstr ""
+
+#. module: survey
+#: model:ir.module.module,summary:base.module_survey
+msgid "Send your surveys or share them live."
+msgstr ""
+
+#. module: survey
+#: model:ir.actions.act_window,name:survey.action_survey_form
+#: model:ir.module.module,shortdesc:base.module_survey
+#: model:ir.ui.menu,name:survey.menu_survey_form
+#: model:ir.ui.menu,name:survey.menu_surveys
+#: model:res.groups.privilege,name:survey.res_groups_privilege_surveys
+msgid "Surveys"
+msgstr "စစ်တမ်းများ"
+
+#. module: survey
 #: model:ir.model.fields,field_description:survey.field_survey_survey__question_count
 msgid "# Questions"
 msgstr ""
@@ -4179,14 +4209,6 @@ msgstr ""
 #: model:mail.template,name:survey.mail_template_user_input_invite
 msgid "Survey: Invite"
 msgstr ""
-
-#. module: survey
-#: model:ir.actions.act_window,name:survey.action_survey_form
-#: model:ir.ui.menu,name:survey.menu_survey_form
-#: model:ir.ui.menu,name:survey.menu_surveys
-#: model:res.groups.privilege,name:survey.res_groups_privilege_surveys
-msgid "Surveys"
-msgstr "စစ်တမ်းများ"
 
 #. module: survey
 #: model:survey.question.answer,value:survey.survey_demo_burger_quiz_p4_q1_sug3

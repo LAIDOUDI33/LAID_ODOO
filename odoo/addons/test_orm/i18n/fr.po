@@ -17,6 +17,16 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: test_orm
+#: model:ir.module.module,description:base.module_test_orm
+msgid "A module to test the ORM."
+msgstr "Un module pour tester l’ORM."
+
+#. module: test_orm
+#: model:ir.module.module,shortdesc:base.module_test_orm
+msgid "Test ORM"
+msgstr "Test ORM"
+
+#. module: test_orm
 #: model:ir.model.constraint,message:test_orm.constraint_test_orm_category_positive_color
 msgid "The color code must be positive !"
 msgstr "La couleur doit être une valeur positive !"

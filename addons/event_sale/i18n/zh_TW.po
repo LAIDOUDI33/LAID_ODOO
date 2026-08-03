@@ -24,6 +24,45 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: event_sale
+#: model:ir.module.module,description:base.module_event_sale
+msgid ""
+"\n"
+"Creating registration with sales orders.\n"
+"========================================\n"
+"\n"
+"This module allows you to automate and connect your registration creation "
+"with\n"
+"your main sale flow and therefore, to enable the invoicing feature of "
+"registrations.\n"
+"\n"
+"It defines a new kind of service products that offers you the possibility "
+"to\n"
+"choose an event category associated with it. When you encode a sales order "
+"for\n"
+"that product, you will be able to choose an existing event of that category "
+"and\n"
+"when you confirm your sales order it will automatically create a "
+"registration for\n"
+"this event.\n"
+msgstr ""
+"\n"
+"建立活動報名銷售訂單記錄.\n"
+"========================================\n"
+"\n"
+" 此模組允許您自動建立活動報名記錄，並將建立登記記錄與\n"
+" 主要的銷售流程連接起來，以此來啟用登記記錄的開立憑單功能.\n"
+"\n"
+" 它會定義新型服務產品，該產品為您提供選\n"
+" 選擇與之相關聯的事件類別的機會. 當編碼\n"
+" 該產品的銷售訂單時，您將可以選擇該類別的現有事件，並且\n"
+" 當確認您的銷售訂單時，其將為此事件自動建立登記記錄.\n"
+
+#. module: event_sale
+#: model:ir.module.module,shortdesc:base.module_event_sale
+msgid "Events Sales"
+msgstr "活動銷售"
+
+#. module: event_sale
 #: model_terms:ir.ui.view,arch_db:event_sale.event_registration_change_exception
 msgid ""
 ".\n"

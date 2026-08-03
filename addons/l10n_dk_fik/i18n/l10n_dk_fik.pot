@@ -16,6 +16,23 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_dk_fik
+#: model:ir.module.module,description:base.module_l10n_dk_fik
+msgid ""
+"\n"
+"Support Danish FIK number as payment references on customer invoices.\n"
+msgstr ""
+
+#. module: l10n_dk_fik
+#: model:ir.module.module,shortdesc:base.module_l10n_dk_fik
+msgid "Denmark - FIK Number"
+msgstr ""
+
+#. module: l10n_dk_fik
+#: model:ir.module.module,summary:base.module_l10n_dk_fik
+msgid "Use FIK Number as Payment reference"
+msgstr ""
+
+#. module: l10n_dk_fik
 #: model:ir.model.fields,field_description:l10n_dk_fik.field_account_journal__invoice_reference_model
 msgid "Communication Standard"
 msgstr ""

@@ -24,6 +24,17 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: payment_adyen
+#: model:ir.module.module,summary:base.module_payment_adyen
+msgid "A Dutch payment provider covering Europe and the US."
+msgstr ""
+"Một nhà cung cấp dịch vụ thanh toán của Hà Lan hỗ trợ châu Âu và Hoa Kỳ."
+
+#. module: payment_adyen
+#: model:ir.module.module,shortdesc:base.module_payment_adyen
+msgid "Payment Provider: Adyen"
+msgstr "Nhà cung cấp Dịch vụ Thanh toán: Adyen"
+
+#. module: payment_adyen
 #: model_terms:ir.ui.view,arch_db:payment_adyen.payment_provider_form
 msgid ""
 "<strong>Warning:</strong> To capture the amount manually, you also need to "

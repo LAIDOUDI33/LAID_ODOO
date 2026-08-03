@@ -16,6 +16,22 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_tz_account
+#: model:ir.module.module,description:base.module_l10n_tz_account
+msgid ""
+"\n"
+"Tanzanian localisation containing:\n"
+"- COA\n"
+"- Taxes\n"
+"- Tax report\n"
+"- Fiscal position\n"
+msgstr ""
+
+#. module: l10n_tz_account
+#: model:ir.module.module,shortdesc:base.module_l10n_tz_account
+msgid "Tanzania - Accounting"
+msgstr ""
+
+#. module: l10n_tz_account
 #: model:ir.model,name:l10n_tz_account.model_account_chart_template
 msgid "Account Chart Template"
 msgstr ""

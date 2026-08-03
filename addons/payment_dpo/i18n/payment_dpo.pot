@@ -16,6 +16,16 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: payment_dpo
+#: model:ir.module.module,summary:base.module_payment_dpo
+msgid "A Kenyan payment provider covering several African countries."
+msgstr ""
+
+#. module: payment_dpo
+#: model:ir.module.module,shortdesc:base.module_payment_dpo
+msgid "Payment Provider: DPO"
+msgstr ""
+
+#. module: payment_dpo
 #: model:payment.method,name:payment_dpo.payment_method_amex
 msgid "American Express"
 msgstr ""

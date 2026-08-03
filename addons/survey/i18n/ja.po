@@ -28,6 +28,45 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: survey
+#: model:ir.module.module,description:base.module_survey
+msgid ""
+"\n"
+"Create beautiful surveys and visualize answers\n"
+"==============================================\n"
+"\n"
+"It depends on the answers or reviews of some questions by different users. "
+"A\n"
+"survey may have multiple pages. Each page may contain multiple questions "
+"and\n"
+"each question may have multiple answers. Different users may give different\n"
+"answers of question and according to that survey is done. Partners are also\n"
+"sent mails with personal token for the invitation of the survey.\n"
+msgstr ""
+"\n"
+"見栄えのよいアンケート調査を作成し、回答を視覚化する\n"
+"==============================================\n"
+"異なるユーザによるいくつかの質問の回答またはレビューに依存します。\n"
+"調査には複数のページがある場合があります。各ページには複数の質問が\n"
+"含まれ、各質問には複数の回答が含まれる場合があります。\n"
+"ユーザが異なれば、質問に対する回答も異なり、その調査に従って\n"
+"行われます。取引先には、調査の招待状として個人トークンが記載\n"
+"されたメールも送信されます。\n"
+
+#. module: survey
+#: model:ir.module.module,summary:base.module_survey
+msgid "Send your surveys or share them live."
+msgstr "アンケートを送信・ライブ共有"
+
+#. module: survey
+#: model:ir.actions.act_window,name:survey.action_survey_form
+#: model:ir.module.module,shortdesc:base.module_survey
+#: model:ir.ui.menu,name:survey.menu_survey_form
+#: model:ir.ui.menu,name:survey.menu_surveys
+#: model:res.groups.privilege,name:survey.res_groups_privilege_surveys
+msgid "Surveys"
+msgstr "アンケート調査"
+
+#. module: survey
 #: model:ir.model.fields,field_description:survey.field_survey_survey__question_count
 msgid "# Questions"
 msgstr "質問"
@@ -4352,14 +4391,6 @@ msgstr "アンケート: 検定合格"
 #: model:mail.template,name:survey.mail_template_user_input_invite
 msgid "Survey: Invite"
 msgstr "アンケート：招待"
-
-#. module: survey
-#: model:ir.actions.act_window,name:survey.action_survey_form
-#: model:ir.ui.menu,name:survey.menu_survey_form
-#: model:ir.ui.menu,name:survey.menu_surveys
-#: model:res.groups.privilege,name:survey.res_groups_privilege_surveys
-msgid "Surveys"
-msgstr "アンケート調査"
 
 #. module: survey
 #: model:survey.question.answer,value:survey.survey_demo_burger_quiz_p4_q1_sug3

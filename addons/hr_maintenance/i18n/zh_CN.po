@@ -23,6 +23,25 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: hr_maintenance
+#: model:ir.module.module,description:base.module_hr_maintenance
+msgid ""
+"\n"
+"Bridge between HR and Maintenance."
+msgstr ""
+"\n"
+"人力资源与维护保养之间的桥梁。"
+
+#. module: hr_maintenance
+#: model:ir.module.module,summary:base.module_hr_maintenance
+msgid "Equipment, Assets, Internal Hardware, Allocation Tracking"
+msgstr "设备、资产、内部硬件、分配跟踪"
+
+#. module: hr_maintenance
+#: model:ir.module.module,shortdesc:base.module_hr_maintenance
+msgid "Maintenance - HR"
+msgstr "维护保养 - 人力资源"
+
+#. module: hr_maintenance
 #. odoo-python
 #: code:addons/hr_maintenance/models/hr_employee_departure.py:0
 msgid ""

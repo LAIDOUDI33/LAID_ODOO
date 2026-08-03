@@ -21,6 +21,22 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: microsoft_account
+#: model:ir.module.module,description:base.module_microsoft_account
+msgid ""
+"\n"
+"The module adds Microsoft user in res user.\n"
+"===========================================\n"
+msgstr ""
+"\n"
+"이 모듈은 등록 사용자에 Microsoft 사용자를 추가합니다.\n"
+"===========================================\n"
+
+#. module: microsoft_account
+#: model:ir.module.module,shortdesc:base.module_microsoft_account
+msgid "Microsoft Users"
+msgstr "마이크로소프트 사용자"
+
+#. module: microsoft_account
 #: model:ir.model.fields,field_description:microsoft_account.field_microsoft_service__display_name
 #: model:ir.model.fields,field_description:microsoft_account.field_res_users__display_name
 msgid "Display Name"

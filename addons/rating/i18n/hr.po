@@ -29,6 +29,20 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: rating
+#: model:ir.module.module,description:base.module_rating
+msgid ""
+"\n"
+"This module allows a customer to give rating.\n"
+msgstr ""
+"\n"
+"Ovaj modul omogućava kupcu ocjenjivanje.\n"
+
+#. module: rating
+#: model:ir.module.module,shortdesc:base.module_rating
+msgid "Customer Rating"
+msgstr "Ocjene gostiju"
+
+#. module: rating
 #: model_terms:ir.ui.view,arch_db:rating.rating_external_page_invalid_partner
 msgid "\" or someone from the same company can give it a rating."
 msgstr ""

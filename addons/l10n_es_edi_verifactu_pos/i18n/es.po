@@ -21,6 +21,16 @@ msgstr ""
 "X-Generator: Weblate 5.14.3\n"
 
 #. module: l10n_es_edi_verifactu_pos
+#: model:ir.module.module,summary:base.module_l10n_es_edi_verifactu_pos
+msgid "Add Veri*Factu support to Point of Sale"
+msgstr ""
+
+#. module: l10n_es_edi_verifactu_pos
+#: model:ir.module.module,shortdesc:base.module_l10n_es_edi_verifactu_pos
+msgid "Spain - Veri*Factu for Point of Sale"
+msgstr ""
+
+#. module: l10n_es_edi_verifactu_pos
 #. odoo-python
 #: code:addons/l10n_es_edi_verifactu_pos/models/pos_order.py:0
 msgid ""

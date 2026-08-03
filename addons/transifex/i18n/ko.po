@@ -20,6 +20,48 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: transifex
+#: model:ir.module.module,description:base.module_transifex
+msgid ""
+"\n"
+"Transifex integration\n"
+"=====================\n"
+"This module will add a link to the Transifex project in the translation "
+"view.\n"
+"The purpose of this module is to speed up translations of the main modules.\n"
+"\n"
+"To work, Odoo uses Transifex configuration files `.tx/config` to detect the\n"
+"project source. Custom modules will not be translated (as not published on\n"
+"the main Transifex project).\n"
+"\n"
+"The language the user tries to translate must be activated on the Transifex\n"
+"project.\n"
+msgstr ""
+"\n"
+"Transifex 통합\n"
+"=====================\n"
+"이 모듈을 통해 번역 화면에 Transifex 프로젝트를 추가합니다.\n"
+"이 모듈의 목적은 주요 모듈에서의 번역 속도를 끌어올리것에 있습니다.\n"
+"\n"
+"작업을 하기 위해, Odoo에서는 Transifex 환경설정 파일인 `.tx/config`를 "
+"이용하여 프로젝트 소스를 감지합니다.\n"
+"커스터마이징 모듈은 번역되지 않습니다. (Transifex 주요 프로젝트에\n"
+"게시되지 않음)\n"
+"\n"
+"사용자가 번역하려는 언어는 반드시 Transifex 프로젝트 상에서 활성화되어 "
+"있어야\n"
+"합니다.\n"
+
+#. module: transifex
+#: model:ir.module.module,summary:base.module_transifex
+msgid "Add a link to edit a translation in Transifex"
+msgstr "Transifex에서 번역할 수 있는 링크 추가"
+
+#. module: transifex
+#: model:ir.module.module,shortdesc:base.module_transifex
+msgid "Transifex integration"
+msgstr "Transifex 통합"
+
+#. module: transifex
 #: model:ir.model,name:transifex.model_base
 msgid "Base"
 msgstr "기준액"

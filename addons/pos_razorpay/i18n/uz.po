@@ -27,6 +27,43 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: pos_razorpay
+#: model:ir.module.module,description:base.module_pos_razorpay
+#, fuzzy
+msgid ""
+"\n"
+"Allow Razorpay POS payments\n"
+"==============================\n"
+"\n"
+"This module allows customers to pay for their orders with debit/credit\n"
+"cards and UPI. The transactions are processed by Razorpay POS. A Razorpay "
+"merchant account is necessary. It allows the\n"
+"following:\n"
+"\n"
+"* Fast payment by just swiping/scanning a credit/debit card or a QR code "
+"while on the payment screen\n"
+"* Supported cards: Visa, MasterCard, Rupay, UPI\n"
+msgstr ""
+"Razorpay POS to‘lovlariga ruxsat berish ================================ "
+"Ushbu modul mijozlarga o‘z buyurtmalarini debet/kredit kartalari va UPI "
+"bilan to‘lash imkonini beradi. Tranzaksiyalar Razorpay POS tomonidan amalga "
+"oshiriladi. Razorpay sotuvchi hisobi zarur. U quyidagilarni amalga oshirish "
+"imkonini beradi: * To‘lov ekranida kredit/debet karta yoki QR-kodni "
+"shunchaki surish/skanerlash orqali tezkor to‘lovni amalga oshirish * Qabul "
+"qilinadigan kartalar: Visa, MasterCard, Rupay, UPI"
+
+#. module: pos_razorpay
+#: model:ir.module.module,summary:base.module_pos_razorpay
+#, fuzzy
+msgid "Integrate your POS with a Razorpay payment terminal"
+msgstr "POS tizimingizni Razorpay to‘lov terminali bilan integratsiya qiling"
+
+#. module: pos_razorpay
+#: model:ir.module.module,shortdesc:base.module_pos_razorpay
+#, fuzzy
+msgid "POS Razorpay"
+msgstr "POS Razorpay"
+
+#. module: pos_razorpay
 #. odoo-javascript
 #: code:addons/pos_razorpay/static/src/app/utls/payment/payment_razorpay.js:0
 #, fuzzy

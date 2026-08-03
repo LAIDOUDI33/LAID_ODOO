@@ -31,6 +31,43 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: stock_dropshipping
+#: model:ir.module.module,description:base.module_stock_dropshipping
+msgid ""
+"\n"
+"Manage drop shipping orders\n"
+"===========================\n"
+"\n"
+"This module adds a pre-configured Drop Shipping operation type\n"
+"as well as a procurement route that allow configuring Drop\n"
+"Shipping products and orders.\n"
+"\n"
+"When drop shipping is used the goods are directly transferred\n"
+"from vendors to customers (direct delivery) without\n"
+"going through the retailer's warehouse. In this case no\n"
+"internal transfer document is needed.\n"
+"\n"
+msgstr ""
+"\n"
+"Hallake drop-shipping tellimusi\n"
+"===========================\n"
+"\n"
+"See moodul lisab eelkonfigureeritud drop-shipping operatsioonitüübi ning "
+"marsruudi, mis võimaldavad konfigureerida drop-shipping tooteid ja "
+"tellimusi.\n"
+"\n"
+"Kui kasutatakse drop-shipping'i, siis kaubad edastatakse otse\n"
+"hankijatelt klientidele (otsene kohaletoimetamine) ilma,\n"
+"et need läbiksid jaemüüja laost. Sellisel juhul ei ole\n"
+"vajalik sisemine siirde dokument.\n"
+"\n"
+
+#. module: stock_dropshipping
+#: model:ir.module.module,shortdesc:base.module_stock_dropshipping
+#: model:ir.module.module,summary:base.module_stock_dropshipping
+msgid "Drop Shipping"
+msgstr "Otse kliendile saatmine"
+
+#. module: stock_dropshipping
 #: model:ir.model,name:stock_dropshipping.model_res_company
 msgid "Company"
 msgstr ""

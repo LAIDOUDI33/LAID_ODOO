@@ -16,6 +16,17 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: data_recycle
+#: model:ir.module.module,shortdesc:base.module_data_recycle
+msgid "Data Recycle"
+msgstr ""
+
+#. module: data_recycle
+#: model:ir.module.module,description:base.module_data_recycle
+#: model:ir.module.module,summary:base.module_data_recycle
+msgid "Find old records and archive/delete them"
+msgstr ""
+
+#. module: data_recycle
 #: model_terms:ir.ui.view,arch_db:data_recycle.notification
 msgid ""
 "' recycling rule.<br/>\n"

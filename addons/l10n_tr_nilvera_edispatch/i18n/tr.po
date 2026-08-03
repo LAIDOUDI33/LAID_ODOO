@@ -17,6 +17,16 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_tr_nilvera_edispatch
+#: model:ir.module.module,description:base.module_l10n_tr_nilvera_edispatch
+msgid "Allows the users to create the UBL 1.2.1 e-Dispatch file"
+msgstr "Kullanıcıların UBL 1.2.1 e-İrsaliye dosyasını oluşturmasını sağlar"
+
+#. module: l10n_tr_nilvera_edispatch
+#: model:ir.module.module,shortdesc:base.module_l10n_tr_nilvera_edispatch
+msgid "Türkiye - e-Irsaliye (e-Dispatch)"
+msgstr "Türkiye - e-İrsaliye (e-Gönderim)"
+
+#. module: l10n_tr_nilvera_edispatch
 #. odoo-python
 #: code:addons/l10n_tr_nilvera_edispatch/models/res_partner.py:0
 msgid "%(name)s's %(errors)s."

@@ -24,6 +24,31 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: base_sparse_field
+#: model:ir.module.module,description:base.module_base_sparse_field
+msgid ""
+"\n"
+"The purpose of this module is to implement \"sparse\" fields, i.e., fields\n"
+"that are mostly null. This implementation circumvents the PostgreSQL\n"
+"limitation on the number of columns in a table. The values of all sparse\n"
+"fields are stored in a \"serialized\" field in the form of a JSON mapping.\n"
+msgstr ""
+"\n"
+"이 모듈의 목적은 \"분산\" 필드, 즉 대부분 null인 필드를 구현하는 것입니다.\n"
+"이 작업은 PostgreSQL의 테이블 열 수 제한을 우회합니다.\n"
+"모든 분산 필드의 값은 JSON 매핑 형식으로\n"
+"\"연속된\" 필드에 저장됩니다.\n"
+
+#. module: base_sparse_field
+#: model:ir.module.module,summary:base.module_base_sparse_field
+msgid "Implementation of sparse fields."
+msgstr "스파스 필드 구현"
+
+#. module: base_sparse_field
+#: model:ir.module.module,shortdesc:base.module_base_sparse_field
+msgid "Sparse Fields"
+msgstr "구문 분석 필드"
+
+#. module: base_sparse_field
 #: model:ir.model,name:base_sparse_field.model_base
 msgid "Base"
 msgstr "기준액"

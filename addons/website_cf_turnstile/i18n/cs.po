@@ -20,6 +20,22 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_cf_turnstile
+#: model:ir.module.module,description:base.module_website_cf_turnstile
+msgid ""
+"\n"
+"This module implements Cloudflare Turnstile so that you can prevent bot spam "
+"on your forms.\n"
+msgstr ""
+"\n"
+"Tento modul implementuje Cloudfire Turnstile, takže můžete zabránit spamu "
+"botů ve svých formulářích.\n"
+
+#. module: website_cf_turnstile
+#: model:ir.module.module,shortdesc:base.module_website_cf_turnstile
+msgid "Cloudflare Turnstile"
+msgstr "Cloudflare Turnstile"
+
+#. module: website_cf_turnstile
 #: model_terms:ir.ui.view,arch_db:website_cf_turnstile.res_config_settings_view_form
 msgid "<i class=\"oi oi-arrow-right\"/> More info"
 msgstr ""

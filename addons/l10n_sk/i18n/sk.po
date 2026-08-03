@@ -21,6 +21,32 @@ msgstr ""
 "X-Generator: Weblate 5.14.3\n"
 
 #. module: l10n_sk
+#: model:ir.module.module,description:base.module_l10n_sk
+msgid ""
+"\n"
+"Slovakia accounting chart and localization: Chart of Accounts 2020, basic "
+"VAT rates +\n"
+"fiscal positions.\n"
+"\n"
+"Tento modul definuje:\n"
+"• Slovenskú účtovú osnovu za rok 2020\n"
+"\n"
+"• Základné sadzby pre DPH z predaja a nákupu\n"
+"\n"
+"• Základné fiškálne pozície pre slovenskú legislatívu\n"
+"\n"
+"\n"
+"Pre viac informácií kontaktujte info@26house.com alebo navštívte https://"
+"www.26house.com.\n"
+"\n"
+msgstr ""
+
+#. module: l10n_sk
+#: model:ir.module.module,shortdesc:base.module_l10n_sk
+msgid "Slovak - Accounting"
+msgstr "Slovenčina - Účtovníctvo"
+
+#. module: l10n_sk
 #: model_terms:ir.ui.view,arch_db:l10n_sk.report_invoice_document
 msgid "<strong>Trade registry: </strong>"
 msgstr ""

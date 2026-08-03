@@ -28,6 +28,57 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: fleet
+#: model:ir.module.module,description:base.module_fleet
+msgid ""
+"\n"
+"Vehicle, leasing, insurances, cost\n"
+"==================================\n"
+"With this module, Odoo helps you managing all your vehicles, the\n"
+"contracts associated to those vehicle as well as services, costs\n"
+"and many other features necessary to the management of your fleet\n"
+"of vehicle(s)\n"
+"\n"
+"Main Features\n"
+"-------------\n"
+"* Add vehicles to your fleet\n"
+"* Manage contracts for vehicles\n"
+"* Reminder when a contract reach its expiration date\n"
+"* Add services, odometer values for all vehicles\n"
+"* Show all costs associated to a vehicle or to a type of service\n"
+"* Analysis graph for costs\n"
+msgstr ""
+"\n"
+"Xe, cho thuê, bảo hiểm, chi phí\n"
+"==================================\n"
+"Với phân hệ này, Odoo giúp bạn quản lý tất cả các xe của mình, những hợp "
+"đồng liên quan đến các xe đó cũng như các dịch vụ, chi phí và nhiều tính "
+"năng khác cần thiết để quản lý đội xe của bạn\n"
+"\n"
+"Đặc điểm Chính\n"
+"-------------\n"
+"* Thêm xe vào hạm đội của bạn\n"
+"* Quản lý hợp đồng xe\n"
+"* Nhắc nhở khi hợp đồng đến ngày hết hạn\n"
+"* Thêm dịch vụ, giá trị công tơ mét cho mọi loại xe\n"
+"* Hiển thị tất cả các chi phí liên quan đến một xe hoặc một loại dịch vụ\n"
+"* Biểu đồ phân tích chi phí\n"
+
+#. module: fleet
+#: model:ir.module.module,shortdesc:base.module_fleet
+#: model:ir.ui.menu,name:fleet.fleet_vehicle_menu
+#: model:ir.ui.menu,name:fleet.fleet_vehicles
+#: model:ir.ui.menu,name:fleet.menu_root
+#: model:res.groups.privilege,name:fleet.res_groups_privilege_fleet
+#: model_terms:ir.ui.view,arch_db:fleet.res_config_settings_view_form
+msgid "Fleet"
+msgstr "Đội xe"
+
+#. module: fleet
+#: model:ir.module.module,summary:base.module_fleet
+msgid "Manage your fleet and track car costs"
+msgstr "Quản lý phương tiện của bạn và theo dõi chi phí vận hành"
+
+#. module: fleet
 #: model_terms:ir.ui.view,arch_db:fleet.fleet_vehicle_view_kanban
 msgid "<i class=\"oi\" data-icon=\"location_on\" title=\"Location\"/>"
 msgstr "<i class=\"oi\" data-icon=\"location_on\" title=\"Vị trí\"/>"
@@ -1107,15 +1158,6 @@ msgstr "Ngày hợp đồng đầu tiên"
 #: model_terms:ir.ui.view,arch_db:fleet.fleet_vehicle_view_form
 msgid "Fiscality"
 msgstr "Tài chính"
-
-#. module: fleet
-#: model:ir.ui.menu,name:fleet.fleet_vehicle_menu
-#: model:ir.ui.menu,name:fleet.fleet_vehicles
-#: model:ir.ui.menu,name:fleet.menu_root
-#: model:res.groups.privilege,name:fleet.res_groups_privilege_fleet
-#: model_terms:ir.ui.view,arch_db:fleet.res_config_settings_view_form
-msgid "Fleet"
-msgstr "Đội xe"
 
 #. module: fleet
 #: model:ir.model,name:fleet.model_fleet_vehicle_cost_report

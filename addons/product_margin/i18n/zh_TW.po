@@ -24,6 +24,29 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: product_margin
+#: model:ir.module.module,description:base.module_product_margin
+msgid ""
+"\n"
+"Adds a reporting menu in products that computes sales, purchases, margins "
+"and other interesting indicators based on invoices.\n"
+"=============================================================================================================================\n"
+"\n"
+"The wizard to launch the report has several options to help you get the data "
+"you need.\n"
+msgstr ""
+"\n"
+"為產品加入報告選單，根據發票資料計算銷售額、採購額、利潤率及其他有趣的統計指"
+"標。\n"
+"=============================================================================================================================\n"
+"\n"
+"啟動報告的精靈有幾個選項可供選擇，幫助你獲得所需的資料。\n"
+
+#. module: product_margin
+#: model:ir.module.module,shortdesc:base.module_product_margin
+msgid "Margins by Products"
+msgstr "毛利，按產品"
+
+#. module: product_margin
 #: model:ir.model.fields,field_description:product_margin.field_product_product__purchase_num_invoiced
 msgid "# Invoiced in Purchase"
 msgstr "# 採購已開立發票"

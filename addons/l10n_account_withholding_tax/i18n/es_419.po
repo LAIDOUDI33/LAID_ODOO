@@ -21,6 +21,20 @@ msgstr ""
 "X-Generator: Weblate 5.16.2\n"
 
 #. module: l10n_account_withholding_tax
+#: model:ir.module.module,description:base.module_l10n_account_withholding_tax
+msgid ""
+"Allows to register withholding taxes during the payment of an invoice or "
+"bill."
+msgstr ""
+"Permite registrar las retenciones de impuestos durante el pago de una "
+"factura de cliente o de proveedor."
+
+#. module: l10n_account_withholding_tax
+#: model:ir.module.module,shortdesc:base.module_l10n_account_withholding_tax
+msgid "Withholding Tax on Payment"
+msgstr "Retención de impuestos al pagar"
+
+#. module: l10n_account_withholding_tax
 #. odoo-python
 #: code:addons/l10n_account_withholding_tax/models/product_template.py:0
 msgid "%(amount)s Excl. Taxes"

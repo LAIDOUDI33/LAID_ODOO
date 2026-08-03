@@ -16,6 +16,18 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_hu
+#: model:ir.module.module,description:base.module_l10n_hu
+msgid ""
+"\n"
+"Accounting chart and localization for Hungary\n"
+msgstr ""
+
+#. module: l10n_hu
+#: model:ir.module.module,shortdesc:base.module_l10n_hu
+msgid "Hungary - Accounting"
+msgstr ""
+
+#. module: l10n_hu
 #: model:ir.model,name:l10n_hu.model_account_chart_template
 msgid "Account Chart Template"
 msgstr ""

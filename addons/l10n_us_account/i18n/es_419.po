@@ -17,6 +17,11 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_us_account
+#: model:ir.module.module,shortdesc:base.module_l10n_us_account
+msgid "United States - Accounting"
+msgstr "Estados Unidos - Contabilidad"
+
+#. module: l10n_us_account
 #: model:ir.model,name:l10n_us_account.model_account_chart_template
 msgid "Account Chart Template"
 msgstr ""

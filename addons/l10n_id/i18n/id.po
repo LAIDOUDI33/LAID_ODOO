@@ -21,6 +21,28 @@ msgstr ""
 "X-Generator: Weblate 5.16.2\n"
 
 #. module: l10n_id
+#: model:ir.module.module,description:base.module_l10n_id
+msgid ""
+"\n"
+"This is the latest Indonesian Odoo localisation necessary to run Odoo "
+"accounting for SMEs with:\n"
+"=================================================================================================\n"
+"    - generic Indonesian chart of accounts\n"
+"    - tax structure"
+msgstr ""
+"\n"
+"Ini adalah lokalisasi terkini Odoo Indonesia yang diperlukan untuk "
+"menjalankan akuntansi Odoo untuk UKM dengan::\n"
+"=================================================================================================\n"
+"    - bagan akun umum Indonesia\n"
+"    - struktur pajak"
+
+#. module: l10n_id
+#: model:ir.module.module,shortdesc:base.module_l10n_id
+msgid "Indonesian - Accounting"
+msgstr "Indonesia - Akuntansi"
+
+#. module: l10n_id
 #: model:ir.model,name:l10n_id.model_account_chart_template
 msgid "Account Chart Template"
 msgstr "Templat Bagan Akun"

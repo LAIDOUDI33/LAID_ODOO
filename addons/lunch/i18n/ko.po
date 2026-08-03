@@ -25,6 +25,61 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: lunch
+#: model:ir.module.module,description:base.module_lunch
+msgid ""
+"\n"
+"The base module to manage lunch.\n"
+"================================\n"
+"\n"
+"Many companies order sandwiches, pizzas and other, from usual vendors, for "
+"their employees to offer them more facilities.\n"
+"\n"
+"However lunches management within the company requires proper administration "
+"especially when the number of employees or vendors is important.\n"
+"\n"
+"The “Lunch Order” module has been developed to make this management easier "
+"but also to offer employees more tools and usability.\n"
+"\n"
+"In addition to a full meal and vendor management, this module offers the "
+"possibility to display warning and provides quick order selection based on "
+"employee’s preferences.\n"
+"\n"
+"If you want to save your employees' time and avoid them to always have coins "
+"in their pockets, this module is essential.\n"
+msgstr ""
+"\n"
+"점심 관리 기본 모듈.\n"
+"================================\n"
+"\n"
+"많은 회사들이 직원들에게 더 많은 혜택과 편의를 제공하기 위해 공급업체로부터 "
+"샌드위치, 피자 및 각종 식품 등을 주문합니다.\n"
+"\n"
+"그러나 회사 내 점심식사는 특히 직원이나 공급업체 수가 많을수록 적절한 관리가 "
+"필요합니다.\n"
+"\n"
+"“점심 주문” 모듈은 점심식사와 관련된 관리를 단순하게 할 뿐만 아니라 "
+"직원들에게 더 높은 유용성을 제공하기 위해 개발되었습니다.\n"
+"\n"
+"완벽한 식사 및 공급업체 관리를 처리하는 이 모듈은 경고를 표시하고 직원 기본 "
+"설정에 따라 빠른 주문 옵션을 제공합니다.\n"
+"\n"
+"직원들이 점심 메뉴를 고르는 데 소비하는 불필요한 시간을 절약하려면 이 모듈을 "
+"사용하는 것이 매우 중요합니다.\n"
+
+#. module: lunch
+#: model:ir.module.module,summary:base.module_lunch
+msgid "Handle lunch orders of your employees"
+msgstr "직원들의 점심 식사 주문 처리"
+
+#. module: lunch
+#: model:ir.module.module,shortdesc:base.module_lunch
+#: model:ir.ui.menu,name:lunch.menu_lunch
+#: model:res.groups.privilege,name:lunch.res_groups_privilege_lunch
+#: model_terms:ir.ui.view,arch_db:lunch.res_config_settings_view_form
+msgid "Lunch"
+msgstr "점심"
+
+#. module: lunch
 #: model_terms:lunch.product,description:lunch.product_temaki
 msgid "1 Avocado - 1 Salmon - 1 Eggs - 1 Tuna"
 msgstr "1 아보카도 - 1 연어 - 1 계란 - 1 참치"
@@ -1122,13 +1177,6 @@ msgstr "위치 이름"
 #: model:ir.ui.menu,name:lunch.lunch_location_menu
 msgid "Locations"
 msgstr "위치"
-
-#. module: lunch
-#: model:ir.ui.menu,name:lunch.menu_lunch
-#: model:res.groups.privilege,name:lunch.res_groups_privilege_lunch
-#: model_terms:ir.ui.view,arch_db:lunch.res_config_settings_view_form
-msgid "Lunch"
-msgstr "점심"
 
 #. module: lunch
 #: model:ir.model,name:lunch.model_lunch_alert

@@ -16,6 +16,19 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_sa_pos
+#: model:ir.module.module,description:base.module_l10n_sa_pos
+msgid ""
+"\n"
+"Saudi Arabia POS Localization\n"
+"===========================================================\n"
+msgstr ""
+
+#. module: l10n_sa_pos
+#: model:ir.module.module,shortdesc:base.module_l10n_sa_pos
+msgid "Saudi Arabia - Point of Sale"
+msgstr ""
+
+#. module: l10n_sa_pos
 #. odoo-javascript
 #: code:addons/l10n_sa_pos/static/src/app/add_zatca_refund_reason_popup/add_zatca_refund_reason_popup.xml:0
 msgid "Additional Refund Information"

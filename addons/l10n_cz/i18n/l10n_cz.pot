@@ -16,6 +16,26 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_cz
+#: model:ir.module.module,description:base.module_l10n_cz
+msgid ""
+"\n"
+"Czech accounting chart and localization.  With Chart of Accounts with taxes and basic fiscal positions.\n"
+"\n"
+"Tento modul definuje:\n"
+"\n"
+"- Českou účetní osnovu za rok 2020\n"
+"\n"
+"- Základní sazby pro DPH z prodeje a nákupu\n"
+"\n"
+"- Základní fiskální pozice pro českou legislativu\n"
+msgstr ""
+
+#. module: l10n_cz
+#: model:ir.module.module,shortdesc:base.module_l10n_cz
+msgid "Czech - Accounting"
+msgstr ""
+
+#. module: l10n_cz
 #: model_terms:ir.ui.view,arch_db:l10n_cz.cz_partner_address_form
 msgid "<span> - </span>"
 msgstr ""

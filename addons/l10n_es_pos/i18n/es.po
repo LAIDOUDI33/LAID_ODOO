@@ -17,6 +17,16 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 
 #. module: l10n_es_pos
+#: model:ir.module.module,shortdesc:base.module_l10n_es_pos
+msgid "[Deprecated] Spain - Point of Sale"
+msgstr ""
+
+#. module: l10n_es_pos
+#: model:ir.module.module,summary:base.module_l10n_es_pos
+msgid "Spanish localization for Point of Sale"
+msgstr "Localización española para el punto de venta"
+
+#. module: l10n_es_pos
 #: model:ir.model,name:l10n_es_pos.model_res_company
 msgid "Company"
 msgstr ""

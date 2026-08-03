@@ -16,6 +16,16 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: pos_self_order_qfpay
+#: model:ir.module.module,summary:base.module_pos_self_order_qfpay
+msgid "Addon for the Self Order App that allows customers to pay by QFPay."
+msgstr ""
+
+#. module: pos_self_order_qfpay
+#: model:ir.module.module,shortdesc:base.module_pos_self_order_qfpay
+msgid "POS Self Order QFPay"
+msgstr ""
+
+#. module: pos_self_order_qfpay
 #: model:ir.model.fields,field_description:pos_self_order_qfpay.field_pos_payment_method__display_name
 msgid "Display Name"
 msgstr ""

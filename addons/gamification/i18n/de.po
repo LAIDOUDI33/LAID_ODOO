@@ -26,6 +26,53 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: gamification
+#: model:ir.module.module,description:base.module_gamification
+msgid ""
+"\n"
+"Gamification process\n"
+"====================\n"
+"The Gamification module provides ways to evaluate and motivate the users of "
+"Odoo.\n"
+"\n"
+"The users can be evaluated using goals and numerical objectives to reach.\n"
+"**Goals** are assigned through **challenges** to evaluate and compare "
+"members of a team with each others and through time.\n"
+"\n"
+"For non-numerical achievements, **badges** can be granted to users. From a "
+"simple \"thank you\" to an exceptional achievement, a badge is an easy way "
+"to exprimate gratitude to a user for their good work.\n"
+"\n"
+"Both goals and badges are flexibles and can be adapted to a large range of "
+"modules and actions. When installed, this module creates easy goals to help "
+"new users to discover Odoo and configure their user profile.\n"
+msgstr ""
+"\n"
+"Gamification-Prozess\n"
+"====================\n"
+"Das Gamification-Modul bietet Möglichkeiten, die Benutzer von Odoo zu "
+"bewerten und zu motivieren.\n"
+"\n"
+"Die Benutzer können anhand von Zielen und numerischen Vorgaben bewertet "
+"werden.\n"
+"**Ziele** werden durch **Herausforderungen** zugewiesen, um die Mitglieder "
+"eines Teams zu bewerten und miteinander und mit der Zeit zu vergleichen.\n"
+"\n"
+"Für nicht-numerische Leistungen können **Abzeichen** an Benutzer vergeben "
+"werden. Von einem einfachen „Dankeschön“ bis hin zu einer außergewöhnlichen "
+"Leistung ist ein Abzeichen eine einfache Möglichkeit, sich bei einem "
+"Benutzer für seine gute Arbeit zu bedanken.\n"
+"\n"
+"Sowohl Ziele als auch Abzeichen sind flexibel und können an eine große "
+"Anzahl von Modulen und Aktionen angepasst werden. Wenn dieses Modul "
+"installiert ist, erstellt es einfache Ziele, die neuen Benutzern helfen, "
+"Odoo zu entdecken und ihr Benutzerprofil zu konfigurieren.\n"
+
+#. module: gamification
+#: model:ir.module.module,shortdesc:base.module_gamification
+msgid "Gamification"
+msgstr "Gamification"
+
+#. module: gamification
 #: model:ir.model.fields,field_description:gamification.field_gamification_challenge__user_count
 #: model:ir.model.fields,field_description:gamification.field_gamification_karma_rank__rank_users_count
 msgid "# Users"

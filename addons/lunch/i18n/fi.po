@@ -43,6 +43,63 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: lunch
+#: model:ir.module.module,description:base.module_lunch
+msgid ""
+"\n"
+"The base module to manage lunch.\n"
+"================================\n"
+"\n"
+"Many companies order sandwiches, pizzas and other, from usual vendors, for "
+"their employees to offer them more facilities.\n"
+"\n"
+"However lunches management within the company requires proper administration "
+"especially when the number of employees or vendors is important.\n"
+"\n"
+"The “Lunch Order” module has been developed to make this management easier "
+"but also to offer employees more tools and usability.\n"
+"\n"
+"In addition to a full meal and vendor management, this module offers the "
+"possibility to display warning and provides quick order selection based on "
+"employee’s preferences.\n"
+"\n"
+"If you want to save your employees' time and avoid them to always have coins "
+"in their pockets, this module is essential.\n"
+msgstr ""
+"\n"
+"Perusmoduuli lounaan hallintaan.\n"
+"================================\n"
+"\n"
+"Monet yritykset tilaavat työntekijöilleen voileipiä, pizzoja ym. "
+"tavallisilta toimittajilta tarjotakseen työntekijöilleen enemmän.\n"
+"\n"
+"Lounaiden hallinnointi yrityksessä vaatii kuitenkin asianmukaista hallintoa "
+"erityisesti silloin, kun työntekijöiden tai toimittajien määrä on suuri.\n"
+"\n"
+"\"Lounastilaus\"-moduuli on kehitetty helpottamaan tätä hallinnointia, mutta "
+"myös tarjoamaan työntekijöille enemmän työkaluja ja parempaa "
+"käytettävyyttä.\n"
+"\n"
+"Täydellisen aterioiden ja myyjien hallinnan lisäksi tämä moduuli tarjoaa "
+"mahdollisuuden näyttää varoituksia ja mahdollistaa nopean tilausvalinnan "
+"työntekijän mieltymysten perusteella.\n"
+"\n"
+"Jos haluat säästää työntekijöidesi aikaa ja välttää sen, että heillä on aina "
+"kolikoita taskussaan, tämä moduuli on välttämätön.\n"
+
+#. module: lunch
+#: model:ir.module.module,summary:base.module_lunch
+msgid "Handle lunch orders of your employees"
+msgstr "Käsittele työntekijöidesi lounastilaukset"
+
+#. module: lunch
+#: model:ir.module.module,shortdesc:base.module_lunch
+#: model:ir.ui.menu,name:lunch.menu_lunch
+#: model:res.groups.privilege,name:lunch.res_groups_privilege_lunch
+#: model_terms:ir.ui.view,arch_db:lunch.res_config_settings_view_form
+msgid "Lunch"
+msgstr "Lounas"
+
+#. module: lunch
 #: model_terms:lunch.product,description:lunch.product_temaki
 msgid "1 Avocado - 1 Salmon - 1 Eggs - 1 Tuna"
 msgstr "1 avokado - 1 lohi - 1 kananmuna - 1 tonnikala"
@@ -1154,13 +1211,6 @@ msgstr "Paikan nimi"
 #: model:ir.ui.menu,name:lunch.lunch_location_menu
 msgid "Locations"
 msgstr "Paikat"
-
-#. module: lunch
-#: model:ir.ui.menu,name:lunch.menu_lunch
-#: model:res.groups.privilege,name:lunch.res_groups_privilege_lunch
-#: model_terms:ir.ui.view,arch_db:lunch.res_config_settings_view_form
-msgid "Lunch"
-msgstr "Lounas"
 
 #. module: lunch
 #: model:ir.model,name:lunch.model_lunch_alert

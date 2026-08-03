@@ -27,6 +27,49 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: stock_account
+#: model:ir.module.module,description:base.module_stock_account
+msgid ""
+"\n"
+"WMS Accounting module\n"
+"======================\n"
+"This module makes the link between the 'stock' and 'account' modules and "
+"allows you to create accounting entries to value your stock movements\n"
+"\n"
+"Key Features\n"
+"------------\n"
+"* Stock Valuation (periodical or automatic)\n"
+"* Invoice from Picking\n"
+"\n"
+"Dashboard / Reports for Warehouse Management includes:\n"
+"------------------------------------------------------\n"
+"* Stock Inventory Value at given date (support dates in the past)\n"
+msgstr ""
+"\n"
+"WMS 会计模块\n"
+"======================\n"
+"该模块在 \"库存 \"和 \"账户 \"模块之间建立联系，允许您创建会计分录，对库存变"
+"动进行估值\n"
+"\n"
+"主要功能\n"
+"------------\n"
+"* 库存估价（定期或自动）\n"
+"* 采摘发票\n"
+"\n"
+"仓库管理仪表板/报告包括\n"
+"------------------------------------------------------\n"
+"* 给定日期的库存价值（支持过去的日期）\n"
+
+#. module: stock_account
+#: model:ir.module.module,summary:base.module_stock_account
+msgid "Inventory, Logistic, Valuation, Accounting"
+msgstr "库存、物流、估值、会计"
+
+#. module: stock_account
+#: model:ir.module.module,shortdesc:base.module_stock_account
+msgid "WMS Accounting"
+msgstr "仓库管理会计"
+
+#. module: stock_account
 #. odoo-python
 #: code:addons/stock_account/models/stock_quant.py:0
 msgid " [Accounted on %s]"

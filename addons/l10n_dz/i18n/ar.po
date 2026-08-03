@@ -21,6 +21,24 @@ msgstr ""
 "X-Generator: Weblate 5.12.2\n"
 
 #. module: l10n_dz
+#: model:ir.module.module,description:base.module_l10n_dz
+msgid ""
+"\n"
+"This is the module to manage the accounting chart for Algeria in Odoo.\n"
+"======================================================================\n"
+"This module applies to companies based in Algeria.\n"
+msgstr ""
+"\n"
+"هذا هو التطبيق الأساسي لإدارة شجرة الحسابات العامة للجزائر في أودو.\n"
+"======================================================================\n"
+"ينطبق هذا التطبيق على الشركات في الجزائر.\n"
+
+#. module: l10n_dz
+#: model:ir.module.module,shortdesc:base.module_l10n_dz
+msgid "Algeria - Accounting"
+msgstr "الجزائر - المحاسبة"
+
+#. module: l10n_dz
 #: model:ir.model,name:l10n_dz.model_account_chart_template
 msgid "Account Chart Template"
 msgstr "نموذج مخطط الحساب"

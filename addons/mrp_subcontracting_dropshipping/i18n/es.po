@@ -22,6 +22,22 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: mrp_subcontracting_dropshipping
+#: model:ir.module.module,description:base.module_mrp_subcontracting_dropshipping
+msgid ""
+"\n"
+"This bridge module allows to manage subcontracting with the dropshipping "
+"module.\n"
+msgstr ""
+"\n"
+"Este módulo de enlace permite gestionar la subcontratación con el módulo "
+"Dropshipping.\n"
+
+#. module: mrp_subcontracting_dropshipping
+#: model:ir.module.module,shortdesc:base.module_mrp_subcontracting_dropshipping
+msgid "Dropship and Subcontracting Management"
+msgstr "Administración de Dropshipping y Subcontratación"
+
+#. module: mrp_subcontracting_dropshipping
 #: model:ir.model,name:mrp_subcontracting_dropshipping.model_res_company
 msgid "Company"
 msgstr "Empresa"

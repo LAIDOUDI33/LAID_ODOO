@@ -1,0 +1,47 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# * base
+#
+# Translators:
+# Vo Thanh Thuy, 2022
+# Nancy Momoland <thanhnguyen.icsc@gmail.com>, 2022
+# Thin Tran <trvathin@gmail.com>, 2022
+# Martin Trigaux, 2023
+# Thi Huong Nguyen, 2023
+# "Dylan Kiss (dyki)" <dyki@odoo.com>, 2025.
+# "Thi Huong Nguyen (thng)" <thng@odoo.com>, 2025, 2026.
+# Weblate <noreply-mt-weblate@weblate.org>, 2025.
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 16.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-05-12 08:36+0000\n"
+"PO-Revision-Date: 2026-06-22 00:43+0000\n"
+"Last-Translator: Anonymous <noreply@weblate.org>\n"
+"Language-Team: Vietnamese <https://translate.odoo.com/projects/odoo-master/"
+"base/vi/>\n"
+"Language: vi\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Weblate 2026.6.1\n"
+
+#. module: test_discuss_full
+#: model:ir.module.module,shortdesc:base.module_test_discuss_full
+msgid "Test Discuss (full)"
+msgstr "Kiểm tra toàn bộ luồng sự kiện"
+
+#. module: test_discuss_full
+#: model:ir.module.module,description:base.module_test_discuss_full
+msgid ""
+"Test of Discuss with all possible overrides installed, including feature and "
+"performance tests."
+msgstr ""
+"Bản kiểm thử Thảo luận với tất cả ghi đè có thể được cài đặt, bao gồm kiểm "
+"thử tính năng và hiệu suất."
+
+#. module: test_discuss_full
+#: model:ir.module.module,summary:base.module_test_discuss_full
+msgid "Test of Discuss with all possible overrides installed."
+msgstr "Bản kiểm thử Thảo luận với tất cả ghi đè có thể được cài đặt."

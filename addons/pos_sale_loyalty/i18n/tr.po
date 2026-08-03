@@ -20,6 +20,25 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: pos_sale_loyalty
+#: model:ir.module.module,description:base.module_pos_sale_loyalty
+msgid ""
+"\n"
+"This module correct some behaviors when both module are installed.\n"
+msgstr ""
+"\n"
+"Bu modül, her iki modül de yüklendiğinde bazı davranışları düzeltir.\n"
+
+#. module: pos_sale_loyalty
+#: model:ir.module.module,summary:base.module_pos_sale_loyalty
+msgid "Link module between pos_sale and pos_loyalty"
+msgstr "Pos_sale ve pos_loyalty arasındaki bağlantı modülü"
+
+#. module: pos_sale_loyalty
+#: model:ir.module.module,shortdesc:base.module_pos_sale_loyalty
+msgid "POS - Sales Loyality"
+msgstr "POS - Satış Sadakat Sistemi"
+
+#. module: pos_sale_loyalty
 #: model:ir.model.fields,field_description:pos_sale_loyalty.field_sale_order_line__display_name
 msgid "Display Name"
 msgstr "İsim Göster"

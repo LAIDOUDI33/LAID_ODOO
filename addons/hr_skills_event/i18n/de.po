@@ -20,6 +20,34 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: hr_skills_event
+#: model:ir.module.module,description:base.module_hr_skills_event
+msgid ""
+"\n"
+"Events and Skills for HR\n"
+"============================\n"
+"\n"
+"This module add completed course events to resume for employees.\n"
+msgstr ""
+"\n"
+"Veranstaltungen und Kompetenzen für Personalwesen\n"
+"============================\n"
+"\n"
+"Dieses Modul fügt abgeschlossene Kursveranstaltungen zum Lebenslauf von "
+"Mitarbeitern hinzu.\n"
+
+#. module: hr_skills_event
+#: model:ir.module.module,summary:base.module_hr_skills_event
+msgid "Link training events to resume of your employees"
+msgstr ""
+"Verknüpfung von Schulungsveranstaltungen mit den Lebensläufen Ihrer "
+"Mitarbeiter"
+
+#. module: hr_skills_event
+#: model:ir.module.module,shortdesc:base.module_hr_skills_event
+msgid "Skills Events"
+msgstr "Kompetenzen & Veranstaltungen"
+
+#. module: hr_skills_event
 #: model:ir.model.fields,field_description:hr_skills_event.field_hr_resume_line__course_type
 msgid "Course Type"
 msgstr "Kurstyp"

@@ -20,6 +20,20 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: sale_stock_product_expiry
+#: model:ir.module.module,description:base.module_sale_stock_product_expiry
+msgid ""
+"Modifications to the forecast widget on SO lines to show fresh stock, i.e. "
+"ignoring stock to be removed due to expiration."
+msgstr ""
+"Modificações no widget de previsão nas linhas SO para mostrar o estoque "
+"novo, ou seja, ignorando o estoque a ser removido devido à expiração."
+
+#. module: sale_stock_product_expiry
+#: model:ir.module.module,shortdesc:base.module_sale_stock_product_expiry
+msgid "Sale Stock Product Expiry"
+msgstr "Venda Estoque Expiração do produto"
+
+#. module: sale_stock_product_expiry
 #: model:ir.model.fields,field_description:sale_stock_product_expiry.field_account_move__display_name
 #: model:ir.model.fields,field_description:sale_stock_product_expiry.field_sale_order_line__display_name
 msgid "Display Name"

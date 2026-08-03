@@ -17,6 +17,25 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n==0 || n==1);\n"
 
 #. module: l10n_et
+#: model:ir.module.module,description:base.module_l10n_et
+msgid ""
+"\n"
+"Base Module for Ethiopian Localization\n"
+"======================================\n"
+"\n"
+"This is the latest Ethiopian Odoo localization and consists of:\n"
+"    - Chart of Accounts\n"
+"    - VAT tax structure\n"
+"    - Withholding tax structure\n"
+"    - Regional State listings\n"
+msgstr ""
+
+#. module: l10n_et
+#: model:ir.module.module,shortdesc:base.module_l10n_et
+msgid "Ethiopia - Accounting"
+msgstr ""
+
+#. module: l10n_et
 #: model:account.report.line,name:l10n_et.account_tax_report_net_sale_witheld_2
 msgid "2% Withheld on Sales"
 msgstr ""

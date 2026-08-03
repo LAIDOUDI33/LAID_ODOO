@@ -16,6 +16,23 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_hn
+#: model:ir.module.module,description:base.module_l10n_hn
+msgid ""
+"\n"
+"This is the base module to manage the accounting chart for Honduras.\n"
+"====================================================================\n"
+"\n"
+"Agrega una nomenclatura contable para Honduras. También incluye impuestos y la\n"
+"moneda Lempira. -- Adds accounting chart for Honduras. It also includes taxes\n"
+"and the Lempira currency."
+msgstr ""
+
+#. module: l10n_hn
+#: model:ir.module.module,shortdesc:base.module_l10n_hn
+msgid "Honduras - Accounting"
+msgstr ""
+
+#. module: l10n_hn
 #: model:ir.model,name:l10n_hn.model_account_chart_template
 msgid "Account Chart Template"
 msgstr ""

@@ -25,6 +25,27 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: web_unsplash
+#: model:ir.module.module,description:base.module_web_unsplash
+msgid ""
+"Explore the free high-resolution image library of Unsplash.com and find "
+"images to use in Odoo. An Unsplash search bar is added to the image library "
+"modal."
+msgstr ""
+"Explore la biblioteca gratuita de imágenes de alta resolución de "
+"Unsplash.com y encuentre imágenes para usar en Odoo. Se añade una barra de "
+"búsqueda de Unsplash al modal de biblioteca de imágenes."
+
+#. module: web_unsplash
+#: model:ir.module.module,summary:base.module_web_unsplash
+msgid "Find free high-resolution images from Unsplash"
+msgstr "Encuentre imágenes gratuitas de alta resolución de Unsplash"
+
+#. module: web_unsplash
+#: model:ir.module.module,shortdesc:base.module_web_unsplash
+msgid "Unsplash Image Library"
+msgstr "Biblioteca de imágenes de Unsplash"
+
+#. module: web_unsplash
 #: model:ir.model.fields,field_description:web_unsplash.field_res_config_settings__unsplash_access_key
 msgid "Access Key"
 msgstr "Clave de acceso"

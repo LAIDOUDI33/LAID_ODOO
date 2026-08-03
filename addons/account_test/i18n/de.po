@@ -19,6 +19,38 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. module: account_test
+#: model:ir.module.module,description:base.module_account_test
+msgid ""
+"\n"
+"Asserts on accounting.\n"
+"======================\n"
+"With this module you can manually check consistencies and inconsistencies of "
+"accounting module from menu Reporting/Accounting/Accounting Tests.\n"
+"\n"
+"You can write a query in order to create Consistency Test and you will get "
+"the result of the test\n"
+"in PDF format which can be accessed by Menu Reporting -> Accounting Tests, "
+"then select the test\n"
+"and print the report from Print button in header area.\n"
+msgstr ""
+"\n"
+"=========================================\n"
+"Mit diesem Modul können Sie durch das Menü Berichtswesen / Buchhaltung / "
+"Buchhaltungstests eine manuelle Prüfung der Plausibilität Ihrer "
+"Finanzbuchhaltung durchführen und nach möglichen Ungereimtheiten suchen.\n"
+"\n"
+"Sie können eine Abfrage schreiben, um Plausibilitätsprüfungen durchzuführen, "
+"und erhalten das Ergebnis der Prüfung\n"
+"im PDF-Format, das über das Menü Berichtswesen -> Buchhaltungstests "
+"zugreifen lässt. Dort wählen Sie dann den Test aus und drucken Sie den "
+"Bericht durch Klick auf die Schaltfläche „Drucken“ im Kopfbereich.\n"
+
+#. module: account_test
+#: model:ir.module.module,shortdesc:base.module_account_test
+msgid "Accounting Consistency Tests"
+msgstr "Buchhaltung Konsistenzprüfungen"
+
+#. module: account_test
 #: model_terms:ir.ui.view,arch_db:account_test.report_accounttest
 msgid ""
 "<br/>\n"

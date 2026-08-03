@@ -21,6 +21,29 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: mass_mailing_event_sms
+#: model:ir.module.module,description:base.module_mass_mailing_event_sms
+msgid ""
+"\n"
+"SMS Marketing on event attendees\n"
+"================================\n"
+"\n"
+"Bridge module adding UX requirements to ease SMS marketing o, event "
+"attendees.\n"
+msgstr ""
+"\n"
+"SMS Marketing pour les participants à un événement\n"
+"================================\n"
+"\n"
+"Module passerelle qui ajoute les éléments d'interface nécessaires pour "
+"faciliter le marketing par SMS à destination des participants à un "
+"événement.\n"
+
+#. module: mass_mailing_event_sms
+#: model:ir.module.module,shortdesc:base.module_mass_mailing_event_sms
+msgid "Event Attendees SMS Marketing"
+msgstr "SMS Marketing aux participants de l'événement"
+
+#. module: mass_mailing_event_sms
 #: model:ir.model.fields,field_description:mass_mailing_event_sms.field_event_event__display_name
 msgid "Display Name"
 msgstr "Nom d'affichage"

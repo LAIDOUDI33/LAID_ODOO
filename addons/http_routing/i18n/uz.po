@@ -27,6 +27,25 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: http_routing
+#: model:ir.module.module,description:base.module_http_routing
+#, fuzzy
+msgid ""
+"\n"
+"Proposes advanced routing options not available in web or base to keep\n"
+"base modules simple.\n"
+msgstr ""
+"Veb yoki asosiy tizimda mavjud bo‘lmagan murakkab yo‘naltirish "
+"imkoniyatlarini taklif etadi, bu esa asosiy modullarni sodda saqlashga "
+"yordam beradi."
+
+#. module: http_routing
+#: model:ir.module.module,shortdesc:base.module_http_routing
+#: model:ir.module.module,summary:base.module_http_routing
+#, fuzzy
+msgid "Web Routing"
+msgstr "Veb yo‘naltirish"
+
+#. module: http_routing
 #: model_terms:ir.ui.view,arch_db:http_routing.400
 #, fuzzy
 msgid "400: Bad Request"

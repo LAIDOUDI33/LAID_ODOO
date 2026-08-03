@@ -25,6 +25,32 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: contacts
+#: model:ir.module.module,description:base.module_contacts
+msgid ""
+"\n"
+"This module gives you a quick view of your contacts directory, accessible "
+"from your home page.\n"
+"You can track your vendors, customers and other contacts.\n"
+msgstr ""
+"\n"
+"โมดูลนี้ช่วยให้คุณดูไดเร็กทอรีผู้ติดต่อของคุณได้อย่างรวดเร็ว ซึ่งสามารถเข้าถึงได้จากหน้าแรกของคุณ\n"
+"คุณสามารถติดตามผู้ขาย ลูกค้า และผู้ติดต่ออื่นๆ ของคุณได้\n"
+
+#. module: contacts
+#: model:ir.module.module,summary:base.module_contacts
+msgid "Centralize your address book"
+msgstr "รวมศูนย์สมุดที่อยู่ของคุณ"
+
+#. module: contacts
+#: model:ir.actions.act_window,name:contacts.action_contacts
+#: model:ir.module.module,shortdesc:base.module_contacts
+#: model:ir.ui.menu,name:contacts.menu_contacts
+#: model:ir.ui.menu,name:contacts.res_partner_menu_contacts
+#: model_terms:ir.ui.view,arch_db:contacts.res_partner_view_hierarchy
+msgid "Contacts"
+msgstr "การติดต่อ"
+
+#. module: contacts
 #: model_terms:ir.ui.view,arch_db:contacts.res_partner_view_hierarchy
 msgid "<i class=\"fa fa-fw me-1 fa-envelope text-muted\" title=\"Email\"/>"
 msgstr ""
@@ -58,14 +84,6 @@ msgstr "ติดต่อ"
 #: model:ir.ui.menu,name:contacts.menu_partner_category_form
 msgid "Contact Tags"
 msgstr "แท็กติดต่อ"
-
-#. module: contacts
-#: model:ir.actions.act_window,name:contacts.action_contacts
-#: model:ir.ui.menu,name:contacts.menu_contacts
-#: model:ir.ui.menu,name:contacts.res_partner_menu_contacts
-#: model_terms:ir.ui.view,arch_db:contacts.res_partner_view_hierarchy
-msgid "Contacts"
-msgstr "การติดต่อ"
 
 #. module: contacts
 #: model:ir.ui.menu,name:contacts.menu_country_partner

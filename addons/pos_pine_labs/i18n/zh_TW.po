@@ -24,6 +24,47 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: pos_pine_labs
+#: model:ir.module.module,description:base.module_pos_pine_labs
+msgid ""
+"\n"
+"Allow Pine Labs POS payments\n"
+"==============================\n"
+"\n"
+"This module is available only for companies that use INR currency.\n"
+"It enables customers to pay for their orders using debit/credit cards and "
+"UPI through Pine Labs POS terminals.\n"
+"A Pine Labs merchant account is required to process transactions.\n"
+"Features include:\n"
+"\n"
+"* Quick payments by swiping, scanning, or tapping your credit/debit card or "
+"UPI QR code at the payment terminal.\n"
+"* Supported cards: Visa, MasterCard, RuPay.\n"
+msgstr ""
+"\n"
+"允許使用 Pine Labs POS 付款\n"
+"==============================\n"
+"\n"
+"此模組只適用於使用印度盧比（INR）貨幣的公司。\n"
+"模組允許客戶透過 Pine Labs 的 POS 終端機，使用扣賬卡/信用卡及 UPI，去支付訂單"
+"款項。\n"
+"需要有 Pine Labs 商家帳戶，才可處理交易。\n"
+"模組功能包括：\n"
+"\n"
+"* 支援在付款終端機刷卡、掃瞄或輕拍信用卡/扣賬卡或 UPI 二維碼，進行快速付款"
+"。\n"
+"* 支援的付款卡：Visa、MasterCard、RuPay。\n"
+
+#. module: pos_pine_labs
+#: model:ir.module.module,summary:base.module_pos_pine_labs
+msgid "Integrate your POS with Pine Labs payment terminals"
+msgstr "將 Pine Labs 付款終端機整合至你的 POS 系統"
+
+#. module: pos_pine_labs
+#: model:ir.module.module,shortdesc:base.module_pos_pine_labs
+msgid "POS Pine Labs"
+msgstr "POS 銷售點管理 Pine Labs"
+
+#. module: pos_pine_labs
 #: model:ir.model.fields,help:pos_pine_labs.field_pos_payment_method__pine_labs_client
 msgid "A client id issued directly to the merchant by Pine Labs."
 msgstr "由 Pine Labs 直接向商家發出的客戶識別碼。"

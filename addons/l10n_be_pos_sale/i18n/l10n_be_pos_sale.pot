@@ -16,6 +16,16 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_be_pos_sale
+#: model:ir.module.module,shortdesc:base.module_l10n_be_pos_sale
+msgid "l10n_be_pos_sale"
+msgstr ""
+
+#. module: l10n_be_pos_sale
+#: model:ir.module.module,summary:base.module_l10n_be_pos_sale
+msgid "Link module between pos_sale and l10n_be"
+msgstr ""
+
+#. module: l10n_be_pos_sale
 #: model:ir.model.fields,field_description:l10n_be_pos_sale.field_pos_config__display_name
 msgid "Display Name"
 msgstr ""

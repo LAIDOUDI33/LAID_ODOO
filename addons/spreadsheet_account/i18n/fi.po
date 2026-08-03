@@ -21,6 +21,17 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: spreadsheet_account
+#: model:ir.module.module,shortdesc:base.module_spreadsheet_account
+msgid "Spreadsheet Accounting Formulas"
+msgstr "Datataulukoiden kirjanpidolliset kaavat"
+
+#. module: spreadsheet_account
+#: model:ir.module.module,description:base.module_spreadsheet_account
+#: model:ir.module.module,summary:base.module_spreadsheet_account
+msgid "Spreadsheet Accounting formulas"
+msgstr "Datataulukoiden kirjanpidolliset kaavat"
+
+#. module: spreadsheet_account
 #. odoo-javascript
 #: code:addons/spreadsheet_account/static/src/plugins/accounting_plugin.js:0
 msgid "%s is not a valid year."

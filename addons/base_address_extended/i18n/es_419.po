@@ -21,6 +21,37 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: base_address_extended
+#: model:ir.module.module,description:base.module_base_address_extended
+msgid ""
+"\n"
+"Extended Addresses Management\n"
+"=============================\n"
+"\n"
+"This module provides the ability to choose a city from a list (in specific "
+"countries).\n"
+"\n"
+"It is primarily used for EDIs that might need a special city code.\n"
+msgstr ""
+"\n"
+"Gestión de direcciones extendida\n"
+"=============================\n"
+"\n"
+"Este módulo le brinda la posibilidad de elegir una ciudad de una lista (en "
+"países específicos).\n"
+"\n"
+"Se usa principalmente para EDI que necesiten un código de ciudad especial.\n"
+
+#. module: base_address_extended
+#: model:ir.module.module,summary:base.module_base_address_extended
+msgid "Add extra fields on addresses"
+msgstr "Agregue campos adicionales a las direcciones"
+
+#. module: base_address_extended
+#: model:ir.module.module,shortdesc:base.module_base_address_extended
+msgid "Extended Addresses"
+msgstr "Direcciones ampliadas"
+
+#. module: base_address_extended
 #: model_terms:ir.ui.view,arch_db:base_address_extended.view_res_country_city_extended_form
 msgid "<span class=\"o_stat_text\">Cities</span>"
 msgstr "<span class=\"o_stat_text\">Ciudades</span>"

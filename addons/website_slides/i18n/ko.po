@@ -27,6 +27,51 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_slides
+#: model:ir.module.module,description:base.module_website_slides
+msgid ""
+"\n"
+"Create Online Courses\n"
+"=====================\n"
+"\n"
+"Featuring\n"
+"\n"
+" * Integrated course and lesson management\n"
+" * Fullscreen navigation\n"
+" * Support Youtube videos, Google documents, PDF, images, articles\n"
+" * Test knowledge with quizzes\n"
+" * Filter and Tag\n"
+" * Statistics\n"
+msgstr ""
+"\n"
+"온라인 과정 제작\n"
+"=====================\n"
+"\n"
+"특징\n"
+"\n"
+" * 코스 및 레슨 통합 관리\n"
+" * 전체 화면 탐색\n"
+" * 유튜브 동영상, 구글 문서, PDF, 이미지, 기사\n"
+" * 퀴즈를 통한 학습 테스트\n"
+" * 필터 및 태그\n"
+" * 통계\n"
+
+#. module: website_slides
+#. odoo-python
+#: code:addons/website_slides/controllers/main.py:0
+#: model:ir.module.module,shortdesc:base.module_website_slides
+#: model:ir.ui.menu,name:website_slides.website_slides_menu_root
+#: model:res.groups.privilege,name:website_slides.res_groups_privilege_elearning
+#: model_terms:ir.ui.view,arch_db:website_slides.digest_digest_view_form
+#: model_terms:ir.ui.view,arch_db:website_slides.res_config_settings_view_form
+msgid "eLearning"
+msgstr "온라인 학습 관리"
+
+#. module: website_slides
+#: model:ir.module.module,summary:base.module_website_slides
+msgid "Manage and publish an eLearning platform"
+msgstr "e러닝 플랫폼 관리 및 게시"
+
+#. module: website_slides
 #: model:ir.model.fields,field_description:website_slides.field_slide_channel__members_engaged_count
 msgid "# Active Attendees"
 msgstr "# 활동적인 참석자"
@@ -7201,16 +7246,6 @@ msgstr "예. 컴퓨터의 동력은 무엇인가요?"
 #: model_terms:ir.ui.view,arch_db:website_slides.slide_channel_tag_group_view_form
 msgid "e.g. Your Level"
 msgstr "예. 나의 레벨"
-
-#. module: website_slides
-#. odoo-python
-#: code:addons/website_slides/controllers/main.py:0
-#: model:ir.ui.menu,name:website_slides.website_slides_menu_root
-#: model:res.groups.privilege,name:website_slides.res_groups_privilege_elearning
-#: model_terms:ir.ui.view,arch_db:website_slides.digest_digest_view_form
-#: model_terms:ir.ui.view,arch_db:website_slides.res_config_settings_view_form
-msgid "eLearning"
-msgstr "온라인 학습 관리"
 
 #. module: website_slides
 #: model:ir.model.fields,field_description:website_slides.field_res_partner__slide_channel_ids

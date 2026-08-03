@@ -22,6 +22,22 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_crm_sms
+#: model:ir.module.module,description:base.module_website_crm_sms
+msgid ""
+"Allows to send sms to website visitor if the visitor is linked to a lead."
+msgstr "如果訪客連結到潛在客戶，則允許向網站訪客發送短信."
+
+#. module: website_crm_sms
+#: model:ir.module.module,summary:base.module_website_crm_sms
+msgid "Allows to send sms to website visitor that have lead"
+msgstr "允許向有潛在商機的網站訪客發送簡訊"
+
+#. module: website_crm_sms
+#: model:ir.module.module,shortdesc:base.module_website_crm_sms
+msgid "Send SMS to Visitor with leads"
+msgstr "結束向帶有潛在客戶的訪客發送簡訊"
+
+#. module: website_crm_sms
 #: model:ir.model.fields,field_description:website_crm_sms.field_website_visitor__display_name
 msgid "Display Name"
 msgstr "顯示名稱"

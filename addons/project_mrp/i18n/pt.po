@@ -21,6 +21,16 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: project_mrp
+#: model:ir.module.module,summary:base.module_project_mrp
+msgid "Monitor MRP using project"
+msgstr "Monitore Fabricação através do app de Projeto"
+
+#. module: project_mrp
+#: model:ir.module.module,shortdesc:base.module_project_mrp
+msgid "MRP Project"
+msgstr "Fabricação - Projeto"
+
+#. module: project_mrp
 #: model_terms:ir.ui.view,arch_db:project_mrp.mrp_production_form_view_inherit_project_mrp
 msgid "<span class=\"o_stat_text\">Project</span>"
 msgstr ""

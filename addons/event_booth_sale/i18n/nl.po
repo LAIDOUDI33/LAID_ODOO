@@ -21,6 +21,25 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: event_booth_sale
+#: model:ir.module.module,description:base.module_event_booth_sale
+msgid ""
+"\n"
+"Sell your event booths and track payments on sale orders.\n"
+msgstr ""
+"\n"
+"Verkoop je evenementstands en volg betalingen op verkooporders.\n"
+
+#. module: event_booth_sale
+#: model:ir.module.module,shortdesc:base.module_event_booth_sale
+msgid "Events Booths Sales"
+msgstr "Evenementen standsverkoop"
+
+#. module: event_booth_sale
+#: model:ir.module.module,summary:base.module_event_booth_sale
+msgid "Manage event booths sale"
+msgstr "Verkoop van evenementencabines beheren"
+
+#. module: event_booth_sale
 #: model_terms:ir.ui.view,arch_db:event_booth_sale.event_booth_view_form_from_event
 msgid "<span class=\"o_stat_text\">Sale Order</span>"
 msgstr "<span class=\"o_stat_text\">Verkooporder</span>"

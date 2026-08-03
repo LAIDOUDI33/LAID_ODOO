@@ -16,6 +16,22 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_rw
+#: model:ir.module.module,description:base.module_l10n_rw
+msgid ""
+"\n"
+"Rwandan localisation containing:\n"
+"- COA\n"
+"- Taxes\n"
+"- Tax report\n"
+"- Fiscal position\n"
+msgstr ""
+
+#. module: l10n_rw
+#: model:ir.module.module,shortdesc:base.module_l10n_rw
+msgid "Rwanda - Accounting"
+msgstr ""
+
+#. module: l10n_rw
 #: model:account.report.line,name:l10n_rw.tax_report_exempted_sales
 msgid "10- Exempted Sales"
 msgstr ""

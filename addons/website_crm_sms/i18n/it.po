@@ -20,6 +20,23 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_crm_sms
+#: model:ir.module.module,description:base.module_website_crm_sms
+msgid ""
+"Allows to send sms to website visitor if the visitor is linked to a lead."
+msgstr ""
+"Consente di inviare SMS a un visitatore del sito web se collegato a un lead."
+
+#. module: website_crm_sms
+#: model:ir.module.module,summary:base.module_website_crm_sms
+msgid "Allows to send sms to website visitor that have lead"
+msgstr "Consente di inviare SMS ai visitatori del sito web con un lead CRM"
+
+#. module: website_crm_sms
+#: model:ir.module.module,shortdesc:base.module_website_crm_sms
+msgid "Send SMS to Visitor with leads"
+msgstr "Invio SMS a visitatori con lead"
+
+#. module: website_crm_sms
 #: model:ir.model.fields,field_description:website_crm_sms.field_website_visitor__display_name
 msgid "Display Name"
 msgstr "Nome visualizzato"

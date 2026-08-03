@@ -24,6 +24,22 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: digest
+#: model:ir.module.module,description:base.module_digest
+msgid ""
+"\n"
+"Send KPI Digests periodically\n"
+"=============================\n"
+msgstr ""
+"\n"
+"Периодическая отправка дайджестов ключевых показателей эффективности (KPI)\n"
+"=============================\n"
+
+#. module: digest
+#: model:ir.module.module,shortdesc:base.module_digest
+msgid "KPI Digests"
+msgstr "Дайджесты KPI"
+
+#. module: digest
 #: model_terms:ir.ui.view,arch_db:digest.digest_mail_main
 msgid "<span class=\"button\" id=\"button_open_report\">➔ Open Report</span>"
 msgstr ""

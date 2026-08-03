@@ -20,6 +20,28 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: mrp_subcontracting_landed_costs
+#: model:ir.module.module,description:base.module_mrp_subcontracting_landed_costs
+msgid ""
+"\n"
+"This module allows users to more easily identify subcontracting orders when "
+"applying landed costs,\n"
+"by also displaying the associated picking reference in the search view.\n"
+msgstr ""
+"\n"
+"該模塊允許用戶在應用到岸成本時更容易地識別分包訂單、\n"
+"在搜索視圖中還會顯示相關的分揀參考。\n"
+
+#. module: mrp_subcontracting_landed_costs
+#: model:ir.module.module,summary:base.module_mrp_subcontracting_landed_costs
+msgid "Advanced views to manage landed cost for subcontracting orders"
+msgstr "管理分包訂單到岸成本的高級視圖"
+
+#. module: mrp_subcontracting_landed_costs
+#: model:ir.module.module,shortdesc:base.module_mrp_subcontracting_landed_costs
+msgid "Landed Costs With Subcontracting order"
+msgstr "分包訂單的到岸成本"
+
+#. module: mrp_subcontracting_landed_costs
 #: model:ir.model.fields,field_description:mrp_subcontracting_landed_costs.field_stock_landed_cost__display_name
 msgid "Display Name"
 msgstr "顯示名稱"

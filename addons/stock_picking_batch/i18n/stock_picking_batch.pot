@@ -16,6 +16,19 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: stock_picking_batch
+#: model:ir.module.module,description:base.module_stock_picking_batch
+msgid ""
+"\n"
+"This module adds the batch transfer option in warehouse management\n"
+"==================================================================\n"
+msgstr ""
+
+#. module: stock_picking_batch
+#: model:ir.module.module,shortdesc:base.module_stock_picking_batch
+msgid "Warehouse Management: Batch Transfer"
+msgstr ""
+
+#. module: stock_picking_batch
 #. odoo-python
 #: code:addons/stock_picking_batch/models/stock_picking_batch.py:0
 msgid "%s was removed from the batch, no quantity processed"

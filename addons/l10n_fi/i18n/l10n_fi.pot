@@ -16,6 +16,27 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_fi
+#: model:ir.module.module,description:base.module_l10n_fi
+msgid ""
+"\n"
+"This is the Odoo module to manage the accounting in Finland.\n"
+"============================================================\n"
+"\n"
+"After installing this module, you'll have access to:\n"
+"    * Finnish chart of account\n"
+"    * Fiscal positions\n"
+"    * Invoice Payment Reference Types (Finnish Standard Reference & Finnish Creditor Reference (RF))\n"
+"    * Finnish Reference format for Sale Orders\n"
+"\n"
+"Set the payment reference type from the Sales Journal.\n"
+msgstr ""
+
+#. module: l10n_fi
+#: model:ir.module.module,shortdesc:base.module_l10n_fi
+msgid "Finland - Accounting"
+msgstr ""
+
+#. module: l10n_fi
 #: model:ir.model,name:l10n_fi.model_account_chart_template
 msgid "Account Chart Template"
 msgstr ""

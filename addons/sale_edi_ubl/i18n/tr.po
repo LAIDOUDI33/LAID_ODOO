@@ -24,6 +24,34 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: sale_edi_ubl
+#: model:ir.module.module,description:base.module_sale_edi_ubl
+msgid ""
+"\n"
+"Electronic ordering module\n"
+"===========================\n"
+"\n"
+"Allows to import formats: UBL Bis 3.\n"
+"When uploading or pasting Files in order list view with order related data "
+"inside XML file or PDF\n"
+"File with embedded xml data will allow seller to retrieve Order data from "
+"Files.\n"
+msgstr ""
+"\n"
+"Elektronik sipariş modülü\n"
+"===========================\n"
+"\n"
+"UBL Bis 3 formatlarının içe aktarılmasına olanak tanır.\n"
+"Siparişle ilgili veriler içeren XML dosyası veya PDF dosyasının sipariş "
+"liste görünümüne yüklenmesi ya da yapıştırılması durumunda\n"
+"gömülü XML verisi olan dosya sayesinde satıcı sipariş verilerini bu "
+"dosyalardan alabilir.\n"
+
+#. module: sale_edi_ubl
+#: model:ir.module.module,shortdesc:base.module_sale_edi_ubl
+msgid "Import electronic orders with UBL"
+msgstr "UBL ile elektronik siparişleri içe aktar"
+
+#. module: sale_edi_ubl
 #. odoo-python
 #: code:addons/sale_edi_ubl/models/sale_edi_xml_ubl_bis3.py:0
 msgid "Could not retrieve the product named: %(name)s"

@@ -17,6 +17,39 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_tr
+#: model:ir.module.module,description:base.module_l10n_tr
+msgid ""
+"\n"
+"This is the base module to manage the accounting chart for Türkiye in Odoo\n"
+"==========================================================================\n"
+"\n"
+"Türkiye accounting basic charts and localizations\n"
+"-------------------------------------------------\n"
+"Activates:\n"
+"\n"
+"- Chart of Accounts\n"
+"- Taxes\n"
+"- Tax Report\n"
+msgstr ""
+"\n"
+"Bu, Odoo üzerinde Türkiye'deki muhasebe tablosunu yönetmek için temel "
+"modüldür\n"
+"==========================================================================\n"
+"\n"
+"Türkiye muhasebe temel hesap planları ve yerelleştirmeleri\n"
+"-------------------------------------------------\n"
+"Şunları etkinleştirir:\n"
+"\n"
+"- Hesap Planı\n"
+"- Vergiler\n"
+"- Vergi Raporu\n"
+
+#. module: l10n_tr
+#: model:ir.module.module,shortdesc:base.module_l10n_tr
+msgid "Türkiye - Accounting"
+msgstr "Türkiye - Muhasebe"
+
+#. module: l10n_tr
 #: model:ir.model,name:l10n_tr.model_account_chart_template
 msgid "Account Chart Template"
 msgstr "Hesap Tablosu Şablonu"

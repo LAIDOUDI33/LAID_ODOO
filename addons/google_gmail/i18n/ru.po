@@ -24,6 +24,16 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: google_gmail
+#: model:ir.module.module,description:base.module_google_gmail
+msgid "Gmail support for incoming / outgoing mail servers"
+msgstr "Поддержка Gmail для серверов входящей и исходящей почты"
+
+#. module: google_gmail
+#: model:ir.module.module,shortdesc:base.module_google_gmail
+msgid "Google Gmail"
+msgstr "Google Gmail"
+
+#. module: google_gmail
 #: model_terms:ir.ui.view,arch_db:google_gmail.fetchmail_server_view_form
 #: model_terms:ir.ui.view,arch_db:google_gmail.ir_mail_server_view_form
 msgid ""

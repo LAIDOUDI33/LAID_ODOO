@@ -26,6 +26,31 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: sms
+#: model:ir.module.module,description:base.module_sms
+msgid ""
+"\n"
+"This module gives a framework for SMS text messaging\n"
+"----------------------------------------------------\n"
+"\n"
+"The service is provided by the In App Purchase Odoo platform.\n"
+msgstr ""
+"\n"
+"โมดูลนี้ให้เฟรมเวิร์กทำงานสำหรับการส่งข้อความ SMS\n"
+"----------------------------------------------------\n"
+"\n"
+"บริการนี้ให้บริการโดยแพลตฟอร์ม In App Purchase ของ Odoo\n"
+
+#. module: sms
+#: model:ir.module.module,shortdesc:base.module_sms
+msgid "SMS gateway"
+msgstr "อีเมล์เกตเวย์"
+
+#. module: sms
+#: model:ir.module.module,summary:base.module_sms
+msgid "SMS Text Messaging"
+msgstr "ข้อความ"
+
+#. module: sms
 #: model:ir.model.fields,field_description:sms.field_sms_composer__recipient_invalid_count
 msgid "# Invalid recipients"
 msgstr "# ผู้รับไม่ถูกต้อง"

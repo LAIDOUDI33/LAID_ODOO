@@ -23,6 +23,22 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: uom
+#: model:ir.module.module,description:base.module_uom
+msgid ""
+"\n"
+"This is the base module for managing Units of measure.\n"
+"========================================================================\n"
+msgstr ""
+"\n"
+"To je osnovni modul za upravljanje merskih enot.\n"
+"========================================================================\n"
+
+#. module: uom
+#: model:ir.module.module,shortdesc:base.module_uom
+msgid "Units of measure"
+msgstr "Merske enote"
+
+#. module: uom
 #: model:ir.model.fields,field_description:uom.field_uom_uom__factor
 msgid "Absolute Quantity"
 msgstr ""

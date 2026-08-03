@@ -20,6 +20,18 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: cloud_storage_migration
+#: model:ir.module.module,shortdesc:base.module_cloud_storage_migration
+#: model_terms:ir.ui.view,arch_db:cloud_storage_migration.cloud_storage_migration_config_settings_view_form
+msgid "Cloud Storage Migration"
+msgstr "Pilvitallennustilasiirto"
+
+#. module: cloud_storage_migration
+#: model:ir.module.module,summary:base.module_cloud_storage_migration
+#: model_terms:ir.ui.view,arch_db:cloud_storage_migration.cloud_storage_migration_config_settings_view_form
+msgid "Migrate local attachments to cloud storage"
+msgstr "Siirrä paikalliset liitteet pilvitallennustilaan"
+
+#. module: cloud_storage_migration
 #: model:ir.model.fields,field_description:cloud_storage_migration.field_res_config_settings__cloud_storage_migration_all_model_ids
 msgid "All Attachments"
 msgstr "Kaikki liitteet"
@@ -57,11 +69,6 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:cloud_storage_migration.cloud_storage_migration_config_settings_view_form
 msgid "Attachments Report"
 msgstr "Liitteiden raportti"
-
-#. module: cloud_storage_migration
-#: model_terms:ir.ui.view,arch_db:cloud_storage_migration.cloud_storage_migration_config_settings_view_form
-msgid "Cloud Storage Migration"
-msgstr "Pilvitallennustilasiirto"
 
 #. module: cloud_storage_migration
 #: model:ir.model.fields,field_description:cloud_storage_migration.field_res_config_settings__cloud_storage_migration_all_models
@@ -197,11 +204,6 @@ msgstr "Siirrä mallien kaikki liitteet"
 #: model:ir.model.fields,help:cloud_storage_migration.field_res_config_settings__cloud_storage_migration_message_model_ids
 msgid "Migrate Models' Message Attachments"
 msgstr "Siirrä mallien viestiliitteet"
-
-#. module: cloud_storage_migration
-#: model_terms:ir.ui.view,arch_db:cloud_storage_migration.cloud_storage_migration_config_settings_view_form
-msgid "Migrate local attachments to cloud storage"
-msgstr "Siirrä paikalliset liitteet pilvitallennustilaan"
 
 #. module: cloud_storage_migration
 #: model:ir.model.fields,field_description:cloud_storage_migration.field_res_config_settings__cloud_storage_migration_progress

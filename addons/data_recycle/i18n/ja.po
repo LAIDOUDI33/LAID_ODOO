@@ -21,6 +21,17 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: data_recycle
+#: model:ir.module.module,shortdesc:base.module_data_recycle
+msgid "Data Recycle"
+msgstr "データリサイクル"
+
+#. module: data_recycle
+#: model:ir.module.module,description:base.module_data_recycle
+#: model:ir.module.module,summary:base.module_data_recycle
+msgid "Find old records and archive/delete them"
+msgstr "古い記録の検索・アーカイブ・削除"
+
+#. module: data_recycle
 #: model_terms:ir.ui.view,arch_db:data_recycle.notification
 msgid ""
 "' recycling rule.<br/>\n"

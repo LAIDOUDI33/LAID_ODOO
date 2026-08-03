@@ -43,6 +43,38 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: portal
+#: model:ir.module.module,description:base.module_portal
+msgid ""
+"\n"
+"This module adds required base code for a fully integrated customer portal.\n"
+"It contains the base controller class and base templates. Business addons\n"
+"will add their specific templates and controllers to extend the customer\n"
+"portal.\n"
+"\n"
+"This module contains most code coming from odoo v10 website_portal. Purpose\n"
+"of this module is to allow the display of a customer portal without having\n"
+"a dependency towards website editing and customization capabilities."
+msgstr ""
+"\n"
+"Tämä moduuli lisää tarvittavan peruskoodin täysin integroitua "
+"asiakasportaalia varten.\n"
+"Se sisältää perusohjaimen luokan ja perusmallipohjat. Liiketoiminnan "
+"lisäosat\n"
+"lisäävät omat mallinsa ja ohjaimensa asiakasportaalin\n"
+"laajentamiseksi.\n"
+"\n"
+"Tämä moduuli sisältää suurimman osan koodista, joka on peräisin odoo v10 "
+"website_portal. Tämän\n"
+"moduulin tarkoituksena on mahdollistaa asiakasportaalin näyttäminen ilman\n"
+"riippuvuutta verkkosivun muokkaus- ja räätälöintiominaisuuksista."
+
+#. module: portal
+#: model:ir.module.module,shortdesc:base.module_portal
+#: model:ir.module.module,summary:base.module_portal
+msgid "Customer Portal"
+msgstr "Asiakasportaali"
+
+#. module: portal
 #: model_terms:ir.ui.view,arch_db:portal.portal_my_security
 msgid "\" to validate your action."
 msgstr "\" vahvistamaan toimintasi."

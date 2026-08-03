@@ -23,6 +23,25 @@ msgstr ""
 "X-Generator: Weblate 5.14.3\n"
 
 #. module: l10n_ro_edi
+#: model:ir.module.module,description:base.module_l10n_ro_edi
+msgid ""
+"\n"
+"E-invoice implementation for Romania\n"
+msgstr ""
+"\n"
+"E-invoice implementation for Romania\n"
+
+#. module: l10n_ro_edi
+#: model:ir.module.module,summary:base.module_l10n_ro_edi
+msgid "E-Invoice implementation for Romania"
+msgstr "Implementarea e-Factură pentru România"
+
+#. module: l10n_ro_edi
+#: model:ir.module.module,shortdesc:base.module_l10n_ro_edi
+msgid "Romania - E-invoicing"
+msgstr "Romania - E-invoicing"
+
+#. module: l10n_ro_edi
 #: model:ir.model.fields,help:l10n_ro_edi.field_account_bank_statement_line__l10n_ro_edi_state
 #: model:ir.model.fields,help:l10n_ro_edi.field_account_move__l10n_ro_edi_state
 msgid ""

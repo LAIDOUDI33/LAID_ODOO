@@ -27,6 +27,18 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: stock_sms
+#: model:ir.module.module,description:base.module_stock_sms
+#: model:ir.module.module,summary:base.module_stock_sms
+msgid "Send text messages when final stock move"
+msgstr ""
+"Надсилайте текстові повідомлення, після завершення складського переміщення"
+
+#. module: stock_sms
+#: model:ir.module.module,shortdesc:base.module_stock_sms
+msgid "Stock - SMS"
+msgstr "Склад - SMS"
+
+#. module: stock_sms
 #: model:sms.template,body:stock_sms.sms_template_data_stock_delivery
 msgid ""
 "\n"

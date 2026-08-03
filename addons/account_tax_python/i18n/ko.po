@@ -24,6 +24,37 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: account_tax_python
+#: model:ir.module.module,description:base.module_account_tax_python
+msgid ""
+"\n"
+"A tax defined as python code consists of two snippets of python code which "
+"are executed in a local environment containing data such as the unit price, "
+"product or partner.\n"
+"\n"
+"\"Applicable Code\" defines if the tax is to be applied.\n"
+"\n"
+"\"Python Code\" defines the amount of the tax.\n"
+msgstr ""
+"\n"
+"세금은 파이썬 코드로 정의되며 단위 가격, 제품 또는 파트너와 같은 데이터를 "
+"포함하는 로컬 환경에서 실행되는 두 개의 파이썬 코드의 스니펫으로 "
+"구성됩니다.\n"
+"\n"
+"\"해당 코드\"는 세금 적용 여부를 정의합니다.\n"
+"\n"
+"\"파이썬 코드\"는 세금의 액수를 정의합니다.\n"
+
+#. module: account_tax_python
+#: model:ir.module.module,shortdesc:base.module_account_tax_python
+msgid "Define Taxes as Python Code"
+msgstr "세금을 파이선 코드로 정의"
+
+#. module: account_tax_python
+#: model:ir.module.module,summary:base.module_account_tax_python
+msgid "Use python code to define taxes"
+msgstr "파이썬 코드를 사용하여 세금 정의"
+
+#. module: account_tax_python
 #: model:ir.model.fields,help:account_tax_python.field_account_tax__amount_type
 msgid ""
 "\n"

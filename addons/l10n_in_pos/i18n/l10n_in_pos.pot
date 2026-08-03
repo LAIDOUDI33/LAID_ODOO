@@ -16,6 +16,16 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_in_pos
+#: model:ir.module.module,description:base.module_l10n_in_pos
+msgid "GST Point of Sale"
+msgstr ""
+
+#. module: l10n_in_pos
+#: model:ir.module.module,shortdesc:base.module_l10n_in_pos
+msgid "Indian - Point of Sale"
+msgstr ""
+
+#. module: l10n_in_pos
 #: model_terms:ir.ui.view,arch_db:l10n_in_pos.pos_orderline_receipt_information
 msgid "<span>HSN Code: </span>"
 msgstr ""

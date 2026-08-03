@@ -16,6 +16,19 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: auth_signup
+#: model:ir.module.module,description:base.module_auth_signup
+msgid ""
+"\n"
+"Allow users to sign up and reset their password\n"
+"===============================================\n"
+msgstr ""
+
+#. module: auth_signup
+#: model:ir.module.module,shortdesc:base.module_auth_signup
+msgid "Signup"
+msgstr ""
+
+#. module: auth_signup
 #: model_terms:ir.ui.view,arch_db:auth_signup.reset_password_email
 msgid ""
 ",<br/><br/>\n"

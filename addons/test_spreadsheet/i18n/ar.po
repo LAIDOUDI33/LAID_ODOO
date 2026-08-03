@@ -1,0 +1,55 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# * base
+#
+# Translators:
+# Niyas Raphy, 2022
+# Martin Trigaux, 2023
+# Malaz Abuidris <msea@odoo.com>, 2023
+# "Tiffany Chang (tic)" <tic@odoo.com>, 2025.
+# "Dylan Kiss (dyki)" <dyki@odoo.com>, 2025.
+# "Malaz Siddig Elsayed Abuidris (msea)" <msea@odoo.com>, 2025, 2026.
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 16.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-05-12 08:36+0000\n"
+"PO-Revision-Date: 2026-06-21 19:23+0000\n"
+"Last-Translator: Anonymous <noreply@weblate.org>\n"
+"Language-Team: Arabic <https://translate.odoo.com/projects/odoo-master/base/"
+"ar/>\n"
+"Language: ar\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
+"&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
+"X-Generator: Weblate 2026.6.1\n"
+
+#. module: test_spreadsheet
+#: model:ir.module.module,shortdesc:base.module_test_spreadsheet
+msgid "Spreadsheet Test"
+msgstr "اختبار جداول البيانات"
+
+#. module: test_spreadsheet
+#: model:ir.module.module,summary:base.module_test_spreadsheet
+msgid "Spreadsheet Test, mainly to test the mixin behavior"
+msgstr "اختبار جداول البيانات، غالباً لاختبار تصرفات mixin"
+
+#. module: test_spreadsheet
+#: model:ir.module.module,description:base.module_test_spreadsheet
+msgid ""
+"This module contains tests related to spreadsheet.\n"
+"    The modules exposes some mixin that are only implemented in other "
+"functional modules.\n"
+"    When trying to test a global behavior of the mixin, it makes no sense to "
+"test it in\n"
+"    each module implementing the mixin but rather test a dummy "
+"implementation of the later,\n"
+"    hence the need for this test module.\n"
+msgstr ""
+"يحتوي هذا التطبيق على اختبارات متعلقة بجداول البيانات.\n"
+"    تكشف التطبيقات بعض mixin التي تم تنفيذها فقط في تطبيقات وظيفية أخرى.\n"
+"    عند محاولة اختبار التصرف العام لـ mixin، ليس من المنطقي اختباره في\n"
+"    في كل تطبيق به ذلك الـ mixin، ولكن اختبار عملية تنفيذ تجريبية لاحقاً،\n"
+"    ويفسر ذلك الحاجة إلى هذا التطبيق التجريبي.\n"

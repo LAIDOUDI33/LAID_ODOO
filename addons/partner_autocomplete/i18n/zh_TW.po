@@ -23,6 +23,26 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: partner_autocomplete
+#: model:ir.module.module,description:base.module_partner_autocomplete
+msgid ""
+"\n"
+"Auto-complete partner companies' data\n"
+msgstr ""
+"\n"
+"自動完成合作夥伴公司的數據\n"
+
+#. module: partner_autocomplete
+#: model:ir.module.module,summary:base.module_partner_autocomplete
+msgid "Auto-complete partner companies' data"
+msgstr "自動完成合作夥伴公司的資料"
+
+#. module: partner_autocomplete
+#: model:iap.service,name:partner_autocomplete.iap_service_partner_autocomplete
+#: model:ir.module.module,shortdesc:base.module_partner_autocomplete
+msgid "Partner Autocomplete"
+msgstr "合作夥伴自動完成"
+
+#. module: partner_autocomplete
 #: model:iap.service,description:partner_autocomplete.iap_service_partner_autocomplete
 msgid "Automatically enrich your contact base with corporate data."
 msgstr "利用企業資料，自動豐富你的聯絡人資料庫。"
@@ -113,11 +133,6 @@ msgstr "沒有帳戶金鑰"
 #: code:addons/partner_autocomplete/static/src/js/partner_autocomplete_core.js:0
 msgid "Not enough credits for Partner Autocomplete"
 msgstr "合作夥伴自動完成點數不足"
-
-#. module: partner_autocomplete
-#: model:iap.service,name:partner_autocomplete.iap_service_partner_autocomplete
-msgid "Partner Autocomplete"
-msgstr ""
 
 #. module: partner_autocomplete
 #. odoo-javascript

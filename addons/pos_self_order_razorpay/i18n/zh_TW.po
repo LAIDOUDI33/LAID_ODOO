@@ -20,6 +20,18 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: pos_self_order_razorpay
+#: model:ir.module.module,summary:base.module_pos_self_order_razorpay
+msgid ""
+"Addon for the Self Order App that allows customers to pay by Razorpay POS "
+"Terminal."
+msgstr "自助訂購應用程式的附加元件，讓客戶可使用 Razorpay 銷售點終端機付款。"
+
+#. module: pos_self_order_razorpay
+#: model:ir.module.module,shortdesc:base.module_pos_self_order_razorpay
+msgid "POS Self Order Razorpay"
+msgstr "POS 自助訂購 Razorpay"
+
+#. module: pos_self_order_razorpay
 #: model:ir.model.fields,field_description:pos_self_order_razorpay.field_pos_payment_method__display_name
 msgid "Display Name"
 msgstr "顯示名稱"

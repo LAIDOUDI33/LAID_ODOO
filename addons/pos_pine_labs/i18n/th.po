@@ -20,6 +20,47 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: pos_pine_labs
+#: model:ir.module.module,description:base.module_pos_pine_labs
+msgid ""
+"\n"
+"Allow Pine Labs POS payments\n"
+"==============================\n"
+"\n"
+"This module is available only for companies that use INR currency.\n"
+"It enables customers to pay for their orders using debit/credit cards and "
+"UPI through Pine Labs POS terminals.\n"
+"A Pine Labs merchant account is required to process transactions.\n"
+"Features include:\n"
+"\n"
+"* Quick payments by swiping, scanning, or tapping your credit/debit card or "
+"UPI QR code at the payment terminal.\n"
+"* Supported cards: Visa, MasterCard, RuPay.\n"
+msgstr ""
+"\n"
+"อนุญาตการชำระเงินผ่านระบบ POS ของ Pine Labs\n"
+"==============================\n"
+"\n"
+"โมดูลนี้ใช้ได้เฉพาะกับบริษัทที่ใช้สกุลเงินรูปีของประเทศอินเดียเท่านั้น\n"
+"ช่วยให้ลูกค้าสามารถชำระเงินสำหรับคำสั่งซื้อด้วยบัตรเดบิต/เครดิตและ UPI ผ่านเครื่อง POS ของ "
+"Pine Labs\n"
+"จำเป็นต้องมีบัญชีร้านค้าของ Pine Labs เพื่อดำเนินการธุรกรรม\n"
+"ฟีเจอร์ประกอบด้วย:\n"
+"\n"
+"* ชำระเงินอย่างรวดเร็วด้วยการรูด สแกน หรือแตะบัตรเครดิต/เดบิต หรือคิวอาร์โค้ด UPI ที่เครื่องชำ"
+"ระเงิน\n"
+"* บัตรที่รองรับ: Visa, MasterCard, RuPay\n"
+
+#. module: pos_pine_labs
+#: model:ir.module.module,summary:base.module_pos_pine_labs
+msgid "Integrate your POS with Pine Labs payment terminals"
+msgstr ""
+
+#. module: pos_pine_labs
+#: model:ir.module.module,shortdesc:base.module_pos_pine_labs
+msgid "POS Pine Labs"
+msgstr ""
+
+#. module: pos_pine_labs
 #: model:ir.model.fields,help:pos_pine_labs.field_pos_payment_method__pine_labs_client
 msgid "A client id issued directly to the merchant by Pine Labs."
 msgstr ""

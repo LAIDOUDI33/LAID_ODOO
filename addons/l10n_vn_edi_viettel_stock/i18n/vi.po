@@ -17,6 +17,25 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_vn_edi_viettel_stock
+#: model:ir.module.module,description:base.module_l10n_vn_edi_viettel_stock
+msgid ""
+"\n"
+"Vietnam - Delivery E-invoicing\n"
+"==============================\n"
+"Using SInvoice by Viettel\n"
+msgstr ""
+
+#. module: l10n_vn_edi_viettel_stock
+#: model:ir.module.module,summary:base.module_l10n_vn_edi_viettel_stock
+msgid "Delivery E-invoicing using SInvoice by Viettel"
+msgstr ""
+
+#. module: l10n_vn_edi_viettel_stock
+#: model:ir.module.module,shortdesc:base.module_l10n_vn_edi_viettel_stock
+msgid "Vietnam - Delivery E-invoicing"
+msgstr ""
+
+#. module: l10n_vn_edi_viettel_stock
 #. odoo-python
 #: code:addons/l10n_vn_edi_viettel_stock/models/stock_picking.py:0
 msgid "Cannot get access token."

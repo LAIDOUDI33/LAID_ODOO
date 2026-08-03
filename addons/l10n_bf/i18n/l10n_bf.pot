@@ -16,6 +16,22 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_bf
+#: model:ir.module.module,description:base.module_l10n_bf
+msgid ""
+"\n"
+"This module implements the tax for Burkina Faso.\n"
+"=================================================================\n"
+"\n"
+"The Chart of Accounts is from SYSCOHADA.\n"
+"\n"
+msgstr ""
+
+#. module: l10n_bf
+#: model:ir.module.module,shortdesc:base.module_l10n_bf
+msgid "Burkina Faso - Accounting"
+msgstr ""
+
+#. module: l10n_bf
 #: model:ir.model,name:l10n_bf.model_account_chart_template
 msgid "Account Chart Template"
 msgstr ""

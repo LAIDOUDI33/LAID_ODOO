@@ -21,6 +21,33 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: auth_passkey_portal
+#: model:ir.module.module,description:base.module_auth_passkey_portal
+msgid ""
+"\n"
+"The implementation of Passkeys using the webauthn protocol.\n"
+"===========================================================\n"
+"\n"
+"Passkeys are a secure alternative to a username and a password.\n"
+"When a user logs in with a Passkey, MFA will not be required.\n"
+msgstr ""
+"\n"
+"Implementarea Passkeys folosind protocolul webauthn.\n"
+"===========================================================\n"
+"\n"
+"Passkeys sunt o alternativă sigură la nume de utilizator și parolă.\n"
+"Când un utilizator se autentifică cu un Passkey, MFA nu va fi necesar.\n"
+
+#. module: auth_passkey_portal
+#: model:ir.module.module,summary:base.module_auth_passkey_portal
+msgid "Passkeys for portal users"
+msgstr "Chei de acces pentru utilizatorii portalului"
+
+#. module: auth_passkey_portal
+#: model:ir.module.module,shortdesc:base.module_auth_passkey_portal
+msgid "Passkeys Portal"
+msgstr "Portalul Passkeys"
+
+#. module: auth_passkey_portal
 #: model_terms:ir.ui.view,arch_db:auth_passkey_portal.passkeys_portal_hook
 msgid "Add Passkey"
 msgstr "Adaugă cheie de acces"

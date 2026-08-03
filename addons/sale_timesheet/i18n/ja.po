@@ -27,6 +27,35 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: sale_timesheet
+#: model:ir.module.module,description:base.module_sale_timesheet
+msgid ""
+"\n"
+"Allows to sell timesheets in your sales order\n"
+"=============================================\n"
+"\n"
+"This module set the right product on all timesheet lines\n"
+"according to the order/contract you work on. This allows to\n"
+"have real delivered quantities in sales orders.\n"
+msgstr ""
+"\n"
+"受注タイムシートで販売することができます\n"
+"=======================================\n"
+"\n"
+"このモジュールは、あなたが作業する注文/契約に従って、すべてのタイムシートの明"
+"細に適切なプロダクトを設定します。\n"
+"これにより、実際の出荷数量を受注することができます。\n"
+
+#. module: sale_timesheet
+#: model:ir.module.module,shortdesc:base.module_sale_timesheet
+msgid "Sales Timesheet"
+msgstr "販売タイムシート"
+
+#. module: sale_timesheet
+#: model:ir.module.module,summary:base.module_sale_timesheet
+msgid "Sell based on timesheets"
+msgstr "タイムシートに基づいた販売"
+
+#. module: sale_timesheet
 #. odoo-python
 #: code:addons/sale_timesheet/models/sale_order.py:0
 msgid ""

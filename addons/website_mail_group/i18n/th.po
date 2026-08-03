@@ -21,6 +21,16 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_mail_group
+#: model:ir.module.module,summary:base.module_website_mail_group
+msgid "Add a website snippet for the mail groups."
+msgstr "เพิ่มตัวอย่างเว็บไซต์สำหรับกลุ่มอีเมล"
+
+#. module: website_mail_group
+#: model:ir.module.module,shortdesc:base.module_website_mail_group
+msgid "Website Mail Group"
+msgstr "กลุ่มจดหมายเว็บไซต์"
+
+#. module: website_mail_group
 #: model_terms:ir.ui.view,arch_db:website_mail_group.mail_group_view_form
 #, fuzzy
 msgid ""

@@ -22,6 +22,17 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: crm_iap_mine
+#: model:ir.module.module,summary:base.module_crm_iap_mine
+msgid "Generate Leads/Opportunities based on country, industries, size, etc."
+msgstr "국가, 산업, 규모 등에 따라 영업제안/기회를 생성합니다."
+
+#. module: crm_iap_mine
+#: model:ir.module.module,shortdesc:base.module_crm_iap_mine
+#: model:ir.ui.menu,name:crm_iap_mine.crm_menu_lead_generation
+msgid "Lead Generation"
+msgstr "영업제안 생성"
+
+#. module: crm_iap_mine
 #. odoo-python
 #: code:addons/crm_iap_mine/models/crm_iap_lead_mining_request.py:0
 msgid ""
@@ -616,11 +627,6 @@ msgstr "리드"
 #: model:ir.model.fields,field_description:crm_iap_mine.field_crm_iap_lead_mining_request__lead_credits
 msgid "Lead Credits"
 msgstr "영업제안 크레딧"
-
-#. module: crm_iap_mine
-#: model:ir.ui.menu,name:crm_iap_mine.crm_menu_lead_generation
-msgid "Lead Generation"
-msgstr "영업제안 생성"
 
 #. module: crm_iap_mine
 #: model:ir.model.fields,field_description:crm_iap_mine.field_crm_lead__lead_mining_request_id

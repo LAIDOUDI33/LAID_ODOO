@@ -26,6 +26,118 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: hr_recruitment
+#: model:ir.module.module,description:base.module_hr_recruitment
+msgid ""
+"Manage Recruitment and Job applications\n"
+"---------------------------------------\n"
+"\n"
+"Publish, promote and organize your job offers with the Odoo\n"
+"<a href=\"https://www.odoo.com/app/recruitment\">Open Source Recruitment "
+"Application</a>.\n"
+"\n"
+"Organize your job board, promote your job announces and keep track of\n"
+"application submissions easily. Follow every applicant and build up a "
+"database\n"
+"of skills and profiles with indexed documents.\n"
+"\n"
+"Post Your Jobs on Best Job Boards\n"
+"---------------------------------\n"
+"\n"
+"Connect automatically to most famous job board websites; linkedIn, Monster,\n"
+"Craigslist, ... Every job position has a new email address automatically\n"
+"assigned to route applications automatically to the right job position.\n"
+"\n"
+"Whether applicants contact you by email or using an online form, you get "
+"all\n"
+"the data indexed automatically (resumes, motivation letter) and you can "
+"answer\n"
+"in just a click, reusing templates of answers.\n"
+"\n"
+"Customize Your Recruitment Process\n"
+"----------------------------------\n"
+"\n"
+"Use the kanban view and customize the steps of your recruitments process;\n"
+"pre-qualification, first interview, second interview, negociaiton, ...\n"
+"\n"
+"Get accurate statistics on your recruitment pipeline. Get reports to "
+"compare\n"
+"the performance of your different investments on external job boards.\n"
+"\n"
+"Streamline Your Recruitment Process\n"
+"-----------------------------------\n"
+"\n"
+"Follow applicants in your recruitment process with the smart kanban view. "
+"Save\n"
+"time by automating some communications with email templates.\n"
+"\n"
+"Documents like resumes and motivation letters are indexed automatically,\n"
+"allowing you to easily find for specific skills and build up a database of\n"
+"profiles.\n"
+msgstr ""
+"Quản lý Tuyển dụng và Đơn ứng tuyển\n"
+"---------------------------------------\n"
+"\n"
+"Đăng, quảng bá và sắp xếp các đề xuất nhận việc của bạn với\n"
+"<a href=\"https://www.odoo.com/app/recruitment\">Ứng dụng Tuyển dụng Mã "
+"nguồn Mở</a> của Odoo.\n"
+"\n"
+"Tổ chức trang việc làm, quảng bá thông báo tuyển dụng của bạn và theo dõi\n"
+"các đơn ứng tuyển dễ dàng. Theo dõi mọi ứng viên và xây dựng cơ sở dữ liệu\n"
+"các kỹ năng và hồ sơ với các tài liệu được lập chỉ mục.\n"
+"\n"
+"Đăng Công việc của Bạn lên các Trang Việc làm Tốt nhất\n"
+"---------------------------------\n"
+"\n"
+"Kết nối tự động với hầu hết các trang web việc làm nổi tiếng; linkedIn, "
+"Monster,\n"
+"Craigslist,... Mỗi Vị trí công việc đều được tự động chỉ định một địa chỉ "
+"email mới\n"
+"để chuyển đơn ứng tuyển đến đúng Vị trí công việc một cách tự động.\n"
+"\n"
+"Cho dù ứng viên liên hệ với bạn qua email hay biểu mẫu online, bạn sẽ nhận "
+"được tất cả\n"
+"dữ liệu được lập chỉ mục tự động (CV, thư xin việc) và bạn có thể trả lời\n"
+"chỉ trong một cú nhấp chuột, sử dụng lại các mẫu câu trả lời.\n"
+"\n"
+"Tùy chỉnh Quy trình Tuyển dụng của Bạn\n"
+"----------------------------------\n"
+"\n"
+"Sử dụng chế độ xem kanban và tùy chỉnh các bước trong quy trình tuyển dụng;\n"
+"sơ tuyển, phỏng vấn lần đầu, phỏng vấn lần hai, thương lượng, ...\n"
+"\n"
+"Nhận số liệu thống kê chính xác về quy trình tuyển dụng của bạn. Nhận báo "
+"cáo để so sánh\n"
+"hiệu suất của các khoản đầu tư khác nhau trên những trang việc làm bên "
+"ngoài.\n"
+"\n"
+"Hợp lý hóa Quy trình Tuyển dụng của Bạn\n"
+"-----------------------------------\n"
+"\n"
+"Theo dõi các ứng viên trong quá trình tuyển dụng với chế độ xem kanban thông "
+"minh. Tiết kiệm\n"
+"thời gian bằng cách tự động hóa một số thông tin liên lạc với các mẫu "
+"email.\n"
+"\n"
+"Các tài liệu như CV và thư xin việc được lập chỉ mục tự động,\n"
+"cho phép bạn dễ dàng tìm kiếm các kỹ năng cụ thể và xây dựng cơ sở dữ liệu\n"
+"hồ sơ.\n"
+
+#. module: hr_recruitment
+#: model:ir.module.module,shortdesc:base.module_hr_recruitment
+#: model:ir.ui.menu,name:hr_recruitment.menu_hr_recruitment_root
+#: model:res.groups.privilege,name:hr_recruitment.res_groups_privilege_recruitment
+#: model_terms:ir.ui.view,arch_db:hr_recruitment.digest_digest_view_form
+#: model_terms:ir.ui.view,arch_db:hr_recruitment.hr_department_view_kanban
+#: model_terms:ir.ui.view,arch_db:hr_recruitment.res_config_settings_view_form
+msgid "Recruitment"
+msgstr "Tuyển dụng"
+
+#. module: hr_recruitment
+#: model:ir.module.module,summary:base.module_hr_recruitment
+msgid "Track your recruitment pipeline"
+msgstr "Theo dõi quy trình tuyển dụng của bạn"
+
+#. module: hr_recruitment
 #: model:ir.model.fields,field_description:hr_recruitment.field_hr_talent_pool__no_of_talents
 msgid "# Talents"
 msgstr "# ứng viên tiềm năng"
@@ -3037,15 +3149,6 @@ msgstr "Chuyên viên tuyển dụng"
 #: model:ir.model.fields,field_description:hr_recruitment.field_hr_applicant__recruiter_email
 msgid "Recruiter Work Email"
 msgstr ""
-
-#. module: hr_recruitment
-#: model:ir.ui.menu,name:hr_recruitment.menu_hr_recruitment_root
-#: model:res.groups.privilege,name:hr_recruitment.res_groups_privilege_recruitment
-#: model_terms:ir.ui.view,arch_db:hr_recruitment.digest_digest_view_form
-#: model_terms:ir.ui.view,arch_db:hr_recruitment.hr_department_view_kanban
-#: model_terms:ir.ui.view,arch_db:hr_recruitment.res_config_settings_view_form
-msgid "Recruitment"
-msgstr "Tuyển dụng"
 
 #. module: hr_recruitment
 #: model:ir.actions.act_window,name:hr_recruitment.hr_job_stage_act

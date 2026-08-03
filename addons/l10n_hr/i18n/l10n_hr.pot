@@ -16,6 +16,23 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_hr
+#: model:ir.module.module,description:base.module_l10n_hr
+msgid ""
+"\n"
+"Croatian Chart of Accounts updated (RRIF ver.2021)\n"
+"\n"
+"Sources:\n"
+"https://www.rrif.hr/dok/preuzimanje/Bilanca-2016.pdf\n"
+"https://www.rrif.hr/dok/preuzimanje/RRIF-RP2021.PDF\n"
+"https://www.rrif.hr/dok/preuzimanje/RRIF-RP2021-ENG.PDF\n"
+msgstr ""
+
+#. module: l10n_hr
+#: model:ir.module.module,shortdesc:base.module_l10n_hr
+msgid "Croatia - Accounting (Euro)"
+msgstr ""
+
+#. module: l10n_hr
 #: model:ir.model,name:l10n_hr.model_account_chart_template
 msgid "Account Chart Template"
 msgstr ""

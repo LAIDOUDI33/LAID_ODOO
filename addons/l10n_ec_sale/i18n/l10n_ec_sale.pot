@@ -16,6 +16,16 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: l10n_ec_sale
+#: model:ir.module.module,shortdesc:base.module_l10n_ec_sale
+msgid "Ecuador - Sale"
+msgstr ""
+
+#. module: l10n_ec_sale
+#: model:ir.module.module,description:base.module_l10n_ec_sale
+msgid "Ecuador Sale"
+msgstr ""
+
+#. module: l10n_ec_sale
 #: model:ir.model.fields,field_description:l10n_ec_sale.field_payment_method__display_name
 #: model:ir.model.fields,field_description:l10n_ec_sale.field_sale_order__display_name
 msgid "Display Name"

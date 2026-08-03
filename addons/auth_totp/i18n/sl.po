@@ -22,6 +22,45 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: auth_totp
+#: model:ir.module.module,description:base.module_auth_totp
+msgid ""
+"\n"
+"Two-Factor Authentication (TOTP)\n"
+"================================\n"
+"Allows users to configure two-factor authentication on their user account\n"
+"for extra security, using time-based one-time passwords (TOTP).\n"
+"\n"
+"Once enabled, the user will need to enter a 6-digit code as provided\n"
+"by their authenticator app before being granted access to the system.\n"
+"All popular authenticator apps are supported.\n"
+"\n"
+"Note: logically, two-factor prevents password-based RPC access for users\n"
+"where it is enabled. In order to be able to execute RPC scripts, the user\n"
+"can setup API keys to replace their main password.\n"
+msgstr ""
+"\n"
+"Dvofaktorska avtentikacija (TOTP)\n"
+"================================\n"
+"Omogoča uporabnikom, da v svojem uporabniškem računu konfigurirajo "
+"dvofaktorsko preverjanje pristnosti\n"
+"za dodatno varnost z uporabo časovno omejenih enkratnih gesel (TOTP).\n"
+"\n"
+"Ko je omogočeno, bo moral uporabnik vnesti 6-mestno kodo, kot je navedeno\n"
+"prek aplikacije za preverjanje pristnosti, preden jim je odobren dostop do "
+"sistema.\n"
+"Podprte so vse priljubljene aplikacije za preverjanje pristnosti.\n"
+"\n"
+"Opomba: logično je, da dvofaktorska zaščita preprečuje uporabnikom dostop do "
+"RPC z geslom.\n"
+"kjer je omogočeno. Da bi lahko izvajal skripte RPC, mora uporabnik\n"
+"lahko nastavijo API ključe, ki nadomestijo njihovo glavno geslo.\n"
+
+#. module: auth_totp
+#: model:ir.module.module,shortdesc:base.module_auth_totp
+msgid "Two-Factor Authentication (TOTP)"
+msgstr "Dvostopenjska avtentikacija (TOTP)"
+
+#. module: auth_totp
 #. odoo-python
 #: code:addons/auth_totp/controllers/home.py:0
 msgid "%(browser)s on %(platform)s"

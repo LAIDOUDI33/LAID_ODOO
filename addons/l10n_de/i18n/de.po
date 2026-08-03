@@ -21,6 +21,30 @@ msgstr ""
 "X-Generator: Weblate 5.16.2\n"
 
 #. module: l10n_de
+#: model:ir.module.module,description:base.module_l10n_de
+msgid ""
+"\n"
+"Dieses  Modul beinhaltet einen deutschen Kontenrahmen basierend auf dem "
+"SKR03 oder SKR04.\n"
+"=========================================================================================\n"
+"\n"
+"German accounting chart and localization.\n"
+"By default, the audit trail is enabled for GoBD compliance.\n"
+msgstr ""
+"\n"
+"Dieses  Modul beinhaltet einen deutschen Kontenrahmen basierend auf dem "
+"SKR03 oder SKR04.\n"
+"=========================================================================================\n"
+"\n"
+"Deutscher Kontenplan und Lokalisierung.\n"
+"Standardmäßig ist der Prüfpfad für die Einhaltung der GoBD aktiviert.\n"
+
+#. module: l10n_de
+#: model:ir.module.module,shortdesc:base.module_l10n_de
+msgid "Germany - Accounting"
+msgstr "Deutschland - Buchhaltung"
+
+#. module: l10n_de
 #: model:ir.model.fields,help:l10n_de.field_account_tax__l10n_de_datev_code
 msgid "4 digits code use by Datev"
 msgstr "4-stelliger Code zur Verwendung durch Datev"

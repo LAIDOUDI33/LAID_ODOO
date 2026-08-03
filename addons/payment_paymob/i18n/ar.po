@@ -22,6 +22,16 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: payment_paymob
+#: model:ir.module.module,summary:base.module_payment_paymob
+msgid "An Egyptian payment provider for the Middle East."
+msgstr "مزود دفع مصري للمدفوعات في منطقة الشرق الأوسط."
+
+#. module: payment_paymob
+#: model:ir.module.module,shortdesc:base.module_payment_paymob
+msgid "Payment Provider: Paymob"
+msgstr "مزود الدفع: Paymob"
+
+#. module: payment_paymob
 #: model_terms:ir.ui.view,arch_db:payment_paymob.payment_provider_form
 msgid "API Key"
 msgstr "مفتاح الواجهة البرمجية للتطبيق"

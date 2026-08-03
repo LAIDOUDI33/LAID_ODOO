@@ -26,6 +26,35 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: project_timesheet_holidays
+#: model:ir.module.module,description:base.module_project_timesheet_holidays
+msgid ""
+"\n"
+"Bridge module to integrate leaves in timesheet\n"
+"================================================\n"
+"\n"
+"This module allows to automatically log timesheets when employees are\n"
+"on leaves. Project and task can be configured company-wide.\n"
+msgstr ""
+"\n"
+"Module passerelle pour intégrer les congés dans la feuille de temps\n"
+"================================================\n"
+"\n"
+"Ce module permet d'enregistrer automatiquement des feuilles de temps lorsque "
+"des employés sont\n"
+"en congé. Il est possible de configurer des projets et des tâches dans toute "
+"l'entreprise.\n"
+
+#. module: project_timesheet_holidays
+#: model:ir.module.module,summary:base.module_project_timesheet_holidays
+msgid "Schedule timesheet when on time off"
+msgstr "Planifiez les feuilles de temps pendant les congés"
+
+#. module: project_timesheet_holidays
+#: model:ir.module.module,shortdesc:base.module_project_timesheet_holidays
+msgid "Timesheet when on Time Off"
+msgstr "Feuille de temps pendant les congés"
+
+#. module: project_timesheet_holidays
 #: model:ir.model,name:project_timesheet_holidays.model_account_analytic_line
 msgid "Analytic Line"
 msgstr "Ligne analytique"

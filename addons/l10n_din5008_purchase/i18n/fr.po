@@ -20,6 +20,11 @@ msgstr ""
 "X-Generator: Weblate 5.14.3\n"
 
 #. module: l10n_din5008_purchase
+#: model:ir.module.module,shortdesc:base.module_l10n_din5008_purchase
+msgid "DIN 5008 - Purchase"
+msgstr "DIN 5008 - Achats"
+
+#. module: l10n_din5008_purchase
 #: model_terms:ir.ui.view,arch_db:l10n_din5008_purchase.report_common_purchase_din5008_template_address_block
 msgid "<span class=\"fw-bold\">Shipping Address:</span>"
 msgstr "<span class=\"fw-bold\">Adresse d'expédition :</span>"

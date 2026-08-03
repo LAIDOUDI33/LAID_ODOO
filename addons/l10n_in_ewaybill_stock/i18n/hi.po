@@ -20,6 +20,22 @@ msgstr ""
 "X-Generator: Weblate 5.12.2\n"
 
 #. module: l10n_in_ewaybill_stock
+#: model:ir.module.module,description:base.module_l10n_in_ewaybill_stock
+msgid ""
+"\n"
+"Indian E-waybill for Stock\n"
+"==========================\n"
+"\n"
+"This module enables users to create E-waybill from Inventory App without "
+"generating an invoice\n"
+msgstr ""
+
+#. module: l10n_in_ewaybill_stock
+#: model:ir.module.module,shortdesc:base.module_l10n_in_ewaybill_stock
+msgid "Indian - E-waybill Stock"
+msgstr ""
+
+#. module: l10n_in_ewaybill_stock
 #: model_terms:ir.ui.view,arch_db:l10n_in_ewaybill_stock.view_picking_form_inherit_ewaybill
 msgid "<span class=\"o_stat_text\">e-Waybill / Challan</span>"
 msgstr ""

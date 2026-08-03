@@ -20,6 +20,16 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: crm_sms
+#: model:ir.module.module,summary:base.module_crm_sms
+msgid "Add SMS capabilities to CRM"
+msgstr "Agregue las capacidades de SMS al CRM"
+
+#. module: crm_sms
+#: model:ir.module.module,shortdesc:base.module_crm_sms
+msgid "SMS in CRM"
+msgstr "SMS en CRM"
+
+#. module: crm_sms
 #: model_terms:ir.ui.view,arch_db:crm_sms.crm_case_tree_view_oppor
 msgid "SMS"
 msgstr "SMS"

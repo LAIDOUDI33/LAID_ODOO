@@ -22,6 +22,46 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: transifex
+#: model:ir.module.module,description:base.module_transifex
+msgid ""
+"\n"
+"Transifex integration\n"
+"=====================\n"
+"This module will add a link to the Transifex project in the translation "
+"view.\n"
+"The purpose of this module is to speed up translations of the main modules.\n"
+"\n"
+"To work, Odoo uses Transifex configuration files `.tx/config` to detect the\n"
+"project source. Custom modules will not be translated (as not published on\n"
+"the main Transifex project).\n"
+"\n"
+"The language the user tries to translate must be activated on the Transifex\n"
+"project.\n"
+msgstr ""
+"\n"
+"Transifex entegrasyonu\n"
+"=====================\n"
+"Bu modül, çeviri görünümüne Transifex projesine bir bağlantı ekleyecektir.\n"
+"Bu modülün amacı, ana modüllerin çevirilerini hızlandırmaktır.\n"
+"\n"
+"Odoo, çalışmak için Transifex yapılandırma dosyalarını `.tx/config`\n"
+"kullanarak proje kaynağını algılar. Özel modüller çevrilmez (ana Transifex\n"
+"projesinde yayımlanmadıkları için).\n"
+"\n"
+"Kullanıcının çevirmeye çalıştığı dil, Transifex projesinde etkinleştirilmiş\n"
+" olmalıdır.\n"
+
+#. module: transifex
+#: model:ir.module.module,summary:base.module_transifex
+msgid "Add a link to edit a translation in Transifex"
+msgstr "Transifex'de çeviri düzenlemek için bir link ekleyin"
+
+#. module: transifex
+#: model:ir.module.module,shortdesc:base.module_transifex
+msgid "Transifex integration"
+msgstr "Transifex Entegrasyonu"
+
+#. module: transifex
 #: model:ir.model,name:transifex.model_base
 msgid "Base"
 msgstr "Temel"

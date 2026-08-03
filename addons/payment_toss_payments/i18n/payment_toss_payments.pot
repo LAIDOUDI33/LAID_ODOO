@@ -16,6 +16,16 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: payment_toss_payments
+#: model:ir.module.module,summary:base.module_payment_toss_payments
+msgid "A payment provider covering the South Korea market"
+msgstr ""
+
+#. module: payment_toss_payments
+#: model:ir.module.module,shortdesc:base.module_payment_toss_payments
+msgid "Payment Provider: Toss Payments"
+msgstr ""
+
+#. module: payment_toss_payments
 #: model:payment.method,name:payment_toss_payments.payment_method_amex
 msgid "American Express"
 msgstr ""

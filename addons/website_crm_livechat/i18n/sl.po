@@ -21,6 +21,23 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_crm_livechat
+#: model:ir.module.module,description:base.module_website_crm_livechat
+msgid "Adds a stat button on lead form view to access their livechat sessions."
+msgstr ""
+"V pogledu obrazca za potencialne stranke doda gumb za statistiko za dostop "
+"do njihovih sej klepeta v živo."
+
+#. module: website_crm_livechat
+#: model:ir.module.module,shortdesc:base.module_website_crm_livechat
+msgid "Lead Livechat Sessions"
+msgstr "Vodite seje klepeta v živo"
+
+#. module: website_crm_livechat
+#: model:ir.module.module,summary:base.module_website_crm_livechat
+msgid "View livechat sessions for leads"
+msgstr "Oglejte si seje klepeta v živo za potencialne stranke"
+
+#. module: website_crm_livechat
 #: model:ir.model.fields,field_description:website_crm_livechat.field_crm_lead__visitor_sessions_count
 msgid "# Sessions"
 msgstr ""

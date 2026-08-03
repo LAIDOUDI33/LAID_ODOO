@@ -24,6 +24,63 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: lunch
+#: model:ir.module.module,description:base.module_lunch
+msgid ""
+"\n"
+"The base module to manage lunch.\n"
+"================================\n"
+"\n"
+"Many companies order sandwiches, pizzas and other, from usual vendors, for "
+"their employees to offer them more facilities.\n"
+"\n"
+"However lunches management within the company requires proper administration "
+"especially when the number of employees or vendors is important.\n"
+"\n"
+"The “Lunch Order” module has been developed to make this management easier "
+"but also to offer employees more tools and usability.\n"
+"\n"
+"In addition to a full meal and vendor management, this module offers the "
+"possibility to display warning and provides quick order selection based on "
+"employee’s preferences.\n"
+"\n"
+"If you want to save your employees' time and avoid them to always have coins "
+"in their pockets, this module is essential.\n"
+msgstr ""
+"\n"
+"Базовый модуль для управления обедом.\n"
+"================================\n"
+"\n"
+"Многие компании заказывают сэндвичи, пиццу и прочее у обычных поставщиков "
+"для своих сотрудников, чтобы предложить им больше удобств.\n"
+"\n"
+"Однако управление обедами в компании требует надлежащего администрирования, "
+"особенно если речь идет о количестве сотрудников или поставщиков.\n"
+"\n"
+"Модуль \"Заказ обедов\" был разработан для того, чтобы упростить управление, "
+"а также предложить сотрудникам больше инструментов и удобств.\n"
+"\n"
+"Помимо полного управления обедами и поставщиками, этот модуль предлагает "
+"возможность отображения предупреждений и обеспечивает быстрый выбор заказа "
+"на основе предпочтений сотрудников.\n"
+"\n"
+"Если вы хотите сэкономить время своих сотрудников и избавить их от "
+"необходимости постоянно носить монеты в кармане, этот модуль просто "
+"необходим.\n"
+
+#. module: lunch
+#: model:ir.module.module,summary:base.module_lunch
+msgid "Handle lunch orders of your employees"
+msgstr "Управляйте заказами на обед для ваших сотрудников"
+
+#. module: lunch
+#: model:ir.module.module,shortdesc:base.module_lunch
+#: model:ir.ui.menu,name:lunch.menu_lunch
+#: model:res.groups.privilege,name:lunch.res_groups_privilege_lunch
+#: model_terms:ir.ui.view,arch_db:lunch.res_config_settings_view_form
+msgid "Lunch"
+msgstr "Обед"
+
+#. module: lunch
 #: model_terms:lunch.product,description:lunch.product_temaki
 msgid "1 Avocado - 1 Salmon - 1 Eggs - 1 Tuna"
 msgstr "1 авокадо - 1 лосось - 1 яйцо - 1 тунец"
@@ -1046,13 +1103,6 @@ msgstr "Название местоположения"
 #: model:ir.ui.menu,name:lunch.lunch_location_menu
 msgid "Locations"
 msgstr "Местоположение"
-
-#. module: lunch
-#: model:ir.ui.menu,name:lunch.menu_lunch
-#: model:res.groups.privilege,name:lunch.res_groups_privilege_lunch
-#: model_terms:ir.ui.view,arch_db:lunch.res_config_settings_view_form
-msgid "Lunch"
-msgstr "Обед"
 
 #. module: lunch
 #: model:ir.model,name:lunch.model_lunch_alert

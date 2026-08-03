@@ -21,6 +21,23 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: project_hr_expense
+#: model:ir.module.module,description:base.module_project_hr_expense
+msgid ""
+"Bridge created to add the number of expenses linked to an AA to a project "
+"form"
+msgstr "AA에 연결되어 있는 여러 비용을 프로젝트 양식에 추가하기 위해 연계 항목 생성"
+
+#. module: project_hr_expense
+#: model:ir.module.module,shortdesc:base.module_project_hr_expense
+msgid "Project Expenses"
+msgstr "프로젝트 경비"
+
+#. module: project_hr_expense
+#: model:ir.module.module,summary:base.module_project_hr_expense
+msgid "Project expenses"
+msgstr "프로젝트 경비"
+
+#. module: project_hr_expense
 #: model:ir.model.fields,field_description:project_hr_expense.field_hr_expense__display_name
 #: model:ir.model.fields,field_description:project_hr_expense.field_project_project__display_name
 msgid "Display Name"

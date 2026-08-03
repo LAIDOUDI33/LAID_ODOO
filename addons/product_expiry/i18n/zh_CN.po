@@ -27,6 +27,41 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: product_expiry
+#: model:ir.module.module,description:base.module_product_expiry
+msgid ""
+"\n"
+"Track different dates on products and production lots.\n"
+"======================================================\n"
+"\n"
+"Following dates can be tracked:\n"
+"-------------------------------\n"
+"    - end of life\n"
+"    - best before date\n"
+"    - removal date\n"
+"    - alert date\n"
+"\n"
+"Also implements the removal strategy First Expiry First Out (FEFO) widely "
+"used, for example, in food industries.\n"
+msgstr ""
+"\n"
+"跟踪存货和生产批次的不同日期。\n"
+"======================================================\n"
+"\n"
+"以下的日期将被跟踪：\n"
+"-------------------------------\n"
+"    - 生命周期结束\n"
+"    - 最佳的日期之前\n"
+"    - 移除日期\n"
+"    - 提醒日期\n"
+"\n"
+"同时实现了被广泛使用的先结束先出法（FEFO）出库策略，例如食品工业。\n"
+
+#. module: product_expiry
+#: model:ir.module.module,shortdesc:base.module_product_expiry
+msgid "Products Expiration Date"
+msgstr "产品到期日期"
+
+#. module: product_expiry
 #. odoo-python
 #: code:addons/product_expiry/models/production_lot.py:0
 msgid "\t--Expire on %(date)s--"

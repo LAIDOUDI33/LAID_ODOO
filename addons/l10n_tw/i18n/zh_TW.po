@@ -20,6 +20,22 @@ msgstr ""
 "X-Generator: Weblate 5.16.1\n"
 
 #. module: l10n_tw
+#: model:ir.module.module,description:base.module_l10n_tw
+msgid ""
+"\n"
+"This is the base module to manage the accounting chart for Taiwan in Odoo.\n"
+"==============================================================================\n"
+msgstr ""
+"\n"
+"這是 Odoo 中管理台灣會計圖表的基本模組.\n"
+"==============================================================================\n"
+
+#. module: l10n_tw
+#: model:ir.module.module,shortdesc:base.module_l10n_tw
+msgid "Taiwan - Accounting"
+msgstr "台灣 - 會計"
+
+#. module: l10n_tw
 #: model:account.report,name:l10n_tw.l10n_tw_tax_report_401
 msgid "401 Tax Report"
 msgstr "401 稅務報表"

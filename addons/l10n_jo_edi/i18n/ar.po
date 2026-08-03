@@ -21,6 +21,25 @@ msgstr ""
 "X-Generator: Weblate 5.12.2\n"
 
 #. module: l10n_jo_edi
+#: model:ir.module.module,description:base.module_l10n_jo_edi
+msgid ""
+"\n"
+"Allows the users to integrate with JoFotara.\n"
+msgstr ""
+"\n"
+"يتيح للمستخدمين التكامل مع JoFotara.\n"
+
+#. module: l10n_jo_edi
+#: model:ir.module.module,summary:base.module_l10n_jo_edi
+msgid "Electronic Invoicing for Jordan UBL 2.1"
+msgstr "الفوترة الإلكترونية للأردن UBL 2.1"
+
+#. module: l10n_jo_edi
+#: model:ir.module.module,shortdesc:base.module_l10n_jo_edi
+msgid "Jordan E-Invoicing"
+msgstr "الفوترة الإلكترونية الأردنية"
+
+#. module: l10n_jo_edi
 #. odoo-python
 #: code:addons/l10n_jo_edi/models/account_move.py:0
 msgid "%(company)s's Country must be Jordan"

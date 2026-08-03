@@ -20,6 +20,17 @@ msgstr ""
 "X-Generator: Weblate 5.17\n"
 
 #. module: l10n_ar_stock_batch
+#: model:ir.module.module,shortdesc:base.module_l10n_ar_stock_batch
+msgid "Argentinean Stock - Batch Transfers"
+msgstr "Existencias de Argentina - Transferencias por lotes"
+
+#. module: l10n_ar_stock_batch
+#: model:ir.module.module,description:base.module_l10n_ar_stock_batch
+msgid "Bridge module for Argentine delivery guides on batch transfers."
+msgstr ""
+"Modulo de enlace para los remitos de argentina en transferencias por lotes."
+
+#. module: l10n_ar_stock_batch
 #: model:ir.model,name:l10n_ar_stock_batch.model_stock_picking_batch
 msgid "Batch Transfer"
 msgstr "Traslado por lote"

@@ -33,6 +33,57 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: product
+#: model:ir.module.module,description:base.module_product
+msgid ""
+"\n"
+"This is the base module for managing products and pricelists in Odoo.\n"
+"========================================================================\n"
+"\n"
+"Products support variants, different pricing methods, vendors information,\n"
+"make to stock/order, different units of measure, packaging and properties.\n"
+"\n"
+"Pricelists support:\n"
+"-------------------\n"
+"    * Multiple-level of discount (by product, category, quantities)\n"
+"    * Compute price based on different criteria:\n"
+"        * Other pricelist\n"
+"        * Cost price\n"
+"        * List price\n"
+"        * Vendor price\n"
+"\n"
+"Pricelists preferences by product and/or partners.\n"
+"\n"
+"Print product labels with barcode.\n"
+msgstr ""
+"\n"
+"Este es el módulo base para gestionar productos y listas de precios en "
+"Odoo.\n"
+"========================================================================\n"
+"\n"
+"Los productos son compatibles con variantes, varios métodos de fijación de "
+"precios, información del proveedor, información de almacenaje, distintas "
+"unidades de medida, embalajes y propiedades.\n"
+"\n"
+"Las listas de precios son compatibles con:\n"
+"-------------------------------\n"
+"    * Varios niveles de descuento (por producto, categoría, cantidades)\n"
+"    * Calcular precio según distintos criterios:\n"
+"        * Otra lista de precios\n"
+"        * Precio de coste\n"
+"        * Precio de venta\n"
+"        * Precio de proveedor\n"
+"\n"
+"Las preferencias de la lista de precios se establecen por producto o "
+"contacto.\n"
+"\n"
+"Imprima etiquetas de producto con código de barras.\n"
+
+#. module: product
+#: model:ir.module.module,shortdesc:base.module_product
+msgid "Products & Pricelists"
+msgstr "Productos y listas de precios"
+
+#. module: product
 #: model:ir.model.fields,field_description:product.field_product_pricelist_item__product_variant_count
 #: model:ir.model.fields,field_description:product.field_product_product__product_variant_count
 #: model:ir.model.fields,field_description:product.field_product_template__product_variant_count

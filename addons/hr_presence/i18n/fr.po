@@ -26,6 +26,36 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: hr_presence
+#: model:ir.module.module,description:base.module_hr_presence
+msgid ""
+"\n"
+"Control Employees Presence\n"
+"==========================\n"
+"\n"
+"Based on:\n"
+"    * The IP Address\n"
+"    * The User's Session\n"
+"    * The Sent Emails\n"
+"\n"
+"Allows to contact directly the employee in case of unjustified absence.\n"
+msgstr ""
+"\n"
+"Contrôler la présence des employés\n"
+"==========================\n"
+"\n"
+"En fonction de :\n"
+"     * L'adresse IP\n"
+"     * La session de l'utilisateur\n"
+"     * Les e-mails envoyés\n"
+"\n"
+"Permet de contacter directement l'employé en cas d'absence injustifiée.\n"
+
+#. module: hr_presence
+#: model:ir.module.module,shortdesc:base.module_hr_presence
+msgid "Employee Presence Control"
+msgstr "Contrôle des présences des employés"
+
+#. module: hr_presence
 #: model:mail.template,body_html:hr_presence.mail_template_presence
 msgid ""
 "<div>\n"

@@ -27,6 +27,47 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: mrp_account
+#: model:ir.module.module,description:base.module_mrp_account
+msgid ""
+"\n"
+"Analytic Accounting in MRP\n"
+"==========================\n"
+"\n"
+"* Cost structure report\n"
+"\n"
+"Also, allows to compute the cost of the product based on its BoM, using the "
+"costs of its components and work center operations.\n"
+"It adds a button on the product itself but also an action in the list view "
+"of the products.\n"
+"If the automated inventory valuation is active, the necessary accounting "
+"entries will be created.\n"
+"\n"
+msgstr ""
+"\n"
+"Akuntansi Analitik di MRP\n"
+"==========================\n"
+"\n"
+"* Laporan struktur biaya\n"
+"\n"
+"Juga, memungkinkan perhitungan biaya produk berdasarkan BoM, menggunakan "
+"biaya dari komponent dan operasional pusat kerja.\n"
+"Menambahkan tombol pada produk tersebut tapi juga action pada tampilan "
+"daftar produk.\n"
+"Bila automated inventory valuation aktif, entri akuntansi yang diperlukan "
+"juga akan dibuat.\n"
+"\n"
+
+#. module: mrp_account
+#: model:ir.module.module,shortdesc:base.module_mrp_account
+msgid "Accounting - MRP"
+msgstr "Akuntansi - MRP"
+
+#. module: mrp_account
+#: model:ir.module.module,summary:base.module_mrp_account
+msgid "Analytic accounting in Manufacturing"
+msgstr "Akuntansi analitik di Manufaktu"
+
+#. module: mrp_account
 #. odoo-python
 #: code:addons/mrp_account/models/stock_move.py:0
 msgid "%(value)s for %(quantity)s %(unit)s from %(production)s"

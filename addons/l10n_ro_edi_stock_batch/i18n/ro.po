@@ -22,6 +22,20 @@ msgstr ""
 "X-Generator: Weblate 5.14.3\n"
 
 #. module: l10n_ro_edi_stock_batch
+#: model:ir.module.module,description:base.module_l10n_ro_edi_stock_batch
+msgid ""
+"\n"
+"E-Transport implementation for Batch Pickings in Romania\n"
+msgstr ""
+"\n"
+"Implementare E-Transport pentru transferuri în lot în România\n"
+
+#. module: l10n_ro_edi_stock_batch
+#: model:ir.module.module,shortdesc:base.module_l10n_ro_edi_stock_batch
+msgid "Romania - E-Transport Batch Pickings"
+msgstr "România - E-Transport - Ridicări în lot"
+
+#. module: l10n_ro_edi_stock_batch
 #: model_terms:ir.ui.view,arch_db:l10n_ro_edi_stock_batch.l10n_ro_edi_stock_report_picking_batch
 msgid "3U3H3P4C2U5Y8N20"
 msgstr "3U3H3P4C2U5Y8N20"

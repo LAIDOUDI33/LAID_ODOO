@@ -20,6 +20,27 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_sale_mrp
+#: model:ir.module.module,description:base.module_website_sale_mrp
+msgid ""
+"\n"
+"Manage the inventory of your Kit products and display their availability "
+"status in your eCommerce store.\n"
+msgstr ""
+"\n"
+"Gerencie o inventário dos produtos do seu Kit e exiba o status de "
+"disponibilidade deles na sua loja de e-Commerce.\n"
+
+#. module: website_sale_mrp
+#: model:ir.module.module,shortdesc:base.module_website_sale_mrp
+msgid "Kit Availability"
+msgstr "Disponibilidade do kit"
+
+#. module: website_sale_mrp
+#: model:ir.module.module,summary:base.module_website_sale_mrp
+msgid "Manage Kit product inventory & availability"
+msgstr "Gerenciar o inventário e a disponibilidade dos produtos do Kit"
+
+#. module: website_sale_mrp
 #: model:ir.model.fields,field_description:website_sale_mrp.field_sale_order__display_name
 msgid "Display Name"
 msgstr "Nome de exibição"

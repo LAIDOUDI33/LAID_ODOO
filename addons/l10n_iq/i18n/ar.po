@@ -22,6 +22,30 @@ msgstr ""
 "X-Generator: Weblate 5.16.2\n"
 
 #. module: l10n_iq
+#: model:ir.module.module,description:base.module_l10n_iq
+msgid ""
+"\n"
+"This is the base module to manage the accounting chart for Iraq in Odoo.\n"
+"==============================================================================\n"
+"Iraq accounting basic charts and localization.\n"
+"Activates:\n"
+"- Chart of accounts\n"
+"- Taxes\n"
+msgstr ""
+"\n"
+"هذا هو التطبيق الأساسي لإدارة شجرة الحسابات للعراق في أودو.\n"
+"==============================================================================\n"
+"شجرة الحسابات الأساسية والأقلمة للمحاسبة العراقية.\n"
+"تؤدي إلى تنشيط كل من:\n"
+"- شجرة الحسابات\n"
+"- الضرائب\n"
+
+#. module: l10n_iq
+#: model:ir.module.module,shortdesc:base.module_l10n_iq
+msgid "Iraq - Accounting"
+msgstr "العراق - المحاسبة"
+
+#. module: l10n_iq
 #: model:ir.model,name:l10n_iq.model_account_chart_template
 msgid "Account Chart Template"
 msgstr "قالب شجرة الحسابات"

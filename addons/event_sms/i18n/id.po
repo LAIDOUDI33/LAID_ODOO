@@ -21,6 +21,16 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: event_sms
+#: model:ir.module.module,description:base.module_event_sms
+msgid "Schedule SMS in event management"
+msgstr "Jadwalkan SMS di manajemen acara"
+
+#. module: event_sms
+#: model:ir.module.module,shortdesc:base.module_event_sms
+msgid "SMS on Events"
+msgstr "SMS pada Acara"
+
+#. module: event_sms
 #: model:ir.model.fields,field_description:event_sms.field_event_mail__display_name
 #: model:ir.model.fields,field_description:event_sms.field_event_mail_registration__display_name
 #: model:ir.model.fields,field_description:event_sms.field_event_type_mail__display_name

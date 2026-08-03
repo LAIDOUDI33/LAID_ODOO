@@ -1,0 +1,57 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# * base
+#
+# Translators:
+# Braulio D. López Vázquez <bdl@odoo.com>, 2022
+# marcescu, 2022
+# Michael Epstein, 2022
+# Leonardo J. Caballero G. <leonardocaballero@gmail.com>, 2022
+# Óscar Fonseca <tecnico@extreme-micro.com>, 2022
+# David Ramia, 2023
+# PepeImpulso, 2023
+# Martin Trigaux, 2023
+# Antoine Demany, 2023
+# Pedro M. Baeza <pedro.baeza@tecnativa.com>, 2023
+# "Dylan Kiss (dyki)" <dyki@odoo.com>, 2025.
+# "Tiffany Chang (tic)" <tic@odoo.com>, 2025.
+# "Noemi Pla Garcia (nopl)" <nopl@odoo.com>, 2025, 2026.
+# Grace Conlon <grco@odoo.com>, 2025.
+# "Malaz Siddig Elsayed Abuidris (msea)" <msea@odoo.com>, 2025.
+# Weblate <noreply-mt-weblate@weblate.org>, 2025.
+# Mauricio Istúriz <isturizmauricio@gmail.com>, 2025.
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 16.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-05-12 08:36+0000\n"
+"PO-Revision-Date: 2026-06-20 20:37+0000\n"
+"Last-Translator: Anonymous <noreply@weblate.org>\n"
+"Language-Team: Spanish <https://translate.odoo.com/projects/odoo-master/base/"
+"es/>\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=3; plural=(n == 1) ? 0 : ((n != 0 && n % 1000000 == "
+"0) ? 1 : 2);\n"
+"X-Generator: Weblate 2026.6.1\n"
+
+#. module: test_discuss_full
+#: model:ir.module.module,shortdesc:base.module_test_discuss_full
+msgid "Test Discuss (full)"
+msgstr "Prueba Conversaciones (completo)"
+
+#. module: test_discuss_full
+#: model:ir.module.module,description:base.module_test_discuss_full
+msgid ""
+"Test of Discuss with all possible overrides installed, including feature and "
+"performance tests."
+msgstr ""
+"Prueba de Conversaciones con todas las anulaciones posibles instaladas, "
+"incluyendo pruebas de características y rendimiento."
+
+#. module: test_discuss_full
+#: model:ir.module.module,summary:base.module_test_discuss_full
+msgid "Test of Discuss with all possible overrides installed."
+msgstr "Prueba de Conversaciones con todas las anulaciones posibles instaladas."

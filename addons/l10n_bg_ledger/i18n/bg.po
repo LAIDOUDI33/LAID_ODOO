@@ -20,6 +20,18 @@ msgstr ""
 "X-Generator: Weblate 5.12.2\n"
 
 #. module: l10n_bg_ledger
+#: model:ir.module.module,description:base.module_l10n_bg_ledger
+msgid ""
+"\n"
+"Report ledger for Bulgaria\n"
+msgstr ""
+
+#. module: l10n_bg_ledger
+#: model:ir.module.module,shortdesc:base.module_l10n_bg_ledger
+msgid "Bulgaria - Report ledger"
+msgstr ""
+
+#. module: l10n_bg_ledger
 #: model:ir.model.fields.selection,name:l10n_bg_ledger.selection__account_move__l10n_bg_exemption_reason__01
 msgid "01 - A delivery under Part 1 of Appendix 2 of LVAT"
 msgstr ""

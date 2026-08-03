@@ -26,6 +26,34 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: sale_mrp
+#: model:ir.module.module,description:base.module_sale_mrp
+msgid ""
+"\n"
+"This module provides facility to the user to install mrp and sales modulesat "
+"a time.\n"
+"====================================================================================\n"
+"\n"
+"It is basically used when we want to keep track of production orders "
+"generated\n"
+"from sales order. It adds sales name and sales Reference on production "
+"order.\n"
+msgstr ""
+"\n"
+"Module d'installation des modules mrp et sales modulesat en même temps.\n"
+"================================================== "
+"==================================\n"
+"\n"
+"Il est essentiellement utilisé lorsque l'on veut garder la trace des ordres "
+"de fabrication générés \n"
+"par des commandes. Il ajoute le nom et la référence des ventes sur l'ordre "
+"de fabrication.\n"
+
+#. module: sale_mrp
+#: model:ir.module.module,shortdesc:base.module_sale_mrp
+msgid "Sales and MRP Management"
+msgstr "Gestion de Ventes et MRP"
+
+#. module: sale_mrp
 #: model_terms:ir.ui.view,arch_db:sale_mrp.sale_order_portal_content_inherit_sale_mrp
 msgid "<i class=\"oi oi-fw\" data-icon=\"check\"/> <b>Manufactured</b>"
 msgstr "<i class=\"oi oi-fw\" data-icon=\"check\"/><b>Fabriqué</b>"

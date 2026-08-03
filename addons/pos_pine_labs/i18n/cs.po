@@ -20,6 +20,47 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: pos_pine_labs
+#: model:ir.module.module,description:base.module_pos_pine_labs
+msgid ""
+"\n"
+"Allow Pine Labs POS payments\n"
+"==============================\n"
+"\n"
+"This module is available only for companies that use INR currency.\n"
+"It enables customers to pay for their orders using debit/credit cards and "
+"UPI through Pine Labs POS terminals.\n"
+"A Pine Labs merchant account is required to process transactions.\n"
+"Features include:\n"
+"\n"
+"* Quick payments by swiping, scanning, or tapping your credit/debit card or "
+"UPI QR code at the payment terminal.\n"
+"* Supported cards: Visa, MasterCard, RuPay.\n"
+msgstr ""
+"\n"
+"Povolit platby Pine Labs POS\n"
+"==============================\n"
+"\n"
+"Tento modul je k dispozici pouze pro společnosti, které používají měnu INR.\n"
+"Umožňuje zákazníkům platit za své objednávky pomocí debetních/kreditních "
+"karet a UPI prostřednictvím terminálů Pine Labs POS.\n"
+"K zpracování transakcí je vyžadován obchodní účet Pine Labs.\n"
+"Funkce zahrnují:\n"
+"\n"
+"* Rychlé platby přejetím, naskenováním nebo přiložením kreditní/debetní "
+"karty nebo QR kódu UPI k platebnímu terminálu.\n"
+"* Podporované karty: Visa, MasterCard, RuPay.\n"
+
+#. module: pos_pine_labs
+#: model:ir.module.module,summary:base.module_pos_pine_labs
+msgid "Integrate your POS with Pine Labs payment terminals"
+msgstr "Integrujte svůj POS s platebním terminálem Pine Labs"
+
+#. module: pos_pine_labs
+#: model:ir.module.module,shortdesc:base.module_pos_pine_labs
+msgid "POS Pine Labs"
+msgstr "POS Pine Labs"
+
+#. module: pos_pine_labs
 #: model:ir.model.fields,help:pos_pine_labs.field_pos_payment_method__pine_labs_client
 msgid "A client id issued directly to the merchant by Pine Labs."
 msgstr ""

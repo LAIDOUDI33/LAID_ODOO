@@ -21,6 +21,25 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: project_mail_plugin
+#: model:ir.module.module,summary:base.module_project_mail_plugin
+msgid "Integrate your inbox with projects"
+msgstr "Tích hợp hộp thư đến của bạn với các dự án"
+
+#. module: project_mail_plugin
+#: model:ir.module.module,shortdesc:base.module_project_mail_plugin
+msgid "Project Mail Plugin"
+msgstr "Plugin thư Dự án"
+
+#. module: project_mail_plugin
+#: model:ir.module.module,description:base.module_project_mail_plugin
+msgid ""
+"Turn emails received in your mailbox into tasks and log their content as "
+"internal notes."
+msgstr ""
+"Biến các email nhận được trong hộp thư của bạn thành các nhiệm vụ và ghi nội "
+"dung của chúng dưới dạng ghi chú nội bộ."
+
+#. module: project_mail_plugin
 #. odoo-javascript
 #: code:addons/project_mail_plugin/static/src/to_translate/translations_gmail.xml:0
 #: code:addons/project_mail_plugin/static/src/to_translate/translations_outlook.xml:0

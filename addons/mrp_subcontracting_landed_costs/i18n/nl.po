@@ -20,6 +20,31 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: mrp_subcontracting_landed_costs
+#: model:ir.module.module,description:base.module_mrp_subcontracting_landed_costs
+msgid ""
+"\n"
+"This module allows users to more easily identify subcontracting orders when "
+"applying landed costs,\n"
+"by also displaying the associated picking reference in the search view.\n"
+msgstr ""
+"\n"
+"Met deze module kunnen gebruikers uitbestedingsorders gemakkelijker "
+"identificeren bij het toepassen van logistieke kosten,\n"
+"door ook de bijbehorende pickreferentie weer te geven in de zoekweergave.\n"
+
+#. module: mrp_subcontracting_landed_costs
+#: model:ir.module.module,summary:base.module_mrp_subcontracting_landed_costs
+msgid "Advanced views to manage landed cost for subcontracting orders"
+msgstr ""
+"Geavanceerde weergaven om logistieke kosten voor uitbestedingsorders te "
+"beheren"
+
+#. module: mrp_subcontracting_landed_costs
+#: model:ir.module.module,shortdesc:base.module_mrp_subcontracting_landed_costs
+msgid "Landed Costs With Subcontracting order"
+msgstr "Logistieke kosten met uitbestedingsorder"
+
+#. module: mrp_subcontracting_landed_costs
 #: model:ir.model.fields,field_description:mrp_subcontracting_landed_costs.field_stock_landed_cost__display_name
 msgid "Display Name"
 msgstr "Weergavenaam"

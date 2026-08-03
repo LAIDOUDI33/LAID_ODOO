@@ -26,6 +26,27 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: website_customer
+#: model:ir.module.module,description:base.module_website_customer
+msgid ""
+"\n"
+"Publish your customers as business references on your website to attract new "
+"potential prospects.\n"
+msgstr ""
+"\n"
+"새로운 잠재 고객을 유치하기 위해 웹사이트에 비즈니스 참고 자료로 고객사를 "
+"게시합니다.\n"
+
+#. module: website_customer
+#: model:ir.module.module,shortdesc:base.module_website_customer
+msgid "Customer References"
+msgstr "고객 참조"
+
+#. module: website_customer
+#: model:ir.module.module,summary:base.module_website_customer
+msgid "Publish your customer references"
+msgstr "고객 참조 게시"
+
+#. module: website_customer
 #: model_terms:ir.ui.view,arch_db:website_customer.details
 msgid "<i class=\"oi me-2\" data-icon=\"chevron_backward\"/>Back to references"
 msgstr ""

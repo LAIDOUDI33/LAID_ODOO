@@ -20,6 +20,16 @@ msgstr ""
 "X-Generator: Weblate 2026.6.1\n"
 
 #. module: project_mrp_stock_landed_costs
+#: model:ir.module.module,shortdesc:base.module_project_mrp_stock_landed_costs
+msgid "Project MRP Landed Costs"
+msgstr "Hankkeen MRP:n mukaiset kustannukset"
+
+#. module: project_mrp_stock_landed_costs
+#: model:ir.module.module,summary:base.module_project_mrp_stock_landed_costs
+msgid "Technical Bridge"
+msgstr "Tekninen yhteys"
+
+#. module: project_mrp_stock_landed_costs
 #: model:ir.model.fields,field_description:project_mrp_stock_landed_costs.field_stock_valuation_adjustment_lines__display_name
 msgid "Display Name"
 msgstr "Näyttönimi"
