@@ -479,7 +479,7 @@
             "title": { "text": "#Orders", "bold": true, "color": "#434343" },
             "type": "scorecard",
             "background": "#EFF6FF",
-            "keyValue": "Data!B2",
+            "keyValue": "=Data!B2",
             "humanize": false,
             "chartId": "49b3e330-3a31-4d43-9930-c42f2805c0c3"
           },
@@ -499,7 +499,7 @@
             "title": { "text": "Total revenue", "bold": true, "color": "#434343" },
             "type": "scorecard",
             "background": "#FFF7ED",
-            "keyValue": "Data!B3",
+            "keyValue": "=Data!B3",
             "humanize": false,
             "chartId": "d96a0fa5-e91b-455c-8004-9f39eeb09ee2"
           },
@@ -519,7 +519,7 @@
             "title": { "text": "Untaxed revenue", "bold": true, "color": "#434343" },
             "type": "scorecard",
             "background": "#FFF7ED",
-            "keyValue": "Data!B4",
+            "keyValue": "=Data!B4",
             "humanize": false,
             "chartId": "6b97f89c-8416-43db-a32e-d0ab5cf9051e"
           },
@@ -539,7 +539,7 @@
             "title": { "text": "Untaxed revenue per order", "bold": true, "color": "#434343" },
             "type": "scorecard",
             "background": "#FFF7ED",
-            "keyValue": "Data!B5",
+            "keyValue": "=Data!B5",
             "humanize": false,
             "chartId": "cd102569-7656-4986-bf87-6e87b3ea493a"
           },
@@ -559,7 +559,7 @@
             "title": { "text": "Untaxed revenue per guest", "bold": true, "color": "#434343" },
             "type": "scorecard",
             "background": "#FFF7ED",
-            "keyValue": "Data!B7",
+            "keyValue": "=Data!B7",
             "humanize": false,
             "chartId": "7b541ea8-8f93-44f4-9626-67073e540f16"
           },
@@ -579,7 +579,7 @@
             "title": { "text": "Discount Rate", "bold": true, "color": "#434343" },
             "type": "scorecard",
             "background": "#FEF2F2",
-            "keyValue": "Data!B9",
+            "keyValue": "=Data!B9",
             "humanize": false,
             "chartId": "150978db-0307-4a65-a70a-e3a634dcfd48"
           },
@@ -599,7 +599,7 @@
             "title": { "text": "Avg revenue per order", "bold": true, "color": "#434343" },
             "type": "scorecard",
             "background": "#FFF7ED",
-            "keyValue": "Data!B6",
+            "keyValue": "=Data!B6",
             "humanize": false,
             "chartId": "77f395fa-f25d-4ba8-a99d-405a99ebeef7"
           },
@@ -619,7 +619,7 @@
             "title": { "text": "Total guests", "bold": true, "color": "#434343" },
             "type": "scorecard",
             "background": "#FFF7ED",
-            "keyValue": "Data!B10",
+            "keyValue": "=Data!B10",
             "humanize": false,
             "chartId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
           },
@@ -639,7 +639,7 @@
             "title": { "text": "Avg revenue per guest", "bold": true, "color": "#434343" },
             "type": "scorecard",
             "background": "#FFF7ED",
-            "keyValue": "Data!B8",
+            "keyValue": "=Data!B8",
             "humanize": false,
             "chartId": "87cda1aa-ba42-4865-8f56-912dd9e323a7"
           },

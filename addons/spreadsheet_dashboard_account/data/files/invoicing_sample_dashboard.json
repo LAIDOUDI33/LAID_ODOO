@@ -355,9 +355,9 @@
             "title": { "text": "Invoiced", "color": "#434343", "bold": true },
             "type": "scorecard",
             "background": "#EFF6FF",
-            "baseline": "Data!C11",
+            "baseline": "=Data!C11",
             "baselineDescr": { "text": "unpaid" },
-            "keyValue": "Data!C1",
+            "keyValue": "=Data!C1",
             "humanize": false,
             "chartId": "1aeea7b2-900b-4067-b8ad-3e4772c54028"
           },
@@ -377,9 +377,9 @@
             "title": { "text": "Average Invoice", "color": "#434343", "bold": true },
             "type": "scorecard",
             "background": "#EFF6FF",
-            "baseline": "Data!C3",
+            "baseline": "=Data!C3",
             "baselineDescr": { "text": "Invoices" },
-            "keyValue": "Data!C2",
+            "keyValue": "=Data!C2",
             "humanize": false,
             "chartId": "bdfb27d0-5902-4a2a-9b7e-514a6625578c"
           },
@@ -400,7 +400,7 @@
             "type": "scorecard",
             "background": "#FEF2F2",
             "baselineDescr": { "text": "in current year" },
-            "keyValue": "Data!C10",
+            "keyValue": "=Data!C10",
             "humanize": false,
             "chartId": "b1673523-d139-47fb-b5ea-9e4f969aacb6"
           },

@@ -581,11 +581,11 @@
                         },
                         "type": "scorecard",
                         "background": "#FEF2F2",
-                        "baseline": "Data!E6",
+                        "baseline": "=Data!E6",
                         "baselineDescr": {
                             "text": "last period"
                         },
-                        "keyValue": "Data!D6",
+                        "keyValue": "=Data!D6",
                         "humanize": false,
                         "chartId": "14907ee1-177b-4dda-97d7-223b1b00abe5"
                     },
@@ -612,11 +612,11 @@
                         },
                         "type": "scorecard",
                         "background": "#ECFDF5",
-                        "baseline": "Data!E9",
+                        "baseline": "=Data!E9",
                         "baselineDescr": {
                             "text": "last period"
                         },
-                        "keyValue": "Data!D9",
+                        "keyValue": "=Data!D9",
                         "humanize": false,
                         "chartId": "0b033641-2a0f-4db7-893d-f14fbb320b94"
                     },
@@ -725,11 +725,11 @@
                         },
                         "type": "scorecard",
                         "background": "#FEF2F2",
-                        "baseline": "Data!E7",
+                        "baseline": "=Data!E7",
                         "baselineDescr": {
                             "text": "last period"
                         },
-                        "keyValue": "Data!D7",
+                        "keyValue": "=Data!D7",
                         "humanize": false,
                         "chartId": "741013eb-c06f"
                     }
@@ -756,11 +756,11 @@
                         },
                         "type": "scorecard",
                         "background": "#FEF2F2",
-                        "baseline": "Data!E8",
+                        "baseline": "=Data!E8",
                         "baselineDescr": {
                             "text": "expected"
                         },
-                        "keyValue": "Data!D8",
+                        "keyValue": "=Data!D8",
                         "humanize": false,
                         "chartId": "cd0cf706-f8bd"
                     }

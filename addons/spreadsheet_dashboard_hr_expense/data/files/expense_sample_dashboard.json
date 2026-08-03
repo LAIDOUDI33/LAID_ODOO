@@ -266,7 +266,7 @@
             "title": { "text": "Expenses", "bold": true, "color": "#434343" },
             "type": "scorecard",
             "background": "#EFF6FF",
-            "keyValue": "Data!C1",
+            "keyValue": "=Data!C1",
             "humanize": false,
             "chartId": "34d7af0c-d66d-46f5-9b4f-91a8f26be506"
           },
@@ -286,7 +286,7 @@
             "title": { "text": "To report", "bold": true, "color": "#434343" },
             "type": "scorecard",
             "background": "#FFF7ED",
-            "keyValue": "Data!C2",
+            "keyValue": "=Data!C2",
             "humanize": false,
             "chartId": "64e233df-0643-4205-86c8-d051c45326a4"
           },
@@ -306,7 +306,7 @@
             "title": { "text": "To validate", "bold": true, "color": "#434343" },
             "type": "scorecard",
             "background": "#FFF7ED",
-            "keyValue": "Data!C3",
+            "keyValue": "=Data!C3",
             "humanize": false,
             "chartId": "62c97109-f819-42a7-929d-e76a1204be62"
           },
@@ -326,7 +326,7 @@
             "title": { "text": "To reimburse", "bold": true, "color": "#434343" },
             "type": "scorecard",
             "background": "#FFF7ED",
-            "keyValue": "Data!C4",
+            "keyValue": "=Data!C4",
             "humanize": false,
             "chartId": "a84056d3-f845-4555-9bd9-3281b8b1c872"
           },
