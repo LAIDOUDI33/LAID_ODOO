@@ -124,6 +124,7 @@ export const listRendererProps = {
 export class ListRenderer extends Component {
     static template = "web.ListRenderer";
     static rowsTemplate = "web.ListRenderer.Rows";
+    static createRowTemplate = "web.ListRenderer.CreateRow";
     static recordRowTemplate = "web.ListRenderer.RecordRow";
     static groupRowTemplate = "web.ListRenderer.GroupRow";
     static components = {

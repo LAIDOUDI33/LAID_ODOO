@@ -10616,6 +10616,29 @@ test(`navigation: not moving down with keydown`, async () => {
     expect(`.o_data_row:eq(0)`).toHaveClass("o_selected_row");
 });
 
+test(`o2m list editable="top" displays "Add a line" button at the top`, async () => {
+    Foo._records[0].o2m = [1, 2];
+
+    await mountView({
+        resModel: "foo",
+        type: "form",
+        arch: `
+            <form>
+                <field name="o2m">
+                    <list editable="top">
+                        <field name="name"/>
+                    </list>
+                </field>
+            </form>
+        `,
+        resId: 1,
+    });
+
+    expect(".o_field_x2many_list tbody tr:eq(0) td").toHaveText("Add a line");
+    expect(".o_field_x2many_list tbody tr:eq(1) td:first").toHaveClass("o_data_cell");
+    expect(".o_field_x2many_list tbody tr:eq(2) td:first").toHaveClass("o_data_cell");
+});
+
 test.tags("desktop");
 test(`no crash when keydown on x2many "Add a line" cell while record is in edit mode`, async () => {
     Foo._records[0].o2m = [];
