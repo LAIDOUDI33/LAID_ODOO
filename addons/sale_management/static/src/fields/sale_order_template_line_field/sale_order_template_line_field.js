@@ -7,6 +7,7 @@ import {
 import { makeContext } from '@web/core/context';
 import { x2ManyCommands } from '@web/core/orm_plugin';
 import { registry } from '@web/core/registry';
+import { useSubEnv } from '@web/owl2/utils';
 
 export class SaleOrderTemplateLineListRenderer extends SectionAndNoteListRenderer {
     static recordRowTemplate = 'sale_management.ListRenderer.RecordRow';
@@ -14,6 +15,9 @@ export class SaleOrderTemplateLineListRenderer extends SectionAndNoteListRendere
     setup() {
         super.setup();
         this.copyFields.push('is_optional');
+        useSubEnv({
+            shouldCollapse: this.shouldCollapse.bind(this),
+        });
     }
 
     /**
@@ -91,7 +95,7 @@ export class SaleOrderTemplateLineListRenderer extends SectionAndNoteListRendere
 
     getRowClass(record) {
         let rowClasses = super.getRowClass(record);
-        if (this.shouldCollapse(record, 'is_optional')) {
+        if (this.shouldCollapse(record, 'is_optional', true)) {
             rowClasses += ' text-primary';
         }
         return rowClasses;

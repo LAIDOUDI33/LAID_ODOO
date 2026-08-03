@@ -87,11 +87,11 @@ export const saleProductMixin = () => ({
             {
                 product_template_id: saleOrderLine.product_template_id.id,
                 quantity: saleOrderLine.product_uom_qty,
-                currency_id: saleOrderLine.currency_id.id,
-                so_date: serializeDateTime(saleOrder.date_order),
+                currency_id: saleOrderLine.currency_id?.id,
+                so_date: this._getSoDate(),
                 product_uom_id: saleOrderLine.product_uom_id.id,
-                company_id: saleOrder.company_id.id,
-                pricelist_id: saleOrder.pricelist_id.id,
+                company_id: saleOrder.company_id?.id,
+                pricelist_id: saleOrder.pricelist_id?.id,
                 ptav_ids: ptavIds,
                 only_main_product: edit,
                 ...this._getAdditionalRpcParams(),
@@ -121,11 +121,11 @@ export const saleProductMixin = () => ({
             this._openProductConfigurator({ data: data });
         } else {
             // only triggered when sale_product_matrix is installed.
-            this._openGridConfigurator();
+            this._openGridConfigurator(false, data);
         }
     },
 
-    _openGridConfigurator(edit = false) {}, // sale_product_matrix
+    _openGridConfigurator(edit = false, data) {}, // sale_product_matrix
 
     async _onProductUpdate() {}, // event_booth_sale, event_sale, sale_renting
 
@@ -154,10 +154,10 @@ export const saleProductMixin = () => ({
             products: products,
             optionalProducts: optional_products,
             customPtavs: customPtavs,
-            companyId: saleOrder.company_id.id,
-            pricelistId: saleOrder.pricelist_id.id,
-            currencyId: saleOrderLine.currency_id.id,
-            soDate: serializeDateTime(saleOrder.date_order),
+            companyId: saleOrder.company_id?.id,
+            pricelistId: saleOrder.pricelist_id?.id,
+            currencyId: saleOrderLine.currency_id?.id,
+            soDate: this._getSoDate(),
             selectedComboItems: selectedComboItems,
             edit: edit,
             save: async (mainProduct, optionalProducts) => {
@@ -167,12 +167,13 @@ export const saleProductMixin = () => ({
                     ? [applyProduct(this.props.record, mainProduct)]
                     : [];
 
+                const orderLines = this._getOrderLines();
                 for (const [i, product] of optionalProducts.entries()) {
                     const index =
-                    saleOrder.order_line.records.indexOf(this.props.record)
+                        orderLines.records.indexOf(this.props.record)
                         + selectedComboItems.length
                         + i;
-                    const line = await saleOrder.order_line.addNewRecordAtIndex(index, {
+                    const line = await orderLines.addNewRecordAtIndex(index, {
                         mode: 'readonly',
                     });
                     const productData = this._prepareNewLineData(line, product);
@@ -186,7 +187,7 @@ export const saleProductMixin = () => ({
                 if (!selectedComboItems.length) {
                     // Don't delete the main product if it's a combo product as it has been added
                     // from combo configurator
-                    saleOrder.order_line.delete(this.props.record);
+                    this._getOrderLines().delete(this.props.record);
                 }
             },
             ...this._getAdditionalDialogProps(),
@@ -287,6 +288,20 @@ export const saleProductMixin = () => ({
      */
     _getAdditionalDialogProps() {
         return {};
+    },
+
+    /**
+     * Hook to return the order lines list for the current record.
+     */
+    _getOrderLines() {
+        return this.props.record.model.root.data.order_line;
+    },
+
+    /**
+     * Hook to return the SO date for the configurator dialog.
+     */
+    _getSoDate() {
+        return serializeDateTime(this.props.record.model.root.data.date_order);
     },
 
     /**
