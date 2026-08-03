@@ -716,7 +716,12 @@ export class Form extends Interaction {
                     popover.show();
                 }
                 if (!firstInvalidInput) {
-                    firstInvalidInput = invalidInputs[0] || controlEls[0];
+                    firstInvalidInput =
+                        [...invalidInputs, ...controlEls].find(
+                            (el) => el.getClientRects().length
+                        ) ||
+                        invalidInputs[0] ||
+                        controlEls[0];
                 }
                 formValid = false;
             }

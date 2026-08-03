@@ -36,6 +36,7 @@ import {
     rerenderField,
     getFormCacheKey,
     getDescriptionPosition,
+    many2manyDefaultSelection,
 } from "./utils";
 import { SyncCache } from "@html_builder/utils/sync_cache";
 import { _t } from "@web/core/l10n/translation";
@@ -626,6 +627,7 @@ export class FormOptionPlugin extends Plugin {
         if (activeField.type !== field.type) {
             field.value = "";
         }
+        many2manyDefaultSelection(field);
         const targetEl = oldFieldEl.querySelector(".s_website_form_input");
         if (targetEl) {
             if (["checkbox", "radio"].includes(targetEl.getAttribute("type"))) {
@@ -839,7 +841,10 @@ export class FormOptionPlugin extends Plugin {
             const type = getFieldType(fieldEl);
 
             const [optionText, checkType] = selectEl
-                ? [_t("Option List"), "exclusive_boolean"]
+                ? [
+                      _t("Option List"),
+                      type === "many2many_selection" ? "boolean" : "exclusive_boolean",
+                  ]
                 : type === "selection"
                 ? [_t("Radio Button List"), "exclusive_boolean"]
                 : [_t("Checkbox List"), "boolean"];
@@ -856,7 +861,9 @@ export class FormOptionPlugin extends Plugin {
                 addItemTitle: _t("Add New Option"),
                 checkType,
                 defaultItemName: _t("Item"),
-                hasDefault: ["one2many", "many2many"].includes(type) ? "multiple" : "unique",
+                hasDefault: ["one2many", "many2many", "many2many_selection"].includes(type)
+                    ? "multiple"
+                    : "unique",
                 defaults: JSON.stringify(defaults),
                 availableRecords: availableRecords,
                 newRecordId: isFieldCustom(fieldEl) ? getNewRecordId(fieldEl) : "",
