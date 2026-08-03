@@ -1,7 +1,8 @@
+import { AncestorsPlugin } from "@mail/core/common/ancestors_plugin";
 import { Gif } from "@mail/core/common/gif";
 import { MessageSearchState } from "@mail/core/common/message_search_hook";
 
-import { Component, signal, t, useProps } from "@odoo/owl";
+import { Component, signal, t, usePlugin, useProps } from "@odoo/owl";
 import { isMobileOS } from "@web/core/browser/feature_detection";
 
 import { ConfirmationDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
@@ -45,6 +46,7 @@ export class AttachmentList extends Component {
 
     setup() {
         super.setup();
+        this.ancestor = usePlugin(AncestorsPlugin);
         this.store = useService("mail.store");
         this.props = useProps({
             attachments: t.array(t.instanceOf(this.store["ir.attachment"])),

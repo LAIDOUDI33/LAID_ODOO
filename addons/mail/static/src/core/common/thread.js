@@ -1,4 +1,5 @@
 import { useChildSubEnv, useLayoutEffect } from "@web/owl2/utils";
+import { AncestorsPlugin } from "@mail/core/common/ancestors_plugin";
 import { DateSection } from "@mail/core/common/date_section";
 import { Message } from "@mail/core/common/message";
 import { NotificationMessage } from "./notification_message";
@@ -22,6 +23,7 @@ import {
     signal,
     t,
     untrack,
+    usePlugin,
     useProps,
 } from "@odoo/owl";
 import { browser } from "@web/core/browser/browser";
@@ -55,6 +57,7 @@ export class Thread extends Component {
 
     setup() {
         super.setup();
+        this.ancestor = usePlugin(AncestorsPlugin);
         this.escape = escape;
         this.applyScroll = this.applyScroll.bind(this);
         this.saveScroll = this.saveScroll.bind(this);
@@ -201,7 +204,7 @@ export class Thread extends Component {
             () => [this.state.mountedAndLoaded]
         );
         onMounted(() => {
-            if (!this.env.inChatter) {
+            if (!this.ancestor.inChatter) {
                 this.fetchInitialMessages();
             }
         });
@@ -253,7 +256,7 @@ export class Thread extends Component {
             () => [this.props.thread],
             (thread) => {
                 this.lastJumpPresent = this.props.jumpPresent;
-                if (!this.env.inChatter) {
+                if (!this.ancestor.inChatter) {
                     thread.fetchNewMessages();
                 }
             },
@@ -284,11 +287,11 @@ export class Thread extends Component {
         const pt = parseInt(computedStyle.getPropertyValue("padding-top"));
         const pb = parseInt(computedStyle.getPropertyValue("padding-bottom"));
         this.jumpPresentRef().style.transform = `translate(${
-            this.env.inChatter ? 22 : width - ps - pe - 22
+            this.ancestor.inChatter ? 22 : width - ps - pe - 22
         }px, ${
-            this.env.inChatter && !this.env.inChatter.aside
+            this.ancestor.inChatter && !this.ancestor.inChatter.aside
                 ? -22
-                : height - pt - pb - (this.env.inChatter?.aside ? 75 : 0)
+                : height - pt - pb - (this.ancestor.inChatter?.aside ? 75 : 0)
         }px)`;
     }
 
@@ -635,7 +638,7 @@ export class Thread extends Component {
     }
 
     isSquashed(msg, prevMsg) {
-        if (!prevMsg || prevMsg.message_type === "notification" || this.env.inChatter) {
+        if (!prevMsg || prevMsg.message_type === "notification" || this.ancestor.inChatter) {
             return false;
         }
 

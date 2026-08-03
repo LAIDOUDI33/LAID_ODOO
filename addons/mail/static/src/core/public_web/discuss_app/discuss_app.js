@@ -6,6 +6,7 @@ import {
     computed,
     onMounted,
     onWillUnmount,
+    providePlugins,
     signal,
     t,
     useListener,
@@ -17,6 +18,7 @@ import { DiscussContent } from "@mail/core/public_web/discuss_content";
 import { MessagingMenu } from "@mail/core/public_web/messaging_menu/messaging_menu";
 import { ResizablePanel } from "@web/core/resizable_panel/resizable_panel";
 import { useService } from "@web/core/utils/hooks";
+import { AncestorsPlugin } from "@mail/core/common/ancestors_plugin";
 
 export class Discuss extends Component {
     static components = {
@@ -40,6 +42,7 @@ export class Discuss extends Component {
         this.orm = useService("orm");
         this.effect = useService("effect");
         this.ui = useService("ui");
+        providePlugins([AncestorsPlugin]);
         useSubEnv({
             inDiscussApp: true,
             messageHighlight: this.messageHighlight,

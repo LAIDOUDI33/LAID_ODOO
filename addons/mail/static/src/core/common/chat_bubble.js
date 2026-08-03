@@ -2,7 +2,7 @@ import { useSubEnv } from "@web/owl2/utils";
 import { DiscussAvatar } from "@mail/core/common/discuss_avatar";
 import { MessageSeenIndicator } from "@mail/discuss/core/common/message_seen_indicator";
 
-import { Component, computed, signal, types, useEffect, useProps } from "@odoo/owl";
+import { Component, computed, providePlugins, signal, types, useEffect, useProps } from "@odoo/owl";
 
 import { useService } from "@web/core/utils/hooks";
 import { useHover } from "@mail/utils/common/hooks";
@@ -10,6 +10,7 @@ import { usePopover } from "@web/core/popover/popover_hook";
 import { CountryFlag } from "@mail/core/common/country_flag";
 import { isMobileOS } from "@web/core/browser/feature_detection";
 import { _t } from "@web/core/l10n/translation";
+import { AncestorsPlugin } from "./ancestors_plugin";
 
 class ChatBubblePreview extends Component {
     static components = { MessageSeenIndicator };
@@ -74,6 +75,7 @@ export class ChatBubble extends Component {
         this.bouncing = signal(false);
         const isImportant = computed(() => Boolean(this.channel?.importantCounter));
         useEffect(() => this.bouncing.set(isImportant));
+        providePlugins([AncestorsPlugin]);
         useSubEnv({ inChatBubble: true });
     }
 

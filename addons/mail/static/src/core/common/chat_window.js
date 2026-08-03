@@ -28,6 +28,7 @@ import { useBackButton, useService } from "@web/core/utils/hooks";
 import { Typing } from "@mail/discuss/typing/common/typing";
 import { getActiveHotkey } from "@web/core/hotkeys/hotkey_service";
 import { isMobileOS } from "@web/core/browser/feature_detection";
+import { AncestorsPlugin } from "./ancestors_plugin";
 
 export class ChatWindow extends Component {
     static components = {
@@ -56,7 +57,7 @@ export class ChatWindow extends Component {
         });
         useSubEnv({ inChatWindow: true });
         this.messageHighlight = useMessageScrolling({ thread: () => this.channel?.thread });
-        providePlugins([RenameThreadPlugin]);
+        providePlugins([RenameThreadPlugin, AncestorsPlugin]);
         this.editingName = usePlugin(RenameThreadPlugin).editingName;
         this.state = proxy({
             actionsMenuOpened: false,
