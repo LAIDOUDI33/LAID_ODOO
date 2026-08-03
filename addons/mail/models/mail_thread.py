@@ -641,6 +641,8 @@ class MailThread(models.AbstractModel):
             bodies = self.env.cr.precommit.data.get(f'mail.tracking.message.{self._name}', {})
             authors = self.env.cr.precommit.data.get(f'mail.tracking.author.{self._name}', {})
 
+        bodies_by_author = defaultdict(dict)
+        tracking_values_by_author = defaultdict(dict)
         for record in self:
             changes, tracking_values = trackings.get(record.id, (None, None))
             if not changes:
@@ -664,11 +666,16 @@ class MailThread(models.AbstractModel):
                     tracking_values=tracking_values,
                 )
             elif tracking_values:
-                record._message_log(
-                    body=body,
+                bodies_by_author[author_id][record.id] = body
+                tracking_values_by_author[author_id][record.id] = tracking_values
+
+        for author_id, record_bodies in bodies_by_author.items():
+            for record_ids_chunk in split_every(100, record_bodies.keys()):
+                self.browse(record_ids_chunk)._message_log_batch(
+                    bodies=record_bodies,
                     author_id=author_id,
                     message_type="tracking",
-                    tracking_values=tracking_values,
+                    tracking_values=tracking_values_by_author[author_id],
                 )
 
     def _track_log_get_default_body(self, track_init_values: ValuesType) -> str | Markup:
