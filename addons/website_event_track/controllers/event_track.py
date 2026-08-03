@@ -396,7 +396,8 @@ class EventTrackController(http.Controller):
             'website_visitor_timezone': request.env['website.visitor']._get_visitor_timezone(),
         }
 
-    @http.route("/event/track/toggle_reminder", type="jsonrpc", auth="public", website=True)
+    @http.route("/event/track/toggle_reminder", type="jsonrpc", auth="public", website=True,
+                ai_allowed_route=True)
     def track_reminder_toggle(self, track_id, set_reminder_on):
         """ Set a reminder a track for current visitor. Track visitor is created or updated
         if it already exists. Exception made if un-favoriting and no track_visitor
@@ -527,8 +528,16 @@ class EventTrackController(http.Controller):
         return json.dumps({'success': True})
 
     # ACL : This route is necessary since rpc search_read method in js is not accessible to all users (e.g. public user).
-    @http.route(['''/event/track_tag/search_read'''], type='jsonrpc', auth="public", website=True)
+    @http.route(['''/event/track_tag/search_read'''], type='jsonrpc', auth="public", website=True,
+                ai_allowed_route=True)
     def website_event_track_fetch_tags(self, domain, fields):
+        """Read the tags used to filter an event's talks.
+
+        :param list domain: search domain restricting which `event.track.tag` to return.
+        :param list fields: names of the fields to read on each matching tag.
+        :return: one dict per tag, holding its `id` and the requested fields.
+        :rtype: list[dict]
+        """
         return request.env['event.track.tag'].search_read(domain, fields)
 
     # ------------------------------------------------------------
