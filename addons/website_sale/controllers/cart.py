@@ -477,7 +477,7 @@ class Cart(PaymentPortal):
             "lines": [
                 {
                     "id": line.id,
-                    "image_url": order.website_id.image_url(line.product_id, "image_128"),
+                    "image_url": order.website_id.image_url(line.product_id, "image_256"),
                     "quantity": added_qty_per_line[line.id],
                     "name": line._get_line_header(),
                     "combination_name": line._get_combination_name(),
@@ -538,9 +538,9 @@ class Cart(PaymentPortal):
             # inaccessible to the current user.
             if (
                 not combo_item.product_id.sudo(False).has_access("read")
-                and combo_item.product_id.image_128
+                and combo_item.product_id.image_256
             ):
-                infos["image_url"] = image_data_uri(combo_item.product_id.image_128)
+                infos["image_url"] = image_data_uri(combo_item.product_id.image_256)
 
         if line.product_id._has_multiple_uoms():
             infos["uom_name"] = line.product_uom_id.name

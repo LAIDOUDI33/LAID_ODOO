@@ -28,7 +28,7 @@
                                 <img
                                     t-if="category.image_1920"
                                     t-att-src="image_data_uri(category.image_1920)"
-                                    class="img-fluid rounded shadow"
+                                    class="img-fluid shadow o_wsale_product_thumb"
                                     alt=""
                                 />
                                 <br/>
