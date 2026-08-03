@@ -488,7 +488,14 @@ class Cart(PaymentPortal):
             "lines": [
                 {
                     "id": line.id,
-                    "image_url": order.website_id.image_url(line.product_id, "image_128"),
+                    "image_url": image_data_uri(line.product_id.image_128) if (
+                        line.is_donation and
+                        not line.product_id.sudo(False).has_access("read") and
+                        line.product_id.image_128
+                    ) else order.website_id.image_url(line.product_id, "image_128"),
+                    # Public users don't have access to the donation product image, because it is
+                    # unpublished. The raw image data is passed instead since it doesn't require
+                    # access.
                     "quantity": added_qty_per_line[line.id],
                     "name": line._get_line_header(),
                     "combination_name": line._get_combination_name(),
