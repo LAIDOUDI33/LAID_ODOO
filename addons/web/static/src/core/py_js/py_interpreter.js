@@ -1,4 +1,4 @@
-import { BUILTINS, EvaluationError, execOnIterable } from "./py_builtin";
+import { BUILTINS, execOnIterable } from "./py_builtin";
 import {
     NotSupportedError,
     PyDate,
@@ -42,7 +42,7 @@ function applyUnaryOp(ast, context) {
         case "not":
             return !isTrue(value);
     }
-    throw new EvaluationError(`Unknown unary operator: ${ast.op}`);
+    throw new Error(`Unknown unary operator: ${ast.op}`);
 }
 
 /**
@@ -63,7 +63,7 @@ function pytypeIndex(val) {
         case "string":
             return 4;
     }
-    throw new EvaluationError(`Unknown type: ${typeof val}`);
+    throw new Error(`Unknown type: ${typeof val}`);
 }
 
 /**
@@ -243,7 +243,7 @@ function applyBinaryOp(ast, context) {
         case "not in":
             return !isIn(left, right);
     }
-    throw new EvaluationError(`Unknown binary operator: ${ast.op}`);
+    throw new Error(`Unknown binary operator: ${ast.op}`);
 }
 
 const DICT = {
@@ -273,9 +273,7 @@ function applyFunc(key, func, set, ...args) {
         return new Set(set);
     }
     if (args.length > 2) {
-        throw new EvaluationError(
-            `${key}: py_js supports at most 1 argument, got (${args.length - 1})`
-        );
+        throw new Error(`${key}: py_js supports at most 1 argument, got (${args.length - 1})`);
     }
     return execOnIterable(args[0], func);
 }
@@ -382,7 +380,7 @@ export function evaluate(ast, context = {}) {
                 } else if (ast.value in BUILTINS) {
                     return BUILTINS[ast.value];
                 } else {
-                    throw new EvaluationError(`Name '${ast.value}' is not defined`);
+                    throw new Error(`Name '${ast.value}' is not defined`);
                 }
             case 3 /* None */:
                 return null;
@@ -467,7 +465,7 @@ export function evaluate(ast, context = {}) {
                 return result;
             }
         }
-        throw new EvaluationError(`AST of type ${ast.type} cannot be evaluated`);
+        throw new Error(`AST of type ${ast.type} cannot be evaluated`);
     }
 
     /**

@@ -1,8 +1,6 @@
 // @ts-check
 
-import { EvaluationError } from "@odoo/o-spreadsheet";
 import { OdooUIPlugin } from "@spreadsheet/plugins";
-import { _t } from "@web/core/l10n/translation";
 import { deepCopy } from "@web/core/utils/objects";
 import { camelToSnakeObject, toServerDateString } from "@spreadsheet/helpers/helpers";
 
@@ -15,8 +13,7 @@ export class AccountingPlugin extends OdooUIPlugin {
         "getAccountPrefixCredit",
         "getAccountPrefixDebit",
         "getAccountGroupCodes",
-        "getFiscalStartDate",
-        "getFiscalEndDate",
+        "getFiscalDates",
         "getAccountResidual",
         "getAccountPartnerData",
         "getAccountTagData",
@@ -73,21 +70,17 @@ export class AccountingPlugin extends OdooUIPlugin {
     }
 
     /**
-     * @param {Date} date Date included in the fiscal year
+     * Gets the start and end date of the fiscal year enclosing a given date
+     * Defaults on the current user company if not provided
+     * @param {Date} date
      * @param {number | null} companyId specific company to target
-     * @returns {string | undefined}
+     * @returns {{start: string, end: string} | false}
      */
-    getFiscalStartDate(date, companyId) {
-        return this._fetchCompanyData(date, companyId).start;
-    }
-
-    /**
-     * @param {Date} date Date included in the fiscal year
-     * @param {number | undefined} companyId specific company to target
-     * @returns {string | undefined}
-     */
-    getFiscalEndDate(date, companyId) {
-        return this._fetchCompanyData(date, companyId).end;
+    getFiscalDates(date, companyId) {
+        return this.serverData.batch.get("res.company", "get_fiscal_dates", {
+            date: toServerDateString(date),
+            company_id: companyId,
+        });
     }
 
     getCurrentFiscalYearStart() {
@@ -119,37 +112,11 @@ export class AccountingPlugin extends OdooUIPlugin {
     _fetchAccountData(codes, dateRange, offset, companyId, includeUnposted) {
         dateRange = deepCopy(dateRange);
         dateRange.year += offset;
-        // Excel dates start at 1899-12-30, we should not support date ranges
-        // that do not cover dates prior to it.
-        // Unfortunately, this check needs to be done right before the server
-        // call as a date to low (year <= 1) can raise an error server side.
-        if (dateRange.year < 1900) {
-            throw new EvaluationError(_t("%s is not a valid year.", dateRange.year));
-        }
         return this.serverData.batch.get(
             "account.account",
             "spreadsheet_fetch_debit_credit",
             camelToSnakeObject({ dateRange, codes, companyId, includeUnposted })
         );
-    }
-
-    /**
-     * Fetch the start and end date of the fiscal year enclosing a given date
-     * Defaults on the current user company if not provided
-     * @private
-     * @param {Date} date
-     * @param {number | null} companyId
-     * @returns {{start: string, end: string}}
-     */
-    _fetchCompanyData(date, companyId) {
-        const result = this.serverData.batch.get("res.company", "get_fiscal_dates", {
-            date: toServerDateString(date),
-            company_id: companyId,
-        });
-        if (result === false) {
-            throw new EvaluationError(_t("The company fiscal year could not be found."));
-        }
-        return result;
     }
 
     /**
@@ -164,24 +131,12 @@ export class AccountingPlugin extends OdooUIPlugin {
     getAccountResidual(codes, dateRange, offset, companyId, includeUnposted) {
         dateRange = deepCopy(dateRange);
         dateRange.year += offset;
-        // Excel dates start at 1899-12-30, we should not support date ranges
-        // that do not cover dates prior to it.
-        // Unfortunately, this check needs to be done right before the server
-        // call as a date to low (year <= 1) can raise an error server side.
-        if (dateRange.year < 1900) {
-            throw new EvaluationError(_t("%s is not a valid year.", dateRange.year));
-        }
         const result = this.serverData.batch.get(
             "account.account",
             "spreadsheet_fetch_residual_amount",
             camelToSnakeObject({ codes, dateRange, companyId, includeUnposted })
         );
-        if (result === false) {
-            throw new EvaluationError(
-                _t("The residual amount for given accounts could not be computed.")
-            );
-        }
-        return result.amount_residual;
+        return result;
     }
 
     /**
@@ -198,22 +153,12 @@ export class AccountingPlugin extends OdooUIPlugin {
     getAccountPartnerData(codes, dateRange, offset, companyId, includeUnposted, partnerIds) {
         dateRange = deepCopy(dateRange);
         dateRange.year += offset;
-        // Excel dates start at 1899-12-30, we should not support date ranges
-        // that do not cover dates prior to it.
-        // Unfortunately, this check needs to be done right before the server
-        // call as a date to low (year <= 1) can raise an error server side.
-        if (dateRange.year < 1900) {
-            throw new EvaluationError(_t("%s is not a valid year.", dateRange.year));
-        }
         const result = this.serverData.batch.get(
             "account.account",
             "spreadsheet_fetch_partner_balance",
             camelToSnakeObject({ dateRange, codes, companyId, includeUnposted, partnerIds })
         );
-        if (result === false) {
-            throw new EvaluationError(_t("The balance for given partners could not be computed."));
-        }
-        return result.balance;
+        return result;
     }
 
     /**
@@ -229,23 +174,11 @@ export class AccountingPlugin extends OdooUIPlugin {
     getAccountTagData(accountTagIds, dateRange, offset, companyId, includeUnposted) {
         dateRange = deepCopy(dateRange);
         dateRange.year += offset;
-        // Excel dates start at 1899-12-30, we should not support date ranges
-        // that do not cover dates prior to it.
-        // Unfortunately, this check needs to be done right before the server
-        // call as a date too low (year <= 1) can raise an error server side.
-        if (dateRange.year < 1900) {
-            throw new EvaluationError(_t("%s is not a valid year.", dateRange.year));
-        }
         const result = this.serverData.batch.get(
             "account.account",
             "spreadsheet_fetch_balance_tag",
             camelToSnakeObject({ accountTagIds, dateRange, companyId, includeUnposted })
         );
-        if (result === false) {
-            throw new EvaluationError(
-                _t("The balance for given account tag could not be computed.")
-            );
-        }
-        return result.balance;
+        return result;
     }
 }

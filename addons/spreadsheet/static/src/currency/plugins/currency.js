@@ -1,7 +1,6 @@
-import { EvaluationError, helpers, registries } from "@odoo/o-spreadsheet";
+import { helpers, registries } from "@odoo/o-spreadsheet";
 import { OdooUIPlugin } from "@spreadsheet/plugins";
 import { toServerDateString } from "@spreadsheet/helpers/helpers";
-import { _t } from "@web/core/l10n/translation";
 const { featurePluginRegistry } = registries;
 const { createCurrencyFormat } = helpers;
 
@@ -18,6 +17,7 @@ export class CurrencyPlugin extends OdooUIPlugin {
     static getters = /** @type {const} */ ([
         "getCurrencyRate",
         "computeFormatFromCurrency",
+        "getCompanyCurrency",
         "getCompanyCurrencyFormat",
     ]);
 
@@ -58,9 +58,6 @@ export class CurrencyPlugin extends OdooUIPlugin {
             company_id: companyId,
         });
         const rate = data !== undefined ? data.rate : undefined;
-        if (rate === false) {
-            throw new EvaluationError(_t("Currency rate unavailable."));
-        }
         return rate;
     }
 
@@ -80,23 +77,27 @@ export class CurrencyPlugin extends OdooUIPlugin {
     }
 
     /**
+     * Get the currency of the given company, or the current company's
+     * currency if no company id is provided.
+     * @param {number | undefined} [companyId]
+     * @returns {Currency | false}
+     */
+    getCompanyCurrency(companyId) {
+        if (!companyId && this.currentCompanyCurrency) {
+            return this.currentCompanyCurrency;
+        }
+        return this.serverData.get("res.currency", "get_company_currency_for_spreadsheet", [
+            companyId,
+        ]);
+    }
+
+    /**
      * Returns the default display format of a the company currency
      * @param {number} [companyId]
      * @returns {string | undefined}
      */
     getCompanyCurrencyFormat(companyId) {
-        if (!companyId && this.currentCompanyCurrency) {
-            return this.computeFormatFromCurrency(this.currentCompanyCurrency);
-        }
-        const currency = this.serverData.get(
-            "res.currency",
-            "get_company_currency_for_spreadsheet",
-            [companyId]
-        );
-        if (currency === false) {
-            throw new EvaluationError(_t("Currency not available for this company."));
-        }
-        return this.computeFormatFromCurrency(currency);
+        return this.computeFormatFromCurrency(this.getCompanyCurrency(companyId));
     }
 }
 
