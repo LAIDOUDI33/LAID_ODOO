@@ -5,11 +5,8 @@ from odoo.addons.l10n_it_edi.tools.remove_signature import remove_signature
 
 from lxml import etree
 import logging
-import re
 
 _logger = logging.getLogger(__name__)
-
-FATTURAPA_FILENAME_RE = "[A-Z]{2}[A-Za-z0-9]{2,28}_[A-Za-z0-9]{0,5}.((?i:xml.p7m|xml))"
 
 
 class IrAttachment(models.Model):
@@ -43,14 +40,24 @@ class IrAttachment(models.Model):
         } for xml_move_tree in xml_tree.xpath('//FatturaElettronicaBody')]
 
     def _is_l10n_it_edi_import_file(self):
-        is_xml = (
-            self.name.endswith('.xml')
-            or self.mimetype.endswith('/xml')
-            or 'text/plain' in self.mimetype
-            and self.raw
-            and self.raw.startswith(b'<?xml'))
-        is_p7m = self.mimetype == 'application/pkcs7-mime'
-        return (is_xml or is_p7m) and re.search(FATTURAPA_FILENAME_RE, self.name)
+        """ Determine whether the attachment contains a supported Italian EDI XML or P7M file."""
+
+        return (
+            self.mimetype == 'application/pkcs7-mime'  # P7M file
+            or (
+                (  # is xml
+                    self.name.endswith('.xml')
+                    or self.mimetype.endswith('/xml')
+                    or (
+                        'text/plain' in self.mimetype
+                        and self.raw
+                        and self.raw.startswith(b'<?xml')
+                    )
+                )
+                # Avoid claiming arbitrary XML files and blocking other importers.
+                and self.raw and b'FatturaElettronica' in self.raw
+            )
+        )
 
     @api.model
     def _get_edi_supported_formats(self):
