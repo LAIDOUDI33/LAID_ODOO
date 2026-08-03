@@ -74,6 +74,7 @@ class PeppolRegistration(models.TransientModel):
     account_peppol_proxy_state = fields.Selection(related='company_id.account_peppol_proxy_state', readonly=False)
     verification_code = fields.Char(related='edi_user_id.peppol_verification_code', readonly=False)  # TODO remove in master
     peppol_eas = fields.Selection(related='company_id.peppol_eas', readonly=False, required=True)
+    available_peppol_eas = fields.Json(related='company_id.partner_id.available_peppol_eas')
     peppol_endpoint = fields.Char(related='company_id.peppol_endpoint', readonly=False, required=True)
     peppol_warnings = fields.Json(
         string="Peppol warnings",
