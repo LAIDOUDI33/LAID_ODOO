@@ -2759,6 +2759,86 @@ class TestSinglePicking(TestStockCommon):
             { 'location_id': new_location.id, 'location_dest_id': new_destination.id }
         ])
 
+    def test_picking_destination_from_operation_type_and_contact(self):
+        """
+        Check which destination a delivery gets when both its operation type and
+        its contact define one.
+        """
+        customer_stock = self.env['stock.location'].create({
+            'name': 'Customer stock',
+            'usage': 'customer',
+            'location_id': self.customer_location,
+        })
+        customer_location, transit_location = self.env['stock.location'].create([
+            {'name': 'Customer location', 'usage': 'customer', 'location_id': self.customer_location},
+            {'name': 'Inter-warehouse transit', 'usage': 'transit', 'location_id': self.env.ref('stock.stock_location_locations').id},
+        ])
+        custom_delivery_type = self.env['stock.picking.type'].create({
+            'name': 'Deliver Super Customer',
+            'code': 'outgoing',
+            'sequence_code': 'DSC',
+            'warehouse_id': self.warehouse_1.id,
+            'default_location_src_id': self.warehouse_1.lot_stock_id.id,
+            'default_location_dest_id': customer_stock.id,
+        })
+        delivery_type = self.env.ref('stock.picking_type_out')
+        customer, sibling_company = self.env['res.partner'].create([
+            {'name': 'Customer'},
+            {'name': 'Sibling company'},
+        ])
+        customer.property_stock_customer = customer_location
+        sibling_company.property_stock_customer = transit_location
+        customer_without_location = self.partner_1
+        for picking_type, contact, expected in [
+            (delivery_type, customer, customer_location),
+            (delivery_type, sibling_company, transit_location),
+            (custom_delivery_type, customer_without_location, customer_stock),
+        ]:
+            with self.subTest(operation_type=picking_type.name, contact=contact.name):
+                picking_form = Form(self.env['stock.picking'].with_context(default_picking_type_id=picking_type.id))
+                picking_form.partner_id = contact
+                self.assertEqual(picking_form.save().location_dest_id, expected)
+
+    def test_picking_source_from_operation_type_and_contact(self):
+        """
+        Check which source a receipt gets when both its operation type and
+        its contact define one.
+        """
+        vendor_stock = self.env['stock.location'].create({
+            'name': 'Vendor stock',
+            'usage': 'supplier',
+            'location_id': self.supplier_location,
+        })
+        vendor_location, transit_location = self.env['stock.location'].create([
+            {'name': 'Vendor location', 'usage': 'supplier', 'location_id': self.supplier_location},
+            {'name': 'Inter-warehouse transit', 'usage': 'transit', 'location_id': self.env.ref('stock.stock_location_locations').id},
+        ])
+        custom_receipt_type = self.env['stock.picking.type'].create({
+            'name': 'Receive Super Vendor',
+            'code': 'incoming',
+            'sequence_code': 'RSV',
+            'warehouse_id': self.warehouse_1.id,
+            'default_location_src_id': vendor_stock.id,
+            'default_location_dest_id': self.warehouse_1.lot_stock_id.id,
+        })
+        receipt_type = self.env.ref('stock.picking_type_in')
+        vendor, sibling_company = self.env['res.partner'].create([
+            {'name': 'Vendor'},
+            {'name': 'Sibling company'},
+        ])
+        vendor.property_stock_supplier = vendor_location
+        sibling_company.property_stock_supplier = transit_location
+        vendor_without_location = self.partner_1
+        for picking_type, contact, expected in [
+            (receipt_type, vendor, vendor_location),
+            (receipt_type, sibling_company, transit_location),
+            (custom_receipt_type, vendor_without_location, vendor_stock),
+        ]:
+            with self.subTest(operation_type=picking_type.name, contact=contact.name):
+                picking_form = Form(self.env['stock.picking'].with_context(default_picking_type_id=picking_type.id))
+                picking_form.partner_id = contact
+                self.assertEqual(picking_form.save().location_id, expected)
+
     def test_validate_picking_twice(self):
         """
         Check that validating an already validated picking bypasses the call.

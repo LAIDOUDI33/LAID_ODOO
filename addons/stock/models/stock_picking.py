@@ -955,10 +955,20 @@ class Picking(models.Model):
             if picking.picking_type_id:
                 location_src = picking.picking_type_id.default_location_src_id
                 if location_src.usage == 'supplier' and picking.partner_id:
-                    location_src = picking.partner_id.property_stock_supplier
+                    supplier_location = picking.partner_id.property_stock_supplier
+                    if supplier_location and (
+                        supplier_location.usage == 'transit'  # inter-company transactions
+                        or supplier_location._child_of(location_src)
+                    ):
+                        location_src = supplier_location
                 location_dest = picking.picking_type_id.default_location_dest_id
                 if location_dest.usage == 'customer' and picking.partner_id:
-                    location_dest = picking.partner_id.property_stock_customer
+                    customer_location = picking.partner_id.property_stock_customer
+                    if customer_location and (
+                        customer_location.usage == 'transit'  # inter-company transactions
+                        or customer_location._child_of(location_dest)
+                    ):
+                        location_dest = customer_location
                 picking.location_id = location_src.id
                 picking.location_dest_id = location_dest.id
 
