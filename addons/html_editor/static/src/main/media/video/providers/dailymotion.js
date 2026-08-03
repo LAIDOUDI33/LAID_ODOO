@@ -9,6 +9,7 @@ export class Dailymotion extends AbstractThirdPartyVideo {
 
     static optionsConfig = {
         startFrom: { default: 0, type: Number, params: ["startTime"] },
+        loop: { default: false, type: Boolean, params: ["loop"] },
     };
     /**
      * Returns the embed url for a dailymotion video.
