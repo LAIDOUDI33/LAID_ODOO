@@ -53,6 +53,15 @@ class TestPaymentTransaction(PaymentDemoCommon, PaymentHttpCommon):
         )
         self.assertEqual(tx.state, "error")
 
+    def test_apply_updates_sets_payment_method_from_unknown_to_demo(self):
+        """Test that the generic 'unknown' payment method set on transactions created in express
+        checkout is replaced by the 'demo' payment method when processing the payment data."""
+        unknown_pm = self.env.ref("payment_demo.payment_method_unknown")
+        demo_pm = self.env.ref("payment_demo.payment_method_demo")
+        tx = self._create_transaction("direct", payment_method_id=unknown_pm.id)
+        tx.with_context(payment_safe_write=True)._apply_updates(self.payment_data)
+        self.assertEqual(tx.payment_method_id, demo_pm)
+
     def test_apply_updates_tokenizes_transaction(self):
         """Test that the transaction is tokenized when it was requested and the payment data
         include token data."""
