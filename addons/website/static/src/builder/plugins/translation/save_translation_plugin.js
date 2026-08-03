@@ -2,10 +2,11 @@ import { Plugin } from "@html_editor/plugin";
 import { withSequence } from "@html_editor/utils/resource";
 import { rpc } from "@web/core/network/rpc";
 import { registry } from "@web/core/registry";
+import { saveDelayTranslations } from "@website/js/editor/delayed_translation";
 
 export class SaveTranslationPlugin extends Plugin {
     static id = "saveTranslation";
-    static dependencies = ["savePlugin", "websiteSavePlugin"];
+    static dependencies = ["websiteSavePlugin"];
 
     /** @type {import("plugins").WebsiteResources} */
     resources = {
@@ -14,32 +15,8 @@ export class SaveTranslationPlugin extends Plugin {
     };
 
     async saveDelayTranslations(root = this.editable, groupedDirtyElements) {
-        // Don't take dirty elements as they will be saved
-        const cleanDelayTranslationEls = [
-            ...root.querySelectorAll(".o_delay_translation:not(.o_dirty)"),
-        ];
-        const groupedDelayTranslationElements =
-            this.dependencies.savePlugin.groupElements(cleanDelayTranslationEls);
-        const updateTranslationProms = [];
         const currentWebsiteLang = this.services.website.currentWebsite.metadata.lang;
-        const translations = {};
-        translations[currentWebsiteLang] = {};
-        for (const [key, els] of Object.entries(groupedDelayTranslationElements)) {
-            // Keep only delay translation related to particular field that will
-            // not be updated by a modified (dirty) element
-            if (groupedDirtyElements[key]) {
-                continue;
-            }
-            updateTranslationProms.push(
-                rpc("/website/field/translation/update", {
-                    model: els[0].dataset["oeModel"],
-                    record_id: [Number(els[0].dataset["oeId"])],
-                    field_name: els[0].dataset["oeField"],
-                    translations,
-                })
-            );
-        }
-        return Promise.all(updateTranslationProms);
+        return saveDelayTranslations(root, currentWebsiteLang, groupedDirtyElements);
     }
     /**
      * If the elements hold a translation, saves it. Otherwise, fallback to the
