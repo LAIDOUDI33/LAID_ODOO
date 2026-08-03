@@ -17,6 +17,16 @@ class TestL10nFrPdpXml(TestL10nFrPdpCommon):
         self._send_patched(invoice)
         self._assert_invoice_ubl_file(invoice, "ubl_21_fr_out_invoice")
 
+    def test_export_invoice_partner_fr_peppol(self):
+        """
+        Peppol proxy user should have the notes for `PMT`, `PMD` and `AAB`
+        """
+        self.proxy_user.proxy_type = 'peppol'
+        invoice = self._create_french_invoice()
+        invoice.action_post()
+        self._send_patched(invoice)
+        self._assert_invoice_ubl_file(invoice, "ubl_21_fr_out_invoice")
+
     def test_export_credit_note_partner_fr(self):
         invoice = self._create_french_invoice()
 
