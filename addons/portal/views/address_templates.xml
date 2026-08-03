@@ -100,17 +100,13 @@
                 <t t-set="contact_fields" t-value="['name', 'address']"/>
                 <t
                     t-set="contact_fields"
-                    t-if="is_user_address or contact.type=='invoice'"
+                    t-if="address_type == 'billing' and contact.type in ['contact', 'invoice']"
                     t-value="contact_fields + ['vat']"
                 />
                 <t
                     t-out="contact"
                     t-options="dict(
-                        widget='contact',
-                        fields=contact_fields,
-                        no_marker=True,
-                        no_tag_br=True,
-                        hide_vat_label=True,
+                        widget='contact', fields=contact_fields, no_marker=True, no_tag_br=True
                     )"
                 />
                 <t t-set="badge_classes" t-value="'badge text-bg-info'"/>
@@ -336,7 +332,7 @@
                 />
             </div>
         </t>
-        <div id="div_street" class="col-lg-12 mb-2">
+        <div id="div_street" t-attf-class="col-lg-12 mb-2">
             <label class="col-form-label" for="o_street">
                 Street and Number
             </label>
@@ -349,7 +345,7 @@
             />
         </div>
         <div id="div_street2" class="col-lg-12 mb-2">
-            <label class="col-form-label label-optional" for="o_street2">
+            <label t-attf-class="col-form-label label-optional" for="o_street2">
                 Apartment, suite, etc.
             </label>
             <input
@@ -453,7 +449,7 @@
     </template>
 
     <template id="portal.profile_picture_card" name="Profile picture card">
-        <div class="o_portal_profile_card card position-relative overflow-hidden mt-3 w-75">
+        <div class="o_portal_profile_card card position-relative overflow-hidden mt-3">
             <div class="ratio ratio-1x1">
                 <span class="o_profile_picture"
                     t-att-data-user-id="request.env.user.id"
@@ -464,22 +460,23 @@
                     }"/>
             </div>
             <input type="file" class="o_file_upload d-none" accept="image/*"/>
-            <button class="btn position-absolute bottom-0 start-0 m-2 o_portal_profile_pic_edit oe_unremovable">
+            <button class="btn position-absolute rounded-circle bottom-0 start-0 m-2 o_portal_edit oe_unremovable">
                 <i class="oi oi-filled" data-icon="edit"/>
             </button>
-            <button class="btn position-absolute bottom-0 end-0 m-2 o_portal_profile_pic_clear oe_unremovable">
+            <button class="btn position-absolute rounded-circle bottom-0 end-0 m-2 o_portal_clear oe_unremovable">
                 <i class="oi text-danger" data-icon="delete"/>
             </button>
         </div>
     </template>
 
-    <template id="portal.portal_my_details" name="Contact Details">
+    <template id="portal.portal_my_details" name="Account Details">
         <t t-set="no_footer" t-value="1"/>
-        <t t-call="portal.portal_layout" additional_title.translate="Contact Details">
+        <t t-call="portal.portal_layout" additional_title.translate="Account Details">
             <div class="o_customer_address_fill">
                 <div class="row">
                     <div name="address_div" class="oe_clear_stucture col-12">
                         <div>
+                            <h3 class="mb-3">Account Details</h3>
                             <div id="errors"/> <!-- for js -->
                             <form
                                 action="/my/address/submit"

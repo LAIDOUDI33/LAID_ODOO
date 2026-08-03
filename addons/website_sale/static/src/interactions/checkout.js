@@ -102,7 +102,7 @@ export class Checkout extends Interaction {
         const addDeliveryAddressButton = this.el.querySelector(
             '.o_address_card_add_new[data-address-type="delivery"]'
         );
-        if (addDeliveryAddressButton) {  // If `Add address` button for delivery.
+        if (addDeliveryAddressButton) {  // If `Add` button for delivery.
             // Update the `use_delivery_as_billing` query param for a new delivery address URL.
             const addDeliveryUrl = new URL(addDeliveryAddressButton.href);
             addDeliveryUrl.searchParams.set(

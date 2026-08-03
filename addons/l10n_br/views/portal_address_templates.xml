@@ -7,14 +7,17 @@
         </option>
         <!-- put base_address_extended fields separately to be more user-friendly -->
         <div id="div_street" position="attributes">
-            <attribute name="class" separator=" " add="o_standard_address"/>
-            <attribute name="t-att-class">'d-none' if country.code == 'BR' else ''</attribute>
+            <attribute
+                name="t-attf-class"
+                separator=" "
+                add="o_standard_address{{' d-none' if country.code == 'BR' else ''}}"
+            />
         </div>
         <div id="div_street" position="after">
             <div
                 id="div_street_name"
-                t-attf-class="col-lg-8 mb-2 o_extended_address {{
-                    'd-none' if country.code != 'BR' else ''
+                t-attf-class="col-lg-8 mb-2 o_extended_address{{
+                    ' d-none' if country.code != 'BR' else ''
                 }}"
             >
                 <label class="col-form-label" for="o_street_name">Street</label>
@@ -28,8 +31,8 @@
             </div>
             <div
                 id="div_street_number"
-                t-attf-class="col-lg-4 mb-2 o_extended_address {{
-                    'd-none' if country.code != 'BR' else ''
+                t-attf-class="col-lg-4 mb-2 o_extended_address{{
+                    ' d-none' if country.code != 'BR' else ''
                 }}"
             >
                 <label class="col-form-label" for="o_street_number">Street Number</label>
@@ -44,8 +47,8 @@
             <div class="w-100"/>
             <div
                 id="div_street_number2"
-                t-attf-class="col-lg-6 mb-2 o_extended_address {{
-                    'd-none' if country.code != 'BR' else ''
+                t-attf-class="col-lg-6 mb-2 o_extended_address{{
+                    ' d-none' if country.code != 'BR' else ''
                 }}"
             >
                 <label class="col-form-label label-optional" for="o_street_number2">
@@ -63,14 +66,17 @@
         </div>
         <!-- street2 is used for neighborhood in Brazil, change the default label -->
         <label for="o_street2" position="attributes">
-            <attribute name="class" separator=" " add="o_standard_address"/>
-            <attribute name="t-att-class">'d-none' if country.code == 'BR' else ''</attribute>
+            <attribute
+                name="t-attf-class"
+                separator=" "
+                add="o_standard_address{{' d-none' if country.code == 'BR' else ''}}"
+            />
         </label>
         <label for="o_street2" position="after">
             <label
                 for="o_street2"
-                t-attf-class="col-form-label label-optional o_extended_address {{
-                    'd-none' if country.code != 'BR' else ''
+                t-attf-class="col-form-label label-optional o_extended_address{{
+                    ' d-none' if country.code != 'BR' else ''
                 }}"
             >
                 Neighborhood
