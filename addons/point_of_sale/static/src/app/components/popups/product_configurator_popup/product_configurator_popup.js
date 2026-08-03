@@ -87,6 +87,15 @@ export class MultiProductAttribute extends BaseProductAttribute {
     }
 }
 
+export class UomSelection extends Component {
+    static template = "point_of_sale.UomSelection";
+    static props = ["selectedUomId", "availableUoMs"];
+
+    onChange(value) {
+        this.props.setSelected(this.props.availableUoMs.find((uom) => uom.id === value.id));
+    }
+}
+
 export class ProductConfiguratorPopup extends Component {
     static template = "point_of_sale.ProductConfiguratorPopup";
     static components = {
@@ -97,6 +106,7 @@ export class ProductConfiguratorPopup extends Component {
         ColorProductAttribute,
         ImageProductAttribute,
         MultiProductAttribute,
+        UomSelection,
         Dialog,
     };
     props = props({
@@ -120,6 +130,9 @@ export class ProductConfiguratorPopup extends Component {
                     };
                     return acc;
                 }, {}),
+            selectedUomId: this.props.productTemplate.uom_ids.length
+                ? this.props.line?.product_uom_id?.id || this.props.productTemplate.uom_id.id
+                : null,
         });
 
         if (!this.props.line?.selectedAttributes) {
@@ -238,6 +251,7 @@ export class ProductConfiguratorPopup extends Component {
                     return acc;
                 }, []),
             price_extra: this.priceExtra,
+            uom_id: this.selectedUomId,
         };
     }
 
@@ -294,6 +308,17 @@ export class ProductConfiguratorPopup extends Component {
         this.props.close();
     }
 
+    onDiscard() {
+        // If the user discards and there are no configurable attributes,
+        // restore the default UOM so the normal add-line flow can continue
+        // for products that have multiple UOMs.
+        if (!this.props.hasConfigurableAttributes && this.props.productTemplate.uom_ids.length) {
+            this.setSelectedUom(this.props.productTemplate.uom_id);
+            this.props.getPayload(this.computePayload());
+        }
+        this.props.close();
+    }
+
     get validAttributeLineIds() {
         if (this.props.hideAlwaysVariants) {
             return this.props.productTemplate.attribute_line_ids.filter(
@@ -302,5 +327,18 @@ export class ProductConfiguratorPopup extends Component {
         } else {
             return this.props.productTemplate.attribute_line_ids;
         }
+    }
+
+    get availableUoMs() {
+        return this.props.productTemplate.uom_ids.length
+            ? [this.props.productTemplate.uom_id, ...this.props.productTemplate.uom_ids]
+            : [];
+    }
+
+    get selectedUomId() {
+        return this.state.selectedUomId;
+    }
+    setSelectedUom(uom) {
+        this.state.selectedUomId = uom.id;
     }
 }

@@ -239,13 +239,23 @@ export class PosOrderline extends PosOrderlineAccounting {
         );
         const price = ProductPrice.round(this.price_unit || 0);
         const product = orderline.getProduct();
-        const order_line_price = product.getPrice(
+        let order_line_price = product.getPrice(
             orderline.order_id.pricelist_id,
             this.getQuantity(),
             0,
             false,
             product
         );
+        if (orderline.product_uom_id && orderline.product_uom_id.id !== product.uom_id.id) {
+            order_line_price =
+                product.getPrice(
+                    orderline.order_id.pricelist_id,
+                    this.getQuantity() * (orderline.product_uom_id.factor || 1),
+                    0,
+                    false,
+                    product
+                ) * (orderline.product_uom_id.factor || 1);
+        }
 
         const isSameCustomerNote =
             (Boolean(orderline.getCustomerNote()) === false &&
@@ -267,7 +277,8 @@ export class PosOrderline extends PosOrderlineAccounting {
             this.full_product_name === orderline.full_product_name &&
             isSameCustomerNote &&
             !this.refunded_orderline_id &&
-            !orderline.isPartOfCombo()
+            !orderline.isPartOfCombo() &&
+            this.product_uom_id?.id === orderline.product_uom_id?.id
         );
     }
 

@@ -130,6 +130,11 @@ export class OrderSummary extends Component {
         if (values.price_unit !== undefined) {
             orderline.price_unit = values.price_unit;
         }
+        if (values.product_uom_id !== undefined) {
+            orderline.product_uom_id = values.product_uom_id;
+        } else {
+            orderline.product_uom_id = values.product_id.uom_id;
+        }
         orderline.setFullProductName();
 
         // Try to merge the orderline
