@@ -1140,8 +1140,12 @@ class StockMoveLine(models.Model):
                 return action
         return package
 
-    def action_put_in_pack(self, *, package_id=False, package_type_id=False, package_name=False):
+    def action_put_in_pack(self, *, package_id=False, package_type_id=False, package_name=False, package_capacity=None):
         move_lines = self
+        if package_capacity:
+            # split the move line
+            return move_lines.split_move_line(package_capacity, package_type_id, package_id=package_id)
+
         if self.env.context.get('all_move_line_ids'):
             move_lines = self.env['stock.move.line'].browse(self.env.context['all_move_line_ids'])
         # From the 'Moves' button, we want to take all move lines, without caring for picked or with/without packages.
@@ -1254,3 +1258,72 @@ class StockMoveLine(models.Model):
     def _should_set_package(self):
         package_type = self.picking_id.picking_type_id
         return len(package_type) == 1 and package_type.set_package_type
+
+    def put_capacity_in_package(self, chunk_capacity, all_quantity, package_id):
+        self.ensure_one()
+
+        splitted_move_lines = self.env['stock.move.line']
+
+        # change quantity and package of this move line
+        self.write({
+            'quantity': chunk_capacity,
+            'result_package_id': package_id,
+        })
+
+        splitted_move_lines += self
+
+        if all_quantity - chunk_capacity > 0:
+            # create the same one with a different quantity and no package
+            copied_move_line = self.copy({
+                'quantity': all_quantity - chunk_capacity,
+                'result_package_id': None,
+            })
+
+            splitted_move_lines += copied_move_line
+
+        return splitted_move_lines
+
+    def split_move_line(self, chunk_capacity, package_type_id=None, package_id=None):
+        """ This function separates a single move line to create new ones with
+        capacity of chunk_capacity.
+        """
+        self.ensure_one()
+        all_quantity = self.quantity  # Move line quantity
+
+        # raise error if package capacity is bigger than all quantity
+        if chunk_capacity > all_quantity or chunk_capacity <= 0:
+            raise ValidationError(_('Package size must be smaller than the initial quantity and bigger than zero.'))
+
+        if package_id:
+            return self.put_capacity_in_package(chunk_capacity, all_quantity, package_id)
+
+        splitted_move_lines = self.env['stock.move.line']
+        isFirst = True
+
+        while all_quantity > 0:
+            # create package with the package_type if provided
+            package_params = {}
+            if package_type_id:
+                package_params = {'package_type_id': package_type_id}
+            package = self.env['stock.package'].create(package_params)
+
+            new_move_line_quantity = min(all_quantity, chunk_capacity)
+            # for first move line, just update values
+            if isFirst:
+                self.write({
+                    'quantity': new_move_line_quantity,
+                    'result_package_id': package.id,
+                })
+                splitted_move_lines += self
+                isFirst = False
+            # for others, create a copy from the existing move line
+            else:
+                copied_move_line = self.copy({
+                    'quantity': new_move_line_quantity,
+                    'result_package_id': package.id,
+                })
+                splitted_move_lines += copied_move_line
+
+            all_quantity -= new_move_line_quantity
+
+        return splitted_move_lines
