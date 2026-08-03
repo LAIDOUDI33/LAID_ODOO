@@ -32,7 +32,16 @@ patch(ProductConfiguratorDialog.prototype, {
         useSubEnv({
             isFrontend: this.props.isFrontend,
             isMainProductConfigurable: this.props.options?.isMainProductConfigurable ?? true,
+            isQuantityAllowed: this._isQuantityAllowed.bind(this),
         });
+    },
+
+    async _setQuantity(productTmplId, quantity) {
+        const product = this._findProduct(productTmplId);
+        if (!this._isQuantityAllowed(product, quantity)) {
+            quantity = product.free_qty;
+        }
+        return super._setQuantity(productTmplId, quantity)
     },
 
     /**
@@ -41,7 +50,7 @@ patch(ProductConfiguratorDialog.prototype, {
      * @return {Boolean} - Whether all selected products can be sold.
      */
     canBeSold() {
-        return this.state.products.every(p => p.can_be_sold);
+        return this.state.products.every(p => p.can_be_sold && this._isQuantityAllowed(p, p.quantity));
     },
 
     /**
@@ -69,6 +78,19 @@ patch(ProductConfiguratorDialog.prototype, {
             return _t("Total: %s", this.getFormattedTotal());
         }
         return super.totalMessage(...arguments);
+    },
+
+    /**
+     * Check whether the provided product quantity can be added to the cart.
+     *
+     * @param {Object} product - The provided product.
+     * @param {Number} quantity - The new quantity of the product.
+     * @return {Boolean} - Whether the provided product quantity can be added to the cart.
+     */
+    _isQuantityAllowed(product, quantity) {
+        // `product` may be a props object, which always exposes every declared key (including the
+        // optional `free_qty`), so the presence of the key can't be used to detect stock tracking.
+        return product.free_qty === undefined || product.free_qty >= quantity;
     },
 
 });
