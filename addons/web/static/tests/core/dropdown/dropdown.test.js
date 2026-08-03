@@ -1644,3 +1644,35 @@ test("can be toggled with the UP/DOWN arrow keys", async () => {
     await animationFrame();
     expect(DROPDOWN_MENU).toHaveCount(1);
 });
+
+test.tags("desktop");
+test("dropdown: focus dropdown items on keyboard navigation after hotkey trigger", async () => {
+    class SimpleDropdownWithHotkey extends Component {
+        static components = { Dropdown, DropdownItem };
+        static props = [];
+        static template = xml`
+                <Dropdown t-props="this.dropdownProps">
+                    <button data-hotkey="c" accesskey="c">Dropdown</button>
+                    <t t-set-slot="content">
+                        <DropdownItem class="'item-a'">Item A</DropdownItem>
+                        <DropdownItem class="'item-b'">Item B</DropdownItem>
+                        <DropdownItem class="'item-c'">Item C</DropdownItem>
+                    </t>
+                </Dropdown>
+            `;
+    }
+    await mountWithCleanup(SimpleDropdownWithHotkey);
+
+    const menuEl = queryOne(".dropdown-toggle");
+    expect(document.activeElement).not.toBe(menuEl);
+
+    await press("alt+c");
+    await animationFrame();
+    expect(DROPDOWN_MENU).toHaveCount(1);
+
+    await press("ArrowDown");
+    expect(".o-dropdown-item:first").toBeFocused();
+
+    await press("ArrowUp");
+    expect(".o-dropdown-item:last").toBeFocused();
+});
