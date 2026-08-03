@@ -4,6 +4,8 @@ import ast
 import datetime
 import json
 
+from markupsafe import Markup
+
 from odoo import _, api, fields, models, Command, tools
 from odoo.exceptions import UserError, ValidationError
 from odoo.fields import Domain
@@ -840,6 +842,7 @@ class MailComposeMessage(models.TransientModel):
             "type": "ir.actions.client",
             "tag": "action_send_mail_callback",
             "params": {
+                "default_message_id": bool(self.env.context.get("default_message_id")),
                 "record_name": record_name,
             },
         }
@@ -877,10 +880,29 @@ class MailComposeMessage(models.TransientModel):
 
         return result_mails_su, result_messages
 
+    def _get_body_with_full_composer_marker(self):
+        self.ensure_one()
+        if is_html_empty(self.body) or 'data-o-mail-full-composer' in self.body:
+            return self.body
+        return self.body + Markup('<template data-o-mail-full-composer="1"></template>')
+
     def _action_send_mail_comment(self, res_ids):
         """ Send in comment mode. It calls message_post on model, or the generic
         implementation of it if not available (as message_notify). """
         self.ensure_one()
+        if self.env.context.get('clicked_on_full_composer'):
+            self.body = self._get_body_with_full_composer_marker()
+        # Handle editing an existing message via the full composer
+        if self.env.context.get('default_message_id'):
+            message = self.env['mail.message'].browse(self.env.context['default_message_id'])
+            record = self.env[message.model].browse(message.res_id)
+            record._message_update_content(
+                message,
+                body=self.body or None,
+                attachment_ids=self.attachment_ids.ids,
+                partner_ids=self.partner_ids.ids,
+            )
+            return message
         post_values_all = self._manage_mail_values(self._prepare_mail_values(res_ids))
         ActiveModel = self.env[self.model] if self.model and hasattr(self.env[self.model], 'message_post') else self.env['mail.thread']
         if self.composition_batch:

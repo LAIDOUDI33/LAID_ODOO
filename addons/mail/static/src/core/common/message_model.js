@@ -724,6 +724,14 @@ export class Message extends Record {
         return data;
     }
 
+    get isFullComposerBody() {
+        return Boolean(
+            createDocumentFragmentFromContent(this.body).querySelector(
+                "[data-o-mail-full-composer]"
+            )
+        );
+    }
+
     enterEditMode() {
         const validRoles = Array.from(
             createDocumentFragmentFromContent(this.body).querySelectorAll(
@@ -740,6 +748,7 @@ export class Message extends Record {
             isEditComposerVisible: true,
             mentionedPartners: this.partner_ids,
             mentionedRoles: validRoles,
+            restoredFromFullComposer: this.isFullComposerBody,
             selection: {
                 start: text.length,
                 end: text.length,
