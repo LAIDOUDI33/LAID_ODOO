@@ -9,6 +9,9 @@ th.o_table_header {
             margin-bottom: 0;
         }
     }
+    tr {
+        height: 38px;
+    }
 }
 
 table.o_alternating_rows tr:nth-child(odd) td {
