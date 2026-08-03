@@ -80,6 +80,30 @@ export const INNER_SNIPPETS_EXCLUDED_FROM_FORMS = [
     ".s_rental_search",
 ];
 
+// The custom type to fall back to for the model field types that have no
+// custom equivalent.
+const CUSTOM_TYPE_FALLBACKS = {
+    html: "text",
+    many2many: "one2many",
+    monetary: "float",
+    tags: "one2many",
+};
+
+/**
+ * Returns the custom type matching the type of the given field the closest.
+ *
+ * @param {HTMLElement} fieldEl
+ * @returns {string}
+ */
+function getCustomFieldType(fieldEl) {
+    if (fieldEl.querySelector("input[type=file]")) {
+        // E.g. a "many2many" field on "ir.attachment".
+        return "binary";
+    }
+    const type = getFieldType(fieldEl);
+    return CUSTOM_TYPE_FALLBACKS[type] || type;
+}
+
 export class FormOptionPlugin extends Plugin {
     static id = "websiteFormOption";
     static dependencies = [
@@ -170,6 +194,7 @@ export class FormOptionPlugin extends Plugin {
             ToggleEndMessageAction,
             FormToggleRecaptchaLegalAction,
             // Field actions
+            FormFieldAction,
             CustomFieldAction,
             ExistingFieldAction,
             LinkStateToCountryAction,
@@ -207,6 +232,7 @@ export class FormOptionPlugin extends Plugin {
         clean_for_save_processors: [
             this.removeSuccessMessagePreviews.bind(this),
             this.removeIncompleteRequirements.bind(this),
+            this.removeUserModifiedMarkers.bind(this),
             // Early in sequence to run before the plugin removing empty nodes
             withSequence(5, this.writeDefaultLabels.bind(this)),
         ],
@@ -241,6 +267,16 @@ export class FormOptionPlugin extends Plugin {
         is_unremovable_selectors: ".s_website_form_send, .s_website_form_submit",
         immutable_link_selectors: [".s_website_form_send"],
         normalize_processors: this.normalizeFieldName.bind(this),
+        on_content_updated_handlers: (rootEl) => {
+            // Editing a field's label or description inline marks the field as
+            // modified by the user, so that it is kept when the form's action
+            // changes.
+            if (
+                rootEl.closest?.(".s_website_form_label_content, .s_website_form_field_description")
+            ) {
+                markFieldAsUserModified(rootEl);
+            }
+        },
     };
     setup() {
         this.modelsCache = new SyncCache(this._fetchModels.bind(this));
@@ -408,9 +444,7 @@ export class FormOptionPlugin extends Plugin {
             if (oldFormKey) {
                 oldFormInfo = this.getRegistryFormInfo(oldFormKey);
             }
-            for (const fieldEl of el.querySelectorAll(".s_website_form_field")) {
-                fieldEl.remove();
-            }
+            this.removeObsoleteFields(el);
             activeForm = this.getModelsCache(el).find((model) => model.id === modelId);
         }
         // Success page
@@ -432,17 +466,19 @@ export class FormOptionPlugin extends Plugin {
         }
         // Model name
         el.dataset.model_name = activeForm.model;
+        if (modelId) {
+            await this.convertUnlinkedFieldsToCustom(el);
+        }
         // Load template
         if (formInfo) {
             const formatInfo = getDefaultFormat(el);
+            const locationEl = el.querySelector(
+                ".s_website_form_submit, .s_website_form_recaptcha"
+            );
             formInfo.formFields?.forEach((field) => {
                 // Create a shallow copy of field to prevent unintended
                 // mutations to the original field stored in the registry
-                const _field = { ...field };
-                _field.formatInfo = formatInfo;
-                const locationEl = el.querySelector(
-                    ".s_website_form_submit, .s_website_form_recaptcha"
-                );
+                const _field = { ...field, formatInfo };
                 locationEl.insertAdjacentElement("beforebegin", renderField(_field));
             });
             // Special case: handle hidden fields separately.
@@ -547,6 +583,7 @@ export class FormOptionPlugin extends Plugin {
         const field = getCustomField("char", this.dependencies.websiteBridge._t("Custom Text"));
         field.formatInfo = getDefaultFormat(formEl);
         const fieldEl = renderField(field);
+        markFieldAsUserModified(fieldEl);
         let locationEl = formEl.querySelector(".s_website_form_submit, .s_website_form_recaptcha");
         if (!locationEl) {
             locationEl = formEl.querySelector(".s_website_form_rows");
@@ -566,6 +603,7 @@ export class FormOptionPlugin extends Plugin {
             field.formatInfo.optionalMark = isOptionalMark(formEl);
             field.formatInfo.mark = getMark(formEl);
             newSnippetEl = renderField(field);
+            markFieldAsUserModified(newSnippetEl);
         } else {
             newSnippetEl = document.createElement("div");
             newSnippetEl.className =
@@ -934,6 +972,9 @@ export class FormOptionPlugin extends Plugin {
     async onCloned({ cloneEl }) {
         // Re-render the fields to ensure each field gets a unique ID.
         await this.rerenderFieldsInElement(cloneEl);
+        if (cloneEl.matches(".s_website_form_field")) {
+            markFieldAsUserModified(cloneEl);
+        }
 
         this.removeSuccessMessagePreviews(cloneEl);
     }
@@ -1167,6 +1208,80 @@ export class FormOptionPlugin extends Plugin {
         );
         return root;
     }
+
+    /**
+     * Removes the fields that are leftovers of the previous action: the fields
+     * the user modified are kept.
+     *
+     * @param {HTMLElement} formEl
+     */
+    removeObsoleteFields(formEl) {
+        for (const fieldEl of formEl.querySelectorAll(".s_website_form_field")) {
+            // Keep the fields the user modified.
+            if (
+                fieldEl.dataset.userModified === "true" &&
+                !fieldEl.classList.contains("s_website_form_dnone")
+            ) {
+                fieldEl.classList.replace(
+                    "s_website_form_model_required",
+                    "s_website_form_required"
+                );
+                continue;
+            }
+
+            // Drop the visibility conditions that depend on the removed field.
+            for (const dependentEl of formEl.querySelectorAll(
+                `[data-visibility-dependency="${CSS.escape(getFieldName(fieldEl))}"]`
+            )) {
+                deleteConditionalVisibility(dependentEl);
+            }
+            fieldEl.remove();
+        }
+    }
+
+    /**
+     * Transforms the kept fields that are no longer linked to a field of the
+     * form's model into generic custom fields of an equivalent type.
+     * @param {HTMLElement} formEl
+     */
+    async convertUnlinkedFieldsToCustom(formEl) {
+        const fieldEls = [...formEl.querySelectorAll(".s_website_form_field")].filter(
+            (fieldEl) =>
+                !isFieldCustom(fieldEl) && !fieldEl.classList.contains("s_website_form_dnone")
+        );
+        if (!fieldEls.length) {
+            return;
+        }
+        const authorizedFields = await this.fetchAuthorizedFields(formEl);
+        for (const fieldEl of fieldEls) {
+            if (authorizedFields[getFieldName(fieldEl)]) {
+                continue;
+            }
+            fieldEl.dataset.type = getCustomFieldType(fieldEl);
+            // The value of the field cannot be prefilled from the model
+            // anymore.
+            for (const inputEl of fieldEl.querySelectorAll("[data-fill-with]")) {
+                delete inputEl.dataset.fillWith;
+            }
+            fieldEl.classList.add("s_website_form_custom");
+
+            const labelEl = fieldEl.querySelector(".s_website_form_label_content");
+            if (labelEl) {
+                this.updateFieldName({ fieldEl, name: labelEl.textContent });
+            }
+        }
+    }
+
+    /**
+     * @param {HTMLElement} rootEl
+     * @returns {HTMLElement}
+     */
+    removeUserModifiedMarkers(rootEl) {
+        for (const fieldEl of selectElements(rootEl, "[data-user-modified]")) {
+            delete fieldEl.dataset.userModified;
+        }
+        return rootEl;
+    }
 }
 
 // Form actions
@@ -1381,13 +1496,42 @@ export class FormToggleRecaptchaLegalAction extends BuilderAction {
     }
 }
 // Field actions
-export class CustomFieldAction extends BuilderAction {
+/**
+ * Marks the field of the given element as modified by the user, so that it is
+ * kept when the action of the form changes. The marker only lives within the
+ * edit session (see "clean_for_save_processors").
+ *
+ * @param {HTMLElement} el - The field element or one of its descendants.
+ */
+function markFieldAsUserModified(el) {
+    const fieldEl = el.closest(".s_website_form_field");
+    if (fieldEl) {
+        fieldEl.dataset.userModified = "true";
+    }
+}
+/**
+ * Base class for the actions modifying a single field of the form: the field
+ * is marked as modified by the user. Subclasses must call super.apply() from
+ * apply(), and call markFieldAsUserModified() themselves from clean() if they
+ * define one: the base class cannot provide clean(), as its mere presence on
+ * the prototype chain would make BuilderAction.has("clean") true for every
+ * subclass and change how the framework un-applies the ones without it.
+ */
+class FormFieldAction extends BuilderAction {
+    static id = "markFieldAsUserModified";
+
+    apply({ editingElement }) {
+        markFieldAsUserModified(editingElement);
+    }
+}
+export class CustomFieldAction extends FormFieldAction {
     static id = "customField";
     static dependencies = ["websiteFormOption"];
     load(context) {
         return this.dependencies.websiteFormOption.prepareFields(context);
     }
     apply({ editingElement: fieldEl, value, loadResult: fields }) {
+        super.apply(...arguments);
         this.dependencies.websiteFormOption.clearValidationDataset(fieldEl);
         delete fieldEl.dataset.requirementComparator;
         const oldLabel = markup(fieldEl.querySelector(".s_website_form_label_content").innerHTML);
@@ -1418,13 +1562,14 @@ export class CustomFieldAction extends BuilderAction {
         return currentValue === value;
     }
 }
-export class ExistingFieldAction extends BuilderAction {
+export class ExistingFieldAction extends FormFieldAction {
     static id = "existingField";
     static dependencies = ["websiteFormOption"];
     load(context) {
         return this.dependencies.websiteFormOption.prepareFields(context);
     }
     apply({ editingElement: fieldEl, value, loadResult: fields }) {
+        super.apply(...arguments);
         const field = fields[value];
         setActiveProperties(fieldEl, field);
         this.dependencies.websiteFormOption.replaceField(fieldEl, field, fields);
@@ -1434,13 +1579,14 @@ export class ExistingFieldAction extends BuilderAction {
         return currentValue === value;
     }
 }
-export class SelectTypeAction extends BuilderAction {
+export class SelectTypeAction extends FormFieldAction {
     static id = "selectType";
     static dependencies = ["websiteFormOption"];
     load(context) {
         return this.dependencies.websiteFormOption.prepareFields(context);
     }
     apply({ editingElement: fieldEl, value, loadResult: fields }) {
+        super.apply(...arguments);
         const field = getActiveField(fieldEl, { fields });
         field.type = value;
         this.dependencies.websiteFormOption.replaceField(fieldEl, field, fields);
@@ -1450,13 +1596,14 @@ export class SelectTypeAction extends BuilderAction {
         return currentValue === value;
     }
 }
-export class ExistingFieldSelectTypeAction extends BuilderAction {
+export class ExistingFieldSelectTypeAction extends FormFieldAction {
     static id = "existingFieldSelectType";
     static dependencies = ["websiteFormOption"];
     load(context) {
         return this.dependencies.websiteFormOption.prepareFields(context);
     }
     apply({ editingElement: fieldEl, value, loadResult: fields }) {
+        super.apply(...arguments);
         const field = getActiveField(fieldEl, { fields });
         field.type = value;
         this.dependencies.websiteFormOption.replaceField(fieldEl, field, fields);
@@ -1466,7 +1613,7 @@ export class ExistingFieldSelectTypeAction extends BuilderAction {
         return currentValue === value;
     }
 }
-export class LinkStateToCountryAction extends BuilderAction {
+export class LinkStateToCountryAction extends FormFieldAction {
     static id = "linkStateToCountry";
     static dependencies = ["websiteFormOption"];
     setup() {
@@ -1474,6 +1621,7 @@ export class LinkStateToCountryAction extends BuilderAction {
     }
 
     async apply({ editingElement: inputEl }) {
+        super.apply(...arguments);
         const fieldEl = inputEl.closest(".s_website_form_field");
         const formEl = fieldEl.closest("form");
         const fields = await this.dependencies.websiteFormOption.prepareFields({
@@ -1489,6 +1637,7 @@ export class LinkStateToCountryAction extends BuilderAction {
     }
 
     clean({ editingElement: inputEl }) {
+        markFieldAsUserModified(inputEl);
         inputEl.dataset.linkStateToCountry = "false";
     }
 
@@ -1496,9 +1645,10 @@ export class LinkStateToCountryAction extends BuilderAction {
         return inputEl.dataset.linkStateToCountry === "true";
     }
 }
-export class MultiCheckboxDisplayAction extends BuilderAction {
+export class MultiCheckboxDisplayAction extends FormFieldAction {
     static id = "multiCheckboxDisplay";
     apply({ editingElement: fieldEl, value }) {
+        super.apply(...arguments);
         const targetEl = getMultipleInputs(fieldEl);
         const isHorizontal = value === "horizontal";
         for (const el of targetEl.querySelectorAll(".checkbox, .radio")) {
@@ -1549,13 +1699,14 @@ export class SelectLabelsPositionAction extends BuilderAction {
         return currentValue === value;
     }
 }
-export class SetDescriptionAction extends BuilderAction {
+export class SetDescriptionAction extends FormFieldAction {
     static id = "setDescription";
     static dependencies = ["websiteFormOption", "selection"];
     load(context) {
         return this.dependencies.websiteFormOption.prepareFields(context);
     }
     apply({ isPreviewing, editingElement: fieldEl, loadResult: fields, value }) {
+        super.apply(...arguments);
         const field = getActiveField(fieldEl, { fields });
         // This action is used for two scenarios:
         // 1. The target field is a checkbox: The field description will be set
@@ -1593,7 +1744,7 @@ export class SetDescriptionAction extends BuilderAction {
         }
     }
 }
-export class ToggleAllowEmptyAction extends BuilderAction {
+export class ToggleAllowEmptyAction extends FormFieldAction {
     static id = "toggleAllowEmpty";
     static dependencies = ["websiteFormOption"];
     setup() {
@@ -1603,6 +1754,7 @@ export class ToggleAllowEmptyAction extends BuilderAction {
         return this.dependencies.websiteFormOption.prepareFields(context);
     }
     apply({ editingElement: fieldEl, loadResult: fields }) {
+        super.apply(...arguments);
         const field = getActiveField(fieldEl, { fields });
         field.allowEmpty = !field.allowEmpty;
         field.records.forEach((rec) => (rec.selected = false));
@@ -1612,13 +1764,14 @@ export class ToggleAllowEmptyAction extends BuilderAction {
         return !!fieldEl.querySelector(".s_website_form_empty_option");
     }
 }
-export class SetEmptyPlaceholderAction extends BuilderAction {
+export class SetEmptyPlaceholderAction extends FormFieldAction {
     static id = "setEmptyPlaceholder";
     static dependencies = ["websiteFormOption"];
     load(context) {
         return this.dependencies.websiteFormOption.prepareFields(context);
     }
     apply({ editingElement: fieldEl, loadResult: fields, value }) {
+        super.apply(...arguments);
         const field = getActiveField(fieldEl, { fields });
         field.placeholder = value;
         this.dependencies.websiteFormOption.replaceField(fieldEl, field, fields);
@@ -1627,9 +1780,10 @@ export class SetEmptyPlaceholderAction extends BuilderAction {
         return fieldEl.querySelector(".s_website_form_empty_option")?.textContent;
     }
 }
-export class SelectTextareaValueAction extends BuilderAction {
+export class SelectTextareaValueAction extends FormFieldAction {
     static id = "selectTextareaValue";
     apply({ editingElement: fieldEl, value }) {
+        super.apply(...arguments);
         fieldEl.textContent = value;
         fieldEl.value = value;
     }
@@ -1637,10 +1791,11 @@ export class SelectTextareaValueAction extends BuilderAction {
         return fieldEl.textContent;
     }
 }
-export class ToggleRequiredAction extends BuilderAction {
+export class ToggleRequiredAction extends FormFieldAction {
     static id = "toggleRequired";
     static dependencies = ["websiteFormOption"];
     apply({ editingElement: fieldEl, params: { mainParam: activeValue } }) {
+        super.apply(...arguments);
         fieldEl.classList.add(activeValue);
         fieldEl
             .querySelectorAll("input, select, textarea")
@@ -1648,6 +1803,7 @@ export class ToggleRequiredAction extends BuilderAction {
         this.dependencies.websiteFormOption.setLabelsMark(fieldEl.closest("form"));
     }
     clean({ editingElement: fieldEl, params: { mainParam: activeValue } }) {
+        markFieldAsUserModified(fieldEl);
         fieldEl.classList.remove(activeValue);
         fieldEl
             .querySelectorAll("input, select, textarea")
@@ -1662,10 +1818,11 @@ export class ToggleRequiredAction extends BuilderAction {
 /**
  * Custom error message should be visible or not.
  */
-export class SetRequirementComparatorAction extends BuilderAction {
+export class SetRequirementComparatorAction extends FormFieldAction {
     static id = "setRequirementComparator";
     static dependencies = ["websiteFormOption"];
     apply({ editingElement: fieldEl }) {
+        super.apply(...arguments);
         if (!fieldEl.dataset.requirementComparator) {
             this.dependencies.websiteFormOption.clearValidationDataset(fieldEl);
         } else {
@@ -1697,12 +1854,14 @@ export class SetDateRequirementComparatorAction extends SetRequirementComparator
  * TODO this is basically a toggle whose only purpose is to show more options
  * in the sidebar... its status should not be saved in the website DOM...
  */
-export class SetCustomErrorMessageAction extends BuilderAction {
+export class SetCustomErrorMessageAction extends FormFieldAction {
     static id = "setCustomErrorMessage";
     apply({ editingElement: fieldEl }) {
+        super.apply(...arguments);
         fieldEl.dataset.customError = true;
     }
     clean({ editingElement: fieldEl }) {
+        markFieldAsUserModified(fieldEl);
         delete fieldEl.dataset.customError;
     }
     isApplied({ editingElement: fieldEl }) {
@@ -1712,16 +1871,18 @@ export class SetCustomErrorMessageAction extends BuilderAction {
 /**
  * Toggles the character limit on input fields.
  */
-export class ToggleCharacterLimitAction extends BuilderAction {
+export class ToggleCharacterLimitAction extends FormFieldAction {
     static id = "toggleCharacterLimit";
     setup() {
         this.preview = false;
     }
     apply({ editingElement: inputEl }) {
+        super.apply(...arguments);
         inputEl.setAttribute("maxlength", 100);
         inputEl.setAttribute("minlength", 0);
     }
     clean({ editingElement: inputEl }) {
+        markFieldAsUserModified(inputEl);
         inputEl.removeAttribute("maxlength");
         inputEl.removeAttribute("minlength");
     }
@@ -1732,12 +1893,13 @@ export class ToggleCharacterLimitAction extends BuilderAction {
 /**
  * Toggles the restriction of file types on file input fields.
  */
-export class ToggleRestrictFileTypesAction extends BuilderAction {
+export class ToggleRestrictFileTypesAction extends FormFieldAction {
     static id = "toggleRestrictFileTypes";
     setup() {
         this.preview = false;
     }
     apply({ editingElement: inputEl }) {
+        super.apply(...arguments);
         inputEl.toggleAttribute("accept");
     }
     isApplied({ editingElement: inputEl }) {
@@ -1747,12 +1909,13 @@ export class ToggleRestrictFileTypesAction extends BuilderAction {
 /**
  * Restricts to the allowed file types on file input fields.
  */
-export class SetAllowedFileTypesAction extends BuilderAction {
+export class SetAllowedFileTypesAction extends FormFieldAction {
     static id = "setAllowedFileTypes";
     setup() {
         this.preview = false;
     }
     apply({ editingElement: inputEl, params: { mainParam: activeValue } }) {
+        super.apply(...arguments);
         if (activeValue === "application/pdf") {
             inputEl.setAttribute("accept", activeValue);
         } else {
@@ -1765,6 +1928,7 @@ export class SetAllowedFileTypesAction extends BuilderAction {
         }
     }
     clean({ editingElement: inputEl, params: { mainParam: activeValue } }) {
+        markFieldAsUserModified(inputEl);
         let allowedMimeTypes = inputEl.accept ? inputEl.accept.split(",") : [];
         allowedMimeTypes = allowedMimeTypes.filter((mimeType) => mimeType !== activeValue);
         inputEl.setAttribute("accept", allowedMimeTypes.join(","));
@@ -1774,13 +1938,14 @@ export class SetAllowedFileTypesAction extends BuilderAction {
     }
 }
 
-export class SetVisibilityAction extends BuilderAction {
+export class SetVisibilityAction extends FormFieldAction {
     static id = "setVisibility";
     static dependencies = ["websiteFormOption"];
     load(context) {
         return this.dependencies.websiteFormOption.prepareConditionInputs(context);
     }
     apply({ editingElement: fieldEl, value, loadResult: conditionInputs }) {
+        super.apply(...arguments);
         if (value === "conditional") {
             for (const conditionInput of conditionInputs) {
                 if (conditionInput.name) {
@@ -1799,9 +1964,10 @@ export class SetVisibilityAction extends BuilderAction {
         return true;
     }
 }
-export class SetVisibilityDependencyAction extends BuilderAction {
+export class SetVisibilityDependencyAction extends FormFieldAction {
     static id = "setVisibilityDependency";
     apply({ editingElement: fieldEl, value }) {
+        super.apply(...arguments);
         return setVisibilityDependency(fieldEl, value);
     }
     isApplied({ editingElement: fieldEl, value }) {
@@ -1809,13 +1975,14 @@ export class SetVisibilityDependencyAction extends BuilderAction {
         return currentValue === value;
     }
 }
-export class SetFormCustomFieldValueListAction extends BuilderAction {
+export class SetFormCustomFieldValueListAction extends FormFieldAction {
     static id = "setFormCustomFieldValueList";
     static dependencies = ["websiteFormOption"];
     load(context) {
         return this.dependencies.websiteFormOption.prepareFields(context);
     }
     apply({ editingElement: fieldEl, value, loadResult: fields }) {
+        super.apply(...arguments);
         const valueList = JSON.parse(value);
         const field = getActiveField(fieldEl, { fields });
         field.records = valueList;
@@ -1830,7 +1997,7 @@ export class SetFormCustomFieldValueListAction extends BuilderAction {
     }
 }
 
-export class SetDependencyValueListAction extends BuilderAction {
+export class SetDependencyValueListAction extends FormFieldAction {
     static id = "setDependencyValueList";
     static dependencies = ["websiteFormOption"];
 
@@ -1853,6 +2020,7 @@ export class SetDependencyValueListAction extends BuilderAction {
         }
     }
     apply({ editingElement: fieldEl, value }) {
+        super.apply(...arguments);
         const values = JSON.parse(value);
         const selectedList = values.filter(({ selected }) => selected).map(({ name }) => name);
         fieldEl.dataset.visibilityCondition = selectedList.length
@@ -1920,21 +2088,23 @@ export class SetDependencyValueListAction extends BuilderAction {
     }
 }
 
-export class PropertyAction extends BuilderAction {
+export class PropertyAction extends FormFieldAction {
     static id = "property";
 
     apply({ editingElement, params: { property, format } = {}, value }) {
+        super.apply(...arguments);
         editingElement[property] = format ? format(value) : value;
     }
 }
-export class SetMultipleFilesAction extends BuilderAction {
+export class SetMultipleFilesAction extends FormFieldAction {
     static id = "setMultipleFiles";
     apply({ editingElement }) {
+        super.apply(...arguments);
         editingElement.multiple = editingElement.dataset.maxFilesNumber > 1;
     }
 }
 
-export class ToggleCheckboxLabel extends BuilderAction {
+export class ToggleCheckboxLabel extends FormFieldAction {
     static id = "toggleCheckboxLabel";
     static dependencies = ["websiteFormOption"];
 
@@ -1942,6 +2112,7 @@ export class ToggleCheckboxLabel extends BuilderAction {
         return this.dependencies.websiteFormOption.prepareFields(context);
     }
     apply({ editingElement: fieldEl, loadResult: fields }) {
+        super.apply(...arguments);
         const field = getActiveField(fieldEl, { fields });
         const labelPosition = field.formatInfo.labelPosition;
         const labelInvisible = !field.formatInfo.labelInvisible;

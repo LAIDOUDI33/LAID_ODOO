@@ -110,6 +110,7 @@
 </t>
 
 <t t-name="website.s_website_form_field_option">
+<BuilderContext action="'markFieldAsUserModified'">
     <BuilderRow label.translate="Type">
         <BuilderSelect t-if="!this.domState.elClassList.includes('s_website_form_model_required')"
             id="'type_opt'" preview="false"
@@ -523,6 +524,7 @@
             />
         </div>
     </t>
+</BuilderContext>
 </t>
 
 <t t-name="website.s_website_form_submit_option">
