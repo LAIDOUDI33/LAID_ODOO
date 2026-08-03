@@ -1,4 +1,5 @@
 import { Message } from "@mail/core/common/message_model";
+import { fields } from "@mail/model/misc";
 
 import { patch } from "@web/core/utils/patch";
 
@@ -7,6 +8,16 @@ const messagePatch = {
     setup() {
         super.setup(...arguments);
         this.disableChatbotAnswers = false;
+        this.isWelcomeMessage = fields.Attr(false, {
+            compute() {
+                return (
+                    this.thread?.channel &&
+                    this.thread.channel.channel_type === "livechat" &&
+                    this.thread.channel.hasWelcomeMessage &&
+                    this.id === this.thread.channel.livechatWelcomeMessage?.id
+                );
+            },
+        });
     },
 
     get notificationHidden() {
@@ -14,6 +25,18 @@ const messagePatch = {
             return super.notificationHidden;
         }
         return this.notificationType === "channel-left";
+    },
+
+    get canCopyMessageText() {
+        return super.canCopyMessageText && !this.isWelcomeMessage;
+    },
+
+    get canReplyTo() {
+        return super.canReplyTo && !this.isWelcomeMessage;
+    },
+
+    get canAddReaction() {
+        return super.canAddReaction && !this.isWelcomeMessage;
     },
 };
 patch(Message.prototype, messagePatch);
