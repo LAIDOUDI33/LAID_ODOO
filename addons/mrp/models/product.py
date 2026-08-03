@@ -280,7 +280,13 @@ class ProductProduct(models.Model):
         This override is used to get the correct quantities of products
         with 'phantom' as BoM type.
         """
+<<<<<<< c23cda2682b0895e03f35696b0a3e63330e45826
         bom_kits = self.env['mrp.bom'].sudo()._bom_find(self, bom_type='phantom')
+||||||| 89cf65958246c424bd4e6305a421de59da4aa1b1
+        bom_kits = self.env['mrp.bom']._bom_find(self, bom_type='phantom')
+=======
+        bom_kits = self.env['mrp.bom']._bom_find(self, bom_type='phantom', company_id=self.env.company.id)
+>>>>>>> 0a719929628454cfbc66c48472fd7fe5f57172df
         kits = self.filtered(lambda p: bom_kits.get(p))
         regular_products = self - kits
         res = (
