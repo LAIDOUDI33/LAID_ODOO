@@ -89,7 +89,7 @@
                                                     <t t-out="status"></t>
                                                 </div>
                                             </td>
-                                            <td class="align-middle text-end" name="info-column">
+                                            <td class="align-middle text-end info-column" name="info-column">
                                                 <button t-on-click.stop="() => this._onInfoOrder(order)" class="btn btn-link p-0 lh-1 text-info">
                                                     <i class="fa fa-info-circle fa-lg align-middle" aria-hidden="true"/>
                                                 </button>
@@ -131,6 +131,11 @@
                                                 }}">
                                                     <t t-out="status"></t>
                                                 </div>
+                                    </div>
+                                    <div class="d-flex justify-content-center info-column">
+                                        <button t-on-click.stop="() => this._onInfoOrder(order)" class="btn p-0 lh-1 btn-lg">
+                                            <i class="fa fa-info-circle align-middle" aria-hidden="true"/>
+                                        </button>
                                     </div>
                                     <div class="mx-2" name="delete-column">
                                         <div t-if="!this.shouldHideDeleteButton(order) and this.pos.cashier._role !== 'minimal'" class="d-flex align-items-center justify-content-center h-100" role="button" name="delete" t-on-click.stop="() => this.onDeleteOrder(order)">
