@@ -181,6 +181,7 @@ export class PosStore extends WithLazyGetterTrap {
         });
 
         this.handleQRPaymentLines();
+<<<<<<< a782c394944fa72132c30496a5e87dab6268aec5
 
         this.debouncedRecomputeServiceFees = debounce((order = this.getOrder()) => {
             order.recomputeServiceFees();
@@ -227,6 +228,11 @@ export class PosStore extends WithLazyGetterTrap {
             }
         });
         await this.checkAccessRight();
+||||||| 625fbb715d470637c0638c3713ddbaf0abc2eb74
+        await this.checkAccessRight();
+=======
+        this.checkAccessRight();
+>>>>>>> 1f9c477081b185c990813473829c0f5569ef2af1
     }
 
     handleQRPaymentLines() {
@@ -2116,11 +2122,7 @@ export class PosStore extends WithLazyGetterTrap {
     }
 
     async checkAccessRight() {
-        try {
-            this.canUserCreateProduct = await user.checkAccessRight("product.product", "create");
-        } catch {
-            this.canUserCreateProduct = false;
-        }
+        this.canUserCreateProduct = await user.checkAccessRight("product.product", "create");
     }
 
     get hasProductCreationAccess() {
