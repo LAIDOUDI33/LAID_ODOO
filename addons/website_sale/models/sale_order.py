@@ -856,6 +856,18 @@ class SaleOrder(models.Model):
         res["website_id"] = self.website_id.id
         return res
 
+    @api.model
+    def _find_by_reference_and_email(self, order_reference, email):
+        """Return the order matching both the given reference and customer email."""
+        return self.sudo().search(
+            [
+                ("name", "=", order_reference),
+                ("partner_id.email", "=ilike", email),
+                ("state", "=", "sale"),
+            ],
+            limit=1,
+        )
+
     def _cart_recovery_email_send(self):
         """Send the cart recovery email on the current recordset,
         making sure that the portal token exists to avoid broken links, and marking the email as
