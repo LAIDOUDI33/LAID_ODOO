@@ -209,7 +209,7 @@ class CalendarEvent(models.Model):
                 'email': user.partner_id.email,
                 'responseStatus': 'accepted',
             }]
-        emails = [a.get('email') for a in google_attendees]
+        emails = [a.get('email') for a in google_attendees if not a.get('resource', False)]
         existing_attendees = self.env['calendar.attendee']
         if google_event.exists(self.env):
             event = google_event.get_odoo_event(self.env)
