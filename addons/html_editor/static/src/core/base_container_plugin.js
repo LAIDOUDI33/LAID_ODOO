@@ -19,6 +19,7 @@ import { withSequence } from "@html_editor/utils/resource";
 import { selectElements } from "@html_editor/utils/dom_traversal";
 import { childNodeIndex } from "@html_editor/utils/position";
 import { callbacksForCursorUpdate } from "@html_editor/utils/selection";
+import { closestBlock } from "@html_editor/utils/blocks";
 
 /**
  * @typedef { Object } BaseContainerShared
@@ -90,6 +91,14 @@ export class BaseContainerPlugin extends Plugin {
                 }
             },
         ],
+        should_unwrap_edge_block_to_insert_predicates: (reference, nodeToInsert) => {
+            if (
+                this.isCandidateForBaseContainer(closestBlock(reference)) &&
+                this.isCandidateForBaseContainer(nodeToInsert)
+            ) {
+                return true;
+            }
+        },
         system_classes: [BASE_CONTAINER_CLASS],
     };
 

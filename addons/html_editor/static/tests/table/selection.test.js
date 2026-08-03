@@ -1799,7 +1799,7 @@ describe("move cursor with arrow keys", () => {
                             </tr>
                         </tbody>
                     </table>
-                    <p data-selection-placeholder="" o-we-hint-text='Type "/" for commands' class="o-we-hint o-horizontal-caret">[]<br></p>
+                    <p data-selection-placeholder="" class="o-horizontal-caret o-we-hint" o-we-hint-text='Type "/" for commands'>[]<br></p>
                     <table>
                         <tbody>
                             <tr>
@@ -2123,7 +2123,7 @@ describe("move cursor with arrow keys", () => {
                             </tr>
                         </tbody>
                     </table>
-                    <p data-selection-placeholder="" o-we-hint-text='Type "/" for commands' class="o-we-hint o-horizontal-caret">[]<br></p>
+                    <p data-selection-placeholder="" class="o-horizontal-caret o-we-hint" o-we-hint-text='Type "/" for commands'>[]<br></p>
                     <table>
                         <tbody>
                             <tr>
