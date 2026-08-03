@@ -336,6 +336,12 @@ class HrJob(models.Model):
     def create(self, vals_list):
         jobs = super().create(vals_list)
         jobs.sudo().interviewer_ids._create_recruitment_interviewers()
+        user_partner = self.env.user.partner_id
+        for job in jobs:
+            recruiter_partners = job.recruiter_id._get_related_partners()
+            partners = user_partner | recruiter_partners
+            job.message_subscribe(partners.ids)
+            job._job_position_message_auto_subscribe_notify(job, (recruiter_partners - user_partner).ids)
         return jobs
 
     def write(self, vals):
@@ -353,23 +359,25 @@ class HrJob(models.Model):
             interviewers_to_clean._remove_recruitment_interviewers()
             self.sudo().interviewer_ids._create_recruitment_interviewers()
 
+        user_partner = self.env.user.partner_id
         # Subscribe the recruiter if it has changed.
         if "recruiter_id" in vals:
             for job in self:
-                to_unsubscribe = [
-                    partner
-                    for partner in old_recruiters[job].user_partner_id.ids
-                    if partner not in job.manager_id._get_related_partners().ids
-                ]
-                job.message_unsubscribe(to_unsubscribe)
+                to_unsubscribe = old_recruiters[job].user_partner_id.filtered(
+                    lambda p: p not in job.manager_id._get_related_partners()
+                )
+                job.message_unsubscribe(to_unsubscribe.ids)
+                new_recruiter = job.recruiter_id._get_related_partners() - to_unsubscribe
+                job.message_subscribe(new_recruiter.ids)
+                job._job_position_message_auto_subscribe_notify(job, (new_recruiter - user_partner).ids)
                 application_ids = job.application_ids.filtered(
                     lambda x:
                         x.recruiter_id == old_recruiters[job] and
                         x.application_status == 'ongoing'
                 )
                 if application_ids:
-                    application_ids.message_unsubscribe(to_unsubscribe)
-                    application_ids.with_context(mail_auto_subscribe_no_notify=True).recruiter_id = job.recruiter_id
+                    application_ids.message_unsubscribe(to_unsubscribe.ids)
+                    application_ids.recruiter_id = job.recruiter_id
 
         # Since the alias is created upon record creation, the default values do not reflect the current values unless
         # specifically rewritten
@@ -380,6 +388,24 @@ class HrJob(models.Model):
                 alias_default_vals = job._alias_get_creation_values().get('alias_defaults', '{}')
                 job.alias_defaults = alias_default_vals
         return res
+
+    def _job_position_message_auto_subscribe_notify(self, job, new_recruiter):
+        if not new_recruiter:
+            return
+
+        notification_subject = _("You have been assigned as a recruiter for %s", job.name)
+        notification_body = _("You have been assigned as a recruiter for the Job Position %s", job.name)
+        job.message_notify(
+            res_id=job.id,
+            model=job._name,
+            partner_ids=new_recruiter,
+            author_id=self.env.user.partner_id.id,
+            email_from=self.env.user.email_formatted,
+            subject=notification_subject,
+            body=notification_body,
+            email_layout_xmlid="mail.mail_notification_layout",
+            model_description="Job Position",
+            )
 
     def _creation_subtype(self):
         return self.env.ref('hr_recruitment.mt_job_new')

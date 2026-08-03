@@ -650,7 +650,12 @@ class HrApplicant(models.Model):
         applicants = super().create(vals_list)
         applicants.sudo().interviewer_ids._create_recruitment_interviewers()
 
+        user_partner = self.env.user.partner_id
         for applicant in applicants:
+            recruiter_partners = applicant.recruiter_id._get_related_partners()
+            partners = user_partner | recruiter_partners
+            applicant.message_subscribe(partners.ids)
+            applicant._applicant_message_auto_subscribe_notify(applicant, (recruiter_partners - user_partner).ids)
             if applicant.talent_pool_ids and not applicant.pool_applicant_id:
                 applicant.pool_applicant_id = applicant
 
@@ -676,6 +681,9 @@ class HrApplicant(models.Model):
         # recruiter change: update date_open
         if vals.get('recruiter_id'):
             vals['date_open'] = fields.Datetime.now()
+        old_recruiters = {}
+        for applicant in self:
+            old_recruiters[applicant] = applicant.recruiter_id._get_related_partners()
         old_interviewers = self.interviewer_ids
         # stage_id: track last stage before update
         if 'stage_id' in vals:
@@ -695,7 +703,14 @@ class HrApplicant(models.Model):
             vals['date_last_stage_update'] = fields.Datetime.now()
         res = super().write(vals)
 
+        user_partner = self.env.user.partner_id
         for applicant in self:
+            recruiter_partners = applicant.recruiter_id._get_related_partners()
+            new_recruiter_partners = recruiter_partners - old_recruiters[applicant]
+            applicant.message_subscribe(new_recruiter_partners.ids)
+            new_recruiter = new_recruiter_partners - user_partner
+            if new_recruiter:
+                applicant._applicant_message_auto_subscribe_notify(applicant, new_recruiter.ids)
             if applicant.pool_applicant_id and applicant != applicant.pool_applicant_id and (not applicant.is_pool_applicant):
                 if 'email_from' in vals:
                     applicant.pool_applicant_id.email_from = vals['email_from']
@@ -733,6 +748,24 @@ class HrApplicant(models.Model):
         if self.filtered("is_pool_applicant"):
             raise UserError(self.env._("You cannot duplicate the talent(s)."))
         return super().copy(default=default)
+
+    def _applicant_message_auto_subscribe_notify(self, applicant, new_recruiter):
+        if not new_recruiter:
+            return
+
+        notification_subject = _("You have been assigned as a recruiter for %s", applicant.display_name)
+        notification_body = _("You have been assigned as a recruiter for the Applicant %s", applicant.partner_name)
+        applicant.message_notify(
+            res_id=applicant.id,
+            model=applicant._name,
+            partner_ids=new_recruiter,
+            author_id=self.env.user.partner_id.id,
+            email_from=self.env.user.email_formatted,
+            subject=notification_subject,
+            body=notification_body,
+            email_layout_xmlid="mail.mail_notification_layout",
+            model_description="Applicant",
+            )
 
     @api.model
     def get_empty_list_help(self, help_message):
