@@ -1450,6 +1450,47 @@ class StockQuant(TransactionCase):
             'product_id': self.product.id,
         }])
 
+    def test_reservation_preserved_after_multi_package_relocation(self):
+        customer_location = self.env.ref('stock.stock_location_customers')
+        package_b, package_a = self.env['stock.quant.package'].create([{}, {}])
+        self.env['stock.quant']._update_available_quantity(
+            self.product, self.stock_location, 1.0,
+            package_id=package_a, in_date=datetime(2026, 1, 2),
+        )
+        self.env['stock.quant']._update_available_quantity(
+            self.product, self.stock_location, 2.0,
+            package_id=package_b, in_date=datetime(2026, 1, 1),
+        )
+        first_delivery = self.env['stock.picking'].create({
+            'picking_type_id': self.ref('stock.picking_type_out'),
+            'location_id': self.stock_location.id,
+            'location_dest_id': customer_location.id,
+            'move_ids': [Command.create({
+                'name': 'Delivery',
+                'product_id': self.product.id,
+                'product_uom_qty': 2.0,
+                'location_id': self.stock_location.id,
+                'location_dest_id': customer_location.id,
+            })],
+        })
+        second_delivery = first_delivery.copy()
+        (first_delivery | second_delivery).action_confirm()
+
+        self.assertEqual(first_delivery.move_ids.quantity, 2.0)
+        self.assertEqual(second_delivery.move_ids.quantity, 1.0)
+        self.assertEqual(first_delivery.move_line_ids.package_id, package_b)
+        self.assertEqual(second_delivery.move_line_ids.package_id, package_a)
+
+        quants = self.env['stock.quant'].search([
+            ('product_id', '=', self.product.id),
+            ('location_id', '=', self.stock_location.id),
+            ('package_id', 'in', (package_a | package_b).ids),
+        ], order='id')
+        quants.move_quants(location_dest_id=self.stock_subloc3)
+
+        self.assertEqual(first_delivery.move_ids.quantity, 2.0)
+        self.assertEqual(second_delivery.move_ids.quantity, 1.0)
+
 
 class StockQuantRemovalStrategy(TransactionCase):
     def setUp(self):
