@@ -94,7 +94,7 @@ export function useActionInfo({ stringify = true } = {}) {
     };
 }
 
-function querySelectorAll(targets, selector) {
+export function querySelectorAll(targets, selector) {
     const elements = new Set();
     for (const target of targets) {
         for (const el of target.querySelectorAll(selector)) {
@@ -104,8 +104,7 @@ function querySelectorAll(targets, selector) {
     return [...elements];
 }
 
-export function useBuilderComponent() {
-    const comp = useComponent();
+export function useBuilderComponent(comp = useComponent()) {
     const newEnv = {};
     const oldEnv = useEnv();
     let editingElements;
@@ -145,8 +144,16 @@ export function useBuilderComponent() {
             builder: localization.direction,
         };
     }
-
-    useSubEnv(newEnv);
+    // Some component items are plain props objects rather than Owl
+    // components (e.g. `BuilderSearchSelect`). Since `useSubEnv` only
+    // works with components, those objects cannot inherit the parent
+    // environment automatically. In that case, we update their `env`
+    // manually here.
+    if (!(comp instanceof globalThis.owl.Component)) {
+        comp.env = { ...newEnv, editor: comp.env.editor };
+    } else {
+        useSubEnv(newEnv);
+    }
 }
 export function useDependencyDefinition(id, item, { onReady } = {}) {
     const comp = useComponent();
@@ -233,37 +240,8 @@ export function useGetItemValue() {
     };
 }
 
-export function useSelectableComponent(id, { onItemChange } = {}) {
-    useBuilderComponent();
-    const selectableItems = [];
+export function useLtrRtlHandler() {
     const ltrRtlMappedItems = new Map();
-    const refreshCurrentItemDebounced = useDebounced(refreshCurrentItem, 0, { immediate: true });
-    const env = useEnv();
-
-    const state = proxy({
-        currentSelectedItem: null,
-    });
-
-    function refreshCurrentItem() {
-        if (env.editor.isDestroyed || env.editor.shared.history.getIsPreviewing()) {
-            return;
-        }
-        let currentItem;
-        let itemPriority = 0;
-        for (const selectableItem of selectableItems) {
-            if (selectableItem.isApplied() && selectableItem.priority >= itemPriority) {
-                currentItem = selectableItem;
-                itemPriority = selectableItem.priority;
-            }
-        }
-        if (currentItem && currentItem !== toRaw(state.currentSelectedItem)) {
-            state.currentSelectedItem = currentItem;
-            env.dependencyManager.triggerDependencyUpdated();
-        }
-        if (currentItem) {
-            onItemChange?.(currentItem);
-        }
-    }
 
     onMounted(() => {
         for (const [ltrRtlMapping, mappedItems] of ltrRtlMappedItems.entries()) {
@@ -329,6 +307,65 @@ export function useSelectableComponent(id, { onItemChange } = {}) {
         }
     }
 
+    return {
+        addLtrRtlMappedItem: (item) => {
+            if (!ltrRtlMappedItems.has(item.ltrRtlMapping)) {
+                ltrRtlMappedItems.set(item.ltrRtlMapping, [item]);
+            } else {
+                ltrRtlMappedItems.get(item.ltrRtlMapping).push(item);
+            }
+        },
+        removeLtrRtlMappedItem: (item) => {
+            const mappedItems = ltrRtlMappedItems.get(item.ltrRtlMapping);
+            if (!mappedItems) {
+                return;
+            }
+            if (mappedItems.length === 1) {
+                ltrRtlMappedItems.delete(item.ltrRtlMapping);
+                return;
+            }
+            const index = mappedItems.indexOf(item);
+            if (index !== -1) {
+                mappedItems.splice(index, 1);
+            }
+        },
+        updateLtrRtlMappedItem: handleLtrRtl,
+    };
+}
+
+export function useSelectableComponent(id, { onItemChange } = {}) {
+    useBuilderComponent();
+    const selectableItems = [];
+    const refreshCurrentItemDebounced = useDebounced(refreshCurrentItem, 0, { immediate: true });
+    const env = useEnv();
+
+    const state = proxy({
+        currentSelectedItem: null,
+    });
+
+    const { addLtrRtlMappedItem, removeLtrRtlMappedItem, updateLtrRtlMappedItem } = useLtrRtlHandler();
+
+    function refreshCurrentItem() {
+        if (env.editor.isDestroyed || env.editor.shared.history.getIsPreviewing()) {
+            return;
+        }
+        let currentItem;
+        let itemPriority = 0;
+        for (const selectableItem of selectableItems) {
+            if (selectableItem.isApplied() && selectableItem.priority >= itemPriority) {
+                currentItem = selectableItem;
+                itemPriority = selectableItem.priority;
+            }
+        }
+        if (currentItem && currentItem !== toRaw(state.currentSelectedItem)) {
+            state.currentSelectedItem = currentItem;
+            env.dependencyManager.triggerDependencyUpdated();
+        }
+        if (currentItem) {
+            onItemChange?.(currentItem);
+        }
+    }
+
     if (id) {
         useDependencyDefinition(id, {
             type: "select",
@@ -360,28 +397,9 @@ export function useSelectableComponent(id, { onItemChange } = {}) {
             items: selectableItems,
             refreshCurrentItem: () => refreshCurrentItem(),
             getSelectableState: () => state,
-            addLtrRtlMappedItem: (item) => {
-                if (!ltrRtlMappedItems.has(item.ltrRtlMapping)) {
-                    ltrRtlMappedItems.set(item.ltrRtlMapping, [item]);
-                } else {
-                    ltrRtlMappedItems.get(item.ltrRtlMapping).push(item);
-                }
-            },
-            removeLtrRtlMappedItem: (item) => {
-                const mappedItems = ltrRtlMappedItems.get(item.ltrRtlMapping);
-                if (!mappedItems) {
-                    return;
-                }
-                if (mappedItems.length === 1) {
-                    ltrRtlMappedItems.delete(item.ltrRtlMapping);
-                    return;
-                }
-                const index = mappedItems.indexOf(item);
-                if (index !== -1) {
-                    mappedItems.splice(index, 1);
-                }
-            },
-            updateLtrRtlMappedItem: handleLtrRtl,
+            addLtrRtlMappedItem,
+            removeLtrRtlMappedItem,
+            updateLtrRtlMappedItem,
         },
     });
 }
@@ -559,8 +577,7 @@ export function useReloadAction(getAllActions) {
     return { reload };
 }
 
-export function useHasPreview(getAllActions) {
-    const comp = useComponent();
+export function useHasPreview(getAllActions, comp = useComponent()) {
     const getAction = comp.env.editor.shared.builderActions.getAction;
 
     let hasPreview = true;
@@ -580,7 +597,7 @@ export function useHasPreview(getAllActions) {
     );
 }
 
-function useWithLoadingEffect(getAllActions) {
+export function useWithLoadingEffect(getAllActions) {
     const env = useEnv();
     const getAction = env.editor.shared.builderActions.getAction;
     let withLoadingEffect = true;
@@ -596,7 +613,7 @@ function useWithLoadingEffect(getAllActions) {
     return withLoadingEffect;
 }
 
-function useCanTimeout(getAllActions) {
+export function useCanTimeout(getAllActions) {
     const env = useEnv();
     const getAction = env.editor.shared.builderActions.getAction;
     let canTimeout = true;
@@ -621,9 +638,8 @@ export function revertPreview(editor) {
     return editor.shared.operation.next();
 }
 
-export function useClickableBuilderComponent() {
-    useBuilderComponent();
-    const comp = useComponent();
+export function useClickableBuilderComponent(comp = useComponent()) {
+    useBuilderComponent(comp);
     const { getAllActions, callOperation, isApplied } = getAllActionsAndOperations(comp);
     const getAction = comp.env.editor.shared.builderActions.getAction;
 
@@ -634,7 +650,7 @@ export function useClickableBuilderComponent() {
     const inheritedActionIds =
         comp.props.inheritedActions || comp.env.weContext.inheritedActions || [];
 
-    const hasPreview = useHasPreview(getAllActions);
+    const hasPreview = useHasPreview(getAllActions, comp);
     const operationWithReload = useOperationWithReload(callApply, reload);
 
     const withLoadingEffect = useWithLoadingEffect(getAllActions);
@@ -716,7 +732,9 @@ export function useClickableBuilderComponent() {
     }
 
     async function callApply(applySpecs, isPreviewing) {
-        await comp.env.selectableContext?.cleanSelectedItem(applySpecs, isPreviewing);
+        const cleanSelectedItem =
+            comp.env.selectableContext?.cleanSelectedItem || comp.cleanSelectedItem;
+        await cleanSelectedItem?.(applySpecs, isPreviewing);
         const cleans = inheritedActionIds
             .map((actionId) => comp.env.dependencyManager.get(actionId).cleanSelectedItem)
             .filter(Boolean);
@@ -1344,9 +1362,12 @@ function _shouldClean(comp, hasClean, isApplied) {
     if (!hasClean) {
         return false;
     }
-    const shouldToggle = !comp.env.selectableContext;
+    const shouldToggle = !_isSelectable(comp);
     const shouldClean = shouldToggle && isApplied;
     return comp.props.inverseAction ? !shouldClean : shouldClean;
+}
+function _isSelectable(comp) {
+    return comp.env.selectableContext || comp.isSelectable;
 }
 export function convertParamToObject(param) {
     if (param === undefined) {

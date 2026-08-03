@@ -2,7 +2,7 @@ import { Component, onWillDestroy, props, proxy, signal, t, useEffect } from "@o
 import { useService } from "@web/core/utils/hooks";
 import { useCachedModel } from "@html_builder/core/cached_model_utils";
 import { _t } from "@web/core/l10n/translation";
-import { SelectMenu } from "@web/core/select_menu/select_menu";
+import { SelectMenu, useSelectMenuHandler } from "@web/core/select_menu/select_menu";
 import { useDropdownCloser } from "@web/core/dropdown/dropdown_hooks";
 import { shallowEqual } from "@web/core/utils/arrays";
 
@@ -60,26 +60,14 @@ export class SelectMany2X extends Component {
             this.state.searchResults = [];
         });
         this.menuRef = signal.ref();
-        onWillDestroy(() => this.removeListeners?.());
-    }
-    onOpened() {
-        const menuEl = this.menuRef();
-        if (menuEl) {
-            this.removeListeners?.();
-            const onNavigatedAway = this.onNavigatedAway.bind(this);
-            const onNavigatedBack = this.onNavigatedBack.bind(this);
-            menuEl.addEventListener("pointerleave", onNavigatedAway);
-            menuEl.addEventListener("pointerenter", onNavigatedBack);
-            this.removeListeners = () => {
-                delete this.removeListeners;
-                menuEl.removeEventListener("pointerleave", onNavigatedAway);
-                menuEl.removeEventListener("pointerenter", onNavigatedBack);
-            };
-        }
-    }
-    onClosed() {
-        this.removeListeners?.();
-        this.onNavigatedAway();
+        const { removeListeners, onOpened, onClosed } = useSelectMenuHandler(this.menuRef, {
+            onSelectMenuClosed: this.onNavigatedAway.bind(this),
+            onNavigatedAway: this.onNavigatedAway.bind(this),
+            onNavigatedBack: this.onNavigatedBack.bind(this),
+        });
+        this.onOpened = onOpened.bind(this);
+        this.onClosed = onClosed.bind(this);
+        onWillDestroy(() => removeListeners?.());
     }
     searchInvalidationKey(props) {
         return JSON.stringify([props.model, props.fields, props.domain, props.displayNameField]);
