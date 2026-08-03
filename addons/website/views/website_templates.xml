@@ -2637,7 +2637,7 @@
                 <div class="modal-dialog d-flex s_popup_size_full">
                     <div class="modal-content oe_structure">
                         <!-- Keep this section equivalent to the rendering of the `website.cookies_bar.discrete` client template -->
-                        <section class="o_colored_level o_cc o_cc1">
+                        <section class="o_colored_level o_cc o_cc1 pe-5">
                             <div class="container">
                                 <div class="row">
                                     <div class="col-lg-8 pt16">
@@ -2655,6 +2655,7 @@
                                 </div>
                             </div>
                         </section>
+                        <button type="button" class="s_popup_close o_cookies_bar_close border-0 p-0 o_we_no_overlay o_not_editable shadow-none" aria-label="Close">×</button>
                     </div>
                 </div>
             </div>
