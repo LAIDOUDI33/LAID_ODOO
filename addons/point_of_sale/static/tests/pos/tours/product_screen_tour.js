@@ -833,6 +833,15 @@ registry.category("web_tour.tours").add("test_product_create_update_from_fronten
             Dialog.is({ title: "Edit Product" }),
 
             // Edit the product with new details.
+            // First wait 1 seconds as the write_date timestamp is precise to the second,
+            // if the change is done in the same second as the creation, the product will not be updated.
+            {
+                trigger: "body",
+                run: () =>
+                    new Promise((resolve) => {
+                        setTimeout(resolve, 1000); // wait 1 second
+                    }),
+            },
             ProductScreen.editProductFromFrontend(
                 "Test Frontend Product Edited",
                 "710535977348",
@@ -1072,6 +1081,7 @@ registry.category("web_tour.tours").add("test_preset_timing_retail", {
             Chrome.presetTimingSlotHourNotExists("9:00am"),
             Chrome.selectPresetTimingSlotHour({ title: "delivery", hour: "5:00pm" }),
             Chrome.presetTimingSlotIs("5:00pm"),
+            Chrome.isSynced(),
             Chrome.clickOrders(),
             TicketScreen.nthRowContains(2, "002"),
             TicketScreen.nthRowContains(2, "Delivery", false),

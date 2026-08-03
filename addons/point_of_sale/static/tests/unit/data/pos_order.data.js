@@ -14,6 +14,10 @@ export class PosOrder extends models.ServerModel {
         return [];
     }
 
+    _load_pos_data_dependencies() {
+        return ["res.partner"];
+    }
+
     cancel_order_from_pos(self) {
         const records = this.browse(self);
         const orderIds = [];
@@ -32,10 +36,6 @@ export class PosOrder extends models.ServerModel {
         const orderId = super.create(...arguments);
         this.write([orderId], { pos_reference: "000-0-000000" });
         return orderId;
-    }
-
-    get_receipt_template_for_pos_frontend() {
-        return [];
     }
 
     sync_from_ui(data) {

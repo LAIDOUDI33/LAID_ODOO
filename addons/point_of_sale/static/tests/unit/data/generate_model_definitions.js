@@ -40,13 +40,13 @@ import { AccountFiscalPosition } from "./account_fiscal_position.data";
 import { ResCurrency } from "./res_currency.data";
 import { PosNote } from "./pos_note.data";
 import { ProductTag } from "./product_tag.data";
-import { IrModuleModule } from "./ir_module_module.data";
 import { AccountJournal } from "./account_journal.data";
 import { IrSequence } from "./ir_sequence.data";
 import { BarcodeNomenclature } from "./barcode_nomenclature.data";
 import { ProductAttributeValue } from "./product_attribute_value.data";
 import { PosPrepOrder } from "./pos_prep_order.data";
 import { PosPrepLine } from "./pos_prep_line.data";
+import { IrUiView } from "./ir_ui_view.data";
 
 export const hootPosModels = [
     ResCountry,
@@ -90,12 +90,12 @@ export const hootPosModels = [
     AccountFiscalPosition,
     IrSequence,
     PosNote,
-    IrModuleModule,
     AccountJournal,
     ResourceCalendar,
     BarcodeNomenclature,
     PosPrepOrder,
     PosPrepLine,
+    IrUiView,
 ];
 
 export const definePosModels = () => {
