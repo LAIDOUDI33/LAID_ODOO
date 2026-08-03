@@ -289,12 +289,6 @@ class ProductProduct(models.Model):
             return self._get_available_uoms()[:1] or self.uom_id
         return super()._get_main_uom()
 
-    def _get_extra_tracking_values(self, **kwargs):
-        extra_tracking_values = {}
-        if kwargs.get("res_model") == self._name and (res_id := kwargs.get("res_id")):
-            extra_tracking_values["product_id"] = res_id
-        return extra_tracking_values
-
     def _is_donation(self):
         """Return whether this product is the donation product used by the donation snippet."""
         self.ensure_one()

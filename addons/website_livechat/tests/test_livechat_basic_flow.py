@@ -290,28 +290,30 @@ class TestLivechatBasicFlowHttpCase(HttpCase, TestLivechatCommon):
                 "website": [
                     {"id": self.env.ref("base.default_website").id, "name": "My Website"}
                 ],
-                "website.page": [
-                    {"id": self.page_1.id, "name": "Test Page 1"},
-                    {"id": self.page_2.id, "name": "Test Page 2"},
-                ],
                 "website.track": [
                     {
                         "id": self.track_ids[2].id,
-                        "page_id": self.page_1.id,
+                        "name": "Test Page 1",
+                        "res_id": self.page_1.id,
+                        "res_model": "website.page",
                         "visit_datetime": fields.Datetime.to_string(
                             self.track_ids[2].visit_datetime
                         ),
                     },
                     {
                         "id": self.track_ids[1].id,
-                        "page_id": self.page_2.id,
+                        "name": "Test Page 2",
+                        "res_id": self.page_2.id,
+                        "res_model": "website.page",
                         "visit_datetime": fields.Datetime.to_string(
                             self.track_ids[1].visit_datetime
                         ),
                     },
                     {
                         "id": self.track_ids[0].id,
-                        "page_id": self.page_1.id,
+                        "name": "Test Page 1",
+                        "res_id": self.page_1.id,
+                        "res_model": "website.page",
                         "visit_datetime": fields.Datetime.to_string(
                             self.track_ids[0].visit_datetime
                         ),

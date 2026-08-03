@@ -2071,11 +2071,14 @@ class WebsiteSale(payment_portal.PaymentPortal):
             return None
         visitor_sudo = self.env["ir.http"]._get_visitor_from_request()
         if visitor_sudo:
-            domain = [("visitor_id", "=", visitor_sudo.id)]
+            domain = [("visitor_id", "=", visitor_sudo.id), ("res_model", "=", "product.product")]
             if product_id:
-                domain += [("product_id", "=", int(product_id))]
+                domain += [("res_id", "=", int(product_id))]
             else:
-                domain += [("product_id.product_tmpl_id", "=", int(product_template_id))]
+                product_variant_ids = self.env["product.product"].sudo().search(
+                    [("product_tmpl_id", "=", int(product_template_id))]
+                ).ids
+                domain += [("res_id", "in", product_variant_ids)]
             self.env["website.track"].sudo().search(domain).unlink()
         return {}
 

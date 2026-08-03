@@ -148,7 +148,8 @@ class WebsiteVisitor(models.Model):
                              website_track.visit_datetime
                         FROM website_track
                        WHERE website_track.visitor_id = website_visitor.id
-                         AND website_track.page_id IS NOT NULL
+                         AND website_track.res_model = 'website.page'
+                         AND website_track.res_id IS NOT NULL
                     ORDER BY website_track.visit_datetime DESC, website_track.id DESC
                        LIMIT 3
                   ) AS website_track ON TRUE
@@ -165,11 +166,28 @@ class WebsiteVisitor(models.Model):
                 self.env["website.track"].browse(track_ids).with_prefetch(all_track_ids)
             )
         # sudo: website.track - reading the history of accessible visitor is acceptable
+        tracks = self.env["website.track"].sudo().browse(all_track_ids)
+        tracked_record_ids_by_model = defaultdict(set)
+        for track in tracks:
+            tracked_record_ids_by_model[track.res_model].add(track.res_id)
+
+        tracked_record_names_by_model = {
+            model: {
+                record.id: record.name
+                for record in self.env[model].sudo().browse(res_ids)
+            }
+            for model, res_ids in tracked_record_ids_by_model.items()
+        }
         res.many(
             "last_track_ids",
             lambda res: (
-                res.one("page_id", ["name"]),
+                res.attr("res_model"),
+                res.attr("res_id"),
                 res.attr("visit_datetime"),
+                res.attr(
+                    "name",
+                    value=lambda track: tracked_record_names_by_model[track.res_model].get(track.res_id),
+                ),
             ),
             value=lambda v: tracks_by_visitor[v].sudo(),
         )

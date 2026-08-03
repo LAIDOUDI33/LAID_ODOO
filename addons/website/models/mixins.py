@@ -264,9 +264,6 @@ class WebsiteLocatedMixin(models.AbstractModel):
             if record.website_url != '#':
                 record.website_absolute_url = url_join(record.get_base_url(), record.website_url)
 
-    def _get_extra_tracking_values(self, **kwargs):
-        return {}
-
 
 class WebsiteStructuredDataMixin(models.AbstractModel):
     """Mixin to generate Schema.org JSON-LD structured data for website pages."""
