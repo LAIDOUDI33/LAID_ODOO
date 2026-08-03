@@ -334,6 +334,7 @@ export class MassMailingHtmlField extends HtmlField {
             filterTemplates: this.props.filterTemplates,
             mailingModelId: this.props.record.data.mailing_model_id.id,
             mailingModelName: this.props.record.data.mailing_model_id.display_name || "",
+            isTemplate: this.props.record.data.is_template,
         };
     }
 
