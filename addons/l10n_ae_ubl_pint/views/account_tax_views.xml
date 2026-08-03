@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="account_tax_form_l10n_ae_ubl_pint" model="ir.ui.view">
+        <field name="name">account.tax.form.l10n.it</field>
+        <field name="model">account.tax</field>
+        <field name="priority">20</field>
+        <field name="inherit_id" ref="account.view_tax_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='advanced_options']" position="inside">
+                <group invisible="country_code != 'AE'">
+                    <group>
+                        <field name="l10n_ae_exemption_reason_code" string="FTA Exemption Code"/>
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>
