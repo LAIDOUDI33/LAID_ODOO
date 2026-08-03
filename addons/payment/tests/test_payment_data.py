@@ -49,6 +49,20 @@ class TestPaymentData(PaymentCommon):
         self.assertEqual(tx_lock_mock.call_count, 1)
         self.assertEqual(data_lock_mock.call_count, 1)
 
+    def test_processing_cron_locks_source_transaction(self):
+        PaymentTransaction = self.registry["payment.transaction"]
+        tx = self.payment_data.transaction_id
+        child_tx = tx._create_child_transaction(tx.amount)
+        self.payment_data.transaction_id = child_tx
+        with (
+            patch.object(
+                PaymentTransaction, "try_lock_for_update", autospec=True, return_value=child_tx + tx
+            ) as try_lock_for_update_mock,
+            patch.object(PaymentTransaction, "_process"),
+        ):
+            self._run_processing()
+        self.assertEqual(try_lock_for_update_mock.call_args[0][0], child_tx + tx)
+
     def test_processing_cron_releases_locks_when_skipping_processing(self):
         PaymentTransaction = self.registry["payment.transaction"]
         PaymentData = self.registry["payment.data"]
