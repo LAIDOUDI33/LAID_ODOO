@@ -231,8 +231,10 @@ class StockMove(models.Model):
         """
             Enforce the relationship between subcontracting receipt moves and their respective subcontracting productions.
             * For untracked moves:
-                * There will always be only 1 production.
-                * Updating the move quantity will update the production quantity.
+                * There may be several productions, e.g. if they were split or if the product is no
+                  longer tracked.
+                * Updating the move quantity will spread it over the linked productions, keeping at
+                  least 1 of them linked to the subcontracting receipt.
             * For tracked moves:
                 * There will be 1 production for every lot on this move.
                 * This method will enforce the synchronisation between the total quantity per lot on the move and the linked productions.
@@ -245,12 +247,22 @@ class StockMove(models.Model):
             if not productions:
                 continue
             if move.has_tracking == 'none':
-                if productions.product_uom_id.compare(productions.product_qty, move.quantity) != 0:
+                open_productions = productions.filtered(lambda p: p.state not in ('done', 'cancel')).sorted('id')
+                if not open_productions:
+                    continue
+                if move.product_uom.compare(sum(open_productions.mapped('product_qty')), move.quantity) != 0:
+                    new_qty = move.quantity or move.product_uom_qty
+                    # Get rid of the productions that do not fit in the new quantity anymore, but
+                    # always keep 1 production linked to the move.
+                    while len(open_productions) > 1 and move.product_uom.compare(sum(open_productions[:-1].mapped('product_qty')), new_qty) >= 0:
+                        production_to_remove = open_productions[-1]
+                        open_productions -= production_to_remove
+                        production_to_remove.sudo().with_context(skip_activity=True).unlink()
                     self.sudo().env['change.production.qty'].with_context(skip_activity=True).create([{
-                        'mo_id': productions.id,
-                        'product_qty': move.quantity or move.product_uom_qty,
+                        'mo_id': open_productions[-1].id,
+                        'product_qty': new_qty - sum(open_productions[:-1].mapped('product_qty')),
                     }]).change_prod_qty()
-                    productions.action_assign()
+                    open_productions.action_assign()
             else:
                 qty_by_lot = dict(move.move_line_ids._read_group([('move_id', '=', move.id)], ['lot_id'], ['quantity_product_uom:sum']))
                 mos_to_assign = self.env['mrp.production']

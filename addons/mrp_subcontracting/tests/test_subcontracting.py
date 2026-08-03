@@ -803,6 +803,58 @@ class TestSubcontractingFlows(TestMrpSubcontractingCommon):
         self.assertEqual(len(subcontracted_mo.filtered(lambda p: p.lot_producing_ids == new_lot)), 1)
         self.assertEqual(len(subcontracted_mo.filtered(lambda p: p.lot_producing_ids != new_lot)), 2)
 
+    def test_sync_untracked_move_with_multiple_productions(self):
+        """ A subcontracted move may end up linked to several productions and then be considered
+        untracked, e.g. if the tracking of the product is set back to 'none' after the per-lot
+        productions were created. Syncing such a move should not assume a single production.
+        """
+        self.finished.tracking = 'serial'
+        self.bom.consumption = 'flexible'
+
+        with Form(self.env['stock.picking']) as picking_form:
+            picking_form.picking_type_id = self.env.ref('stock.picking_type_in')
+            picking_form.partner_id = self.subcontractor_partner1
+            with picking_form.move_ids.new() as move:
+                move.product_id = self.finished
+                move.product_uom_qty = 2
+            picking_receipt = picking_form.save()
+        picking_receipt.action_confirm()
+        move = picking_receipt.move_ids
+        self.assertEqual(len(move._get_subcontract_production()), 1)
+
+        # Register a serial number for each finished product: 1 production per lot
+        finished_lots = self.env['stock.lot'].create([{
+            'name': 'lot_%s' % number,
+            'product_id': self.finished.id,
+        } for number in range(2)])
+        action = move.action_show_details()
+        with Form(move.with_context(action['context']), view=action['view_id']) as move_form:
+            for idx, lot in enumerate(finished_lots):
+                with move_form.move_line_ids.edit(idx) as move_line:
+                    move_line.lot_id = lot
+            move_form.save()
+        self.assertEqual(len(move._get_subcontract_production()), 2)
+
+        # The productions remain, but the move is now untracked
+        self.finished.tracking = 'none'
+        self.assertEqual(move.has_tracking, 'none')
+        self.assertEqual(len(move._get_subcontract_production()), 2)
+
+        move.quantity = 3
+
+        subcontracted = move._get_subcontract_production().filtered(lambda p: p.state != 'cancel')
+        self.assertEqual(len(subcontracted), 2)
+        self.assertEqual(sum(subcontracted.mapped('product_qty')), 3)
+        self.assertEqual(move.product_uom_qty, 2)
+
+        # Decreasing below what the productions can absorb drops the extra ones
+        move.quantity = 1
+
+        subcontracted = move._get_subcontract_production().filtered(lambda p: p.state != 'cancel')
+        self.assertEqual(len(subcontracted), 1)
+        self.assertEqual(sum(subcontracted.mapped('product_qty')), 1)
+        self.assertEqual(move.product_uom_qty, 2)
+
     def test_decrease_quantity_done(self):
         self.bom.consumption = 'flexible'
         supplier_location = self.env.ref('stock.stock_location_suppliers')
