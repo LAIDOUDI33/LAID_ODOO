@@ -7,6 +7,7 @@ export class AccordionItem extends Component {
     props = props({
         disabled: t.boolean().optional(false),
         slots: t.object(),
+        contentClass: t.string().optional(""),
     });
 
     content = signal.ref();
