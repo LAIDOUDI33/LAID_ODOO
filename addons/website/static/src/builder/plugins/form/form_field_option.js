@@ -36,13 +36,16 @@ export class FormFieldOption extends BaseOptionComponent {
             valueList: null,
         });
         this.domState = useDomState((el) => {
-            const modelName = getModelName(el.closest("form"));
+            const formEl = el.closest("form");
+            const modelName = getModelName(formEl);
             const fieldName = getFieldName(el);
+            const isFormShareable = !!formEl.dataset.shareableId;
             return {
                 elDataset: { ...el.dataset },
                 elClassList: [...el.classList],
                 fieldName,
                 modelName,
+                isFormShareable,
             };
         });
         this.format = {

@@ -36,6 +36,7 @@ import {
     rerenderField,
     getFormCacheKey,
     getDescriptionPosition,
+    getShareableFormUrl,
 } from "./utils";
 import { SyncCache } from "@html_builder/utils/sync_cache";
 import { _t } from "@web/core/l10n/translation";
@@ -51,6 +52,7 @@ import { nodeSize } from "@html_editor/utils/position";
 import { applyFunDependOnSelectorAndExclude } from "@html_builder/plugins/utils";
 import { isZWS } from "@html_editor/utils/dom_info";
 import { withSequence } from "@html_editor/utils/resource";
+import { browser } from "@web/core/browser/browser";
 
 /**
  * @typedef { Object } FormOptionShared
@@ -195,6 +197,8 @@ export class FormOptionPlugin extends Plugin {
             ToggleCharacterLimitAction,
             SetAllowedFileTypesAction,
             ToggleRestrictFileTypesAction,
+            // Form & Field common actions
+            CopyToClipboardAction,
         },
         content_not_editable_selectors: ".s_website_form form",
         content_editable_selectors: [
@@ -1957,6 +1961,33 @@ export class ToggleCheckboxLabel extends BuilderAction {
     isApplied({ editingElement: fieldEl }) {
         const formatInfo = getFieldFormat(fieldEl);
         return formatInfo.labelInvisible;
+    }
+}
+// Form & Field common actions
+export class CopyToClipboardAction extends BuilderAction {
+    static id = "copyToClipboard";
+    setup() {
+        this.preview = false;
+    }
+    async apply({ editingElement: el, params: { mainParam: elType } }) {
+        let text, message;
+        if (elType === "shareableLink") {
+            text = getShareableFormUrl(el);
+            message = _t("Shareable link copied to clipboard");
+        } else if (elType === "fieldName") {
+            text = getFieldName(el);
+            message = _t("Field name copied to clipboard");
+        }
+        if (text && message) {
+            let type = "success";
+            try {
+                await browser.navigator.clipboard.writeText(text);
+            } catch {
+                message = _t("Copy operation failed");
+                type = "danger";
+            }
+            this.services.notification.add(message, { type });
+        }
     }
 }
 

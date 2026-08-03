@@ -1,3 +1,4 @@
+import { browser } from "@web/core/browser/browser";
 import { _t } from "@web/core/l10n/translation";
 import { localeCompare } from "@web/core/l10n/utils";
 import { renderToElement } from "@web/core/utils/render";
@@ -613,4 +614,18 @@ export function getDescriptionPosition(fieldEl) {
             ? descriptionPositionClass.replace(DESCRIPTION_POSITION_PREFIX, "")
             : "stacked";
     }
+}
+
+/**
+ * Returns the shareable, pre-fillable URL of a form.
+ *
+ * @param {HTMLFormElement} formEl
+ * @returns {string}
+ */
+export function getShareableFormUrl(formEl) {
+    const url = new URL(`${browser.location.origin}${browser.location.pathname}`);
+    if (formEl.dataset.shareableId) {
+        url.searchParams.set("usp_pp", formEl.dataset.shareableId);
+    }
+    return url.toString();
 }
