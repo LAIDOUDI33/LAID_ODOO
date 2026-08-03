@@ -257,7 +257,7 @@ export class IconPlugin extends Plugin {
         if (nodes.length === 0) {
             return;
         }
-        const el = closestElement(nodes[0], "font");
+        const el = closestElement(nodes[0], "span");
         if (!el) {
             return;
         }

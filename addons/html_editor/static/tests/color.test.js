@@ -1042,9 +1042,8 @@ test("should be able to add style on a link with template coded style", async ()
     await testEditor({
         contentBefore: '<p><a href="#" class="text-muted">[a]</a></p>',
         stepFunction: setColor("text-o-color-1", "color"),
-        // confirm me
         contentAfter:
-            '<p><span class="text-o-color-1"><a href="#" class="text-muted">[a]</a></span></p>',
+            '<p><a href="#" class="text-muted"><span class="text-o-color-1">[a]</span></a></p>',
     });
 });
 

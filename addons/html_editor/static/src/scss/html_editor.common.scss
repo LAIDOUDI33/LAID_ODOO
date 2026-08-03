@@ -854,7 +854,7 @@ code.o_inline_code {
 }
 
 // Ensure colored font wrapper is inherited by child links
-font[class^="text-o-"] a,
-font[style*="color"] a {
+span[class^="text-o-"] a,
+span[style*="color"] a {
     color: inherit !important;
 }
