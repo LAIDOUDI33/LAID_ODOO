@@ -9,7 +9,7 @@ import wSaleUtils from "@website_sale/js/website_sale_utils";
 export class ShopPage extends Interaction {
     static selector = '.o_wsale_products_page';
     dynamicContent = {
-        'form.js_attributes input, form.js_attributes select': {
+        'form.js_attributes input:not(.o_attr_range), form.js_attributes select': {
             't-on-change.prevent': this.onChangeAttribute,
         },
         '.o_wsale_products_searchbar_form': { 't-on-submit': this.onSearch },
@@ -72,6 +72,11 @@ export class ShopPage extends Interaction {
             ...Object.fromEntries(wSaleUtils.clearAttributeValueParams(url.searchParams)),
             ...Object.fromEntries(attributeValueParams),
         });
+
+        const attributeRange = new URL(window.location.href).searchParams.get('attribute_range');
+        if (attributeRange) {
+            searchParams.set('attribute_range', attributeRange);
+        }
         // Aggregate all tags into a single `tags` search param, with duplicates removed.
         if (tagSlugs.length) {
             searchParams.set('tags', [...new Set(tagSlugs)].join(','));

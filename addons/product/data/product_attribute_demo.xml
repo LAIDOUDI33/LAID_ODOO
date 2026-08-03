@@ -348,14 +348,17 @@
     </record>
     <record id="pav_height_45" model="product.attribute.value">
         <field name="name">45</field>
+        <field name="sequence">0</field>
         <field name="attribute_id" ref="pa_height"/>
     </record>
     <record id="pav_height_85" model="product.attribute.value">
         <field name="name">85</field>
+        <field name="sequence">1</field>
         <field name="attribute_id" ref="pa_height"/>
     </record>
     <record id="pav_height_100" model="product.attribute.value">
         <field name="name">100</field>
+        <field name="sequence">2</field>
         <field name="attribute_id" ref="pa_height"/>
     </record>
 
@@ -368,22 +371,26 @@
     </record>
     <record id="pav_length_120" model="product.attribute.value">
         <field name="name">120</field>
+        <field name="sequence">0</field>
         <field name="attribute_id" ref="pa_length"/>
     </record>
     <record id="pav_length_140" model="product.attribute.value">
         <field name="name">140</field>
         <field name="default_extra_price">20</field>
+        <field name="sequence">1</field>
         <field name="attribute_id" ref="pa_length"/>
     </record>
     <record id="pav_length_160" model="product.attribute.value">
         <field name="name">160</field>
         <field name="default_extra_price">30</field>
+        <field name="sequence">2</field>
         <field name="attribute_id" ref="pa_length"/>
     </record>
     <record id="pav_length_custom" model="product.attribute.value">
         <field name="name">Custom</field>
         <field name="attribute_id" ref="pa_length"/>
         <field name="default_extra_price">50</field>
+        <field name="sequence">3</field>
         <field name="is_custom">True</field>
     </record>
 
@@ -396,22 +403,27 @@
     </record>
     <record id="pav_duration_month_1" model="product.attribute.value">
         <field name="name">1 month</field>
+        <field name="sequence">0</field>
         <field name="attribute_id" ref="pa_duration"/>
     </record>
     <record id="pav_duration_month_6" model="product.attribute.value">
         <field name="name">6 months</field>
+        <field name="sequence">1</field>
         <field name="attribute_id" ref="pa_duration"/>
     </record>
     <record id="pav_duration_year_1" model="product.attribute.value">
         <field name="name">1 year</field>
+        <field name="sequence">2</field>
         <field name="attribute_id" ref="pa_duration"/>
     </record>
     <record id="pav_duration_year_2" model="product.attribute.value">
         <field name="name">2 years</field>
+        <field name="sequence">3</field>
         <field name="attribute_id" ref="pa_duration"/>
     </record>
     <record id="pav_duration_year_3" model="product.attribute.value">
         <field name="name">3 years</field>
+        <field name="sequence">4</field>
         <field name="attribute_id" ref="pa_duration"/>
     </record>
 
@@ -537,26 +549,31 @@
 
     <record id="pav_shoe_size_39" model="product.attribute.value">
         <field name="name">39</field>
+        <field name="sequence">0</field>
         <field name="attribute_id" ref="pa_shoe_size"/>
     </record>
 
     <record id="pav_shoe_size_40" model="product.attribute.value">
         <field name="name">40</field>
+        <field name="sequence">1</field>
         <field name="attribute_id" ref="pa_shoe_size"/>
     </record>
 
     <record id="pav_shoe_size_41" model="product.attribute.value">
         <field name="name">41</field>
+        <field name="sequence">2</field>
         <field name="attribute_id" ref="pa_shoe_size"/>
     </record>
 
     <record id="pav_shoe_size_42" model="product.attribute.value">
         <field name="name">42</field>
+        <field name="sequence">3</field>
         <field name="attribute_id" ref="pa_shoe_size"/>
     </record>
 
     <record id="pav_shoe_size_43" model="product.attribute.value">
         <field name="name">43</field>
+        <field name="sequence">4</field>
         <field name="attribute_id" ref="pa_shoe_size"/>
     </record>
 
