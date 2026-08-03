@@ -171,6 +171,21 @@ class Website(models.CachedModel):
 
     robots_txt = fields.Html('Robots.txt', translate=False, groups='website.group_website_designer', sanitize=False)
 
+    header_search_type = fields.Char(
+        string="Header Search Scope",
+        help="Type of records the header search bar searches within.",
+        default='all',
+        required=True,
+    )
+    header_search_order_by = fields.Char(
+        string="Header Search Sort", default='name asc', required=True
+    )
+    header_search_limit = fields.Integer(
+        string="Header Search Suggestions",
+        help="Number of autocomplete suggestions of the header search bar, 0 to disable them.",
+        default=30,
+    )
+
     def _default_favicon(self):
         with file_open('web/static/img/favicon.ico', 'rb') as f:
             return BinaryBytes(f.read())
@@ -2116,6 +2131,27 @@ class Website(models.CachedModel):
         # lxml requires one single root element
         tree = etree.fromstring('<p>%s</p>' % html_fragment, etree.XMLParser(recover=True))
         return ' '.join(tree.itertext())
+
+    def _get_search_scopes(self):
+        """
+        Returns the search scopes that can be selected in the search bar options
+
+        :return: dict, per search type, of the scope label and of the path of its results page
+        """
+        return {
+            'all': {'label': self.env._("Everything"), 'url': '/website/search'},
+            'pages': {'label': self.env._("Pages"), 'url': '/pages'},
+        }
+
+    def _get_search_action_urls(self):
+        """
+        Returns the path of the results page of each search scope
+
+        :return: dict of the results page path per search type
+        """
+        return {
+            search_type: scope['url'] for search_type, scope in self._get_search_scopes().items()
+        }
 
     def _search_get_details(self, search_type, order, options):
         """

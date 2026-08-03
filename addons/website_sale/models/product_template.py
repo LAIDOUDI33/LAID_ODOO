@@ -1292,6 +1292,7 @@ class ProductTemplate(models.Model):
             "description_ecommerce",
             "attribute_line_ids.value_ids.name",
             "product_tag_ids.name",
+            "public_categ_ids.name",
             "description_sale",
         ]
         fetch_fields = ["id", "name", "website_url", "description_ecommerce", "description_sale"]
@@ -1310,7 +1311,7 @@ class ProductTemplate(models.Model):
                 "html": True,
                 "match": True,
             },
-            "tags": {"name": "product_tag_ids", "type": "tags", "match": True},
+            "tags": {"name": "tags_and_categories", "type": "tags", "match": True},
             "attribute_value_ids": {
                 "name": "attribute_value_ids",
                 "type": "tags",
@@ -1348,7 +1349,9 @@ class ProductTemplate(models.Model):
             combination_info = product._get_combination_info(only_template=True)
             values = product.mapped("attribute_line_ids.value_ids")
             data["attribute_value_ids"] = values.read(["id", "name"])
-            data["product_tag_ids"] = product.product_tag_ids.read(["name"])
+            tags = product.product_tag_ids.read(["name"])
+            categories = product.public_categ_ids.read(["name"])
+            data["tags_and_categories"] = tags + categories
             price = self._search_render_results_prices(mapping, combination_info)
             if price:
                 data["price"] = price

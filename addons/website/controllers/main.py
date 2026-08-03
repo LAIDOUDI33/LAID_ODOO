@@ -1239,6 +1239,48 @@ class Website(Home):
     # Edit
     # ------------------------------------------------------
 
+    @http.route('/website/search_scopes', type='jsonrpc', auth='user', website=True, readonly=True)
+    def search_scopes(self):
+        """ Returns the search scopes selectable in the search bar options
+
+        :return: list of dicts containing the 'searchType', 'label', 'url' and 'allowMainSearch' of
+            each scope
+        """
+        if not self.env.user.has_group('website.group_website_restricted_editor'):
+            raise NotFound()
+
+        return [
+            {
+                'searchType': search_type,
+                'label': scope['label'],
+                'url': scope['url'],
+                'allowMainSearch': scope.get('allow_main_search', True),
+            }
+            for search_type, scope in self.env.website._get_search_scopes().items()
+        ]
+
+    @http.route('/website/config/header_search', type='jsonrpc', auth='user', website=True)
+    def config_header_search(self, **options):
+        """ Stores the header search bar settings edited from the builder.
+
+        :param dict options: values of the `header_search_*` fields of `website`
+        """
+        if not self.env.user.has_group('website.group_website_designer'):
+            raise NotFound()
+
+        website = self.env.website
+        values = {}
+        search_type = options.get('header_search_type')
+        if search_type in website._get_search_action_urls():
+            values['header_search_type'] = search_type
+        order_by = options.get('header_search_order_by')
+        if order_by:
+            values['header_search_order_by'] = order_by
+        limit = options.get('header_search_limit')
+        if isinstance(limit, int) and limit >= 0:
+            values['header_search_limit'] = limit
+        website.write(values)
+
     @http.route(['/website/add', '/website/add/<path:path>'], type='http', auth="user", website=True, methods=['POST'])
     def pagenew(self, path="", website_id=False, add_menu=False, template=False, redirect=False, **kwargs):
         # for supported mimetype, get correct default template
