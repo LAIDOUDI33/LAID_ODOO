@@ -79,7 +79,251 @@ class AccountEdiXmlUBLMyInvoisMY(models.AbstractModel):
         vals['document_type_code'] = document_type_code
         vals['original_document'] = original_document
 
+<<<<<<< 9a91de8438620b931344028356661429db98e7fa
     def _add_document_tax_grouping_function_vals(self, vals):
+||||||| 07b5c04bb7c149ca1a084bf8abdf489c1b264fe5
+        other_party = opposite_generic_tin = expected_generic_tin = None
+        # For Myinvois, prepaid amount is defined as a separate node.
+        vals['vals'].get('monetary_total_vals', {}).pop('prepaid_amount', None)
+
+        # We add the company industrial classification to the supplier vals.
+        if vals['vals']['document_type_code'] in ('01', '02', '03', '04'):  # Regular invoices
+            vals['vals']['accounting_supplier_party_vals']['party_vals'].update({
+                'industry_classification_code_attrs': {'name': invoice.company_id.l10n_my_edi_industrial_classification.name},
+                'industry_classification_code': invoice.company_id.l10n_my_edi_industrial_classification.code,
+            })
+
+            other_party = vals["vals"]["accounting_customer_party_vals"]["party_vals"]
+            opposite_generic_tin = 'EI00000000030'
+            expected_generic_tin = 'EI00000000020'
+        elif vals['vals']['document_type_code'] in ('11', '12', '13', '14'):  # Self billed.
+            vals['vals']['accounting_supplier_party_vals']['party_vals'] = self._get_partner_party_vals(invoice.partner_id, role='supplier')
+            vals['vals']['accounting_customer_party_vals']['party_vals'] = self._get_partner_party_vals(invoice.company_id.partner_id, role='customer')
+            vals['vals']['accounting_supplier_party_vals']['party_vals'].update({
+                'industry_classification_code_attrs': {'name': invoice.partner_id.commercial_partner_id.l10n_my_edi_industrial_classification.name},
+                'industry_classification_code': invoice.partner_id.commercial_partner_id.l10n_my_edi_industrial_classification.code,
+            })
+
+            other_party = vals["vals"]["accounting_supplier_party_vals"]["party_vals"]
+            opposite_generic_tin = 'EI00000000020'
+            expected_generic_tin = 'EI00000000030'
+            # Self-billed invoices must use the number given by the supplier.
+            if invoice.ref:
+                vals['vals']['id'] = invoice.ref
+
+        # Switch the generic tin to the correct one when it makes sense (For example when a supplier has the buyer generic tin set)
+        if other_party:
+            for identification_val in other_party['party_identification_vals']:
+                if identification_val.get('id_attrs', {}).get('schemeID') == 'TIN' and identification_val.get('id') == opposite_generic_tin:
+                    identification_val['id'] = expected_generic_tin
+
+        # We ensure that the customer does not have their ttx set (it could be on the record if they're also supplier)
+        customer_identification_vals = [
+            vals for vals in vals['vals']['accounting_customer_party_vals']['party_vals']['party_identification_vals'] if vals.get('id_attrs', {}) != {'schemeID': 'TTX'}
+        ]
+        vals['vals']['accounting_customer_party_vals']['party_vals']['party_identification_vals'] = customer_identification_vals
+
+        vals['vals'].update({
+            'prepaid_payment_vals': {
+                'currency': invoice.currency_id,
+                'currency_dp': self._get_currency_decimal_places(invoice.currency_id),
+                'amount': invoice.amount_total - invoice.amount_residual,
+            },
+        })
+
+        # Debit/Credit note original invoice ref.
+        # Applies to credit notes, debit notes, refunds for both invoices and self-billed invoices.
+        # The original document is mandatory; but in some specific cases it will be empty (sending a credit note for an invoice
+        # managed outside Odoo/...)
+        if document_type_code in ('02', '03', '04', '12', '13', '14'):
+            original_document_id = None
+            if original_document:
+                if original_document.l10n_my_edi_file_id:
+                    decoded_vals = self._decode_myinvois_attachment(original_document.l10n_my_edi_file_id)
+                    original_document_id = decoded_vals.get('original_document_id')
+                if not original_document_id and document_type_code in ('12', '13', '14') and original_document.ref:
+                    original_document_id = original_document.ref
+                if not original_document_id:
+                    original_document_id = original_document.name
+
+            vals['vals'].update({
+                'billing_reference_vals': {
+                    'id': original_document_id or 'NA',
+                    'uuid': (original_document and original_document.l10n_my_edi_external_uuid) or 'NA',
+                },
+            })
+
+            # For credit, debit, refund notes, and their self-billed variants,
+            # the PrepaidPayment amount must be set to 0. This ensures the PayableAmount reflects the full refund/adjustment
+            # amount without being reduced by the prepayment, as per MyInvois specifications.
+            vals['vals'].get('monetary_total_vals', {})['payable_amount'] = invoice.amount_total
+            vals['vals']['prepaid_payment_vals']['amount'] = 0
+
+        return vals
+
+    def _decode_myinvois_attachment(self, attachment):
+        """ Extract data from MyInvois xml. """
+        def get_node(node, xpath):
+            nodes = node.xpath(xpath)
+            return nodes[0] if nodes else None
+
+        def get_value(node):
+            if node is None:
+                return None
+            return node.text
+
+        vals = {}
+        try:
+            root = etree.fromstring(attachment.raw)
+            invoice_id_node = get_node(root, "//*[local-name()='Invoice']/*[local-name()='ID']")
+        except etree.XMLSyntaxError:
+            # Not an xml
+            return {}
+        except AttributeError:
+            # Not a MyInvois xml
+            return {}
+
+        vals['original_document_id'] = get_value(invoice_id_node)
+        return vals
+
+    def _get_delivery_vals_list(self, invoice):
+=======
+        other_party = opposite_generic_tin = expected_generic_tin = None
+        # For Myinvois, prepaid amount is defined as a separate node.
+        vals['vals'].get('monetary_total_vals', {}).pop('prepaid_amount', None)
+
+        # We add the company industrial classification to the supplier vals.
+        if vals['vals']['document_type_code'] in ('01', '02', '03', '04'):  # Regular invoices
+            vals['vals']['accounting_supplier_party_vals']['party_vals'].update({
+                'industry_classification_code_attrs': {'name': invoice.company_id.l10n_my_edi_industrial_classification.name},
+                'industry_classification_code': invoice.company_id.l10n_my_edi_industrial_classification.code,
+            })
+
+            other_party = vals["vals"]["accounting_customer_party_vals"]["party_vals"]
+            opposite_generic_tin = 'EI00000000030'
+            expected_generic_tin = 'EI00000000020'
+        elif vals['vals']['document_type_code'] in ('11', '12', '13', '14'):  # Self billed.
+            vals['vals']['accounting_supplier_party_vals']['party_vals'] = self._get_partner_party_vals(invoice.partner_id, role='supplier')
+            vals['vals']['accounting_customer_party_vals']['party_vals'] = self._get_partner_party_vals(invoice.company_id.partner_id, role='customer')
+            vals['vals']['accounting_supplier_party_vals']['party_vals'].update({
+                'industry_classification_code_attrs': {'name': invoice.partner_id.commercial_partner_id.l10n_my_edi_industrial_classification.name},
+                'industry_classification_code': invoice.partner_id.commercial_partner_id.l10n_my_edi_industrial_classification.code,
+            })
+
+            other_party = vals["vals"]["accounting_supplier_party_vals"]["party_vals"]
+            opposite_generic_tin = 'EI00000000020'
+            expected_generic_tin = 'EI00000000030'
+            # Self-billed invoices must use the number given by the supplier.
+            if invoice.ref:
+                vals['vals']['id'] = invoice.ref
+
+        # Switch the generic tin to the correct one when it makes sense (For example when a supplier has the buyer generic tin set)
+        if other_party:
+            for identification_val in other_party['party_identification_vals']:
+                if identification_val.get('id_attrs', {}).get('schemeID') == 'TIN' and identification_val.get('id') == opposite_generic_tin:
+                    identification_val['id'] = expected_generic_tin
+
+        # We ensure that the customer does not have their ttx set (it could be on the record if they're also supplier)
+        customer_identification_vals = [
+            vals for vals in vals['vals']['accounting_customer_party_vals']['party_vals']['party_identification_vals'] if vals.get('id_attrs', {}) != {'schemeID': 'TTX'}
+        ]
+        vals['vals']['accounting_customer_party_vals']['party_vals']['party_identification_vals'] = customer_identification_vals
+
+        prepaid_amount = self._l10n_my_edi_get_prepaid_amount(invoice)
+        vals['vals'].update({
+            'prepaid_payment_vals': {
+                'currency': invoice.currency_id,
+                'currency_dp': self._get_currency_decimal_places(invoice.currency_id),
+                'amount': prepaid_amount,
+            },
+        })
+        # The base implementation ('account.edi.xml.ubl_20') sets payable_amount to invoice.amount_residual, which
+        # doesn't account for our date-based prepaid_amount above. Override it so PayableAmount stays consistent.
+        vals['vals']['monetary_total_vals']['payable_amount'] = invoice.amount_total - prepaid_amount
+
+        # Debit/Credit note original invoice ref.
+        # Applies to credit notes, debit notes, refunds for both invoices and self-billed invoices.
+        # The original document is mandatory; but in some specific cases it will be empty (sending a credit note for an invoice
+        # managed outside Odoo/...)
+        if document_type_code in ('02', '03', '04', '12', '13', '14'):
+            original_document_id = None
+            if original_document:
+                if original_document.l10n_my_edi_file_id:
+                    decoded_vals = self._decode_myinvois_attachment(original_document.l10n_my_edi_file_id)
+                    original_document_id = decoded_vals.get('original_document_id')
+                if not original_document_id and document_type_code in ('12', '13', '14') and original_document.ref:
+                    original_document_id = original_document.ref
+                if not original_document_id:
+                    original_document_id = original_document.name
+
+            vals['vals'].update({
+                'billing_reference_vals': {
+                    'id': original_document_id or 'NA',
+                    'uuid': (original_document and original_document.l10n_my_edi_external_uuid) or 'NA',
+                },
+            })
+
+            # For credit, debit, refund notes, and their self-billed variants,
+            # the PrepaidPayment amount must be set to 0. This ensures the PayableAmount reflects the full refund/adjustment
+            # amount without being reduced by the prepayment, as per MyInvois specifications.
+            vals['vals'].get('monetary_total_vals', {})['payable_amount'] = invoice.amount_total
+            vals['vals']['prepaid_payment_vals']['amount'] = 0
+
+        return vals
+
+    def _l10n_my_edi_get_prepaid_amount(self, invoice):
+        """ Compute the amount of the invoice that was genuinely paid in advance.
+
+        LHDN only recognizes a reconciled payment as a deposit/prepayment if it was made strictly before the
+        invoice date; a payment made on or after the invoice date is a regular settlement, not a prepayment.
+        Additionally, LHDN never accepts a PayableAmount of 0, so a 100% advance payment must not be reported
+        as a prepayment either: in that case, the full invoice amount is reported as payable instead.
+        Credit/debit notes reconciled against the invoice are not prepayments.
+        """
+        if not invoice.invoice_date:
+            return 0.0
+
+        invoice_partials, exchange_diff_moves = invoice._get_reconciled_invoices_partials()
+        prepaid_amount = sum(
+            amount
+            for partial, amount, aml in invoice_partials
+            if (
+                aml.move_id.id not in exchange_diff_moves
+                and aml.move_id.move_type not in ('out_refund', 'in_refund')
+                and aml.date and aml.date < invoice.invoice_date
+            )
+        )
+        if invoice.currency_id.compare_amounts(prepaid_amount, invoice.amount_total) >= 0:
+            return 0.0
+        return prepaid_amount
+
+    def _decode_myinvois_attachment(self, attachment):
+        """ Extract data from MyInvois xml. """
+        def get_node(node, xpath):
+            nodes = node.xpath(xpath)
+            return nodes[0] if nodes else None
+
+        def get_value(node):
+            if node is None:
+                return None
+            return node.text
+
+        vals = {}
+        try:
+            root = etree.fromstring(attachment.raw)
+            invoice_id_node = get_node(root, "//*[local-name()='Invoice']/*[local-name()='ID']")
+        except etree.XMLSyntaxError:
+            # Not an xml
+            return {}
+        except AttributeError:
+            # Not a MyInvois xml
+            return {}
+
+        vals['original_document_id'] = get_value(invoice_id_node)
+        return vals
+
+    def _get_delivery_vals_list(self, invoice):
+>>>>>>> 8b7e20181b90ee5c11ef92fa65bfa5fb12ba6ced
         # OVERRIDE 'account_edi_ubl_cii'
         def total_grouping_function(base_line, tax_data):
             return True
