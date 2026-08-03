@@ -7,6 +7,7 @@ from markupsafe import Markup
 
 from odoo import api, fields, models, modules, tools
 from odoo.addons.base.models.ir_qweb import QWebError
+from odoo.exceptions import ValidationError
 from odoo.tools import exception_to_unicode
 from odoo.tools.translate import _
 
@@ -61,12 +62,33 @@ class EventMail(models.Model):
         'event.mail.slot', 'scheduler_id',
         help='Slot-based communication')
     mail_done = fields.Boolean("Sent", copy=False, readonly=True)
+    mail_cancelled = fields.Boolean("Cancelled", copy=False, readonly=True)
     mail_state = fields.Selection(
         [('running', 'Running'), ('scheduled', 'Scheduled'), ('sent', 'Sent'), ('error', 'Error'), ('cancelled', 'Cancelled')],
         string='Global communication Status', compute='_compute_mail_state')
     mail_count_done = fields.Integer('# Sent', copy=False, readonly=True)
     notification_type = fields.Selection([('mail', 'Mail')], string='Send', compute='_compute_notification_type')
     template_ref = fields.Reference(string='Template', ondelete={'mail.template': 'cascade'}, required=True, selection=[('mail.template', 'Mail')])
+
+    @api.constrains('interval_nbr', 'interval_unit', 'interval_type', 'event_id')
+    def _check_scheduled_date_before_event_end(self):
+        """ Warn users when a mail is configured such that its scheduled_date is after the event's
+        end date. Such mail will never be sent and would be cancelled by the CRON scheduler."""
+        for scheduler in self:
+            if (
+                scheduler.interval_type in ('before_event', 'after_event_start')
+                and scheduler.scheduled_date
+                and scheduler.event_id.date_end
+                and scheduler.scheduled_date >= scheduler.event_id.date_end
+            ):
+                raise ValidationError(_(
+                    "The mail \"%(template)s\" is scheduled for %(scheduled_date)s, "
+                    "which is after the event end date %(event_end)s. "
+                    "It would never be sent. Please adjust the sending time.",
+                    template=scheduler.template_ref.display_name,
+                    scheduled_date=scheduler.scheduled_date,
+                    event_end=scheduler.event_id.date_end,
+                ))
 
     @api.depends('event_id.date_begin', 'event_id.date_end', 'interval_type', 'interval_unit', 'interval_nbr')
     def _compute_scheduled_date(self):
@@ -84,14 +106,14 @@ class EventMail(models.Model):
         if next_schedule and (cron := self.env.ref('event.event_mail_scheduler', raise_if_not_found=False)):
             cron._trigger(next_schedule)
 
-    @api.depends('error_datetime', 'interval_type', 'mail_done', 'event_id')
+    @api.depends('error_datetime', 'interval_type', 'mail_done', 'mail_cancelled', 'event_id')
     def _compute_mail_state(self):
         for scheduler in self:
             # issue detected
             if scheduler.error_datetime:
                 scheduler.mail_state = 'error'
-            # event cancelled
-            elif not scheduler.mail_done and scheduler.event_id.kanban_state == 'cancel':
+            # event cancelled, or communication cancelled because event ended before it could be sent
+            elif (not scheduler.mail_done and scheduler.event_id.kanban_state == 'cancel') or scheduler.mail_cancelled:
                 scheduler.mail_state = 'cancelled'
             # registrations based
             elif scheduler.interval_type == 'after_sub':
@@ -118,8 +140,14 @@ class EventMail(models.Model):
                 # before or after event -> one shot communication, once done skip
                 if scheduler.mail_done:
                     continue
-                # do not send emails if the mailing was scheduled before the event but the event is over
-                if scheduler.scheduled_date <= now and (scheduler.interval_type not in ('before_event', 'after_event_start') or scheduler.event_id.date_end > now):
+                # do not send emails if the mailing was scheduled before/during the event but the event
+                # is already over: mark as cancelled so these records are permanently removed from the
+                # CRON pending queue and shown as "Cancelled" in the Communications tab.
+                if scheduler.interval_type in ('before_event', 'after_event_start') and scheduler.event_id.date_end <= now:
+                    scheduler.mail_done = True
+                    scheduler.mail_cancelled = True
+                    continue
+                if scheduler.scheduled_date <= now:
                     scheduler._execute_event_based()
             scheduler.error_datetime = False
         return True
@@ -201,8 +229,12 @@ class EventMail(models.Model):
             # before or after event -> one shot communication, once done skip
             if mail_slot.mail_done:
                 continue
-            # do not send emails if the mailing was scheduled before the slot but the slot is over
-            if mail_slot.scheduled_date <= now and (self.interval_type not in ('before_event', 'after_event_start') or mail_slot.event_slot_id.end_datetime > now):
+            # do not send emails if the mailing was scheduled before/during the slot but the slot is
+            # already over: mark as cancelled so these records are permanently removed from the queue.
+            if self.interval_type in ('before_event', 'after_event_start') and mail_slot.event_slot_id.end_datetime <= now:
+                mail_slot.mail_done = True
+                continue
+            if mail_slot.scheduled_date <= now:
                 self._execute_event_based(mail_slot=mail_slot)
 
     def _execute_attendee_based(self):
