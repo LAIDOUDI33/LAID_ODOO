@@ -168,7 +168,6 @@
                                 </div>
                             </group>
                         </div>
-                        <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
                         <field name="employee_properties" columns="2"/>
                         <notebook>
                             <page name="work_information" string="Work">
