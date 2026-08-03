@@ -107,6 +107,7 @@ patch(PaymentForm.prototype, {
     },
 
     _initiatePaymentElement(paymentOptionId, elementsOptions) {
+        const stripeInlineForm = inlineForm.querySelector("[name='o_stripe_element_container']");
         const paymentElementOptions = {
             defaultValues: {
                 billingDetails: this.stripeInlineFormValues["billing_details"],
