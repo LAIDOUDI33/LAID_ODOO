@@ -61,8 +61,10 @@ export const ACTION_TAGS = Object.freeze({
  * @property {Object|(params: ActionParams_T) => Object} [btnAttrs]
  * @property {string|(params: ActionParams_T) => string} [btnClass]
  * @property {Component} [component]
+ * @property {Component} [extraContentComponent]
  * @property {boolean|(params: ActionParams_T) => boolean} [componentCondition=true]
  * @property {(params: ActionParams_T) => Component<Props, Env>} [componentProps]
+ * @property {(params: ActionParams_T) => Component<Props, Env>} [extraContentComponentProps]
  * @property {boolean|(params: ActionParams_T) => boolean} [condition=true]
  * @property {boolean|(params: ActionParams_T) => boolean} [disabledCondition]
  * @property {boolean} [dropdown]
@@ -455,6 +457,23 @@ export class Action {
         );
     }
 
+    /** @param {Action} action @returns {Component|undefined} */
+    _extraContentComponent(action) {}
+    /** When action needs a small widget on the action button (toggle, checkbox, etc), this allows loading an extra widget that gets aligned to the right*/
+    get extraContentComponent() {
+        return this._extraContentComponent(this.params) ?? this.definition.extraContentComponent;
+    }
+
+    /** @param {Action} action @returns {Object|undefined} */
+    _extraContentComponentProps(action) {}
+    /** When action needs a small widget on the action button (toggle, checkbox, etc), this determines optional props to pass to the widget. */
+    get extraContentComponentProps() {
+        return (
+            this._extraContentComponentProps(this.params) ??
+            this.definition.extraContentComponentProps?.call(this, this.params)
+        );
+    }
+
     /** @param {Action} action @returns {boolean|undefined} */
     _hasBtnBg(action) {}
     get hasBtnBg() {
@@ -631,6 +650,10 @@ export class Action {
 
     get tagClassNames() {
         return this.tags.map((tag) => `o-tag-${tag}`).join(" ");
+    }
+
+    get closingMode() {
+        return this.definition.closingMode ?? "all";
     }
 }
 
