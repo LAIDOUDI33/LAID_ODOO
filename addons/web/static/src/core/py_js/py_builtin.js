@@ -1,7 +1,5 @@
 import { PyDate, PyDateTime, PyRelativeDelta, PyTime, PyTimeDelta } from "./py_date";
 
-export class EvaluationError extends Error {}
-
 /**
  * @param {any} iterable
  * @param {Function} func
@@ -10,7 +8,7 @@ export function execOnIterable(iterable, func) {
     if (iterable === null) {
         // new Set(null) is fine in js but set(None) (-> new Set(null))
         // is not in Python
-        throw new EvaluationError(`value not iterable`);
+        throw new Error(`value not iterable`);
     }
     if (typeof iterable === "object" && !Array.isArray(iterable) && !(iterable instanceof Set)) {
         // dicts are considered as iterable in Python
@@ -18,7 +16,7 @@ export function execOnIterable(iterable, func) {
     }
     if (typeof iterable?.[Symbol.iterator] !== "function") {
         // rules out undefined and other values not iterable
-        throw new EvaluationError(`value not iterable`);
+        throw new Error(`value not iterable`);
     }
     return func(iterable);
 }
@@ -57,13 +55,9 @@ export const BUILTINS = {
     set(iterable) {
         if (arguments.length > 2) {
             // we always receive at least one argument: kwargs (return fnValue(...args, kwargs); in FunctionCall case)
-            throw new EvaluationError(
-                `set expected at most 1 argument, got (${arguments.length - 1}`
-            );
+            throw new Error(`set expected at most 1 argument, got (${arguments.length - 1}`);
         }
-        return execOnIterable(iterable, (iterable) => {
-            return new Set(iterable);
-        });
+        return execOnIterable(iterable, (iterable) => new Set(iterable));
     },
 
     max(...args) {
