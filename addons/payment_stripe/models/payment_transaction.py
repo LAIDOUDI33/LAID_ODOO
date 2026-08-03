@@ -134,9 +134,7 @@ class PaymentTransaction(models.Model):
             **stripe_utils.include_shipping_address(self),
         }
 
-        # ACSS Debit (Pre-authorized debit in Canada) does not support Stripe's deferred intent
-        # flow. The JS layer initializes Elements with a real client_secret instead, so we must
-        # include the mandatory mandate_options here when pre-creating the PaymentIntent.
+        # Add the mandatory ACSS mandate options to the pre-created PaymentIntent.
         if self.payment_method_code == "acss_direct_debit":
             payment_intent_payload.update({
                 "payment_method_options[acss_debit][mandate_options][payment_schedule]": "sporadic",

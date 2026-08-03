@@ -59,9 +59,15 @@ patch(PaymentForm.prototype, {
             new StripeOptions()._prepareStripeOptions(stripeInlineForm.dataset),
         );
 
+        // ACSS uses a pre-created SetupIntent, so initialize Elements directly
+        // with its client_secret instead of the deferred intent flow.
         const clientSecret = this.stripeInlineFormValues["client_secret"];
         if (clientSecret) {
-            this._initiatePaymentElement(paymentOptionId, {clientSecret: clientSecret});
+            this._initiatePaymentElement(
+                paymentOptionId,
+                { clientSecret },
+                inlineForm
+            );
             return;
         }
 
@@ -87,8 +93,11 @@ patch(PaymentForm.prototype, {
             elementsOptions.setupFutureUsage = 'off_session';
         }
 
-        this.stripeElements[paymentOptionId] = this.stripeJS.elements(elementsOptions);
-        this._initiatePaymentElement(paymentOptionId, elementsOptions);
+        this._initiatePaymentElement(
+            paymentOptionId,
+            elementsOptions,
+            inlineForm
+        );
 
         const tokenizationCheckbox = inlineForm.querySelector(
             'input[name="o_payment_tokenize_checkbox"]'
@@ -106,7 +115,10 @@ patch(PaymentForm.prototype, {
         }
     },
 
-    _initiatePaymentElement(paymentOptionId, elementsOptions) {
+    // Helper to instantiate and mount the Stripe Payment Element.
+    // Extracted into a helper so both the regular flow and the ACSS
+    // pre-created client_secret flow reuse the same initialization logic.
+    _initiatePaymentElement(paymentOptionId, elementsOptions, inlineForm) {
         const stripeInlineForm = inlineForm.querySelector("[name='o_stripe_element_container']");
         const paymentElementOptions = {
             defaultValues: {
