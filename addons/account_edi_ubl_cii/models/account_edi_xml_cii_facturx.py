@@ -65,7 +65,7 @@ class AccountEdiXmlCII(models.AbstractModel):
             # [BR-CO-26]-In order for the buyer to automatically identify a supplier, the Seller identifier (BT-29),
             # the Seller legal registration identifier (BT-30) and/or the Seller VAT identifier (BT-31) shall be present.
             'seller_identifier': self._check_required_fields(
-                vals['record']['company_id'], ['vat']  # 'siret'
+                vals['record']['company_id'], ['vat', 'siret']  # 'siret'
             ),
             # [BR-DE-6] The element "Seller contact telephone number" (BT-42) must be transmitted.
             'seller_phone': self._check_required_fields(

@@ -74,3 +74,38 @@ class TestUblExportBis3FRChorusPro(TestUblBis3Common, TestUblCiiFRCommonChorusPr
         customer_identification_node = xml_etree.find("{*}AccountingCustomerParty/{*}Party/{*}PartyIdentification/{*}ID")
         self.assertEqual(customer_identification_node.text, "21972213900017")
         self.assertEqual(customer_identification_node.attrib, {'schemeID': '0009'})
+
+    def test_export_invoice_chorus_pro_supplier_tax_identifier_uses_siren_without_vat(self):
+        self.env.company.partner_id.write({'vat': False})
+        invoice = self._create_invoice_one_line(
+            product_id=self.product_a,
+            partner_id=self.partner_fr_chorus_pro,
+            post=True,
+        )
+
+        xml = self.env['account.edi.xml.ubl_bis3']._export_invoice(invoice)[0]
+        xml_etree = etree.fromstring(xml)
+
+        supplier_tax_scheme_node = xml_etree.find("{*}AccountingSupplierParty/{*}Party/{*}PartyTaxScheme")
+        self.assertEqual(supplier_tax_scheme_node.find("{*}CompanyID").text, "406784835")
+        self.assertEqual(supplier_tax_scheme_node.find("{*}TaxScheme/{*}ID").text, "TAX")
+
+    def test_export_invoice_chorus_pro_franchise_reason_code_without_vat(self):
+        self.env.company.partner_id.write({'vat': False})
+        tax_0 = self.percent_tax(0.0)
+        invoice = self._create_invoice_one_line(
+            product_id=self.product_a,
+            tax_ids=tax_0,
+            partner_id=self.partner_fr_chorus_pro,
+            post=True,
+        )
+
+        xml = self.env['account.edi.xml.ubl_bis3']._export_invoice(invoice)[0]
+        xml_etree = etree.fromstring(xml)
+
+        tax_category_node = xml_etree.find("{*}TaxTotal/{*}TaxSubtotal/{*}TaxCategory")
+        self.assertEqual(tax_category_node.find("{*}ID").text, "E")
+        self.assertEqual(tax_category_node.find("{*}TaxExemptionReasonCode").text, "VATEX-FR-FRANCHISE")
+
+        line_tax_category_node = xml_etree.find("{*}InvoiceLine/{*}Item/{*}ClassifiedTaxCategory")
+        self.assertEqual(line_tax_category_node.find("{*}ID").text, "E")
