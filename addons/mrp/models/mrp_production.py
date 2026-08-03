@@ -1800,7 +1800,7 @@ class MrpProduction(models.Model):
                             line.child_bom_id.type != 'phantom'
                             and not line._skip_bom_line(order.product_id)
                         )
-                missing_lines = all_lines - order.move_raw_ids.bom_line_id
+                missing_lines = (all_lines - order.move_raw_ids.bom_line_id).filtered(lambda line: line.product_id.type == "consu")
             for move in order.move_raw_ids:
                 # If there's no BoM, we simply rely on the quantity specified by the user.
                 if not order.bom_id:
