@@ -646,6 +646,7 @@ test("product with single 'is_custom' attr is not configurable in 'kiosk' mode",
     expect(ptv[0].is_custom).toBe(true);
     expect(!!store.isProductConfigurable(product)).toBe(false);
 });
+<<<<<<< 5738fd9e54558a80575755311a3b78918385fb7b
 
 test("orderLineNotSend", async () => {
     const store = await setupSelfPosEnv();
@@ -731,3 +732,23 @@ test("orderLineSent", async () => {
         tax: 95,
     });
 });
+||||||| 66aa09e75972c63e2732851b9e0b6d4d92a94119
+=======
+
+test("product with single 'multi' display_type attr with single choice is configurable in both mode", async () => {
+    const store = await setupSelfPosEnv();
+    const product = store.models["product.template"].get(52);
+    const line = product.attribute_line_ids[0];
+    const ptv = line.product_template_value_ids;
+    expect(ptv.length).toBe(1);
+    expect(ptv[0].is_custom).toBe(false);
+    expect(line.attribute_id.display_type).toBe("multi");
+
+    // Kiosk mode
+    expect(!!store.isProductConfigurable(product)).toBe(true);
+
+    // Mobile mode
+    store.self_ordering_mode = "mobile";
+    expect(!!store.isProductConfigurable(product)).toBe(true);
+});
+>>>>>>> 11aee432bbdccfd5a9179c99cd20c9c68fe0db5e
