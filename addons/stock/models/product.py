@@ -6,6 +6,7 @@ from collections import defaultdict
 from collections.abc import Iterable
 from datetime import date, datetime, time
 from dateutil.relativedelta import relativedelta
+import pytz
 
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
@@ -166,11 +167,7 @@ class ProductProduct(models.Model):
         domain_quant = [('product_id', 'in', self.ids)] + domain_quant_loc
         dates_in_the_past = False
         # only to_date as to_date will correspond to qty_available
-        original_value = to_date
-        to_date = fields.Datetime.to_datetime(to_date)
-        if (isinstance(original_value, date) and not isinstance(original_value, datetime)) or \
-            (isinstance(original_value, str) and len(original_value) == 10):
-            to_date = datetime.combine(to_date.date(), time.max)
+        to_date = self._to_date_upper_bound(to_date)
 
         if to_date and to_date < fields.Datetime.now():
             dates_in_the_past = True
@@ -266,6 +263,24 @@ class ProductProduct(models.Model):
             )
 
         return res
+
+    def _to_date_upper_bound(self, to_date):
+        """ Convert a ``to_date`` context value into the naive UTC upper bound
+        used to filter ``stock.move.date`` (which is stored in UTC).
+
+        A plain date (or ``YYYY-MM-DD`` string) is interpreted as the end of
+        that day in the user's timezone, so a move is attributed to the user's
+        local day rather than to its UTC day. A full datetime is used as-is.
+        """
+        original_value = to_date
+        to_date = fields.Datetime.to_datetime(to_date)
+        if to_date and (
+            (isinstance(original_value, date) and not isinstance(original_value, datetime))
+            or (isinstance(original_value, str) and len(original_value) == 10)
+        ):
+            local_end_of_day = self.env.tz.localize(datetime.combine(to_date.date(), time.max))
+            to_date = local_end_of_day.astimezone(pytz.utc).replace(tzinfo=None)
+        return to_date
 
     def _inverse_qty_available(self):
         """
