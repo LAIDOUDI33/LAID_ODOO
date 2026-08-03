@@ -10,6 +10,14 @@ patch(Store.prototype, {
         this.messagingMenu = fields.One("MessagingMenu", { compute: () => ({}) });
         /** @type {number|undefined} */
         this.action_discuss_id;
+        this.showPushPermissionRequest = fields.Attr(false, {
+            compute() {
+                return (
+                    this.env.services["mail.notification.permission"]?.permission === "prompt" &&
+                    !this.isNotificationPermissionDismissed
+                );
+            },
+        });
     },
     onStarted() {
         super.onStarted(...arguments);
