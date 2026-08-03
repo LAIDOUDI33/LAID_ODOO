@@ -115,7 +115,9 @@ export class PosOrder extends PosOrderAccounting {
     }
 
     get canBeRemovedFromIndexedDB() {
-        return (this.finalized && this.isSynced) || this.state === "cancel";
+        return (
+            (this.finalized && this.isSynced) || this.state === "cancel" || this.ticket_code === ""
+        );
     }
 
     get totalQuantity() {
