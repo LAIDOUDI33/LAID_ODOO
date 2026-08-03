@@ -41,6 +41,9 @@ class PrivacyLookupWizard(models.TransientModel):
             'discuss.channel.member',
             # Special case for direct messages
             'mail.message',
+            # Special case for accounting
+            'account_report.account.return.type',
+            'account_report.account.report',
         ]
 
     def _get_query(self):
