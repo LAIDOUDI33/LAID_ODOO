@@ -1,0 +1,19 @@
+.wrap {
+    padding: 20px;
+    a {
+        pointer-events: none;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    img {
+        max-width: 30%;
+        margin: auto;
+        display: block;
+    }
+
+    td, th {
+        border: 1px solid;
+        padding: 5px;
+    }
+}
