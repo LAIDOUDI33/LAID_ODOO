@@ -6,6 +6,7 @@ from odoo.exceptions import UserError, ValidationError
 from odoo.addons.base.models.res_partner_bank import sanitize_account_number
 from odoo.tools import email_normalize, email_normalize_all, groupby, urls
 from odoo.tools.misc import hash_sign
+from odoo.tools.translate import mark_as_copy
 from collections import defaultdict
 import logging
 import re
@@ -80,7 +81,7 @@ class AccountJournal(models.Model):
                                          'expense_depreciation', 'expense_direct_cost', 'off_balance'))
         ]"""
 
-    name = fields.Char(string='Journal Name', required=True, translate=True)
+    name = fields.Char(string='Journal Name', required=True, translate=True, copy=mark_as_copy('name'))
     name_placeholder = fields.Char(compute='_compute_name_placeholder')
     code = fields.Char(
         string='Sequence Prefix',
@@ -768,7 +769,7 @@ class AccountJournal(models.Model):
 
             vals.update(
                 code=copy_code,
-                name=_("%s (copy)", journal.name or ''))
+            )
         return vals_list
 
     def write(self, vals):
@@ -1030,8 +1031,11 @@ class AccountJournal(models.Model):
         # === Fill missing alias name for sale / purchase, to force alias creation ===
         if journal_type in {'sale', 'purchase'}:
             if 'alias_name' not in vals:
+                val_name = vals.get('name', self.name)
+                if isinstance(val_name, dict):
+                    val_name = val_name.get(self.env.lang or 'en_US', self.name)
                 vals['alias_name'] = self._alias_prepare_alias_name(
-                False, vals.get('name'), vals.get('code'), journal_type, company
+                False, val_name, vals.get('code'), journal_type, company
             )
             vals['alias_name'] = self._ensure_unique_alias(vals, company)
 

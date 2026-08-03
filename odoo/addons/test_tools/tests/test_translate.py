@@ -618,7 +618,7 @@ class TestTranslation(TransactionCase):
         self.env.ref('base.lang_zh_CN').active = False
 
         category = self.customers
-        translations = category._fields['name']._get_stored_translations(category)
+        translations = category._get_stored_translations('name')
         self.assertDictEqual(
             translations,
             {
@@ -630,7 +630,7 @@ class TestTranslation(TransactionCase):
         )
 
         category_copy = self.customers.with_context(lang='fr_FR').copy()
-        translations = category_copy._fields['name']._get_stored_translations(category_copy)
+        translations = category_copy._get_stored_translations('name')
 
         self.assertDictEqual(
             translations,
@@ -723,7 +723,6 @@ class TestTranslation(TransactionCase):
         ])
         industries[0].with_context(lang='nl_NL').name = 'Industry1_NL'
         industries[1].with_context(lang='nl_NL').name = None
-        field = industries._fields['name']
 
         industries.invalidate_recordset()
         self.assertEqual(
@@ -734,14 +733,14 @@ class TestTranslation(TransactionCase):
         with self.assertQueryCount(0):
             # None value in cache means no translation and should not trigger a query
             self.assertEqual(
-                field._get_stored_translations(industries[1]),
+                industries[1]._get_stored_translations('name'),
                 None
             )
 
         with self.assertQueryCount(1):
             # prefetch all translaitons for all industries
             self.assertEqual(
-                field._get_stored_translations(industries[0]),
+                industries[0]._get_stored_translations('name'),
                 {
                     'en_US': 'Industry1',
                     'nl_NL': 'Industry1_NL',
@@ -751,7 +750,7 @@ class TestTranslation(TransactionCase):
         with self.assertQueryCount(0):
             # no extra query is needed since all translaitons are cached
             self.assertEqual(
-                field._get_stored_translations(industries[2]),
+                industries[2]._get_stored_translations('name'),
                 {
                     'en_US': 'Industry3',
                 }
@@ -1994,39 +1993,24 @@ class TestXMLDuplicateTranslations(TransactionCase):
         self.assertEqual(self.view1_fr.arch_db, new_xml2 % ('une étudiante', 'une étudiante'))  # 'un étudiant' is dropped
         self.assertEqual(self.view1_es.arch_db, new_xml2 % ('una estudiante', 'una estudiante'))  # 'un estudiante' is dropped
 
-    # tricky behaviour
     def test_copy(self):
         """ copy record
 
-        translations are lost when 2 other language terms are translated to the
+        translations are kept when 2 other language terms are translated to the
         same term in the current language value
         """
 
-        # copy translated field means
-        # 1. create with the current language value
-        # 2. use the translation mapping from current_lang_terms to other_lang_terms to update_field_translations
-
         # copy the record in fr_FR
         view1_fr_copy = self.view1_fr.copy({'name': 'view1_fr_copy'})
-        # view1_en_copy.update_field_translations('arch_db', {
-        #     'en_US': {'un étudiant': 'a student', 'une étudiante': 'a student'},
-        #     'es_ES': {'un étudiant': 'un estudiante', 'une étudiante': 'una estudiante'},
-        # })
-        # is called when copy
         self.assertEqual(view1_fr_copy.with_context(lang='en_US').arch_db, self.xml % ('a student', 'a student'))
         self.assertEqual(view1_fr_copy.arch_db, self.xml % ('un étudiant', 'une étudiante'))
         self.assertEqual(view1_fr_copy.with_context(lang='es_ES').arch_db, self.xml % ('un estudiante', 'una estudiante'))
 
         # copy the record in en_US
         view1_en_copy = self.view1_en.copy({'name': 'view1_us_copy'})
-        # view1_en_copy.update_field_translations('arch_db', {
-        #     'fr_FR': {'a student': 'une étudiante'},
-        #     'es_ES': {'a student': ''una estudiante'},
-        # })
-        # is called when copy
         self.assertEqual(view1_en_copy.arch_db, self.xml % ('a student', 'a student'))
-        self.assertEqual(view1_en_copy.with_context(lang='fr_FR').arch_db, self.xml % ('une étudiante', 'une étudiante'))  # 'un étudiant' is dropped
-        self.assertEqual(view1_en_copy.with_context(lang='es_ES').arch_db, self.xml % ('una estudiante', 'una estudiante'))  # 'un estudiante' is dropped
+        self.assertEqual(view1_en_copy.with_context(lang='fr_FR').arch_db, self.xml % ('un étudiant', 'une étudiante'))
+        self.assertEqual(view1_en_copy.with_context(lang='es_ES').arch_db, self.xml % ('un estudiante', 'una estudiante'))
 
 
 @tagged('at_install', '-post_install')  # LEGACY at_install
@@ -2127,6 +2111,101 @@ class TestStoredTranslations(TransactionCase):
         self.assertEqual(st['_fr_FR'], 'French')
         self.assertEqual(st['_nl_NL'], 'English')
         self.assertEqual(st.get('nl_NL'), 'English')
+
+    def test_getitem_technical_fallback(self):
+        st = StoredTranslations({
+            'en_US': 'Published English',
+            '_en_US': 'Latest English',
+        })
+
+        self.assertEqual(st['_fr_FR'], 'Latest English')
+
+    def test_getitem_none_value_falls_back(self):
+        st = StoredTranslations({
+            'en_US': 'English',
+            'fr_FR': None,
+        })
+
+        self.assertEqual(st['fr_FR'], 'English')
+
+    # --- _get_translation_dictionary() tests ---
+    # Origin: field.get_translation_dictionary (moved in [REF] tools: move translation
+    # mapping logic from field to StoredTranslations); callers include
+    # BaseModel.get_field_translations (TestXMLTranslation.test_get_field_translations).
+
+    def test_get_translation_dictionary(self):
+        char_field = self._get_char_field()
+        html_field = self._get_html_field()
+
+        mapping = StoredTranslations._get_translation_dictionary(
+            char_field,
+            'Knife',
+            {'fr_FR': 'Couteau', 'nl_NL': 'Mes'},
+        )
+        self.assertEqual({k: dict(v) for k, v in mapping.items()}, {
+            'Knife': {'fr_FR': 'Couteau', 'nl_NL': 'Mes'},
+        })
+
+        mapping = StoredTranslations._get_translation_dictionary(
+            html_field,
+            '<p>Knife</p><p>Fork</p>',
+            {
+                'fr_FR': '<p>Couteau</p><p>Fourchette</p>',
+                'nl_NL': '<p>Mes</p><p>Vork</p>',
+            },
+        )
+        self.assertEqual({k: dict(v) for k, v in mapping.items()}, {
+            'Knife': {'fr_FR': 'Couteau', 'nl_NL': 'Mes'},
+            'Fork': {'fr_FR': 'Fourchette', 'nl_NL': 'Vork'},
+        })
+
+    def test_get_translation_dictionary_empty_source(self):
+        char_field = self._get_char_field()
+        html_field = self._get_html_field()
+
+        mapping = StoredTranslations._get_translation_dictionary(
+            char_field,
+            '',
+            {'fr_FR': 'Couteau'},
+        )
+        self.assertEqual(dict(mapping), {})
+
+        mapping = StoredTranslations._get_translation_dictionary(
+            char_field,
+            False,
+            {'fr_FR': 'Couteau'},
+        )
+        self.assertEqual(dict(mapping), {})
+
+        mapping = StoredTranslations._get_translation_dictionary(
+            html_field,
+            '<div></div>',
+            {'fr_FR': '<div></div>'},
+        )
+        self.assertEqual(dict(mapping), {})
+
+    def test_get_translation_dictionary_mismatched_terms(self):
+        char_field = self._get_char_field()
+        html_field = self._get_html_field()
+
+        mapping = StoredTranslations._get_translation_dictionary(
+            char_field,
+            'Knife',
+            {'fr_FR': None},
+        )
+        self.assertEqual({k: dict(v) for k, v in mapping.items()}, {
+            'Knife': {'fr_FR': 'Knife'},
+        })
+
+        mapping = StoredTranslations._get_translation_dictionary(
+            html_field,
+            '<p>Knife</p><p>Fork</p>',
+            {'fr_FR': '<p>Couteau</p>'},
+        )
+        self.assertEqual({k: dict(v) for k, v in mapping.items()}, {
+            'Knife': {'fr_FR': 'Knife'},
+            'Fork': {'fr_FR': 'Fork'},
+        })
 
     # --- validate() tests ---
     # --- normalize() tests ---
@@ -2338,8 +2417,8 @@ class TestStoredTranslations(TransactionCase):
         html_field = self._get_html_field()
         st = StoredTranslations({})
         translation_dict = {
-            'fr_FR': ParsedTranslation('<div>New French</div>', html_field),
-            'nl_NL': ParsedTranslation('<div>New Dutch</div>', html_field),
+            'fr_FR': ParsedTranslation(html_field, '<div>New French</div>'),
+            'nl_NL': ParsedTranslation(html_field, '<div>New Dutch</div>'),
         }
         result = st.written(self.env, html_field, translation_dict)
         self.assertEqual(dict(result), {
@@ -2362,8 +2441,8 @@ class TestStoredTranslations(TransactionCase):
             '_fr_FR': '<div>Couteau</div>',
         })
         translation_dict = {
-            'nl_NL': ParsedTranslation('<div>Mes</div>', html_field),  # new translation for nl_NL
-            'fr_FR': ParsedTranslation('<div>Couteau</div>', html_field),  # confirm the fr_FR translation is not changed
+            'nl_NL': ParsedTranslation(html_field, '<div>Mes</div>'),  # new translation for nl_NL
+            'fr_FR': ParsedTranslation(html_field, '<div>Couteau</div>'),  # confirm the fr_FR translation is not changed
         }
         result = st.written(self.env, html_field, translation_dict)
         self.assertEqual(dict(result), {
@@ -2384,8 +2463,8 @@ class TestStoredTranslations(TransactionCase):
             '_nl_NL': '<div>Mes</div>',
         })
         translation_dict = {
-            'en_US': ParsedTranslation('<div>Knife</div><div>Fork</div>', html_field),
-            'fr_FR': ParsedTranslation('<div>Couteau</div><div>Fourchette</div>', html_field),
+            'en_US': ParsedTranslation(html_field, '<div>Knife</div><div>Fork</div>'),
+            'fr_FR': ParsedTranslation(html_field, '<div>Couteau</div><div>Fourchette</div>'),
         }
         result = st.written(self.env, html_field, translation_dict)
         self.assertEqual(dict(result), {
@@ -2405,8 +2484,8 @@ class TestStoredTranslations(TransactionCase):
             '_nl_NL': '<p>Mes</p>',
         })
         translation_dict = {
-            'en_US': ParsedTranslation('<div>Fork</div>', html_field),
-            'fr_FR': ParsedTranslation('<div>Fourchette</div>', html_field),
+            'en_US': ParsedTranslation(html_field, '<div>Fork</div>'),
+            'fr_FR': ParsedTranslation(html_field, '<div>Fourchette</div>'),
         }
         result = st.written(self.env, html_field, translation_dict, delay_translations=True)
         self.assertEqual(dict(result), {
@@ -2424,8 +2503,8 @@ class TestStoredTranslations(TransactionCase):
             '_nl_NL': '<p>Mes</p>',
         })
         translation_dict = {
-            'en_US': ParsedTranslation('<div>Knife</div>', html_field),
-            'fr_FR': ParsedTranslation('<div>Couteau</div>', html_field),
+            'en_US': ParsedTranslation(html_field, '<div>Knife</div>'),
+            'fr_FR': ParsedTranslation(html_field, '<div>Couteau</div>'),
         }
         result = st.written(self.env, html_field, translation_dict, delay_translations=True)
         self.assertEqual(dict(result), {
@@ -2444,7 +2523,7 @@ class TestStoredTranslations(TransactionCase):
             '_fr_FR': '<div>Bonjour le monde</div>',
         })
         translation_dict = {
-            'en_US': ParsedTranslation('<div>Hello World</div>', html_field),
+            'en_US': ParsedTranslation(html_field, '<div>Hello World</div>'),
         }
         result = st.written(self.env, html_field, translation_dict)
         self.assertEqual(dict(result), {
@@ -2459,7 +2538,7 @@ class TestStoredTranslations(TransactionCase):
             '_fr_FR': '<p>Bonjaur le monde</p><div>Bonjour le monde</div>',
         })
         translation_dict = {
-            'en_US': ParsedTranslation('<div>Hello World</div><div>Hello World</div>', html_field),
+            'en_US': ParsedTranslation(html_field, '<div>Hello World</div><div>Hello World</div>'),
         }
         result = st.written(self.env, html_field, translation_dict)
         self.assertEqual(dict(result), {
@@ -2481,7 +2560,7 @@ class TestStoredTranslations(TransactionCase):
             # new xml term '<span invisible="0">English</span>' shares the same text with all old terms
             # but is close to '<span invisible="1">English</span>' and shares the same html structure
             # should reuse and adapt the translation mapping for the old xml term '<span invisible="1">English</span>'
-            'en_US': ParsedTranslation('<form><div><span invisible="0">English</span></div></form>', xml_field),
+            'en_US': ParsedTranslation(xml_field, '<form><div><span invisible="0">English</span></div></form>'),
         }
         result = st.written(self.env, xml_field, translation_dict, adapt_close_terms=True)
         self.assertEqual(dict(result), {
@@ -2499,7 +2578,7 @@ class TestStoredTranslations(TransactionCase):
             'fr_FR': '<div><span help="Couteau"></span></div><div><span help="Fourchette"></span></div>',
         })
         result = st.written(self.env, html_field, ({
-            'fr_FR': ParsedTranslation('<div><span title="Couteau"></span></div><div><span title="Fourchette"></span></div>', html_field)
+            'fr_FR': ParsedTranslation(html_field, '<div><span title="Couteau"></span></div><div><span title="Fourchette"></span></div>')
         }))
         self.assertEqual(dict(result), {
             'en_US': '<div><span title="Couteau"></span></div><div><span title="Fourchette"></span></div>',
@@ -2518,7 +2597,7 @@ class TestStoredTranslations(TransactionCase):
             # old xml term '<span invisible="1">English</span></div>' is removed
             # new text term 'English' used in attribute and text and shares the same text with all old terms
             # it shouldn't reuse the translation mapping for the old xml term '<i>English</i>' and '<span invisible="1">English</span>'
-            'en_US': ParsedTranslation('<form><div title="English"/>English</form>', field),
+            'en_US': ParsedTranslation(field, '<form><div title="English"/>English</form>'),
         }
         result = st.written(self.env, field, translation_dict, adapt_close_terms=True)
         self.assertEqual(dict(result), {
@@ -2535,13 +2614,246 @@ class TestStoredTranslations(TransactionCase):
             # old xml term '<span invisible="1">English</span>' is removed
             # new xml term '<b>English</b>' shares the same text with all old terms
             # it shouldn't reuse the translation mapping because it has different structure
-            'en_US': ParsedTranslation('<form><b>English</b></form>', field),
+            'en_US': ParsedTranslation(field, '<form><b>English</b></form>'),
         }
         result = st.written(self.env, field, translation_dict, adapt_close_terms=True)
         self.assertEqual(dict(result), {
             'en_US': '<form><b>English</b></form>',
             'fr_FR': '<form><b>English</b></form>',
         })
+
+    # --- translated() tests ---
+
+    def test_translated(self):
+        html_field = self._get_html_field()
+        st = StoredTranslations({
+            'en_US': '<p>Knife</p><p>Fork</p>',
+            'fr_FR': '<p>Couteau</p><p>Fourchette</p>',
+            'nl_NL': '<p>Mes</p><p>Fork</p>',
+        })
+
+        result = st.translated(
+            self.env,
+            html_field,
+            'en_US',
+            {
+                'fr_FR': {'Knife': 'Canif'},
+                'nl_NL': {'Fork': 'Vork'},
+            },
+        )
+        self.assertEqual(dict(result), {
+            'en_US': '<p>Knife</p><p>Fork</p>',
+            'fr_FR': '<p>Canif</p><p>Fourchette</p>',
+            'nl_NL': '<p>Mes</p><p>Vork</p>',
+        })
+
+    def test_translated_overwrite_false(self):
+        """Existing translations are preserved, while source terms can be overwritten."""
+        html_field = self._get_html_field()
+        st = StoredTranslations({
+            'en_US': '<p>Knife</p><p>Fork</p>',
+            'fr_FR': '<p>Couteau</p><p>Fork</p>',
+        })
+
+        result = st.translated(
+            self.env,
+            html_field,
+            'en_US',
+            {'fr_FR': {'Knife': 'Canif', 'Fork': 'Fourchette'}},
+            overwrite=False,
+        )
+        self.assertEqual(dict(result), {
+            'en_US': '<p>Knife</p><p>Fork</p>',
+            'fr_FR': '<p>Couteau</p><p>Fourchette</p>',
+        })
+
+    # --- translated() optional and corner cases ---
+    # Origin: TestXMLTranslation.test_delay_translations / update_field_translations({'fr_FR': {}}),
+    # website/controllers/main.py translation update (digest=sha256) +
+    # website/tests/test_views.py::test_no_cow_on_translate.
+
+    def test_translated_delay_translations(self):
+        html_field = self._get_html_field()
+        st = StoredTranslations({
+            'en_US': '<p>Knife</p><p>Fork</p>',
+            'fr_FR': '<p>Couteau</p><p>Fourchette</p>',
+        })
+
+        result = st.translated(
+            self.env,
+            html_field,
+            'en_US',
+            {
+                'fr_FR': {'Knife': 'Canif'},
+                'nl_NL': {'Knife': 'Mes'},
+            },
+            delay_translations=True,
+        )
+        self.assertEqual(dict(result), {
+            'en_US': '<p>Knife</p><p>Fork</p>',
+            'fr_FR': '<p>Couteau</p><p>Fourchette</p>',
+            '_fr_FR': '<p>Canif</p><p>Fourchette</p>',
+            'nl_NL': '<p>Knife</p><p>Fork</p>',
+            '_nl_NL': '<p>Mes</p><p>Fork</p>',
+        })
+
+    def test_translated_with_digest(self):
+        html_field = self._get_html_field()
+        digest = lambda term: sha256(term.encode()).hexdigest()
+        st = StoredTranslations({
+            'en_US': '<p>Knife</p>',
+            'fr_FR': '<p>Couteau</p>',
+        })
+
+        result = st.translated(
+            self.env,
+            html_field,
+            'en_US',
+            {'fr_FR': {digest('Knife'): 'Canif'}},
+            digest=digest,
+        )
+        self.assertEqual(dict(result), {
+            'en_US': '<p>Knife</p>',
+            'fr_FR': '<p>Canif</p>',
+        })
+
+    def test_translated_xml_field(self):
+        xml_field = self._get_xml_field()
+        st = StoredTranslations({
+            'en_US': '<form>Knife</form>',
+            'fr_FR': '<form>Couteau</form>',
+        })
+        result = st.translated(
+            self.env,
+            xml_field,
+            'en_US',
+            {'fr_FR': {'Knife': 'Canif'}},
+        )
+        self.assertEqual(dict(result), {
+            'en_US': '<form>Knife</form>',
+            'fr_FR': '<form>Canif</form>',
+        })
+
+    def test_translated_empty_stored_translations(self):
+        html_field = self._get_html_field()
+        st = StoredTranslations({})
+
+        result = st.translated(
+            self.env,
+            html_field,
+            'en_US',
+            {'fr_FR': {'Knife': 'Couteau'}},
+        )
+        self.assertIsNone(result)
+
+    def test_translated_empty_term_updates(self):
+        html_field = self._get_html_field()
+        st = StoredTranslations({
+            'en_US': '<p>Knife</p>',
+            'fr_FR': '<p>Couteau</p>',
+            '_fr_FR': '<p>Canif</p>',
+        })
+
+        result = st.translated(
+            self.env,
+            html_field,
+            'en_US',
+            {'fr_FR': {}},
+        )
+        self.assertEqual(dict(result), {
+            'en_US': '<p>Knife</p>',
+            'fr_FR': '<p>Canif</p>',
+        })
+
+    # --- extract_term_translations() tests ---
+    # Origin: website/models/ir_module_module.py (theme term copy),
+    # website/models/html_text_processor.py (include_identical=True),
+    # html_builder/models/ir_ui_view.py (snippet term reuse).
+
+    def test_extract_term_translations(self):
+        html_field = self._get_html_field()
+        st = StoredTranslations({
+            'en_US': '<p>Knife</p><p>Fork</p>',
+            'fr_FR': '<p>Couteau</p><p>Fourchette</p>',
+            'nl_NL': '<p>Mes</p><p>Fork</p>',
+        })
+
+        self.assertEqual(st.extract_term_translations(self.env, html_field, 'en_US'), {
+            'fr_FR': {'Knife': 'Couteau', 'Fork': 'Fourchette'},
+            'nl_NL': {'Knife': 'Mes'},
+        })
+
+    def test_extract_term_translations_target_languages(self):
+        html_field = self._get_html_field()
+        st = StoredTranslations({
+            'en_US': '<p>Knife</p><p>Fork</p>',
+            'fr_FR': '<p>Couteau</p><p>Fourchette</p>',
+            'nl_NL': '<p>Mes</p><p>Fork</p>',
+        })
+
+        result = st.extract_term_translations(
+            self.env,
+            html_field,
+            'en_US',
+            target_langs={'nl_NL'},
+        )
+        self.assertEqual(result, {
+            'nl_NL': {'Knife': 'Mes'},
+        })
+
+    def test_extract_term_translations_include_identical(self):
+        html_field = self._get_html_field()
+        st = StoredTranslations({
+            'en_US': '<p>Knife</p><p>Fork</p>',
+            'fr_FR': '<p>Couteau</p><p>Fourchette</p>',
+            'nl_NL': '<p>Mes</p><p>Fork</p>',
+        })
+
+        result = st.extract_term_translations(
+            self.env,
+            html_field,
+            'en_US',
+            target_langs={'nl_NL'},
+            include_identical=True,
+        )
+        self.assertEqual(result, {
+            'nl_NL': {'Knife': 'Mes', 'Fork': 'Fork'},
+        })
+
+        result = st.extract_term_translations(
+            self.env,
+            html_field,
+            'en_US',
+            include_identical=True,
+        )
+        self.assertEqual(result['en_US'], {'Knife': 'Knife', 'Fork': 'Fork'})
+        self.assertEqual(result['fr_FR'], {'Knife': 'Couteau', 'Fork': 'Fourchette'})
+        self.assertEqual(result['nl_NL'], {'Knife': 'Mes', 'Fork': 'Fork'})
+
+    def test_extract_term_translations_empty_stored_translations(self):
+        html_field = self._get_html_field()
+        st = StoredTranslations({})
+
+        result = st.extract_term_translations(
+            self.env,
+            html_field,
+            'en_US',
+        )
+        self.assertEqual(result, {})
+
+    def test_extract_term_translations_identical_values(self):
+        html_field = self._get_html_field()
+        st = StoredTranslations({
+            'en_US': '<p>Knife</p><p>Fork</p>',
+            'fr_FR': '<p>Knife</p><p>Fork</p>',
+        })
+
+        result = st.extract_term_translations(
+            self.env,
+            html_field,
+            'en_US',
+        )
+        self.assertEqual(result, {})
 
 
 @tagged('post_install', '-at_install')
