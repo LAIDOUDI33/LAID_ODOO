@@ -39,6 +39,9 @@ export class FieldSelectorPopover extends Component {
             this.state.modelName = this.props.resModel;
             if (this.state.path) {
                 const fieldInfo = await this.getFieldInfo(this.state.path);
+                if (!fieldInfo) {
+                    return;
+                }
                 this.fieldType = fieldInfo.type;
                 this.state.fieldName = fieldInfo.string;
             }

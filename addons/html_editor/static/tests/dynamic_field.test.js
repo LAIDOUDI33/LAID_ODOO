@@ -56,6 +56,39 @@ test("add dynamic field", async () => {
     );
 });
 
+test("cannot insert or edit a dynamic field without a model", async () => {
+    const options = getEditorOptions();
+    options.config.dynamicResModel = "";
+
+    // Verify insert
+    const { editor } = await setupEditor("<p>[]</p>", options);
+
+    await insertText(editor, "/");
+    await contains(".o-we-powerbox .o-we-command-name:contains(/^Field$/)").click();
+
+    expect(".o_notification").toHaveText(
+        "You need to select a model before opening the dynamic field selector."
+    );
+
+    expect(".o-dynamic-field-popover").toHaveCount(0);
+    await contains(".o_notification .btn-close").click();
+
+    // Verify edit
+    await setupEditor(
+        `<div><t t-out="object.field" data-oe-expression-readable="My little field" data-oe-demo="My little field"></t></div>`,
+        options
+    );
+
+    await contains(":iframe t[t-out]").click();
+    await contains(".o-we-toolbar button[name='editDynamicField']").click();
+
+    expect(".o_notification").toHaveText(
+        "You need to select a model before editing the dynamic field."
+    );
+
+    expect(".o-dynamic-field-popover").toHaveCount(0);
+});
+
 test("select all fields", async () => {
     const { el } = await setupEditor(
         `<div>a<t t-out="object.field" data-oe-expression-readable="human > expr"></t></div>`,
