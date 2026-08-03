@@ -448,7 +448,14 @@ class PosSession(models.Model):
         return {'status': True}
 
     def post_close_register_message(self):
-        self.message_post(body=_('Closed Register'), author_id=self._get_message_author().id)
+        message = _('Closed Register\n')
+        if closing_notes := self.env.context.get('closing_notes'):
+            message += _('Closing control message: %s\n', closing_notes)
+            self.closing_notes = closing_notes
+        if opening_notes := self.env.context.get('opening_notes'):
+            message += _('Opening control message updated: %s\n', opening_notes)
+            self.opening_notes = opening_notes
+        self.message_post(body=plaintext2html(message), author_id=self._get_message_author().id)
 
     def _get_message_author(self):
         return self.env.user.partner_id
@@ -506,13 +513,15 @@ class PosSession(models.Model):
                 'payment_amount': cash_payments_summary,
                 'moves': cash_in_out_list,
                 'id': cash_pm.id,
+                'editable': True,
+                'is_default_cash': True,
             } if cash_pm else {},
             'non_cash_payment_methods': [{
                 'name': pm.name,
                 'amount': sum(non_cash_payments_grouped_by_method_id[pm].mapped('amount')),
                 'number': len(non_cash_payments_grouped_by_method_id[pm]),
                 'id': pm.id,
-                'type': pm.type,
+                'editable': pm.type == 'bank',
             } for pm in non_cash_payment_method_ids],
             'is_manager': self.env.user.has_group("point_of_sale.group_pos_manager"),
             'amount_authorized_diff': self.config_id.amount_authorized_diff if self.config_id.set_maximum_difference else None,
