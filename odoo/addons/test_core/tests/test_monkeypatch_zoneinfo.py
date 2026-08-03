@@ -59,8 +59,8 @@ class TestTZ(TransactionCase):
 
     def test_partner_with_old_tz(self):
         # this test makes sence after ubuntu noble without tzdata-legacy installed
-        partner = self.env['res.partner'].create({'name': 'test', 'tz': 'UTC'})
-        self.env.cr.execute("""UPDATE res_partner set tz='US/Eastern' WHERE id=%s""", (partner.id,))
+        partner = self.env['test_core.partner'].create({'name': 'test', 'tz': 'UTC'})
+        self.env.cr.execute("""UPDATE test_core_partner set tz='US/Eastern' WHERE id=%s""", (partner.id,))
         partner.invalidate_recordset()
         self.assertEqual(partner.tz, 'US/Eastern')  # tz was update despite selection not existing, but data was not migrated
         expected_offset = datetime.datetime.now(ZoneInfo('America/New_York')).strftime('%z')
