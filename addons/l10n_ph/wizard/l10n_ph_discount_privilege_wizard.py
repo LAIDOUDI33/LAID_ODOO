@@ -1,0 +1,291 @@
+# Part of Odoo. See LICENSE file for full copyright and licensing details.
+
+from odoo import api, fields, models
+from odoo.exceptions import UserError
+from odoo.fields import Command
+
+
+class L10nPhDiscountPrivilegeWizard(models.TransientModel):
+    _name = "l10n_ph.discount.privilege.wizard"
+    _description = "Discount Privilege Wizard"
+
+    move_id = fields.Many2one("account.move")
+    company_id = fields.Many2one(related="move_id.company_id", readonly=True)
+    currency_id = fields.Many2one(related="move_id.currency_id", readonly=True)
+    privilege_id = fields.Many2one(
+        "l10n_ph.discount.privilege",
+        string="Privilege Applied",
+        check_company=True,
+    )
+    apply_on = fields.Selection(
+        selection=[
+            ("all", "All Order Lines"),
+            ("product_category", "Product Categories"),
+            ("product", "Products"),
+        ],
+        string="Apply On",
+        default="all",
+        required=True,
+    )
+    product_ids = fields.Many2many(
+        "product.product",
+        relation="l10n_ph_discount_privilege_wizard_product_rel",
+        string="Products",
+    )
+    category_ids = fields.Many2many("product.category", string="Product Categories")
+    available_product_ids = fields.Many2many(
+        "product.product",
+        relation="l10n_ph_discount_privilege_wizard_available_product_rel",
+        compute="_compute_available_filters",
+    )
+    available_category_ids = fields.Many2many(
+        "product.category",
+        compute="_compute_available_filters",
+    )
+    line_ids = fields.One2many(
+        "l10n_ph.discount.privilege.wizard.line",
+        "wizard_id",
+        string="Invoice Lines",
+    )
+    has_applied_privileges = fields.Boolean(
+        compute="_compute_has_applied_privileges",
+    )
+
+    @api.depends("line_ids.has_applied_discount_privilege")
+    def _compute_has_applied_privileges(self):
+        for wizard in self:
+            wizard.has_applied_privileges = any(
+                line.has_applied_discount_privilege for line in wizard.line_ids
+            )
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        """Autopopulate line_ids from the invoice, excluding discount-allocation
+        lines (which are handled by other modules and should not receive privileges)."""
+        for vals in vals_list:
+            if not vals.get("move_id"):
+                raise UserError(
+                    self.env._(
+                        "A customer invoice or credit note is required to apply discount privileges.",
+                    ),
+                )
+            if "line_ids" not in vals:
+                move = self.env["account.move"].browse(vals["move_id"])
+                invoice_lines = (
+                    move.invoice_line_ids - move.invoice_line_ids._get_discount_lines()
+                )
+                vals["line_ids"] = [
+                    Command.create(
+                        {
+                            "invoice_line_id": line.id,
+                        },
+                    )
+                    for line in invoice_lines
+                    if line.display_type == "product"
+                ]
+        return super().create(vals_list)
+
+    def _line_matches_scope(self, source):
+        self.ensure_one()
+        if self.apply_on == "all":
+            return True
+        if self.apply_on == "product_category":
+            return source.product_id.categ_id.id in self.category_ids.ids
+        if self.apply_on == "product":
+            return (
+                bool(self.product_ids) and source.product_id.id in self.product_ids.ids
+            )
+        return False
+
+    def _get_preview_privilege_for_line(self, source):
+        self.ensure_one()
+        if self.privilege_id and self._line_matches_scope(source):
+            return self.privilege_id
+        return source.l10n_ph_discount_privilege_id
+
+    def _check_can_modify(self):
+        self.ensure_one()
+        if not (self.move_id.state == "draft" and self.move_id.is_sale_document()):
+            raise UserError(
+                self.env._(
+                    "Discount privileges can only be modified on draft customer invoices and credit notes.",
+                ),
+            )
+
+    def _check_scope_inputs(self):
+        self.ensure_one()
+        if self.apply_on == "product_category" and not self.category_ids:
+            raise UserError(self.env._("Please select at least one product category."))
+        if self.apply_on == "product" and not self.product_ids:
+            raise UserError(self.env._("Please select at least one product."))
+
+    def action_confirm(self):
+        """Apply the selected privilege to the invoice.
+
+        Writes the privilege on each matching line, then applies the
+        fiscal-position tax mapping, price-unit adaptation, and statutory
+        discount in a single write so the FP takes effect without waiting
+        for an @api.depends recomputation."""
+        self.ensure_one()
+        self._check_can_modify()
+        if not self.privilege_id:
+            return {"type": "ir.actions.act_window_close"}
+        if self.privilege_id.company_id != self.company_id:
+            raise UserError(
+                self.env._("The selected privilege belongs to another company."),
+            )
+        self._check_scope_inputs()
+
+        privilege = self.privilege_id
+        for wiz_line in self.line_ids:
+            source = wiz_line._get_line_source()
+            if not source or not self._line_matches_scope(source):
+                continue
+            original_discount = source.l10n_ph_original_discount or source.discount
+            source.l10n_ph_discount_privilege_id = privilege.id
+            new_price_unit, original_price_unit = source._adjust_price_unit_from_privilege(
+                source.price_unit,
+                source.tax_ids,
+            )
+            new_taxes, original_taxes = source._adjust_taxes_from_privilege(
+                source.tax_ids,
+            )
+            source.write({
+                "price_unit": new_price_unit,
+                "l10n_ph_original_price_unit": original_price_unit,
+                "tax_ids": [Command.set(new_taxes.ids)],
+                "l10n_ph_original_tax_ids": [Command.set(original_taxes.ids)] if original_taxes else [Command.clear()],
+                "discount": privilege.discount_amount,
+                "l10n_ph_original_discount": original_discount,
+            })
+        return {"type": "ir.actions.act_window_close"}
+
+    def action_remove_all(self):
+        self.ensure_one()
+        self._check_can_modify()
+        for wiz_line in self.line_ids:
+            wiz_line._remove_discount_privilege()
+        return {"type": "ir.actions.act_window_close"}
+
+    @api.depends(
+        "line_ids.invoice_line_id.product_id",
+        "line_ids.invoice_line_id.product_id.categ_id",
+    )
+    def _compute_available_filters(self):
+        for wizard in self:
+            products = wizard.line_ids.invoice_line_id.product_id
+            wizard.available_product_ids = products
+            wizard.available_category_ids = products.categ_id
+
+    @api.onchange("privilege_id")
+    def _onchange_privilege_id(self):
+        for wizard in self:
+            if not wizard.privilege_id:
+                continue
+            categories = (
+                wizard.privilege_id.applied_to_category_ids
+                & wizard.available_category_ids
+            )
+            if categories:
+                wizard.apply_on = "product_category"
+                wizard.category_ids = categories
+
+
+class L10nPhDiscountPrivilegeWizardLine(models.TransientModel):
+    _name = "l10n_ph.discount.privilege.wizard.line"
+    _description = "Discount Privilege Wizard Line"
+
+    wizard_id = fields.Many2one(
+        "l10n_ph.discount.privilege.wizard",
+        required=True,
+        ondelete="cascade",
+    )
+    invoice_line_id = fields.Many2one("account.move.line", required=True)
+    name = fields.Char(
+        related="invoice_line_id.name",
+        string="Label",
+    )
+    category_id = fields.Many2one(
+        related="invoice_line_id.product_id.categ_id",
+        string="Product Category",
+    )
+    currency_id = fields.Many2one(related="wizard_id.currency_id")
+    has_discount_privilege = fields.Boolean(
+        compute="_compute_preview_fields",
+    )
+    has_applied_discount_privilege = fields.Boolean(
+        compute="_compute_preview_fields",
+    )
+    discount = fields.Float(
+        string="Discount Applied (%)",
+        digits="Discount",
+        compute="_compute_preview_fields",
+    )
+    discount_amount = fields.Monetary(
+        string="Discount Amount",
+        currency_field="currency_id",
+        compute="_compute_preview_fields",
+    )
+
+    # --- Computed preview values ---
+    @api.depends(
+        "wizard_id.privilege_id",
+        "wizard_id.apply_on",
+        "wizard_id.category_ids",
+        "wizard_id.product_ids",
+        "invoice_line_id.product_id",
+        "invoice_line_id.l10n_ph_discount_privilege_id",
+        "invoice_line_id.discount",
+        "invoice_line_id.price_unit",
+        "invoice_line_id.quantity",
+        "invoice_line_id.price_subtotal",
+        "invoice_line_id.price_total",
+        "invoice_line_id.tax_ids",
+        "invoice_line_id.document_tax_mode",
+    )
+    def _compute_preview_fields(self):
+        for line in self:
+            source = line._get_line_source()
+            privilege = line.wizard_id._get_preview_privilege_for_line(source)
+            line.has_discount_privilege = bool(privilege)
+            line.has_applied_discount_privilege = bool(
+                source.l10n_ph_discount_privilege_id,
+            )
+            line.discount = privilege.discount_amount if privilege else 0.0
+            line.discount_amount = source._l10n_ph_get_preview_discount_amount(
+                privilege=privilege,
+            )
+
+    def _get_line_source(self):
+        self.ensure_one()
+        return self.invoice_line_id
+
+    def _remove_discount_privilege(self):
+        """Clear the privilege on the linked source line and restore the
+        original taxes, price unit, and discount in a single write."""
+        self.ensure_one()
+        source = self._get_line_source()
+        if not source or not source.l10n_ph_discount_privilege_id:
+            return False
+        write_vals = {
+            "l10n_ph_discount_privilege_id": False,
+            "l10n_ph_original_price_unit": 0.0,
+            "l10n_ph_original_tax_ids": [Command.clear()],
+            "l10n_ph_original_discount": 0.0,
+            "discount": source.l10n_ph_original_discount or 0.0,
+        }
+        if source.l10n_ph_original_price_unit:
+            write_vals["price_unit"] = source.l10n_ph_original_price_unit
+        if source.l10n_ph_original_tax_ids:
+            write_vals["tax_ids"] = [Command.set(source.l10n_ph_original_tax_ids.ids)]
+        source.write(write_vals)
+        return True
+
+    def action_remove_line_discount(self):
+        self.ensure_one()
+        if not self._remove_discount_privilege():
+            return False
+        return self.wizard_id._get_records_action(
+            target="new",
+            name=self.env._("Discount Privilege"),
+        )
