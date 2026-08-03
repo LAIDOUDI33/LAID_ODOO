@@ -78,6 +78,13 @@ patch(PosOrderline.prototype, {
         }
         return ["ewallet", "gift_card"].includes(coupon.program_id?.program_type);
     },
+    prepareBaseLineForTaxesComputationExtraValues(customValues = {}) {
+        const extraValues = super.prepareBaseLineForTaxesComputationExtraValues(customValues);
+        if (this.isGiftCardOrEWalletReward()) {
+            extraValues.special_mode = "total_included";
+        }
+        return extraValues;
+    },
     getGiftCardOrEWalletBalance() {
         const coupon = this.coupon_id;
         return formatCurrency(coupon?.points || 0, this.currency);
