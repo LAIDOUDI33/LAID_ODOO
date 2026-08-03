@@ -52,6 +52,8 @@ declare module "models" {
         livechatShouldAskLeaveConfirmation: Readonly<boolean>;
         livechatVisitorMember: ChannelMember;
         transcriptUrl: Readonly<string>;
+        visitor_recent_channel_ids: DiscussChannel[];
+        visitor_recent_channels_count: number;
     }
     export interface LivechatChannel {
         channel_ids: DiscussChannel[];

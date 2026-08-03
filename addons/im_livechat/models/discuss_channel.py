@@ -99,6 +99,7 @@ class DiscussChannel(models.Model):
         "mail.guest",
         string="Customers (Guests)",
         compute="_compute_livechat_customer_guest_ids",
+        search="_search_livechat_customer_guest_ids"
     )
     livechat_agent_requesting_help_history = fields.Many2one(
         "im_livechat.channel.member.history",
@@ -412,6 +413,17 @@ class DiscussChannel(models.Model):
             channel.livechat_customer_guest_ids = (
                 channel.livechat_customer_history_ids.guest_id
             )
+
+    def _search_livechat_customer_guest_ids(self, operator, value):
+        if operator != "in":
+            return NotImplemented
+        customer_history_query = self.env["im_livechat.channel.member.history"]._search(
+            [
+                ("livechat_member_type", "=", "visitor"),
+                ("guest_id", "in", value),
+            ],
+        )
+        return [("id", "in", customer_history_query.subselect("channel_id"))]
 
     @api.depends("livechat_agent_history_ids")
     def _compute_livechat_agent_requesting_help_history(self):
@@ -741,7 +753,52 @@ class DiscussChannel(models.Model):
         return Markup("").join(parts)
 
     def _store_livechat_extra_fields(self, res: Store.FieldList):
-        pass
+        res.many(
+            "visitor_recent_channel_ids",
+            ["description", "last_interest_dt", "livechat_end_dt"],
+            value=lambda c: c._get_visitor_recent_channels(),
+            predicate=is_livechat_channel,
+        )
+        res.attr(
+            "visitor_recent_channels_count",
+            value=lambda c: c._get_visitor_recent_channels_count(),
+            predicate=is_livechat_channel,
+        )
+
+    def _get_visitor_recent_channels_visitor_domain(self):
+        return (
+            Domain("livechat_customer_guest_ids", "in", self.livechat_customer_guest_ids.ids)
+            | Domain("livechat_customer_partner_ids", "in", self.livechat_customer_partner_ids.ids)
+        )
+
+    def _get_visitor_recent_channels_domain(self):
+        return (
+            self._get_visitor_recent_channels_visitor_domain()
+            & Domain("create_date", ">=", "today -7d")
+            & Domain("id", "not in", self.ids)
+        )
+
+    def _get_visitor_recent_channels(self):
+        domain = self._get_visitor_recent_channels_domain()
+        return self.env["discuss.channel"].search(domain, limit=5, order="create_date DESC")
+
+    def _get_visitor_recent_channels_count(self):
+        domain = self._get_visitor_recent_channels_domain()
+        return self.env["discuss.channel"].search_count(domain)
+
+    def action_visitor_recent_channels(self):
+        return {
+            "domain": self._get_visitor_recent_channels_domain(),
+            "name": self.env._("Recent Conversations"),
+            "res_model": "discuss.channel",
+            "target": "current",
+            "type": "ir.actions.act_window",
+            "views": [
+                (self.env.ref("im_livechat.discuss_channel_view_kanban").id, "kanban"),
+                (self.env.ref("im_livechat.discuss_channel_view_tree").id, "list"),
+                (self.env.ref("im_livechat.discuss_channel_view_form").id, "form"),
+            ],
+        }
 
     def _apply_livechat_feedback(self, rate, reason=None):
         """Post customer feedback and apply its rating to the live chat session.
