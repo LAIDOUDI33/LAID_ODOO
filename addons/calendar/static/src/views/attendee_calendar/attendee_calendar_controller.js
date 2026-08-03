@@ -90,8 +90,7 @@ export class AttendeeCalendarController extends CalendarController {
      * @override
      */
     async deleteRecord(record) {
-        await this.cancelCalendarEvent({
-            requestedAction: "delete",
+        await this.deleteCalendarEvent({
             resId: record.id,
             currentAttendeeId: record.calendarAttendeeId,
             currentStatus: record.attendeeStatus,
@@ -99,7 +98,7 @@ export class AttendeeCalendarController extends CalendarController {
             partnerIds: record.rawRecord.partner_ids,
             recurrency: record.rawRecord.recurrency,
             start: record.start,
-            fallback: () => this.displayDialog(ConfirmationDialog, this.deleteConfirmationDialogProps(record)),
+            deleteConfirmationDialogProps: this.deleteConfirmationDialogProps(record),
         });
     }
 
