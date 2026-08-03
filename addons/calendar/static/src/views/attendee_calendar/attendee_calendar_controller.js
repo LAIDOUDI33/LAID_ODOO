@@ -95,7 +95,6 @@ export class AttendeeCalendarController extends CalendarController {
             resId: record.id,
             currentAttendeeId: record.calendarAttendeeId,
             currentStatus: record.attendeeStatus,
-            isDraft: record.rawRecord.is_draft,
             organizerId: record.rawRecord.user_id[0],
             partnerIds: record.rawRecord.partner_ids,
             recurrency: record.rawRecord.recurrency,
