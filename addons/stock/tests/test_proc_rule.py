@@ -5,6 +5,7 @@ from datetime import date, datetime, timedelta
 from freezegun import freeze_time
 from json import loads
 
+from odoo.addons.base.tests.common import DISABLED_MAIL_CREATE_CONTEXT
 from odoo.fields import Command
 from odoo.tests import tagged, Form, TransactionCase
 from odoo.tools import mute_logger
@@ -17,6 +18,7 @@ class TestProcRule(TransactionCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        cls.env = cls.env['base'].with_context(**DISABLED_MAIL_CREATE_CONTEXT, tracking_disable=True).env
 
         cls.uom_unit = cls.env.ref('uom.product_uom_unit')
         cls.product = cls.env['product.product'].create({
@@ -1128,8 +1130,9 @@ class TestProcRuleLoad(TransactionCase):
         })
         self.env['stock.rule'].run_scheduler()
         self.assertTrue(self.env['stock.move'].search([('product_id', 'in', products.ids)]))
-        for index in [50, 99, 150, 199]:
-            self.assertTrue(self.env['mail.activity'].search([
-                ('res_id', '=', products[index].product_tmpl_id.id),
-                ('res_model_id', '=', self.env.ref('product.model_product_template').id)
-            ]))
+        expected_tmpl_ids = {products[i].product_tmpl_id.id for i in [50, 99, 150, 199]}
+        activities = self.env['mail.activity'].search([
+            ('res_id', 'in', list(expected_tmpl_ids)),
+            ('res_model_id', '=', self.env.ref('product.model_product_template').id)
+        ])
+        self.assertEqual(set(activities.mapped('res_id')), expected_tmpl_ids)
