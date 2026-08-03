@@ -96,7 +96,7 @@
             "title": { "text": "Courses", "bold": true, "color": "#434343" },
             "type": "scorecard",
             "background": "#EFF6FF",
-            "keyValue": "Data!D2",
+            "keyValue": "=Data!D2",
             "humanize": false
           },
           "offset": { "x": 0, "y": 12 },
@@ -115,7 +115,7 @@
             "title": { "text": "Content", "bold": true, "color": "#434343" },
             "type": "scorecard",
             "background": "#EFF6FF",
-            "keyValue": "Data!D3",
+            "keyValue": "=Data!D3",
             "humanize": false
           },
           "offset": { "x": 202, "y": 12 },
@@ -134,9 +134,9 @@
             "title": { "text": "Attendees", "bold": true, "color": "#434343" },
             "type": "scorecard",
             "background": "#EFF6FF",
-            "baseline": "Data!E4",
+            "baseline": "=Data!E4",
             "baselineDescr": { "text": "since last period" },
-            "keyValue": "Data!D4",
+            "keyValue": "=Data!D4",
             "humanize": false
           },
           "offset": { "x": 606, "y": 12 },
@@ -155,9 +155,9 @@
             "title": { "text": "Revenue", "bold": true, "color": "#434343" },
             "type": "scorecard",
             "background": "#FFF7ED",
-            "baseline": "Data!E6",
+            "baseline": "=Data!E6",
             "baselineDescr": { "text": "since last period" },
-            "keyValue": "Data!D6",
+            "keyValue": "=Data!D6",
             "humanize": false
           },
           "offset": { "x": 808, "y": 12 },
@@ -176,7 +176,7 @@
             "title": { "text": "Rating", "bold": true, "color": "#434343" },
             "type": "scorecard",
             "background": "#EFF6FF",
-            "keyValue": "Data!D5",
+            "keyValue": "=Data!D5",
             "humanize": false
           },
           "offset": { "x": 404, "y": 12 },

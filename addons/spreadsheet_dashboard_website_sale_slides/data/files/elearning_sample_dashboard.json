@@ -67,7 +67,7 @@
             "title": { "text": "Courses", "bold": true, "color": "#434343" },
             "type": "scorecard",
             "background": "#EFF6FF",
-            "keyValue": "Data!D2",
+            "keyValue": "=Data!D2",
             "humanize": false,
             "chartId": "cc154c8b-08a2-4878-b245-37ea92d373c8"
           },
@@ -87,7 +87,7 @@
             "title": { "text": "Content", "bold": true, "color": "#434343" },
             "type": "scorecard",
             "background": "#EFF6FF",
-            "keyValue": "Data!D3",
+            "keyValue": "=Data!D3",
             "humanize": false,
             "chartId": "1a2f0ccc-460d-405a-aa89-a3f39a771104"
           },
@@ -107,9 +107,9 @@
             "title": { "text": "Attendees", "bold": true, "color": "#434343" },
             "type": "scorecard",
             "background": "#EFF6FF",
-            "baseline": "Data!E4",
+            "baseline": "=Data!E4",
             "baselineDescr": { "text": "since last period" },
-            "keyValue": "Data!D4",
+            "keyValue": "=Data!D4",
             "humanize": false,
             "chartId": "1f39216f-cebd-4884-8cfb-27d94e5c2e22"
           },
@@ -129,9 +129,9 @@
             "title": { "text": "Revenue", "bold": true, "color": "#434343" },
             "type": "scorecard",
             "background": "#FFF7ED",
-            "baseline": "Data!E6",
+            "baseline": "=Data!E6",
             "baselineDescr": { "text": "since last period" },
-            "keyValue": "Data!D6",
+            "keyValue": "=Data!D6",
             "humanize": false,
             "chartId": "165a7593-a6b6-4c5d-8758-d9b09572fa30"
           },
@@ -151,7 +151,7 @@
             "title": { "text": "Rating", "bold": true, "color": "#434343" },
             "type": "scorecard",
             "background": "#EFF6FF",
-            "keyValue": "Data!D5",
+            "keyValue": "=Data!D5",
             "humanize": false,
             "chartId": "bbd06704-ff49-496b-90dc-e1616f65d613"
           },

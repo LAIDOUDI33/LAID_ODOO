@@ -527,9 +527,9 @@
             "title": { "text": "Sessions", "bold": true, "color": "#434343" },
             "type": "scorecard",
             "background": "#EFF6FF",
-            "baseline": "Data!E2",
+            "baseline": "=Data!E2",
             "baselineDescr": { "text": "since last period" },
-            "keyValue": "Data!D2",
+            "keyValue": "=Data!D2",
             "humanize": true
           }
         },
@@ -548,9 +548,9 @@
             "title": { "text": "Session Duration", "color": "#434343", "bold": true },
             "type": "scorecard",
             "background": "#F4CCCC",
-            "baseline": "Data!C4",
+            "baseline": "=Data!C4",
             "baselineDescr": { "text": "last period" },
-            "keyValue": "Data!B4",
+            "keyValue": "=Data!B4",
             "humanize": true
           }
         },
@@ -569,9 +569,9 @@
             "title": { "text": "Time to Respond", "bold": true, "color": "#434343" },
             "type": "scorecard",
             "background": "#F4CCCC",
-            "baseline": "Data!C3",
+            "baseline": "=Data!C3",
             "baselineDescr": { "text": "last period" },
-            "keyValue": "Data!B3",
+            "keyValue": "=Data!B3",
             "humanize": true
           }
         },
@@ -595,9 +595,9 @@
             },
             "type": "scorecard",
             "background": "#EFF6FF",
-            "baseline": "Data!C6",
+            "baseline": "=Data!C6",
             "baselineDescr": { "text": "since last period" },
-            "keyValue": "Data!B6",
+            "keyValue": "=Data!B6",
             "humanize": true
           }
         },
@@ -683,9 +683,9 @@
             "title": { "text": "Sessions with Calls (#)", "bold": true },
             "type": "scorecard",
             "background": "#EFF6FF",
-            "baseline": "Data!C7",
+            "baseline": "=Data!C7",
             "baselineDescr": { "text": "since last period" },
-            "keyValue": "Data!B7",
+            "keyValue": "=Data!B7",
             "humanize": true
           }
         },
@@ -704,9 +704,9 @@
             "title": { "text": "Sessions with Calls (%)", "bold": true },
             "type": "scorecard",
             "background": "#EFF6FF",
-            "baseline": "Data!C8",
+            "baseline": "=Data!C8",
             "baselineDescr": { "text": "since last period" },
-            "keyValue": "Data!B8",
+            "keyValue": "=Data!B8",
             "humanize": true
           }
         },
@@ -725,9 +725,9 @@
             "title": { "text": "Call Duration", "bold": true },
             "type": "scorecard",
             "background": "#EFF6FF",
-            "baseline": "Data!C9",
+            "baseline": "=Data!C9",
             "baselineDescr": { "text": "since last period" },
-            "keyValue": "Data!B9",
+            "keyValue": "=Data!B9",
             "humanize": false
           }
         },
@@ -746,9 +746,9 @@
             "title": { "text": "Handled by Bot", "bold": true },
             "type": "scorecard",
             "background": "#EFF6FF",
-            "baseline": "Data!C10",
+            "baseline": "=Data!C10",
             "baselineDescr": { "text": "since last period" },
-            "keyValue": "Data!B10",
+            "keyValue": "=Data!B10",
             "humanize": true
           }
         },
@@ -767,9 +767,9 @@
             "title": { "text": "Handled by Agent", "bold": true },
             "type": "scorecard",
             "background": "#EFF6FF",
-            "baseline": "Data!C11",
+            "baseline": "=Data!C11",
             "baselineDescr": { "text": "since last period" },
-            "keyValue": "Data!B11",
+            "keyValue": "=Data!B11",
             "humanize": true
           }
         },
@@ -788,9 +788,9 @@
             "title": { "text": "Escalated", "bold": true },
             "type": "scorecard",
             "background": "#EFF6FF",
-            "baseline": "Data!C12",
+            "baseline": "=Data!C12",
             "baselineDescr": { "text": "since last period" },
-            "keyValue": "Data!B12",
+            "keyValue": "=Data!B12",
             "humanize": true
           }
         },
@@ -809,9 +809,9 @@
             "title": { "text": "Not Answered", "bold": true },
             "type": "scorecard",
             "background": "#EFF6FF",
-            "baseline": "Data!C13",
+            "baseline": "=Data!C13",
             "baselineDescr": { "text": "since last period" },
-            "keyValue": "Data!B13",
+            "keyValue": "=Data!B13",
             "humanize": true
           }
         },
@@ -830,9 +830,9 @@
             "title": { "text": "No One Available", "bold": true },
             "type": "scorecard",
             "background": "#EFF6FF",
-            "baseline": "Data!C14",
+            "baseline": "=Data!C14",
             "baselineDescr": { "text": "since last period" },
-            "keyValue": "Data!B14",
+            "keyValue": "=Data!B14",
             "humanize": true
           }
         },

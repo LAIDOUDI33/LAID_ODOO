@@ -94,7 +94,7 @@
                         "title": "",
                         "type": "scorecard",
                         "background": "#FFFFFF",
-                        "keyValue": "A5"
+                        "keyValue": "=A5"
                     }
                 },
                 {
@@ -112,7 +112,7 @@
                         "type": "scorecard",
                         "background": "#FFFFFF",
                         "baselineDescr": { "text": "Scorecard description"},
-                        "keyValue": "A6"
+                        "keyValue": "=A6"
                     }
                 },
                 {

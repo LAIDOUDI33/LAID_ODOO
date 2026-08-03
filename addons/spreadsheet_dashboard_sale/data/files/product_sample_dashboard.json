@@ -233,9 +233,9 @@
             "title": { "text": "Best Seller", "color": "#434343", "bold": true },
             "type": "scorecard",
             "background": "#FEF2F2",
-            "baseline": "Data!C2",
+            "baseline": "=Data!C2",
             "baselineDescr": { "text": "sold" },
-            "keyValue": "Data!B2",
+            "keyValue": "=Data!B2",
             "humanize": false,
             "chartId": "5f383918-4073-4f19-9cc9-603216c953ad"
           },
@@ -255,9 +255,9 @@
             "title": { "text": "Best Category", "color": "#434343", "bold": true },
             "type": "scorecard",
             "background": "#FEF2F2",
-            "baseline": "Data!C3",
+            "baseline": "=Data!C3",
             "baselineDescr": { "text": "sold" },
-            "keyValue": "Data!B3",
+            "keyValue": "=Data!B3",
             "humanize": false,
             "chartId": "ec57f69b-f2b1-4dfc-990c-91ab61b526bf"
           },

@@ -232,7 +232,7 @@
             "title": { "text": "Ongoing Sessions", "bold": true },
             "type": "scorecard",
             "background": "#EFF6FF",
-            "keyValue": "Data!B2",
+            "keyValue": "=Data!B2",
             "humanize": false,
             "chartId": "71458a01-fefb"
           }
@@ -252,7 +252,7 @@
             "title": { "text": "Handled by Bot", "bold": true },
             "type": "scorecard",
             "background": "#EFF6FF",
-            "keyValue": "Data!B3",
+            "keyValue": "=Data!B3",
             "humanize": false,
             "chartId": "8e6d14e4-4d53"
           }
@@ -272,7 +272,7 @@
             "title": { "text": "Handled by Agent", "bold": true },
             "type": "scorecard",
             "background": "#EFF6FF",
-            "keyValue": "Data!B4",
+            "keyValue": "=Data!B4",
             "humanize": false,
             "chartId": "4755f948-8867"
           }
@@ -292,7 +292,7 @@
             "title": { "text": "Escalated", "bold": true },
             "type": "scorecard",
             "background": "#EFF6FF",
-            "keyValue": "Data!B5",
+            "keyValue": "=Data!B5",
             "humanize": false,
             "chartId": "8ad7bbd1-793e"
           }
@@ -312,7 +312,7 @@
             "title": { "text": "Calls", "bold": true },
             "type": "scorecard",
             "background": "#EFF6FF",
-            "keyValue": "Data!B6",
+            "keyValue": "=Data!B6",
             "humanize": false,
             "chartId": "c7940a9c-bda4"
           }

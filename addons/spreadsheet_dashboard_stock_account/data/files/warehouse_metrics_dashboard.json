@@ -130,8 +130,8 @@
             },
             "type": "scorecard",
             "background": "#ECFDF5",
-            "baseline": "Data!E4",
-            "keyValue": "Data!B4",
+            "baseline": "=Data!E4",
+            "keyValue": "=Data!B4",
             "humanize": false,
             "chartId": "833374d1-d09f-4a4e-bb09-2831ceee5465"
           },
@@ -156,8 +156,8 @@
             },
             "type": "scorecard",
             "background": "#ECFDF5",
-            "baseline": "Data!E3",
-            "keyValue": "Data!B3",
+            "baseline": "=Data!E3",
+            "keyValue": "=Data!B3",
             "humanize": false,
             "chartId": "de7010e1-2cdc-4e19-a1de-1c7fd4795bf4"
           },
@@ -374,7 +374,7 @@
             },
             "type": "scorecard",
             "background": "#EFF6FF",
-            "keyValue": "Data!B5",
+            "keyValue": "=Data!B5",
             "humanize": true,
             "chartId": "639d221d-d74d-4762-984e-9debac4f5a82"
           },
