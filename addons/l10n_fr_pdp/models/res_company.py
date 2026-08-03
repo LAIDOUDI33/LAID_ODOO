@@ -99,15 +99,18 @@ class ResCompany(models.Model):
             if not record.pdp_identifier:
                 continue
             match = PDP_identifier_re.match(record.pdp_identifier or '')
+            update = {
+                'peppol_eas': '0225',
+                'peppol_endpoint': record.pdp_identifier,  # Will be verified by `_check_peppol_fields` constraint
+            }
             siren = match and match.group(1)
             if not siren:
                 raise UserError(self.env._("The identifier %s is not valid. The expected format is: SIREN, SIREN_SIRET, SIREN_SIRET_CodeRoutage or SIREN_SuffixeAdressage", record.pdp_identifier))
-            siret = match.group(2)[1:] if match and match.group(2) else False  # Remove `_` at the start
-            record.partner_id.write({
-                'peppol_eas': '0225',
-                'peppol_endpoint': record.pdp_identifier,  # Will be verified by `_check_peppol_fields` constraint
-                'company_registry': siret or siren,
-            })
+            if not record.company_registry:
+                siret = match.group(2)[1:] if match and match.group(2) else False  # Remove `_` at the start
+                update['company_registry'] = siret or siren
+
+            record.partner_id.write(update)
 
     @api.depends('l10n_fr_pdp_annuaire_start_date', 'account_peppol_proxy_state')
     def _compute_l10n_fr_pdp_registered(self):
@@ -198,6 +201,10 @@ class ResCompany(models.Model):
             'urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100::CrossIndustryInvoice##urn:cen.eu:en16931:2017#conformant#urn:peppol:france:billing:extended:1.0::D22B': "UN/CEFACT EN16931 French CTC Extended",
         }
 
+    def _peppol_allows_document_reception(self):
+        self.ensure_one()
+        return super()._peppol_allows_document_reception() and self.country_code != 'FR'
+
     @handle_demo
     def _l10n_fr_pdp_update_pilot_phase(self, value):
         self.ensure_one()
@@ -271,7 +278,7 @@ class ResCompany(models.Model):
             'object_uuid': self.pdp_authentication_uuid,
         })
         kyc_status = response.get('kyc_status')
-        if kyc_status in {'success', 'fail'}:
+        if kyc_status == 'success':
             self.pdp_kyc_status = kyc_status
             if self.env['account.move']._can_commit():
                 self.env.cr.commit()

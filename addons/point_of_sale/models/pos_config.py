@@ -664,7 +664,8 @@ class PosConfig(models.Model):
         return not cash_method.config_ids.filtered(lambda config: config != self)
 
     @api.depends('use_pricelist', 'pricelist_id', 'available_pricelist_ids', 'payment_method_ids', 'limit_categories',
-        'iface_available_categ_ids', 'module_pos_hr', 'module_pos_discount', 'iface_tipproduct', 'default_preset_id', 'module_pos_appointment', 'set_tip_after_payment')
+        'iface_available_categ_ids', 'module_pos_hr', 'module_pos_discount', 'iface_tipproduct', 'default_preset_id',
+        'module_pos_appointment', 'set_tip_after_payment', 'cash_rounding', 'rounding_method', 'only_round_cash_method')
     def _compute_local_data_integrity(self):
         self.last_data_change = self.env.cr.now()
 
@@ -672,9 +673,10 @@ class PosConfig(models.Model):
         if 'iface_tipproduct' in vals and not vals['iface_tipproduct']:
             vals['tip_product_id'] = False
             vals['set_tip_after_payment'] = False
-        else:
-            if 'tip_product_id' not in vals and (default_tip := self._get_default_tip_product()):
-                vals['tip_product_id'] = default_tip.id
+        elif vals.get('iface_tipproduct') and 'tip_product_id' not in vals \
+                and not all(config.tip_product_id for config in self) \
+                and (default_tip := self._get_default_tip_product()):
+            vals['tip_product_id'] = default_tip.id
 
         self._check_header_footer(vals)
         self._reset_default_on_vals(vals)

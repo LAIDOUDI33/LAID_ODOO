@@ -114,6 +114,7 @@ class AccountJournal(models.Model):
       LEFT JOIN mail_activity_type act_type ON activity.activity_type_id = act_type.id
           WHERE move.journal_id = ANY(%(ids)s)
             AND move.company_id = ANY(%(company_ids)s)
+            AND activity.active = TRUE
 
       UNION ALL
 
@@ -132,6 +133,7 @@ class AccountJournal(models.Model):
       LEFT JOIN mail_activity_type act_type ON activity.activity_type_id = act_type.id
           WHERE journal.id = ANY(%(ids)s)
             AND journal.company_id = ANY(%(company_ids)s)
+            AND activity.active = TRUE
             """,
             today=today,
             act_type_name=act_type_name,
@@ -477,7 +479,7 @@ class AccountJournal(models.Model):
         # Misc Entries (journal items in the default_account not linked to bank.statement.line)
         misc_domain = []
         for journal in bank_cash_journals:
-            date_limit = journal.last_statement_id.date or journal.company_id.fiscalyear_lock_date
+            date_limit = journal.last_statement_id.date or journal.company_id.sudo().fiscalyear_lock_date
             misc_domain.append(
                 [('account_id', '=', journal.default_account_id.id), ('date', '>', date_limit)]
                 if date_limit else

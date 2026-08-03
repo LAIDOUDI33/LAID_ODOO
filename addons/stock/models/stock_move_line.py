@@ -189,6 +189,11 @@ class StockMoveLine(models.Model):
         if self.product_id:
             self.lots_visible = self.product_id.tracking in ['lot', 'serial']
 
+    @api.onchange('quant_id')
+    def _onchange_quant_id(self):
+        if self.quant_id:
+            self.update(self._copy_quant_info({'quant_id': self.quant_id.id}))
+
     @api.onchange('lot_name', 'lot_id')
     def _onchange_serial_number(self):
         """ When the user is encoding a move line for a tracked product, we apply some logic to
@@ -641,10 +646,10 @@ class StockMoveLine(models.Model):
             elif not ml.is_inventory:
                 ml_ids_to_delete.add(ml.id)
 
-        for (product, _company), mls in ml_ids_to_check.items():
+        for (product, company), mls in ml_ids_to_check.items():
             mls = self.env['stock.move.line'].browse(mls)
             lots = self.env['stock.lot'].search([
-                '|', ('company_id', '=', False), ('company_id', '=', ml.company_id.id),
+                '|', ('company_id', '=', False), ('company_id', '=', company.id),
                 ('product_id', '=', product.id),
                 ('name', 'in', mls.mapped('lot_name')),
             ])

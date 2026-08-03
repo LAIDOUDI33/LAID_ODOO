@@ -636,6 +636,25 @@ describe("not collapsed selection", () => {
             contentAfter: '<p><a href="#">link</a></p><p><a href="#">link</a>[]</p>',
         });
     });
+
+    test("should insert content without creating a new line at the start", async () => {
+        const { el, editor } = await setupEditor(
+            `<p>
+                <span>[abc</span>
+                <br>
+                <span>def]</span>
+            </p>`,
+            {}
+        );
+        editor.shared.dom.insert(
+            parseHTML(editor.document, "<div>123</div><div><br></div><div>456</div>")
+        );
+        expect(getContent(el)).toBe(
+            `<div class="o-paragraph">123</div><div class="o-paragraph"><br></div><div class="o-paragraph">456[]</div><p o-we-hint-text='Type "/" for commands' class="o-we-hint">
+                <span data-oe-zws-empty-inline="">\u200b</span><span data-oe-zws-empty-inline="">\u200b</span>
+            <br></p>`
+        );
+    });
 });
 
 test("Should create a list element around `li`", async () => {
@@ -676,4 +695,14 @@ test("Should create a list element around `li`", async () => {
             </div>
         `),
     });
+});
+
+test("Should return converted elements", async () => {
+    const { editor } = await setupEditor(`<ul><li>[]</li></ul>`);
+    const insertedNodes = editor.shared.dom.insert(
+        parseHTML(editor.document, "<span>first</span><p>second</p>")
+    );
+    expect(insertedNodes.length).toBe(2);
+    expect(insertedNodes[0].tagName).toBe("SPAN");
+    expect(insertedNodes[1].tagName).toBe("LI");
 });
