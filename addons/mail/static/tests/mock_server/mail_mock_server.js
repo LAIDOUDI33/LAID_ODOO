@@ -787,6 +787,70 @@ async function read_subscription_data(request) {
     };
 }
 
+registerRoute("/mail/thread/get_followers", mail_thread_get_followers);
+/** @type {RouteCallback} */
+async function mail_thread_get_followers(request) {
+    const {
+        thread_id,
+        thread_model,
+        offset = 0,
+        search_term = "",
+    } = await parseRequestParams(request);
+
+    /** @type {import("mock_models").MailFollowers} */
+    const MailFollowers = this.env["mail.followers"];
+    /** @type {import("mock_models").ResPartner} */
+    const ResPartner = this.env["res.partner"];
+
+    const threadDomain = [
+        ["res_id", "=", thread_id],
+        ["res_model", "=", thread_model],
+    ];
+    const domain = [...threadDomain, ["partner_id", "!=", this.env.user.partner_id]];
+    const getFollowerValue = (follower, fieldName) => {
+        const [partner] = ResPartner.browse(follower.partner_id);
+        return (follower[fieldName] || partner?.[fieldName] || "").toLowerCase();
+    };
+    const normalizedSearchTerm = (search_term || "").toLowerCase();
+    let followers = MailFollowers._filter(domain).filter((follower) => {
+        if (!normalizedSearchTerm) {
+            return true;
+        }
+        return (
+            getFollowerValue(follower, "name").includes(normalizedSearchTerm) ||
+            getFollowerValue(follower, "email").includes(normalizedSearchTerm)
+        );
+    });
+    followers = followers.sort((a, b) => {
+        const nameA = getFollowerValue(a, "name");
+        const nameB = getFollowerValue(b, "name");
+        if (nameA < nameB) {
+            return -1;
+        }
+        if (nameA > nameB) {
+            return 1;
+        }
+        return a.id - b.id;
+    });
+    const filteredCount = followers.length;
+    followers = followers.slice(offset, offset + 20);
+    const followerRecords = MailFollowers.browse(followers.map((follower) => follower.id));
+    const store = new Store().add(followerRecords, "_store_follower_fields");
+    const result = {
+        follower_ids: followers.map((follower) => follower.id),
+    };
+    if (!offset) {
+        store.add(
+            this.env[thread_model].browse(thread_id),
+            { followersCount: MailFollowers.search_count(threadDomain) },
+            { as_thread: true }
+        );
+        result.followers_count = filteredCount;
+    }
+    result.store_data = store.as_dict();
+    return result;
+}
+
 registerRoute("/mail/rtc/session/update_and_broadcast", session_update_and_broadcast);
 /** @type {RouteCallback} */
 async function session_update_and_broadcast(request) {
