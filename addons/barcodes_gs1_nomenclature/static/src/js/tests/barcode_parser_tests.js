@@ -229,6 +229,21 @@ QUnit.module('Barcode GS1 Parser', {
         }
     });
 
+    QUnit.test("GS1 barcode ignores trailing NULL character", function (assert) {
+        assert.expect(4);
+        const barcodeNomenclature = new BarcodeParser({nomenclature: this.nomenclature});
+
+        // (01)94019097685457(10)LOT123
+        const gs1Barcode = "019401909768545710LOT123\x00";
+        const res = barcodeNomenclature.gs1_decompose_extanded(gs1Barcode);
+
+        assert.strictEqual(res[0].ai, "01");
+        assert.strictEqual(res[0].value, "94019097685457");
+
+        assert.strictEqual(res[1].ai, "10");
+        assert.strictEqual(res[1].value, "LOT123");
+    });
+
     QUnit.test('Test Alternative GS1 Separator (fnc1)', async function (assert) {
         assert.expect(6);
         let barcodeNomenclature = new BarcodeParser({ nomenclature: this.nomenclature });

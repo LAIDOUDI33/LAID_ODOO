@@ -163,6 +163,7 @@ patch(BarcodeParser.prototype, {
             // If first character is the separator, remove it to be able to parse the barcode.
             barcode = barcode.slice(1);
         }
+        barcode = barcode.replace(/[\x00]/g, "");
         return barcode;
     },
 
