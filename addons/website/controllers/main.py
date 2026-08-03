@@ -444,11 +444,25 @@ class Website(Home):
             assert all(condition.field_expr in request.env['website.snippet.filter']._fields for condition in search_domain.iter_conditions())
             domain &= search_domain
         if model_name:
+<<<<<<< 620c1e6510cee407b9962823a622b8405f7420ea
             domain &= (
                 Domain('filter_id.model_id', '=', model_name)
                 | Domain('action_server_id.model_id.model', '=', model_name)
             )
         dynamic_filter = request.env['website.snippet.filter'].sudo().search_read(
+||||||| d9861b0ec64c53d9f933f5065fd0a68c9effef32
+            domain = expression.AND([
+                domain,
+                ['|', ('filter_id.model_id', '=', model_name), ('action_server_id.model_id.model', '=', model_name)]
+            ])
+        dynamic_filter = request.env['website.snippet.filter'].sudo().search_read(
+=======
+            domain = expression.AND([
+                domain,
+                ['|', ('filter_id.model_id', '=', model_name), ('action_server_id.model_id.model', '=', model_name)]
+            ])
+        dynamic_filter = request.env['website.snippet.filter'].with_context(lang=request.env.user.lang).sudo().search_read(
+>>>>>>> 39436d3eab2e4186634cebdbbb797cdd7b240ce4
             domain, ['id', 'name', 'limit', 'model_name', 'help'], order='id asc'
         )
         return dynamic_filter
