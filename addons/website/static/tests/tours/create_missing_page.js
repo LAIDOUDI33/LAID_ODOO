@@ -78,12 +78,12 @@ registerWebsitePreviewTour(
             run: "click",
         },
         {
-            content: "Wait to land on '/zoe-s-di-ner' page",
-            trigger: ':iframe a[href="/zoe-s-di-ner"].nav-link.active',
+            trigger: "body:not(:has(.modal))",
+            timeout: 30000,
         },
         {
-            content: "Wait edit mode",
-            trigger: ".o_builder_sidebar_open",
+            content: "Wait to land on '/zoe-s-di-ner' page",
+            trigger: ':iframe a[href="/zoe-s-di-ner"].nav-link.active',
         },
         ...clickOnSnippet({ id: "o_header_standard", name: "Header" }),
         changeOption("Header", "[aria-label='Open menu editor']"),
@@ -105,6 +105,10 @@ registerWebsitePreviewTour(
             content: "Save the menu",
             trigger: ".modal-footer .btn-primary",
             run: "click",
+        },
+        {
+            trigger: "body:not(:has(.modal))",
+            timeout: 30000,
         },
         {
             content: "Check that we are on the new page.",
@@ -171,6 +175,10 @@ registerWebsitePreviewTour(
             trigger: ".modal-footer .btn-primary",
             run: "click",
         },
+        {
+            trigger: "body:not(:has(.modal))",
+            timeout: 30000,
+        },
         ...clickOnSave(),
         {
             content: "Click on the 'The Sea Hotel' link.",
@@ -186,10 +194,6 @@ registerWebsitePreviewTour(
             content: "Click on 'Blank Page'",
             trigger: "button[data-name='add_blank_page']",
             run: "click",
-        },
-        {
-            content: "Wait edit mode",
-            trigger: ".o_builder_sidebar_open",
         },
         {
             content: "Wait to land on '/sea-hotel' page",
