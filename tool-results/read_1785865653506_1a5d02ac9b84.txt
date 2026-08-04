@@ -1,0 +1,2002 @@
+     1→'use client'
+     2→
+     3→import React, { useState, useEffect, useCallback, useMemo } from 'react'
+     4→import { 
+     5→  Users, 
+     6→  UserPlus,
+     7→  Search,
+     8→  Phone,
+     9→  Mail,
+    10→  Briefcase,
+    11→  Building2,
+    12→  Calendar,
+    13→  DollarSign,
+    14→  FileText,
+    15→  CreditCard,
+    16→  MapPin,
+    17→  IdCard,
+    18→  Cake,
+    19→  AlertCircle,
+    20→  RefreshCw,
+    21→  X,
+    22→  ChevronDown,
+    23→  Filter,
+    24→  // New icons for Contracts tab
+    25→  FileSignature,
+    26→  CheckCircle2,
+    27→  XCircle,
+    28→  Clock,
+    29→  Plus,
+    30→  Edit3,
+    31→  Eye,
+    32→  Power,
+    33→  Ban,
+    34→  Upload,
+    35→  Shield,
+    36→  // New icons for Leave Management
+    37→  Sun,
+    38→  Heart,
+    39→  Baby,
+    40→  Star,
+    41→  Plane,
+    42→  CalendarCheck,
+    43→  CalendarX,
+    44→  Send,
+    45→  UserCheck,
+    46→  UserX,
+    47→  // New icons for Attendance
+    48→  LogIn,
+    49→  LogOut,
+    50→  Timer,
+    51→  Activity,
+    52→  Download,
+    53→  MoreVertical,
+    54→  ArrowRightLeft
+    55→} from 'lucide-react'
+    56→import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+    57→import { Button } from '@/components/ui/button'
+    58→import { Badge } from '@/components/ui/badge'
+    59→import { Input } from '@/components/ui/input'
+    60→import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+    61→import {
+    62→  Table,
+    63→  TableBody,
+    64→  TableCell,
+    65→  TableHead,
+    66→  TableHeader,
+    67→  TableRow,
+    68→} from '@/components/ui/table'
+    69→import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+    70→import { Progress } from '@/components/ui/progress'
+    71→import { Skeleton } from '@/components/ui/skeleton'
+    72→import { KpiCard } from '@/components/dashboard/kpi-card'
+    73→import {
+    74→  Dialog,
+    75→  DialogContent,
+    76→  DialogHeader,
+    77→  DialogTitle,
+    78→  DialogDescription,
+    79→  DialogFooter,
+    80→} from '@/components/ui/dialog'
+    81→import {
+    82→  Select,
+    83→  SelectContent,
+    84→  SelectItem,
+    85→  SelectTrigger,
+    86→  SelectValue,
+    87→} from '@/components/ui/select'
+    88→import {
+    89→  AlertDialog,
+    90→  AlertDialogAction,
+    91→  AlertDialogCancel,
+    92→  AlertDialogContent,
+    93→  AlertDialogDescription,
+    94→  AlertDialogFooter,
+    95→  AlertDialogHeader,
+    96→  AlertDialogTitle,
+    97→} from '@/components/ui/alert-dialog'
+    98→import { Label } from '@/components/ui/label'
+    99→import { Textarea } from '@/components/ui/textarea'
+   100→import { Checkbox } from '@/components/ui/checkbox'
+   101→import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+   102→import { Separator } from '@/components/ui/separator'
+   103→import { motion, AnimatePresence } from 'framer-motion'
+   104→import { toast } from 'sonner'
+   105→
+   106→// ============================================================
+   107→// TYPES
+   108→// ============================================================
+   109→
+   110→interface Employee {
+   111→  id: string
+   112→  matricule: string
+   113→  firstName: string
+   114→  lastName: string
+   115→  firstNameAr?: string | null
+   116→  lastNameAr?: string | null
+   117→  gender: string
+   118→  dateOfBirth?: string | null
+   119→  placeOfBirth?: string | null
+   120→  nationality?: string
+   121→  cin?: string | null
+   122→  cnasNumber?: string | null
+   123→  casnosNumber?: string | null
+   124→  personalEmail?: string | null
+   125→  workEmail?: string | null
+   126→  phone?: string | null
+   127→  address?: string | null
+   128→  city?: string | null
+   129→  wilayaCode?: string | null
+   130→  department?: string | null
+   131→  jobTitle?: string | null
+   132→  jobPosition?: string | null
+   133→  managerId?: string | null
+   134→  contractType: 'cdi' | 'cdd' | 'internship' | 'temporary' | 'part_time'
+   135→  contractStartDate: string
+   136→  contractEndDate?: string | null
+   137→  employeeStatus: 'active' | 'on_leave' | 'resigned' | 'retired' | 'terminated'
+   138→  baseSalary: number
+   139→  dailyRate: number
+   140→  hourlyRate: number
+   141→  bankName?: string | null
+   142→  bankAccount?: string | null
+   143→  cvFile?: string | null
+   144→  contractFile?: string | null
+   145→  cinFile?: string | null
+   146→  photo?: string | null
+   147→  isActive: boolean
+   148→  hireDate?: string | null
+   149→  terminationDate?: string | null
+   150→  terminationReason?: string | null
+   151→  createdAt: string
+   152→  updatedAt: string
+   153→  manager?: { firstName: string; lastName: string; matricule: string } | null
+   154→  _count?: { payrolls: number; leaves: number; subordinates?: number }
+   155→}
+   156→
+   157→interface PayrollRecord {
+   158→  id: string
+   159→  reference: string
+   160→  period: string
+   161→  status: string
+   162→  baseSalary: number
+   163→  grossSalary: number
+   164→  netPayable: number
+   165→  totalCotisations: number
+   166→  totalRetenues: number
+   167→  employee: {
+   168→    matricule: string
+   169→    firstName: string
+   170→    lastName: string
+   171→    department?: string | null
+   172→    jobTitle?: string | null
+   173→    baseSalary: number
+   174→  }
+   175→}
+   176→
+   177→// Contract Types
+   178→interface Contract {
+   179→  id: string
+   180→  reference: string
+   181→  employeeId: string
+   182→  employeeName: string
+   183→  type: 'CDI' | 'CDD' | 'Stage' | 'Temporaire' | 'Temps_Partiel'
+   184→  status: 'draft' | 'active' | 'suspended' | 'terminated' | 'expired' | 'renewed'
+   185→  startDate: string
+   186→  endDate: string | null
+   187→  trialEndDate: string | null
+   188→  baseSalary: number
+   189→  currency: string
+   190→  paymentFrequency: 'monthly' | 'weekly' | 'biweekly'
+   191→  department: string
+   192→  jobTitle: string
+   193→  grade: string
+   194→  weeklyHours: number
+   195→  annualLeaveDays: number
+   196→  transportAllowance: number
+   197→  housingAllowance: number
+   198→  foodAllowance: number
+   199→  nssNumber: string
+   200→  cnasNumber: string
+   201→  casnosNumber: string
+   202→  contractUrl: string | null
+   203→  internalNotes: string | null
+   204→  createdAt: string
+   205→  updatedAt: string
+   206→}
+   207→
+   208→// Leave Types
+   209→interface LeaveRequest {
+   210→  id: string
+   211→  employeeId: string
+   212→  employeeName: string
+   213→  employeePhoto?: string | null
+   214→  type: 'annual' | 'sickness' | 'maternity' | 'paternity' | 'unpaid' | 'exceptional' | 'marriage' | 'birth' | 'death' | 'pilgrimage'
+   215→  startDate: string
+   216→  endDate: string
+   217→  daysCount: number
+   218→  isHalfDay: boolean
+   219→  halfDayPart: 'morning' | 'evening' | null
+   220→  status: 'draft' | 'submitted' | 'approved' | 'rejected' | 'cancelled'
+   221→  reason: string | null
+   222→  rejectionReason: string | null
+   223→  approvedBy: string | null
+   224→  approvedAt: string | null
+   225→  createdAt: string
+   226→  updatedAt: string
+   227→}
+   228→
+   229→// Attendance Types
+   230→interface AttendanceRecord {
+   231→  id: string
+   232→  employeeId: string
+   233→  employeeName: string
+   234→  employeePhoto?: string | null
+   235→  date: string
+   236→  clockIn: string | null
+   237→  clockOut: string | null
+   238→  workedHours: number
+   239→  overtimeHours: number
+   240→  breakMinutes: number
+   241→  status: 'present' | 'absent' | 'late' | 'half_day' | 'on_leave' | 'holiday' | 'weekend'
+   242→  notes: string | null
+   243→  department?: string | null
+   244→}
+   245→
+   246→interface HrStats {
+   247→  totalEmployees: number
+   248→  activeEmployees: number
+   249→  onLeaveCount: number
+   250→  monthlyPayrollMass: number
+   251→  newHiresThisMonth: number
+   252→  departments: { name: string; count: number }[]
+   253→  absenteeismRate: number
+   254→}
+   255→
+   256→// ============================================================
+   257→// CONSTANTS & HELPERS
+   258→// ============================================================
+   259→
+   260→const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
+   261→  active: { 
+   262→    label: 'Actif', 
+   263→    className: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-green-200' 
+   264→  },
+   265→  on_leave: { 
+   266→    label: 'En Congé', 
+   267→    className: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 border-yellow-200' 
+   268→  },
+   269→  resigned: { 
+   270→    label: 'Démissionné', 
+   271→    className: 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400 border-gray-200' 
+   272→  },
+   273→  retired: { 
+   274→    label: 'Retraité', 
+   275→    className: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200' 
+   276→  },
+   277→  terminated: { 
+   278→    label: 'Licencié', 
+   279→    className: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200' 
+   280→  },
+   281→}
+   282→
+   283→const CONTRACT_LABELS: Record<string, string> = {
+   284→  cdi: 'CDI',
+   285→  cdd: 'CDD',
+   286→  internship: 'Stage',
+   287→  temporary: 'Temporaire',
+   288→  part_time: 'Temps Partiel',
+   289→}
+   290→
+   291→// Contract Status Configuration (French)
+   292→const CONTRACT_STATUS_CONFIG: Record<string, { label: string; color: string }> = {
+   293→  draft: { label: 'Brouillon', color: 'bg-gray-100 text-gray-700' },
+   294→  active: { label: 'Actif', color: 'bg-green-100 text-green-700' },
+   295→  suspended: { label: 'Suspendu', color: 'bg-yellow-100 text-yellow-700' },
+   296→  terminated: { label: 'Résilié', color: 'bg-red-100 text-red-700' },
+   297→  expired: { label: 'Expiré', color: 'bg-orange-100 text-orange-700' },
+   298→  renewed: { label: 'Renouvelé', color: 'bg-blue-100 text-blue-700' },
+   299→}
+   300→
+   301→// Contract Type Configuration
+   302→const CONTRACT_TYPE_CONFIG: Record<string, { label: string; color: string }> = {
+   303→  CDI: { label: 'CDI', color: 'bg-blue-100 text-blue-700' },
+   304→  CDD: { label: 'CDD', color: 'bg-purple-100 text-purple-700' },
+   305→  Stage: { label: 'Stage', color: 'bg-cyan-100 text-cyan-700' },
+   306→  Temporaire: { label: 'Temporaire', color: 'bg-orange-100 text-orange-700' },
+   307→  Temps_Partiel: { label: 'Temps Partiel', color: 'bg-pink-100 text-pink-700' },
+   308→}
+   309→
+   310→// Leave Status Configuration (French)
+   311→const LEAVE_STATUS_CONFIG: Record<string, { label: string; color: string }> = {
+   312→  draft: { label: 'Brouillon', color: 'bg-gray-100 text-gray-700' },
+   313→  submitted: { label: 'Soumise', color: 'bg-blue-100 text-blue-700' },
+   314→  approved: { label: 'Approuvé', color: 'bg-green-100 text-green-700' },
+   315→  rejected: { label: 'Rejetée', color: 'bg-red-100 text-red-700' },
+   316→  cancelled: { label: 'Annulée', color: 'bg-gray-100 text-gray-500' },
+   317→}
+   318→
+   319→// Leave Types with icons and colors
+   320→const LEAVE_TYPES: Record<string, { label: string; icon: React.ElementType; color: string }> = {
+   321→  annual: { label: 'Congé Annuel', icon: Sun, color: 'bg-yellow-100 text-yellow-700' },
+   322→  sickness: { label: 'Maladie', icon: Heart, color: 'bg-red-100 text-red-700' },
+   323→  maternity: { label: 'Maternité', icon: Baby, color: 'bg-pink-100 text-pink-700' },
+   324→  paternity: { label: 'Paternité', icon: Users, color: 'bg-blue-100 text-blue-700' },
+   325→  unpaid: { label: 'Sans Solde', icon: Clock, color: 'bg-gray-100 text-gray-700' },
+   326→  exceptional: { label: 'Exceptionnel', icon: Star, color: 'bg-purple-100 text-purple-700' },
+   327→  marriage: { label: 'Mariage', icon: Heart, color: 'bg-pink-100 text-pink-800' },
+   328→  birth: { label: 'Naissance', icon: Baby, color: 'bg-cyan-100 text-cyan-700' },
+   329→  death: { label: 'Décès', icon: XCircle, color: 'bg-black/10 text-black' },
+   330→  pilgrimage: { label: 'Hadj/Omra', icon: Star, color: 'bg-emerald-100 text-emerald-700' },
+   331→}
+   332→
+   333→// Attendance Status Configuration
+   334→const ATTENDANCE_STATUS_CONFIG: Record<string, { label: string; color: string; dotColor: string }> = {
+   335→  present: { label: 'Présent', color: 'bg-green-100 text-green-700', dotColor: 'bg-green-500' },
+   336→  absent: { label: 'Absent', color: 'bg-red-100 text-red-700', dotColor: 'bg-red-500' },
+   337→  late: { label: 'En retard', color: 'bg-orange-100 text-orange-700', dotColor: 'bg-orange-500' },
+   338→  half_day: { label: 'Demi-journée', color: 'bg-yellow-100 text-yellow-700', dotColor: 'bg-yellow-500' },
+   339→  on_leave: { label: 'En congé', color: 'bg-blue-100 text-blue-700', dotColor: 'bg-blue-500' },
+   340→  holiday: { label: 'Férié', color: 'bg-purple-100 text-purple-700', dotColor: 'bg-purple-500' },
+   341→  weekend: { label: 'Week-end', color: 'bg-gray-100 text-gray-700', dotColor: 'bg-gray-400' },
+   342→}
+   343→
+   344→const formatCurrency = (value: number) => 
+   345→  new Intl.NumberFormat('fr-DZ', {
+   346→    style: 'currency',
+   347→    currency: 'DZD',
+   348→    minimumFractionDigits: 0,
+   349→    maximumFractionDigits: 0,
+   350→  }).format(value)
+   351→
+   352→const formatDate = (dateStr: string | null | undefined) => {
+   353→  if (!dateStr) return '-'
+   354→  return new Date(dateStr).toLocaleDateString('fr-DZ', {
+   355→    day: '2-digit',
+   356→    month: '2-digit',
+   357→    year: 'numeric',
+   358→  })
+   359→}
+   360→
+   361→const formatDateTime = (dateStr: string | null | undefined) => {
+   362→  if (!dateStr) return '-'
+   363→  return new Date(dateStr).toLocaleString('fr-DZ', {
+   364→    day: '2-digit',
+   365→    month: '2-digit',
+   366→    year: 'numeric',
+   367→    hour: '2-digit',
+   368→    minute: '2-digit',
+   369→  })
+   370→}
+   371→
+   372→const getInitials = (firstName: string, lastName: string) => 
+   373→  `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase()
+   374→
+   375→// Generate mock data for contracts
+   376→const generateMockContracts = (): Contract[] => [
+   377→  { id: '1', reference: 'CTR-2024-001', employeeId: 'emp1', employeeName: 'Ahmed Benali', type: 'CDI', status: 'active', startDate: '2024-01-15', endDate: null, trialEndDate: '2024-04-15', baseSalary: 85000, currency: 'DZD', paymentFrequency: 'monthly', department: 'Informatique', jobTitle: 'Développeur Senior', grade: 'P5', weeklyHours: 40, annualLeaveDays: 30, transportAllowance: 8000, housingAllowance: 0, foodAllowance: 4500, nssNumber: 'NSS123456', cnasNumber: 'CNAS789012', casnosNumber: 'CASNOS345678', contractUrl: '/files/contracts/ctr1.pdf', internalNotes: null, createdAt: '2024-01-10T10:00:00Z', updatedAt: '2024-01-15T14:30:00Z' },
+   378→  { id: '2', reference: 'CTR-2024-002', employeeId: 'emp2', employeeName: 'Fatima Zerhouni', type: 'CDD', status: 'active', startDate: '2024-03-01', endDate: '2025-02-28', trialEndDate: '2024-04-01', baseSalary: 65000, currency: 'DZD', paymentFrequency: 'monthly', department: 'Marketing', jobTitle: 'Chef de Projet Digital', grade: 'P4', weeklyHours: 40, annualLeaveDays: 25, transportAllowance: 8000, housingAllowance: 12000, foodAllowance: 4500, nssNumber: 'NSS234567', cnasNumber: 'CNAS890123', casnosNumber: 'CASNOS456789', contractUrl: '/files/contracts/ctr2.pdf', internalNotes: 'Renouvellement possible', createdAt: '2024-02-25T09:00:00Z', updatedAt: '2024-03-01T11:00:00Z' },
+   379→  { id: '3', reference: 'CTR-2024-003', employeeId: 'emp3', employeeName: 'Karim Hadjeres', type: 'Stage', status: 'draft', startDate: '2024-06-01', endDate: '2024-08-31', trialEndDate: null, baseSalary: 18000, currency: 'DZD', paymentFrequency: 'monthly', department: 'Informatique', jobTitle: 'Stagiaire Développeur', grade: 'S1', weeklyHours: 35, annualLeaveDays: 5, transportAllowance: 4000, housingAllowance: 0, foodAllowance: 2500, nssNumber: '', cnasNumber: '', casnosNumber: '', contractUrl: null, internalNotes: 'Stage PFE - Université USTHB', createdAt: '2024-05-20T14:00:00Z', updatedAt: '2024-05-20T14:00:00Z' },
+   380→  { id: '4', reference: 'CTR-2023-015', employeeId: 'emp4', employeeName: 'Amina Boudrahem', type: 'CDI', status: 'suspended', startDate: '2023-06-01', endDate: null, trialEndDate: '2023-09-01', baseSalary: 75000, currency: 'DZD', paymentFrequency: 'monthly', department: 'Ressources Humaines', jobTitle: 'Responsable RH', grade: 'P4', weeklyHours: 39, annualLeaveDays: 30, transportAllowance: 8000, housingAllowance: 8000, foodAllowance: 4500, nssNumber: 'NSS345678', cnasNumber: 'CNAS901234', casnosNumber: 'CASNOS567890', contractUrl: '/files/contracts/ctr4.pdf', internalNotes: 'Suspension temporaire - congé maternité prolongé', createdAt: '2023-05-20T10:00:00Z', updatedAt: '2024-04-01T09:00:00Z' },
+   381→  { id: '5', reference: 'CTR-2023-008', employeeId: 'emp5', employeeName: 'Yacine Mebarki', type: 'CDD', status: 'terminated', startDate: '2023-09-01', endDate: '2024-04-30', trialEndDate: null, baseSalary: 55000, currency: 'DZD', paymentFrequency: 'monthly', department: 'Comptabilité', jobTitle: 'Comptable', grade: 'P3', weeklyHours: 39, annualLeaveDays: 25, transportAllowance: 6000, housingAllowance: 0, foodAllowance: 3500, nssNumber: 'NSS456789', cnasNumber: 'CNAS012345', casnosNumber: 'CASNOS678901', contractUrl: '/files/contracts/ctr5.pdf', internalNotes: 'Fin de contrat - non renouvelé', createdAt: '2023-08-20T11:00:00Z', updatedAt: '2024-04-30T16:00:00Z' },
+   382→  { id: '6', reference: 'CTR-2023-003', employeeId: 'emp6', employeeName: 'Nadia Belkacem', type: 'CDI', status: 'expired', startDate: '2023-01-01', endDate: '2023-12-31', trialEndDate: '2023-04-01', baseSalary: 95000, currency: 'DZD', paymentFrequency: 'monthly', department: 'Direction', jobTitle: 'Directrice Technique', grade: 'P6', weeklyHours: 40, annualLeaveDays: 30, transportAllowance: 10000, housingAllowance: 15000, foodAllowance: 5000, nssNumber: 'NSS567890', cnasNumber: 'CNAS123456', casnosNumber: 'CASNOS789012', contractUrl: '/files/contracts/ctr6.pdf', internalNotes: 'Contrat expiré - en attente de renouvellement', createdAt: '2022-12-15T10:00:00Z', updatedAt: '2023-12-31T23:59:00Z' },
+   383→]
+   384→
+   385→// Generate mock data for leave requests
+   386→const generateMockLeaves = (): LeaveRequest[] => [
+   387→  { id: '1', employeeId: 'emp1', employeeName: 'Ahmed Benali', type: 'annual', startDate: '2024-07-01', endDate: '2024-07-15', daysCount: 15, isHalfDay: false, halfDayPart: null, status: 'approved', reason: 'Vacances familiales', rejectionReason: null, approvedBy: 'admin', approvedAt: '2024-06-20T10:00:00Z', createdAt: '2024-06-01T09:00:00Z', updatedAt: '2024-06-20T10:00:00Z' },
+   388→  { id: '2', employeeId: 'emp2', employeeName: 'Fatima Zerhouni', type: 'sickness', startDate: '2024-07-10', endDate: '2024-07-12', daysCount: 3, isHalfDay: false, halfDayPart: null, status: 'submitted', reason: 'Grippe forte avec fièvre', rejectionReason: null, approvedBy: null, approvedAt: null, createdAt: '2024-07-10T08:00:00Z', updatedAt: '2024-07-10T08:00:00Z' },
+   389→  { id: '3', employeeId: 'emp4', employeeName: 'Amina Boudrahem', type: 'maternity', startDate: '2024-05-01', endDate: '2024-08-31', daysCount: 124, isHalfDay: false, halfDayPart: null, status: 'approved', reason: 'Congé maternité légal', rejectionReason: null, approvedBy: 'admin', approvedAt: '2024-04-15T14:00:00Z', createdAt: '2024-03-01T10:00:00Z', updatedAt: '2024-04-15T14:00:00Z' },
+   390→  { id: '4', employeeId: 'emp7', employeeName: 'Omar Khaled', type: 'exceptional', startDate: '2024-07-18', endDate: '2024-07-18', daysCount: 1, isHalfDay: true, halfDayPart: 'morning', status: 'submitted', reason: 'Démarches administratives urgentes', rejectionReason: null, approvedBy: null, approvedAt: null, createdAt: '2024-07-16T11:00:00Z', updatedAt: '2024-07-16T11:00:00Z' },
+   391→  { id: '5', employeeId: 'emp8', employeeName: 'Lina Mansouri', type: 'marriage', startDate: '2024-08-15', endDate: '2024-08-22', daysCount: 8, isHalfDay: false, halfDayPart: null, status: 'draft', reason: 'Mariage prévu le 17 août', rejectionReason: null, approvedBy: null, approvedAt: null, createdAt: '2024-07-10T15:00:00Z', updatedAt: '2024-07-10T15:00:00Z' },
+   392→  { id: '6', employeeId: 'emp9', employeeName: 'Rachid Hamadi', type: 'pilgrimage', startDate: '2024-06-10', endDate: '2024-07-15', daysCount: 36, isHalfDay: false, halfDayPart: null, status: 'approved', reason: 'Hadj 2024', rejectionReason: null, approvedBy: 'admin', approvedAt: '2024-05-01T09:00:00Z', createdAt: '2024-04-01T10:00:00Z', updatedAt: '2024-05-01T09:00:00Z' },
+   393→  { id: '7', employeeId: 'emp10', employeeName: 'Samira Djelloul', type: 'birth', startDate: '2024-07-20', endDate: '2024-07-24', daysCount: 5, isHalfDay: false, halfDayPart: null, status: 'rejected', reason: 'Naissance d\'un enfant', rejectionReason: 'Dates non conformes au règlement intérieur', approvedBy: 'manager', approvedAt: '2024-07-15T11:00:00Z', createdAt: '2024-07-12T09:00:00Z', updatedAt: '2024-07-15T11:00:00Z' },
+   394→]
+   395→
+   396→// Generate mock attendance records
+   397→const generateMockAttendance = (): AttendanceRecord[] => {
+   398→  const today = new Date().toISOString().split('T')[0]
+   399→  return [
+   400→    { id: '1', employeeId: 'emp1', employeeName: 'Ahmed Benali', date: today, clockIn: '08:25', clockOut: '17:32', workedHours: 8.12, overtimeHours: 0.62, breakMinutes: 60, status: 'present', notes: null, department: 'Informatique' },
+   401→    { id: '2', employeeId: 'emp2', employeeName: 'Fatima Zerhouni', date: today, clockIn: '08:55', clockOut: null, workedHours: 0, overtimeHours: 0, breakMinutes: 0, status: 'late', notes: 'En cours', department: 'Marketing' },
+   402→    { id: '3', employeeId: 'emp3', employeeName: 'Karim Hadjeres', date: today, clockIn: '08:15', clockOut: '17:00', workedHours: 8.75, overtimeHours: 0.25, breakMinutes: 60, status: 'present', notes: null, department: 'Informatique' },
+   403→    { id: '4', employeeId: 'emp4', employeeName: 'Amina Boudrahem', date: today, clockIn: null, clockOut: null, workedHours: 0, overtimeHours: 0, breakMinutes: 0, status: 'on_leave', notes: 'Congé maternité', department: 'Ressources Humaines' },
+   404→    { id: '5', employeeId: 'emp5', employeeName: 'Yacine Mebarki', date: today, clockIn: null, clockOut: null, workedHours: 0, overtimeHours: 0, breakMinutes: 0, status: 'absent', notes: 'Absence non justifiée', department: 'Comptabilité' },
+   405→    { id: '6', employeeId: 'emp6', employeeName: 'Nadia Belkacem', date: today, clockIn: '08:00', clockOut: '13:00', workedHours: 5, overtimeHours: 0, breakMinutes: 30, status: 'half_day', notes: 'Départ anticipé - rendez-vous médical', department: 'Direction' },
+   406→    { id: '7', employeeId: 'emp7', employeeName: 'Omar Khaled', date: today, clockIn: '08:30', clockOut: '17:45', workedHours: 8.25, overtimeHours: 0.75, breakMinutes: 60, status: 'present', notes: null, department: 'Commercial' },
+   407→    { id: '8', employeeId: 'emp8', employeeName: 'Lina Mansouri', date: today, clockIn: '09:15', clockOut: null, workedHours: 0, overtimeHours: 0, breakMinutes: 0, status: 'late', notes: 'Retard - problèmes de transport', department: 'Communication' },
+   408→  ]
+   409→}
+   410→
+   411→// ============================================================
+   412→// LOADING SKELETON COMPONENTS
+   413→// ============================================================
+   414→
+   415→function KpiSkeleton() {
+   416→  return (
+   417→    <Card>
+   418→      <CardHeader className="flex flex-row items-center justify-between pb-2">
+   419→        <Skeleton className="h-4 w-24" />
+   420→        <Skeleton className="h-10 w-10 rounded-lg" />
+   421→      </CardHeader>
+   422→      <CardContent>
+   423→        <Skeleton className="h-8 w-32 mb-2" />
+   424→        <Skeleton className="h-4 w-20" />
+   425→      </CardContent>
+   426→    </Card>
+   427→  )
+   428→}
+   429→
+   430→function TableSkeleton({ rows = 5 }: { rows?: number }) {
+   431→  return (
+   432→    <div className="space-y-3">
+   433→      {[...Array(rows)].map((_, i) => (
+   434→        <div key={i} className="flex items-center space-x-4 p-4">
+   435→          <Skeleton className="h-10 w-10 rounded-full" />
+   436→          <div className="space-y-2 flex-1">
+   437→            <Skeleton className="h-4 w-[250px]" />
+   438→            <Skeleton className="h-3 w-[200px]" />
+   439→          </div>
+   440→          <Skeleton className="h-6 w-20" />
+   441→          <Skeleton className="h-6 w-24" />
+   442→        </div>
+   443→      ))}
+   444→    </div>
+   445→  )
+   446→}
+   447→
+   448→// ============================================================
+   449→// ERROR COMPONENT
+   450→// ============================================================
+   451→
+   452→function ErrorState({ message, onRetry }: { message: string; onRetry: () => void }) {
+   453→  return (
+   454→    <div className="flex flex-col items-center justify-center py-12 space-y-4">
+   455→      <div className="p-4 rounded-full bg-red-100 dark:bg-red-900/20">
+   456→        <AlertCircle className="w-8 h-8 text-red-600" />
+   457→      </div>
+   458→      <h3 className="text-lg font-semibold text-foreground">Erreur de chargement</h3>
+   459→      <p className="text-sm text-muted-foreground text-center max-w-md">{message}</p>
+   460→      <Button onClick={onRetry} variant="outline" className="gap-2">
+   461→        <RefreshCw className="w-4 h-4" />
+   462→        Réessayer
+   463→      </Button>
+   464→    </div>
+   465→  )
+   466→}
+   467→
+   468→// ============================================================
+   469→// EMPTY STATE COMPONENT
+   470→// ============================================================
+   471→
+   472→function EmptyState({ type }: { type: 'employees' | 'search' | 'contracts' | 'leaves' | 'attendance' }) {
+   473→  const config = {
+   474→    employees: {
+   475→      icon: Users,
+   476→      title: 'Aucun employé trouvé',
+   477→      description: 'Commencez par ajouter des employés à votre système.',
+   478→    },
+   479→    search: {
+   480→      icon: Search,
+   481→      title: 'Aucun résultat',
+   482→      description: 'Essayez de modifier vos critères de recherche ou de filtre.',
+   483→    },
+   484→    contracts: {
+   485→      icon: FileSignature,
+   486→      title: 'Aucun contrat trouvé',
+   487→      description: 'Aucun contrat ne correspond à vos critères de recherche.',
+   488→    },
+   489→    leaves: {
+   490→      icon: CalendarCheck,
+   491→      title: 'Aucune demande de congé',
+   492→      description: 'Aucune demande de congé ne correspond à vos critères.',
+   493→    },
+   494→    attendance: {
+   495→      icon: Activity,
+   496→      title: 'Aucun enregistrement',
+   497→      description: 'Aucun enregistrement de présence pour cette période.',
+   498→    },
+   499→  }
+   500→  
+   501→  const { icon: Icon, title, description } = config[type] || config.search
+   502→  
+   503→  return (
+   504→    <div className="flex flex-col items-center justify-center py-12 space-y-4">
+   505→      <div className="p-4 rounded-full bg-muted">
+   506→        <Icon className="w-8 h-8 text-muted-foreground" />
+   507→      </div>
+   508→      <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+   509→      <p className="text-sm text-muted-foreground text-center">{description}</p>
+   510→    </div>
+   511→  )
+   512→}
+   513→
+   514→// ============================================================
+   515→// EMPLOYEE DETAIL MODAL
+   516→// ============================================================
+   517→
+   518→function EmployeeDetailModal({ 
+   519→  employee, 
+   520→  isOpen, 
+   521→  onClose 
+   522→}: { 
+   523→  employee: Employee | null
+   524→  isOpen: boolean
+   525→  onClose: () => void 
+   526→}) {
+   527→  if (!employee) return null
+   528→
+   529→  return (
+   530→    <Dialog open={isOpen} onOpenChange={onClose}>
+   531→      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+   532→        <DialogHeader>
+   533→          <DialogTitle className="flex items-center gap-3">
+   534→            <Avatar className="h-12 w-12">
+   535→              <AvatarFallback className="bg-primary/10 text-primary text-lg">
+   536→                {getInitials(employee.firstName, employee.lastName)}
+   537→              </AvatarFallback>
+   538→            </Avatar>
+   539→            <div>
+   540→              <span>{employee.firstName} {employee.lastName}</span>
+   541→              <p className="text-sm font-normal text-muted-foreground">{employee.matricule}</p>
+   542→            </div>
+   543→          </DialogTitle>
+   544→          <DialogDescription>
+   545→            Fiche employé • {STATUS_CONFIG[employee.employeeStatus]?.label || employee.employeeStatus}
+   546→          </DialogDescription>
+   547→        </DialogHeader>
+   548→
+   549→        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+   550→          {/* Personal Information */}
+   551→          <div className="space-y-4">
+   552→            <h4 className="font-semibold flex items-center gap-2 text-sm uppercase tracking-wider text-muted-foreground">
+   553→              <IdCard className="w-4 h-4" />
+   554→              Informations Personnelles
+   555→            </h4>
+   556→            <div className="space-y-3 bg-muted/50 p-4 rounded-lg">
+   557→              <InfoRow label="Nom complet" value={`${employee.firstName} ${employee.lastName}`} />
+   558→              <InfoRow label="CIN" value={employee.cin || '-'} />
+   559→              <InfoRow 
+   560→                label="Date de naissance" 
+   561→                value={formatDate(employee.dateOfBirth)}
+   562→                icon={<Cake className="w-3 h-3" />}
+   563→              />
+   564→              <InfoRow 
+   565→                label="Lieu de naissance" 
+   566→                value={employee.placeOfBirth || '-'}
+   567→                icon={<MapPin className="w-3 h-3" />}
+   568→              />
+   569→              <InfoRow label="Nationalité" value={employee.nationality || 'DZ'} />
+   570→              <InfoRow label="Genre" value={employee.gender === 'M' ? 'Masculin' : 'Féminin'} />
+   571→            </div>
+   572→          </div>
+   573→
+   574→          {/* Contact Information */}
+   575→          <div className="space-y-4">
+   576→            <h4 className="font-semibold flex items-center gap-2 text-sm uppercase tracking-wider text-muted-foreground">
+   577→              <Phone className="w-4 h-4" />
+   578→              Contact
+   579→            </h4>
+   580→            <div className="space-y-3 bg-muted/50 p-4 rounded-lg">
+   581→              <InfoRow 
+   582→                label="Email pro" 
+   583→                value={employee.workEmail || '-'}
+   584→                icon={<Mail className="w-3 h-3" />}
+   585→              />
+   586→              <InfoRow 
+   587→                label="Téléphone" 
+   588→                value={employee.phone || '-'}
+   589→                icon={<Phone className="w-3 h-3" />}
+   590→              />
+   591→              <InfoRow label="Adresse" value={employee.address || '-'} />
+   592→              <InfoRow label="Ville" value={employee.city || '-'} />
+   593→            </div>
+   594→          </div>
+   595→
+   596→          {/* Contract Information */}
+   597→          <div className="space-y-4">
+   598→            <h4 className="font-semibold flex items-center gap-2 text-sm uppercase tracking-wider text-muted-foreground">
+   599→              <Briefcase className="w-4 h-4" />
+   600→              Contrat & Poste
+   601→            </h4>
+   602→            <div className="space-y-3 bg-muted/50 p-4 rounded-lg">
+   603→              <InfoRow 
+   604→                label="Type de contrat" 
+   605→                value={
+   606→                  <Badge variant="outline">
+   607→                    {CONTRACT_LABELS[employee.contractType] || employee.contractType}
+   608→                  </Badge>
+   609→                }
+   610→              />
+   611→              <InfoRow label="Département" value={
+   612→                employee.department ? (
+   613→                  <Badge variant="secondary">{employee.department}</Badge>
+   614→                ) : '-'
+   615→              } />
+   616→              <InfoRow label="Poste" value={employee.jobTitle || '-'} />
+   617→              <InfoRow label="Fonction" value={employee.jobPosition || '-'} />
+   618→              <InfoRow 
+   619→                label="Début contrat" 
+   620→                value={formatDate(employee.contractStartDate)}
+   621→                icon={<Calendar className="w-3 h-3" />}
+   622→              />
+   623→              <InfoRow 
+   624→                label="Fin contrat" 
+   625→                value={employee.contractEndDate ? formatDate(employee.contractEndDate) : '-'}
+   626→              />
+   627→              <InfoRow 
+   628→                label="Statut" 
+   629→                value={
+   630→                  <Badge variant="outline" className={STATUS_CONFIG[employee.employeeStatus]?.className}>
+   631→                    {STATUS_CONFIG[employee.employeeStatus]?.label}
+   632→                  </Badge>
+   633→                }
+   634→              />
+   635→            </div>
+   636→          </div>
+   637→
+   638→          {/* Salary & Bank */}
+   639→          <div className="space-y-4">
+   640→            <h4 className="font-semibold flex items-center gap-2 text-sm uppercase tracking-wider text-muted-foreground">
+   641→              <DollarSign className="w-4 h-4" />
+   642→              Salaire & Banque
+   643→            </h4>
+   644→            <div className="space-y-3 bg-muted/50 p-4 rounded-lg">
+   645→              <InfoRow 
+   646→                label="Salaire de base" 
+   647→                value={<span className="font-semibold text-green-600">{formatCurrency(employee.baseSalary)}</span>}
+   648→              />
+   649→              <InfoRow label="Taux journalier" value={formatCurrency(employee.dailyRate)} />
+   650→              <InfoRow label="Taux horaire" value={formatCurrency(employee.hourlyRate)} />
+   651→              
+   652→              <div className="pt-2 border-t border-border mt-2">
+   653→                <InfoRow label="Banque" value={employee.bankName || '-'} />
+   654→                <InfoRow 
+   655→                  label="Compte bancaire" 
+   656→                  value={employee.bankAccount ? (
+   657→                    <span className="font-mono text-xs">{employee.bankAccount}</span>
+   658→                  ) : '-'}
+   659→                  icon={<CreditCard className="w-3 h-3" />}
+   660→                />
+   661→              </div>
+   662→            </div>
+   663→          </div>
+   664→
+   665→          {/* Social Security */}
+   666→          <div className="space-y-4 md:col-span-2">
+   667→            <h4 className="font-semibold flex items-center gap-2 text-sm uppercase tracking-wider text-muted-foreground">
+   668→              <FileText className="w-4 h-4" />
+   669→              Sécurité Sociale & Documents
+   670→            </h4>
+   671→            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-muted/50 p-4 rounded-lg">
+   672→              <InfoRow label="N° CNAS" value={employee.cnasNumber || '-'} />
+   673→              <InfoRow label="N° CASNOS" value={employee.casnosNumber || '-'} />
+   674→              <InfoRow 
+   675→                label="CV" 
+   676→                value={employee.cvFile ? 'Disponible' : '-'}
+   677→                valueClassName={employee.cvFile ? 'text-green-600' : ''}
+   678→              />
+   679→              <InfoRow 
+   680→                label="Contrat signé" 
+   681→                value={employee.contractFile ? 'Disponible' : '-'}
+   682→                valueClassName={employee.contractFile ? 'text-green-600' : ''}
+   683→              />
+   684→              <InfoRow 
+   685→                label="Copie CIN" 
+   686→                value={employee.cinFile ? 'Disponible' : '-'}
+   687→                valueClassName={employee.cinFile ? 'text-green-600' : ''}
+   688→              />
+   689→            </div>
+   690→          </div>
+   691→        </div>
+   692→
+   693→        {/* Manager Info */}
+   694→        {employee.manager && (
+   695→          <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+   696→            <p className="text-sm text-muted-foreground mb-1">Responsable hiérarchique</p>
+   697→            <p className="font-medium">
+   698→              {employee.manager.firstName} {employee.manager.lastName} ({employee.manager.matricule})
+   699→            </p>
+   700→          </div>
+   701→        )}
+   702→
+   703→        {/* Stats */}
+   704→        <div className="mt-4 flex gap-4 text-sm text-muted-foreground">
+   705→          <span>Paies: {employee._count?.payrolls || 0}</span>
+   706→          <span>Congés: {employee._count?.leaves || 0}</span>
+   707→          <span>Créé le: {formatDate(employee.createdAt)}</span>
+   708→        </div>
+   709→      </DialogContent>
+   710→    </Dialog>
+   711→  )
+   712→}
+   713→
+   714→// ============================================================
+   715→// INFO ROW HELPER
+   716→// ============================================================
+   717→
+   718→function InfoRow({ 
+   719→  label, 
+   720→  value, 
+   721→  icon,
+   722→  valueClassName = '' 
+   723→}: { 
+   724→  label: string
+   725→  value: React.ReactNode
+   726→  icon?: React.ReactNode
+   727→  valueClassName?: string 
+   728→}) {
+   729→  return (
+   730→    <div className="flex justify-between items-start gap-2">
+   731→      <span className="text-xs text-muted-foreground flex items-center gap-1">
+   732→        {icon}
+   733→        {label}
+   734→      </span>
+   735→      <span className={`text-sm font-medium text-right ${valueClassName}`}>{value}</span>
+   736→    </div>
+   737→  )
+   738→}
+   739→
+   740→// ============================================================
+   741→// CONTRACT MODAL COMPONENT
+   742→// ============================================================
+   743→
+   744→function ContractModal({
+   745→  contract,
+   746→  isOpen,
+   747→  onClose,
+   748→  onSave,
+   749→  employees,
+   750→}: {
+   751→  contract: Contract | null
+   752→  isOpen: boolean
+   753→  onClose: () => void
+   754→  onSave: (data: Partial<Contract>) => void
+   755→  employees: Employee[]
+   756→}) {
+   757→  const [formData, setFormData] = useState<Partial<Contract>>(contract || {
+   758→    type: 'CDI',
+   759→    status: 'draft',
+   760→    baseSalary: 0,
+   761→    currency: 'DZD',
+   762→    paymentFrequency: 'monthly',
+   763→    weeklyHours: 40,
+   764→    annualLeaveDays: 30,
+   765→    transportAllowance: 0,
+   766→    housingAllowance: 0,
+   767→    foodAllowance: 0,
+   768→  })
+   769→
+   770→  useEffect(() => {
+   771→    if (contract) {
+   772→      setFormData(contract)
+   773→    } else {
+   774→      setFormData({
+   775→        type: 'CDI',
+   776→        status: 'draft',
+   777→        baseSalary: 0,
+   778→        currency: 'DZD',
+   779→        paymentFrequency: 'monthly',
+   780→        weeklyHours: 40,
+   781→        annualLeaveDays: 30,
+   782→        transportAllowance: 0,
+   783→        housingAllowance: 0,
+   784→        foodAllowance: 0,
+   785→      })
+   786→    }
+   787→  }, [contract])
+   788→
+   789→  const handleSubmit = (e: React.FormEvent) => {
+   790→    e.preventDefault()
+   791→    onSave(formData)
+   792→  }
+   793→
+   794→  return (
+   795→    <Dialog open={isOpen} onOpenChange={onClose}>
+   796→      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+   797→        <DialogHeader>
+   798→          <DialogTitle className="flex items-center gap-2">
+   799→            <FileSignature className="w-5 h-5" />
+   800→            {contract ? 'Modifier le Contrat' : 'Nouveau Contrat'}
+   801→          </DialogTitle>
+   802→          <DialogDescription>
+   803→            {contract ? `Contrat ${contract.reference}` : 'Créer un nouveau contrat de travail'}
+   804→          </DialogDescription>
+   805→        </DialogHeader>
+   806→
+   807→        <form onSubmit={handleSubmit} className="space-y-6 mt-4">
+   808→          {/* Employee Selection */}
+   809→          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+   810→            <div className="space-y-2">
+   811→              <Label htmlFor="employee">Employé *</Label>
+   812→              <Select
+   813→                value={formData.employeeId || ''}
+   814→                onValueChange={(v) => setFormData({ ...formData, employeeId: v })}
+   815→                disabled={!!contract}
+   816→              >
+   817→                <SelectTrigger>
+   818→                  <SelectValue placeholder="Sélectionner un employé" />
+   819→                </SelectTrigger>
+   820→                <SelectContent>
+   821→                  {employees.map((emp) => (
+   822→                    <SelectItem key={emp.id} value={emp.id}>
+   823→                      {emp.firstName} {emp.lastName} ({emp.matricule})
+   824→                    </SelectItem>
+   825→                  ))}
+   826→                </SelectContent>
+   827→              </Select>
+   828→            </div>
+   829→
+   830→            <div className="space-y-2">
+   831→              <Label htmlFor="type">Type de Contrat *</Label>
+   832→              <Select
+   833→                value={formData.type || 'CDI'}
+   834→                onValueChange={(v) => setFormData({ ...formData, type: v as Contract['type'] })}
+   835→              >
+   836→                <SelectTrigger>
+   837→                  <SelectValue />
+   838→                </SelectTrigger>
+   839→                <SelectContent>
+   840→                  {Object.entries(CONTRACT_TYPE_CONFIG).map(([key, { label }]) => (
+   841→                    <SelectItem key={key} value={key}>{label}</SelectItem>
+   842→                  ))}
+   843→                </SelectContent>
+   844→              </Select>
+   845→            </div>
+   846→          </div>
+   847→
+   848→          {/* Dates */}
+   849→          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+   850→            <div className="space-y-2">
+   851→              <Label htmlFor="startDate">Date de début *</Label>
+   852→              <Input
+   853→                id="startDate"
+   854→                type="date"
+   855→                value={formData.startDate?.split('T')[0] || ''}
+   856→                onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+   857→                required
+   858→              />
+   859→            </div>
+   860→            <div className="space-y-2">
+   861→              <Label htmlFor="endDate">Date de fin</Label>
+   862→              <Input
+   863→                id="endDate"
+   864→                type="date"
+   865→                value={formData.endDate?.split('T')[0] || ''}
+   866→                onChange={(e) => setFormData({ ...formData, endDate: e.target.value || null })}
+   867→              />
+   868→            </div>
+   869→            <div className="space-y-2">
+   870→              <Label htmlFor="trialEnd">Fin de période d'essai</Label>
+   871→              <Input
+   872→                id="trialEnd"
+   873→                type="date"
+   874→                value={formData.trialEndDate?.split('T')[0] || ''}
+   875→                onChange={(e) => setFormData({ ...formData, trialEndDate: e.target.value || null })}
+   876→              />
+   877→            </div>
+   878→          </div>
+   879→
+   880→          {/* Salary Section */}
+   881→          <div className="space-y-4">
+   882→            <h4 className="font-semibold flex items-center gap-2">
+   883→              <DollarSign className="w-4 h-4" />
+   884→              Rémunération
+   885→            </h4>
+   886→            <Separator />
+   887→            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+   888→              <div className="space-y-2">
+   889→                <Label htmlFor="salary">Salaire de base (DZD) *</Label>
+   890→                <Input
+   891→                  id="salary"
+   892→                  type="number"
+   893→                  value={formData.baseSalary || ''}
+   894→                  onChange={(e) => setFormData({ ...formData, baseSalary: Number(e.target.value) })}
+   895→                  placeholder="0"
+   896→                  required
+   897→                />
+   898→              </div>
+   899→              <div className="space-y-2">
+   900→                <Label htmlFor="frequency">Fréquence de paiement</Label>
+   901→                <Select
+   902→                  value={formData.paymentFrequency || 'monthly'}
+   903→                  onValueChange={(v) => setFormData({ ...formData, paymentFrequency: v as Contract['paymentFrequency'] })}
+   904→                >
+   905→                  <SelectTrigger>
+   906→                    <SelectValue />
+   907→                  </SelectTrigger>
+   908→                  <SelectContent>
+   909→                    <SelectItem value="monthly">Mensuel</SelectItem>
+   910→                    <SelectItem value="biweekly">Bi-mensuel</SelectItem>
+   911→                    <SelectItem value="weekly">Hebdomadaire</SelectItem>
+   912→                  </SelectContent>
+   913→                </Select>
+   914→              </div>
+   915→              <div className="space-y-2">
+   916→                <Label htmlFor="currency">Devise</Label>
+   917→                <Select value={formData.currency || 'DZD'} onValueChange={(v) => setFormData({ ...formData, currency: v })}>
+   918→                  <SelectTrigger><SelectValue /></SelectTrigger>
+   919→                  <SelectContent>
+   920→                    <SelectItem value="DZD">DZD - Dinar Algérien</SelectItem>
+   921→                  </SelectContent>
+   922→                </Select>
+   923→              </div>
+   924→            </div>
+   925→          </div>
+   926→
+   927→          {/* Benefits */}
+   928→          <div className="space-y-4">
+   929→            <h4 className="font-semibold flex items-center gap-2">
+   930→              <GiftIcon className="w-4 h-4" />
+   931→              Avantages et Primes
+   932→            </h4>
+   933→            <Separator />
+   934→            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+   935→              <div className="space-y-2">
+   936→                <Label htmlFor="transport">Prime de transport</Label>
+   937→                <Input
+   938→                  id="transport"
+   939→                  type="number"
+   940→                  value={formData.transportAllowance || 0}
+   941→                  onChange={(e) => setFormData({ ...formData, transportAllowance: Number(e.target.value) })}
+   942→                />
+   943→              </div>
+   944→              <div className="space-y-2">
+   945→                <Label htmlFor="housing">Indemnité logement</Label>
+   946→                <Input
+   947→                  id="housing"
+   948→                  type="number"
+   949→                  value={formData.housingAllowance || 0}
+   950→                  onChange={(e) => setFormData({ ...formData, housingAllowance: Number(e.target.value) })}
+   951→                />
+   952→              </div>
+   953→              <div className="space-y-2">
+   954→                <Label htmlFor="food">Indemnité nourriture</Label>
+   955→                <Input
+   956→                  id="food"
+   957→                  type="number"
+   958→                  value={formData.foodAllowance || 0}
+   959→                  onChange={(e) => setFormData({ ...formData, foodAllowance: Number(e.target.value) })}
+   960→                />
+   961→              </div>
+   962→            </div>
+   963→          </div>
+   964→
+   965→          {/* Working Conditions */}
+   966→          <div className="space-y-4">
+   967→            <h4 className="font-semibold flex items-center gap-2">
+   968→              <Clock className="w-4 h-4" />
+   969→              Conditions de Travail
+   970→            </h4>
+   971→            <Separator />
+   972→            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+   973→              <div className="space-y-2">
+   974→                <Label htmlFor="hours">Heures hebdomadaires</Label>
+   975→                <Input
+   976→                  id="hours"
+   977→                  type="number"
+   978→                  value={formData.weeklyHours || 40}
+   979→                  onChange={(e) => setFormData({ ...formData, weeklyHours: Number(e.target.value) })}
+   980→                  min={0}
+   981→                  max={48}
+   982→                />
+   983→              </div>
+   984→              <div className="space-y-2">
+   985→                <Label htmlFor="leaveDays">Jours de congés annuels</Label>
+   986→                <Input
+   987→                  id="leaveDays"
+   988→                  type="number"
+   989→                  value={formData.annualLeaveDays || 30}
+   990→                  onChange={(e) => setFormData({ ...formData, annualLeaveDays: Number(e.target.value) })}
+   991→                  min={0}
+   992→                  max={45}
+   993→                />
+   994→              </div>
+   995→            </div>
+   996→          </div>
+   997→
+   998→          {/* Job Information */}
+   999→          <div className="space-y-4">
+  1000→            <h4 className="font-semibold flex items-center gap-2">
+  1001→              <Briefcase className="w-4 h-4" />
+  1002→              Informations du Poste
+  1003→            </h4>
+  1004→            <Separator />
+  1005→            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+  1006→              <div className="space-y-2">
+  1007→                <Label htmlFor="department">Département</Label>
+  1008→                <Input
+  1009→                  id="department"
+  1010→                  value={formData.department || ''}
+  1011→                  onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+  1012→                  placeholder="Ex: Informatique"
+  1013→                />
+  1014→              </div>
+  1015→              <div className="space-y-2">
+  1016→                <Label htmlFor="jobTitle">Intitulé du poste</Label>
+  1017→                <Input
+  1018→                  id="jobTitle"
+  1019→                  value={formData.jobTitle || ''}
+  1020→                  onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })}
+  1021→                  placeholder="Ex: Développeur Senior"
+  1022→                />
+  1023→              </div>
+  1024→              <div className="space-y-2">
+  1025→                <Label htmlFor="grade">Classification / Grade</Label>
+  1026→                <Input
+  1027→                  id="grade"
+  1028→                  value={formData.grade || ''}
+  1029→                  onChange={(e) => setFormData({ ...formData, grade: e.target.value })}
+  1030→                  placeholder="Ex: P5"
+  1031→                />
+  1032→              </div>
+  1033→            </div>
+  1034→          </div>
+  1035→
+  1036→          {/* Algerian Compliance Fields */}
+  1037→          <div className="space-y-4">
+  1038→            <h4 className="font-semibold flex items-center gap-2">
+  1039→              <Shield className="w-4 h-4" />
+  1040→              Conformité Algérienne (NSS/CNAS/CASNOS)
+  1041→            </h4>
+  1042→            <Separator />
+  1043→            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+  1044→              <div className="space-y-2">
+  1045→                <Label htmlFor="nss">N° Sécurité Sociale (NSS)</Label>
+  1046→                <Input
+  1047→                  id="nss"
+  1048→                  value={formData.nssNumber || ''}
+  1049→                  onChange={(e) => setFormData({ ...formData, nssNumber: e.target.value })}
+  1050→                  placeholder="NSS-XXXXXX"
+  1051→                />
+  1052→              </div>
+  1053→              <div className="space-y-2">
+  1054→                <Label htmlFor="cnas">N° CNAS</Label>
+  1055→                <Input
+  1056→                  id="cnas"
+  1057→                  value={formData.cnasNumber || ''}
+  1058→                  onChange={(e) => setFormData({ ...formData, cnasNumber: e.target.value })}
+  1059→                  placeholder="CNAS-XXXXXX"
+  1060→                />
+  1061→              </div>
+  1062→              <div className="space-y-2">
+  1063→                <Label htmlFor="casnos">N° CASNOS</Label>
+  1064→                <Input
+  1065→                  id="casnos"
+  1066→                  value={formData.casnosNumber || ''}
+  1067→                  onChange={(e) => setFormData({ ...formData, casnosNumber: e.target.value })}
+  1068→                  placeholder="CASNOS-XXXXXX"
+  1069→                />
+  1070→              </div>
+  1071→            </div>
+  1072→          </div>
+  1073→
+  1074→          {/* File Upload & Notes */}
+  1075→          <div className="space-y-4">
+  1076→            <h4 className="font-semibold flex items-center gap-2">
+  1077→              <Upload className="w-4 h-4" />
+  1078→              Documents & Notes
+  1079→            </h4>
+  1080→            <Separator />
+  1081→            <div className="space-y-4">
+  1082→              <div className="space-y-2">
+  1083→                <Label htmlFor="contractUrl">URL du fichier contrat signé</Label>
+  1084→                <Input
+  1085→                  id="contractUrl"
+  1086→                  value={formData.contractUrl || ''}
+  1087→                  onChange={(e) => setFormData({ ...formData, contractUrl: e.target.value })}
+  1088→                  placeholder="/files/contracts/..."
+  1089→                />
+  1090→              </div>
+  1091→              <div className="space-y-2">
+  1092→                <Label htmlFor="notes">Notes internes</Label>
+  1093→                <Textarea
+  1094→                  id="notes"
+  1095→                  value={formData.internalNotes || ''}
+  1096→                  onChange={(e) => setFormData({ ...formData, internalNotes: e.target.value })}
+  1097→                  placeholder="Notes internes sur ce contrat..."
+  1098→                  rows={3}
+  1099→                />
+  1100→              </div>
+  1101→            </div>
+  1102→          </div>
+  1103→
+  1104→          <DialogFooter>
+  1105→            <Button type="button" variant="outline" onClick={onClose}>
+  1106→              Annuler
+  1107→            </Button>
+  1108→            <Button type="submit">
+  1109→              {contract ? 'Modifier' : 'Créer'} le Contrat
+  1110→            </Button>
+  1111→          </DialogFooter>
+  1112→        </form>
+  1113→      </DialogContent>
+  1114→    </Dialog>
+  1115→  )
+  1116→}
+  1117→
+  1118→// Simple Gift Icon for benefits section
+  1119→function GiftIcon(props: React.SVGProps<SVGSVGElement>) {
+  1120→  return (
+  1121→    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+  1122→      <polyline points="20 12 20 22 4 22 4 12"></polyline>
+  1123→      <rect x="2" y="7" width="20" height="5"></rect>
+  1124→      <line x1="12" y1="22" x2="12" y2="7"></line>
+  1125→      <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path>
+  1126→      <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path>
+  1127→    </svg>
+  1128→  )
+  1129→}
+  1130→
+  1131→// ============================================================
+  1132→// LEAVE REQUEST MODAL COMPONENT
+  1133→// ============================================================
+  1134→
+  1135→function LeaveRequestModal({
+  1136→  leave,
+  1137→  isOpen,
+  1138→  onClose,
+  1139→  onSave,
+  1140→  employees,
+  1141→}: {
+  1142→  leave: LeaveRequest | null
+  1143→  isOpen: boolean
+  1144→  onClose: () => void
+  1145→  onSave: (data: Partial<LeaveRequest>) => void
+  1146→  employees: Employee[]
+  1147→}) {
+  1148→  const [formData, setFormData] = useState<Partial<LeaveRequest>>(leave || {
+  1149→    type: 'annual',
+  1150→    isHalfDay: false,
+  1151→    halfDayPart: null,
+  1152→    status: 'draft',
+  1153→  })
+  1154→
+  1155→  useEffect(() => {
+  1156→    if (leave) {
+  1157→      setFormData(leave)
+  1158→    } else {
+  1159→      setFormData({
+  1160→        type: 'annual',
+  1161→        isHalfDay: false,
+  1162→        halfDayPart: null,
+  1163→        status: 'draft',
+  1164→      })
+  1165→    }
+  1166→  }, [leave])
+  1167→
+  1168→  const handleSubmit = (e: React.FormEvent) => {
+  1169→    e.preventDefault()
+  1170→    
+  1171→    // Calculate days count
+  1172→    if (formData.startDate && formData.endDate) {
+  1173→      const start = new Date(formData.startDate)
+  1174→      const end = new Date(formData.endDate)
+  1175→      const diffTime = Math.abs(end.getTime() - start.getTime())
+  1176→      let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1
+  1177→      
+  1178→      if (formData.isHalfDay) diffDays -= 0.5
+  1179→      
+  1180→      onSave({ ...formData, daysCount: diffDays })
+  1181→    } else {
+  1182→      onSave(formData)
+  1183→    }
+  1184→  }
+  1185→
+  1186→  return (
+  1187→    <Dialog open={isOpen} onOpenChange={onClose}>
+  1188→      <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
+  1189→        <DialogHeader>
+  1190→          <DialogTitle className="flex items-center gap-2">
+  1191→            <CalendarCheck className="w-5 h-5" />
+  1192→            {leave ? 'Modifier la Demande' : 'Nouvelle Demande de Congé'}
+  1193→          </DialogTitle>
+  1194→          <DialogDescription>
+  1195→            {leave ? `Demande #${leave.id}` : 'Créer une nouvelle demande de congé'}
+  1196→          </DialogDescription>
+  1197→        </DialogHeader>
+  1198→
+  1199→        <form onSubmit={handleSubmit} className="space-y-6 mt-4">
+  1200→          {/* Employee Selection */}
+  1201→          {!leave && (
+  1202→            <div className="space-y-2">
+  1203→              <Label htmlFor="employee">Employé *</Label>
+  1204→              <Select
+  1205→                value={formData.employeeId || ''}
+  1206→                onValueChange={(v) => {
+  1207→                  const emp = employees.find(e => e.id === v)
+  1208→                  setFormData({ ...formData, employeeId: v, employeeName: emp ? `${emp.firstName} ${emp.lastName}` : '' })
+  1209→                }}
+  1210→              >
+  1211→                <SelectTrigger>
+  1212→                  <SelectValue placeholder="Sélectionner un employé" />
+  1213→                </SelectTrigger>
+  1214→                <SelectContent>
+  1215→                  {employees.map((emp) => (
+  1216→                    <SelectItem key={emp.id} value={emp.id}>
+  1217→                      {emp.firstName} {emp.lastName}
+  1218→                    </SelectItem>
+  1219→                  ))}
+  1220→                </SelectContent>
+  1221→              </Select>
+  1222→            </div>
+  1223→          )}
+  1224→
+  1225→          {/* Leave Type with Icons */}
+  1226→          <div className="space-y-2">
+  1227→            <Label>Type de congé *</Label>
+  1228→            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+  1229→              {Object.entries(LEAVE_TYPES).map(([key, { label, icon: Icon, color }]) => (
+  1230→                <button
+  1231→                  key={key}
+  1232→                  type="button"
+  1233→                  onClick={() => setFormData({ ...formData, type: key as LeaveRequest['type'] })}
+  1234→                  className={`flex items-center gap-2 p-3 rounded-lg border transition-colors ${
+  1235→                    formData.type === key 
+  1236→                      ? `${color} border-current` 
+  1237→                      : 'border-border hover:bg-muted/50'
+  1238→                  }`}
+  1239→                >
+  1240→                  <Icon className="w-4 h-4" />
+  1241→                  <span className="text-xs font-medium truncate">{label}</span>
+  1242→                </button>
+  1243→              ))}
+  1244→            </div>
+  1245→          </div>
+  1246→
+  1247→          {/* Dates */}
+  1248→          <div className="grid grid-cols-2 gap-4">
+  1249→            <div className="space-y-2">
+  1250→              <Label htmlFor="startDate">Date de début *</Label>
+  1251→              <Input
+  1252→                id="startDate"
+  1253→                type="date"
+  1254→                value={formData.startDate?.split('T')[0] || ''}
+  1255→                onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+  1256→                required
+  1257→              />
+  1258→            </div>
+  1259→            <div className="space-y-2">
+  1260→              <Label htmlFor="endDate">Date de fin *</Label>
+  1261→              <Input
+  1262→                id="endDate"
+  1263→                type="date"
+  1264→                value={formData.endDate?.split('T')[0] || ''}
+  1265→                onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+  1266→                required
+  1267→              />
+  1268→            </div>
+  1269→          </div>
+  1270→
+  1271→          {/* Half Day Option */}
+  1272→          <div className="space-y-3">
+  1273→            <div className="flex items-center gap-2">
+  1274→              <Checkbox
+  1275→                id="halfDay"
+  1276→                checked={formData.isHalfDay}
+  1277→                onCheckedChange={(checked) => setFormData({ ...formData, isHalfDay: !!checked })}
+  1278→              />
+  1279→              <Label htmlFor="halfDay">Demi-journée</Label>
+  1280→            </div>
+  1281→            
+  1282→            {formData.isHalfDay && (
+  1283→              <RadioGroup
+  1284→                value={formData.halfDayPart || 'morning'}
+  1285→                onValueChange={(v) => setFormData({ ...formData, halfDayPart: v as 'morning' | 'evening' })}
+  1286→                className="flex gap-4 ml-6"
+  1287→              >
+  1288→                <div className="flex items-center gap-2">
+  1289→                  <RadioGroupItem value="morning" id="morning" />
+  1290→                  <Label htmlFor="morning">Matin</Label>
+  1291→                </div>
+  1292→                <div className="flex items-center gap-2">
+  1293→                  <RadioGroupItem value="evening" id="evening" />
+  1294→                  <Label htmlFor="evening">Après-midi</Label>
+  1295→                </div>
+  1296→              </RadioGroup>
+  1297→            )}
+  1298→          </div>
+  1299→
+  1300→          {/* Reason */}
+  1301→          <div className="space-y-2">
+  1302→            <Label htmlFor="reason">Motif / Raison</Label>
+  1303→            <Textarea
+  1304→              id="reason"
+  1305→              value={formData.reason || ''}
+  1306→              onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
+  1307→              placeholder="Décrivez la raison de cette demande..."
+  1308→              rows={3}
+  1309→            />
+  1310→          </div>
+  1311→
+  1312→          <DialogFooter>
+  1313→            <Button type="button" variant="outline" onClick={onClose}>
+  1314→              Annuler
+  1315→            </Button>
+  1316→            <Button type="submit">
+  1317→              {leave ? 'Modifier' : 'Soumettre'} la Demande
+  1318→            </Button>
+  1319→          </DialogFooter>
+  1320→        </form>
+  1321→      </DialogContent>
+  1322→    </Dialog>
+  1323→  )
+  1324→}
+  1325→
+  1326→// ============================================================
+  1327→// MAIN HR PAGE COMPONENT
+  1328→// ============================================================
+  1329→
+  1330→export default function HrPage() {
+  1331→  // State
+  1332→  const [employees, setEmployees] = useState<Employee[]>([])
+  1333→  const [payrollData, setPayrollData] = useState<PayrollRecord[]>([])
+  1334→  const [loading, setLoading] = useState(true)
+  1335→  const [error, setError] = useState<string | null>(null)
+  1336→  
+  1337→  // Filters & Search
+  1338→  const [searchQuery, setSearchQuery] = useState('')
+  1339→  const [departmentFilter, setDepartmentFilter] = useState('all')
+  1340→  const [statusFilter, setStatusFilter] = useState('all')
+  1341→  
+  1342→  // Modal
+  1343→  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null)
+  1344→  const [isModalOpen, setIsModalOpen] = useState(false)
+  1345→
+  1346→  // Contracts State
+  1347→  const [contracts, setContracts] = useState<Contract[]>(generateMockContracts())
+  1348→  const [contractsLoading, setContractsLoading] = useState(false)
+  1349→  const [contractModalOpen, setContractModalOpen] = useState(false)
+  1350→  const [selectedContract, setSelectedContract] = useState<Contract | null>(null)
+  1351→  const [contractFilters, setContractFilters] = useState({ status: 'all', type: 'all' })
+  1352→  const [confirmDialog, setConfirmDialog] = useState<{ open: boolean; action: string; contract: Contract | null }>({ open: false, action: '', contract: null })
+  1353→
+  1354→  // Leaves State
+  1355→  const [leaves, setLeaves] = useState<LeaveRequest[]>(generateMockLeaves())
+  1356→  const [leavesLoading, setLeavesLoading] = useState(false)
+  1357→  const [leaveModalOpen, setLeaveModalOpen] = useState(false)
+  1358→  const [selectedLeave, setSelectedLeave] = useState<LeaveRequest | null>(null)
+  1359→  const [leaveFilters, setLeaveFilters] = useState({ status: 'all', type: 'all' })
+  1360→  const [approvalDialog, setApprovalDialog] = useState<{ open: boolean; leave: LeaveRequest | null; action: 'approve' | 'reject'; reason: string }>({ open: false, leave: null, action: 'approve', reason: '' })
+  1361→
+  1362→  // Attendance State
+  1363→  const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>(generateMockAttendance())
+  1364→  const [attendanceLoading, setAttendanceLoading] = useState(false)
+  1365→  const [attendanceView, setAttendanceView] = useState<'my' | 'team'>('team')
+  1366→  const [clockStatus, setClockStatus] = useState<'in' | 'out'>('in') // 'in' means can clock in, 'out' means can clock out
+  1367→  const [lastClockTime, setLastClockTime] = useState<string | null>(null)
+  1368→  const [attendanceDate, setAttendanceDate] = useState(new Date().toISOString().split('T')[0])
+  1369→  const [attendanceDeptFilter, setAttendanceDeptFilter] = useState('all')
+  1370→
+  1371→  // Fetch employees
+  1372→  const fetchEmployees = useCallback(async () => {
+  1373→    try {
+  1374→      setLoading(true)
+  1375→      setError(null)
+  1376→      
+  1377→      const params = new URLSearchParams()
+  1378→      if (departmentFilter !== 'all') params.append('department', departmentFilter)
+  1379→      if (statusFilter !== 'all') params.append('status', statusFilter)
+  1380→      if (searchQuery) params.append('search', searchQuery)
+  1381→      
+  1382→      const response = await fetch(`/api/employees?${params.toString()}`)
+  1383→      const result = await response.json()
+  1384→      
+  1385→      if (!result.success) {
+  1386→        throw new Error(result.error || 'Failed to fetch employees')
+  1387→      }
+  1388→      
+  1389→      setEmployees(result.data)
+  1390→    } catch (err) {
+  1391→      setError(err instanceof Error ? err.message : 'An error occurred')
+  1392→    } finally {
+  1393→      setLoading(false)
+  1394→    }
+  1395→  }, [departmentFilter, statusFilter, searchQuery])
+  1396→
+  1397→  // Fetch payroll data
+  1398→  const fetchPayrollData = useCallback(async () => {
+  1399→    try {
+  1400→      const currentPeriod = new Date().toISOString().slice(0, 7) // YYYY-MM
+  1401→      const response = await fetch(`/api/payroll?period=${currentPeriod}`)
+  1402→      const result = await response.json()
+  1403→      
+  1404→      if (result.success) {
+  1405→        setPayrollData(result.data)
+  1406→      }
+  1407→    } catch (err) {
+  1408→      console.error('Failed to fetch payroll:', err)
+  1409→    }
+  1410→  }, [])
+  1411→
+  1412→  // Initial load
+  1413→  useEffect(() => {
+  1414→    fetchEmployees()
+  1415→    fetchPayrollData()
+  1416→  }, [])
+  1417→
+  1418→  // Refetch when filters change (debounced)
+  1419→  useEffect(() => {
+  1420→    const timer = setTimeout(() => {
+  1421→      if (!loading) {
+  1422→        fetchEmployees()
+  1423→      }
+  1424→    }, 300)
+  1425→    
+  1426→    return () => clearTimeout(timer)
+  1427→  }, [departmentFilter, statusFilter, searchQuery, loading, fetchEmployees])
+  1428→
+  1429→  // Computed values
+  1430→  const stats: HrStats = useMemo(() => {
+  1431→    const total = employees.length
+  1432→    const active = employees.filter(e => e.employeeStatus === 'active').length
+  1433→    const onLeave = employees.filter(e => e.employeeStatus === 'on_leave').length
+  1434→    
+  1435→    // Calculate payroll mass from fetched data or use sum of base salaries
+  1436→    let monthlyPayrollMass = payrollData.reduce((sum, p) => sum + p.grossSalary, 0)
+  1437→    if (monthlyPayrollMass === 0 && employees.length > 0) {
+  1438→      monthlyPayrollMass = employees.reduce((sum, e) => sum + e.baseSalary, 0)
+  1439→    }
+  1440→    
+  1441→    // New hires this month
+  1442→    const now = new Date()
+  1443→    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+  1444→    const newHires = employees.filter(e => {
+  1445→      const hireDate = new Date(e.hireDate || e.contractStartDate)
+  1446→      return hireDate >= startOfMonth
+  1447→    }).length
+  1448→    
+  1449→    // Departments distribution
+  1450→    const deptMap: Record<string, number> = {}
+  1451→    employees.forEach(emp => {
+  1452→      const dept = emp.department || 'Non assigné'
+  1453→      deptMap[dept] = (deptMap[dept] || 0) + 1
+  1454→    })
+  1455→    const departments = Object.entries(deptMap)
+  1456→      .map(([name, count]) => ({ name, count }))
+  1457→      .sort((a, b) => b.count - a.count)
+  1458→    
+  1459→    // Absenteeism rate (on_leave / total * 100)
+  1460→    const absenteeismRate = total > 0 ? (onLeave / total) * 100 : 0
+  1461→    
+  1462→    return {
+  1463→      totalEmployees: total,
+  1464→      activeEmployees: active,
+  1465→      onLeaveCount: onLeave,
+  1466→      monthlyPayrollMass,
+  1467→      newHiresThisMonth: newHires,
+  1468→      departments,
+  1469→      absenteeismRate: Math.round(absenteeismRate * 10) / 10,
+  1470→    }
+  1471→  }, [employees, payrollData])
+  1472→
+  1473→  // Contract stats
+  1474→  const contractStats = useMemo(() => {
+  1475→    const total = contracts.length
+  1476→    const active = contracts.filter(c => c.status === 'active').length
+  1477→    const now = new Date()
+  1478→    const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
+  1479→    const expiringSoon = contracts.filter(c => {
+  1480→      if (!c.endDate) return false
+  1481→      const endDate = new Date(c.endDate)
+  1482→      return endDate <= thirtyDaysFromNow && c.status === 'active'
+  1483→    }).length
+  1484→    const pendingRenewals = contracts.filter(c => c.status === 'expired' || c.status === 'terminated').length
+  1485→    
+  1486→    return { total, active, expiringSoon, pendingRenewals }
+  1487→  }, [contracts])
+  1488→
+  1489→  // Leave stats
+  1490→  const leaveStats = useMemo(() => {
+  1491→    const pendingApprovals = leaves.filter(l => l.status === 'submitted').length
+  1492→    const today = new Date().toISOString().split('T')[0]
+  1493→    const onLeaveToday = leaves.filter(l => l.status === 'approved' && l.startDate <= today && l.endDate >= today).length
+  1494→    const currentMonth = new Date().toISOString().slice(0, 7)
+  1495→    const totalDaysThisMonth = leaves
+  1496→      .filter(l => l.status === 'approved' && l.startDate.startsWith(currentMonth))
+  1497→      .reduce((sum, l) => sum + l.daysCount, 0)
+  1498→    const quarterStart = new Date()
+  1499→    quarterStart.setMonth(quarterStart.getMonth() - (quarterStart.getMonth() % 3))
+  1500→    const sickLeaveQuarter = leaves
+  1501→      .filter(l => l.type === 'sickness' && l.status === 'approved' && l.startDate >= quarterStart.toISOString().slice(0, 10))
+  1502→      .reduce((sum, l) => sum + l.daysCount, 0)
+  1503→    
+  1504→    return { pendingApprovals, onLeaveToday, totalDaysThisMonth, sickLeaveQuarter }
+  1505→  }, [leaves])
+  1506→
+  1507→  // Attendance stats
+  1508→  const attendanceStats = useMemo(() => {
+  1509→    const present = attendanceRecords.filter(r => r.status === 'present').length
+  1510→    const late = attendanceRecords.filter(r => r.status === 'late').length
+  1511→    const absent = attendanceRecords.filter(r => r.status === 'absent').length
+  1512→    const onLeave = attendanceRecords.filter(r => r.status === 'on_leave').length
+  1513→    const totalWorkedHours = attendanceRecords.reduce((sum, r) => sum + r.workedHours, 0)
+  1514→    const totalOvertime = attendanceRecords.reduce((sum, r) => sum + r.overtimeHours, 0)
+  1515→    
+  1516→    return { present, late, absent, onLeave, totalWorkedHours, totalOvertime }
+  1517→  }, [attendanceRecords])
+  1518→
+  1519→  // Unique departments for filter
+  1520→  const uniqueDepartments = useMemo(() => {
+  1521→    const depts = [...new Set(employees.map(e => e.department).filter(Boolean))] as string[]
+  1522→    return depts.sort()
+  1523→  }, [employees])
+  1524→
+  1525→  // Unique attendance departments
+  1526→  const attendanceDepartments = useMemo(() => {
+  1527→    const depts = [...new Set(attendanceRecords.map(r => r.department).filter(Boolean))] as string[]
+  1528→    return depts.sort()
+  1529→  }, [attendanceRecords])
+  1530→
+  1531→  // Handle employee click
+  1532→  const handleEmployeeClick = (employee: Employee) => {
+  1533→    setSelectedEmployee(employee)
+  1534→    setIsModalOpen(true)
+  1535→  }
+  1536→
+  1537→  // Contract handlers
+  1538→  const handleCreateContract = () => {
+  1539→    setSelectedContract(null)
+  1540→    setContractModalOpen(true)
+  1541→  }
+  1542→
+  1543→  const handleEditContract = (contract: Contract) => {
+  1544→    setSelectedContract(contract)
+  1545→    setContractModalOpen(true)
+  1546→  }
+  1547→
+  1548→  const handleSaveContract = async (data: Partial<Contract>) => {
+  1549→    try {
+  1550→      if (selectedContract) {
+  1551→        // Update existing contract
+  1552→        setContracts(prev => prev.map(c => c.id === selectedContract.id ? { ...c, ...data } as Contract : c))
+  1553→        toast.success('Contrat modifié avec succès')
+  1554→      } else {
+  1555→        // Create new contract
+  1556→        const newContract: Contract = {
+  1557→          id: String(Date.now()),
+  1558→          reference: `CTR-${new Date().getFullYear()}-${String(contracts.length + 1).padStart(3, '0')}`,
+  1559→          employeeId: data.employeeId || '',
+  1560→          employeeName: data.employeeName || '',
+  1561→          type: data.type || 'CDI',
+  1562→          status: data.status || 'draft',
+  1563→          startDate: data.startDate || '',
+  1564→          endDate: data.endDate || null,
+  1565→          trialEndDate: data.trialEndDate || null,
+  1566→          baseSalary: data.baseSalary || 0,
+  1567→          currency: data.currency || 'DZD',
+  1568→          paymentFrequency: data.paymentFrequency || 'monthly',
+  1569→          department: data.department || '',
+  1570→          jobTitle: data.jobTitle || '',
+  1571→          grade: data.grade || '',
+  1572→          weeklyHours: data.weeklyHours || 40,
+  1573→          annualLeaveDays: data.annualLeaveDays || 30,
+  1574→          transportAllowance: data.transportAllowance || 0,
+  1575→          housingAllowance: data.housingAllowance || 0,
+  1576→          foodAllowance: data.foodAllowance || 0,
+  1577→          nssNumber: data.nssNumber || '',
+  1578→          cnasNumber: data.cnasNumber || '',
+  1579→          casnosNumber: data.casnosNumber || '',
+  1580→          contractUrl: data.contractUrl || null,
+  1581→          internalNotes: data.internalNotes || null,
+  1582→          createdAt: new Date().toISOString(),
+  1583→          updatedAt: new Date().toISOString(),
+  1584→        }
+  1585→        setContracts(prev => [...prev, newContract])
+  1586→        toast.success('Contrat créé avec succès')
+  1587→      }
+  1588→      setContractModalOpen(false)
+  1589→    } catch (err) {
+  1590→      toast.error('Erreur lors de la sauvegarde du contrat')
+  1591→    }
+  1592→  }
+  1593→
+  1594→  const handleContractAction = (action: string, contract: Contract) => {
+  1595→    setConfirmDialog({ open: true, action, contract })
+  1596→  }
+  1597→
+  1598→  const confirmContractAction = async () => {
+  1599→    if (!confirmDialog.contract) return
+  1600→    
+  1601→    const { action, contract } = confirmDialog
+  1602→    let newStatus: Contract['status'] = contract.status
+  1603→    
+  1604→    switch (action) {
+  1605→      case 'activate':
+  1606→        newStatus = 'active'
+  1607→        toast.success(`Contrat ${contract.reference} activé`)
+  1608→        break
+  1609→      case 'terminate':
+  1610→        newStatus = 'terminated'
+  1611→        toast.success(`Contrat ${contract.reference} résilié`)
+  1612→        break
+  1613→      case 'suspend':
+  1614→        newStatus = 'suspended'
+  1615→        toast.success(`Contrat ${contract.reference} suspendu`)
+  1616→        break
+  1617→    }
+  1618→    
+  1619→    setContracts(prev => prev.map(c => c.id === contract.id ? { ...c, status: newStatus } : Contract))
+  1620→    setConfirmDialog({ open: false, action: '', contract: null })
+  1621→  }
+  1622→
+  1623→  // Leave handlers
+  1624→  const handleCreateLeave = () => {
+  1625→    setSelectedLeave(null)
+  1626→    setLeaveModalOpen(true)
+  1627→  }
+  1628→
+  1629→  const handleEditLeave = (leave: LeaveRequest) => {
+  1630→    setSelectedLeave(leave)
+  1631→    setLeaveModalOpen(true)
+  1632→  }
+  1633→
+  1634→  const handleSaveLeave = async (data: Partial<LeaveRequest>) => {
+  1635→    try {
+  1636→      if (selectedLeave) {
+  1637→        setLeaves(prev => prev.map(l => l.id === selectedLeave.id ? { ...l, ...data } as LeaveRequest : l))
+  1638→        toast.success('Demande modifiée avec succès')
+  1639→      } else {
+  1640→        const newLeave: LeaveRequest = {
+  1641→          id: String(Date.now()),
+  1642→          employeeId: data.employeeId || '',
+  1643→          employeeName: data.employeeName || '',
+  1644→          type: data.type || 'annual',
+  1645→          startDate: data.startDate || '',
+  1646→          endDate: data.endDate || '',
+  1647→          daysCount: data.daysCount || 0,
+  1648→          isHalfDay: data.isHalfDay || false,
+  1649→          halfDayPart: data.halfDayPart || null,
+  1650→          status: 'submitted',
+  1651→          reason: data.reason || null,
+  1652→          rejectionReason: null,
+  1653→          approvedBy: null,
+  1654→          approvedAt: null,
+  1655→          createdAt: new Date().toISOString(),
+  1656→          updatedAt: new Date().toISOString(),
+  1657→        }
+  1658→        setLeaves(prev => [...prev, newLeave])
+  1659→        toast.success('Demande soumise avec succès')
+  1660→      }
+  1661→      setLeaveModalOpen(false)
+  1662→    } catch (err) {
+  1663→      toast.error('Erreur lors de la sauvegarde de la demande')
+  1664→    }
+  1665→  }
+  1666→
+  1667→  const handleLeaveApproval = (leave: LeaveRequest, action: 'approve' | 'reject') => {
+  1668→    setApprovalDialog({ open: true, leave, action, reason: '' })
+  1669→  }
+  1670→
+  1671→  const confirmLeaveAction = async () => {
+  1672→    if (!approvalDialog.leave) return
+  1673→    
+  1674→    const { leave, action, reason } = approvalDialog
+  1675→    
+  1676→    if (action === 'approve') {
+  1677→      setLeaves(prev => prev.map(l => 
+  1678→        l.id === leave.id 
+  1679→          ? { ...l, status: 'approved', approvedBy: 'current_user', approvedAt: new Date().toISOString() } 
+  1680→          : l
+  1681→      ))
+  1682→      toast.success(`Demande approuvée pour ${leave.employeeName}`)
+  1683→    } else {
+  1684→      setLeaves(prev => prev.map(l => 
+  1685→        l.id === leave.id 
+  1686→          ? { ...l, status: 'rejected', rejectionReason: reason } 
+  1687→          : l
+  1688→      ))
+  1689→      toast.success(`Demande rejetée pour ${leave.employeeName}`)
+  1690→    }
+  1691→    
+  1692→    setApprovalDialog({ open: false, leave: null, action: 'approve', reason: '' })
+  1693→  }
+  1694→
+  1695→  // Attendance handlers
+  1696→  const handleClockInOut = () => {
+  1697→    const now = new Date()
+  1698→    const timeStr = now.toLocaleTimeString('fr-DZ', { hour: '2-digit', minute: '2-digit' })
+  1699→    
+  1700→    if (clockStatus === 'in') {
+  1701→      // Clock in
+  1702→      setClockStatus('out')
+  1703→      setLastClockTime(timeStr)
+  1704→      toast.success(`Pointage entrée à ${timeStr}`)
+  1705→    } else {
+  1706→      // Clock out
+  1707→      setClockStatus('in')
+  1708→      setLastClockTime(timeStr)
+  1709→      toast.success(`Pointage sortie à ${timeStr}`)
+  1710→    }
+  1711→  }
+  1712→
+  1713→  // Filtered data
+  1714→  const filteredContracts = useMemo(() => {
+  1715→    return contracts.filter(c => {
+  1716→      if (contractFilters.status !== 'all' && c.status !== contractFilters.status) return false
+  1717→      if (contractFilters.type !== 'all' && c.type !== contractFilters.type) return false
+  1718→      return true
+  1719→    })
+  1720→  }, [contracts, contractFilters])
+  1721→
+  1722→  const filteredLeaves = useMemo(() => {
+  1723→    return leaves.filter(l => {
+  1724→      if (leaveFilters.status !== 'all' && l.status !== leaveFilters.status) return false
+  1725→      if (leaveFilters.type !== 'all' && l.type !== leaveFilters.type) return false
+  1726→      return true
+  1727→    })
+  1728→  }, [leaves, leaveFilters])
+  1729→
+  1730→  const filteredAttendance = useMemo(() => {
+  1731→    return attendanceRecords.filter(r => {
+  1732→      if (attendanceDeptFilter !== 'all' && r.department !== attendanceDeptFilter) return false
+  1733→      return true
+  1734→    })
+  1735→  }, [attendanceRecords, attendanceDeptFilter])
+  1736→
+  1737→  // Status badge component
+  1738→  const StatusBadge = ({ status }: { status: string }) => {
+  1739→    const config = STATUS_CONFIG[status]
+  1740→    return (
+  1741→      <Badge variant="outline" className={config?.className || ''}>
+  1742→        {config?.label || status}
+  1743→      </Badge>
+  1744→    )
+  1745→  }
+  1746→
+  1747→  // Contract Status Badge
+  1748→  const ContractStatusBadge = ({ status }: { status: string }) => {
+  1749→    const config = CONTRACT_STATUS_CONFIG[status]
+  1750→    return (
+  1751→      <Badge className={config?.color || ''}>
+  1752→        {config?.label || status}
+  1753→      </Badge>
+  1754→    )
+  1755→  }
+  1756→
+  1757→  // Contract Type Badge
+  1758→  const ContractTypeBadge = ({ type }: { type: string }) => {
+  1759→    const config = CONTRACT_TYPE_CONFIG[type]
+  1760→    return (
+  1761→      <Badge className={config?.color || ''}>
+  1762→        {config?.label || type}
+  1763→      </Badge>
+  1764→    )
+  1765→  }
+  1766→
+  1767→  // Leave Status Badge
+  1768→  const LeaveStatusBadge = ({ status }: { status: string }) => {
+  1769→    const config = LEAVE_STATUS_CONFIG[status]
+  1770→    return (
+  1771→      <Badge className={config?.color || ''}>
+  1772→        {config?.label || status}
+  1773→      </Badge>
+  1774→    )
+  1775→  }
+  1776→
+  1777→  // Leave Type Badge
+  1778→  const LeaveTypeBadge = ({ type }: { type: string }) => {
+  1779→    const config = LEAVE_TYPES[type]
+  1780→    if (!config) return <Badge>{type}</Badge>
+  1781→    const Icon = config.icon
+  1782→    return (
+  1783→      <Badge className={config.color} variant="outline">
+  1784→        <Icon className="w-3 h-3 mr-1" />
+  1785→        {config.label}
+  1786→      </Badge>
+  1787→    )
+  1788→  }
+  1789→
+  1790→  // Attendance Status Badge
+  1791→  const AttendanceStatusBadge = ({ status }: { status: string }) => {
+  1792→    const config = ATTENDANCE_STATUS_CONFIG[status]
+  1793→    return (
+  1794→      <Badge className={config?.color || ''}>
+  1795→        <span className={`w-2 h-2 rounded-full mr-1.5 ${config?.dotColor}`} />
+  1796→        {config?.label || status}
+  1797→      </Badge>
+  1798→    )
+  1799→  }
+  1800→
+  1801→  // ============================================================
+  1802→  // RENDER
+  1803→  // ============================================================
+  1804→
+  1805→  return (
+  1806→    <div className="space-y-6">
+  1807→      {/* Page Header */}
+  1808→      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+  1809→        <div>
+  1810→          <h1 className="text-2xl md:text-3xl font-bold tracking-tight flex items-center gap-3">
+  1811→            <Users className="w-8 h-8 text-primary" />
+  1812→            Ressources Humaines
+  1813→          </h1>
+  1814→          <p className="text-muted-foreground mt-1">
+  1815→            Gestion des employés, contrats, congés et paie
+  1816→          </p>
+  1817→        </div>
+  1818→        <div className="flex items-center gap-2">
+  1819→          <Button size="sm" variant="outline" className="gap-2" onClick={fetchEmployees}>
+  1820→            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+  1821→            Actualiser
+  1822→          </Button>
+  1823→        </div>
+  1824→      </div>
+  1825→
+  1826→      {/* KPI Cards */}
+  1827→      {loading ? (
+  1828→        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+  1829→          {[...Array(4)].map((_, i) => <KpiSkeleton key={i} />)}
+  1830→        </div>
+  1831→      ) : error ? (
+  1832→        <ErrorState message={error} onRetry={fetchEmployees} />
+  1833→      ) : (
+  1834→        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+  1835→          <KpiCard
+  1836→            title="Effectif Total"
+  1837→            value={stats.totalEmployees}
+  1838→            icon={Users}
+  1839→            iconColor="text-dz-green"
+  1840→            iconBg="bg-dz-green/10"
+  1841→            format="number"
+  1842→            delay={0}
+  1843→          />
+  1844→          <KpiCard
+  1845→            title="Masse Salariale"
+  1846→            value={stats.monthlyPayrollMass}
+  1847→            change={2.5}
+  1848→            icon={DollarSign}
+  1849→            iconColor="text-emerald-600"
+  1850→            iconBg="bg-emerald-100 dark:bg-emerald-900/30"
+  1851→            format="currency"
+  1852→            delay={0.05}
+  1853→          />
+  1854→          <KpiCard
+  1855→            title="Nouvelles Recrues"
+  1856→            value={stats.newHiresThisMonth}
+  1857→            icon={UserPlus}
+  1858→            iconColor="text-violet-600"
+  1859→            iconBg="bg-violet-100 dark:bg-violet-900/30"
+  1860→            format="number"
+  1861→            delay={0.1}
+  1862→          />
+  1863→          <KpiCard
+  1864→            title="Taux d'Absentéisme"
+  1865→            value={stats.absenteeismRate}
+  1866→            change={stats.absenteeismRate > 5 ? -0.5 : 0.3}
+  1867→            icon={Calendar}
+  1868→            iconColor="text-orange-600"
+  1869→            iconBg="bg-orange-100 dark:bg-orange-900/30"
+  1870→            format="percentage"
+  1871→            delay={0.15}
+  1872→          />
+  1873→        </div>
+  1874→      )}
+  1875→
+  1876→      {/* Main Content - Tabs */}
+  1877→      <Tabs defaultValue="employes" className="space-y-4">
+  1878→        <TabsList className="grid w-full grid-cols-4 lg:w-[auto] lg:inline-grid lg:min-w-[600px]">
+  1879→          <TabsTrigger value="employes" className="gap-2">
+  1880→            <Users className="w-4 h-4" />
+  1881→            Employés
+  1882→          </TabsTrigger>
+  1883→          <TabsTrigger value="contrats" className="gap-2">
+  1884→            <FileSignature className="w-4 h-4" />
+  1885→            Contrats
+  1886→          </TabsTrigger>
+  1887→          <TabsTrigger value="conges" className="gap-2">
+  1888→            <CalendarCheck className="w-4 h-4" />
+  1889→            Congés
+  1890→          </TabsTrigger>
+  1891→          <TabsTrigger value="presence" className="gap-2">
+  1892→            <Activity className="w-4 h-4" />
+  1893→            Présence
+  1894→          </TabsTrigger>
+  1895→        </TabsList>
+  1896→
+  1897→        {/* ============================================================ */}
+  1898→        {/* EMPLOYÉS TAB */}
+  1899→        {/* ============================================================ */}
+  1900→        <TabsContent value="employes" className="space-y-4">
+  1901→          <motion.div
+  1902→            initial={{ opacity: 0, y: 20 }}
+  1903→            animate={{ opacity: 1, y: 0 }}
+  1904→            transition={{ duration: 0.3 }}
+  1905→          >
+  1906→            <Card>
+  1907→              <CardHeader className="pb-3">
+  1908→                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+  1909→                  <div className="flex items-center gap-3">
+  1910→                    <CardTitle>Annuaire des Employés</CardTitle>
+  1911→                    {!loading && !error && (
+  1912→                      <Badge variant="secondary" className="bg-dz-green/10 text-dz-green">
+  1913→                        {stats.totalEmployees} employé{stats.totalEmployees > 1 ? 's' : ''}
+  1914→                      </Badge>
+  1915→                    )}
+  1916→                  </div>
+  1917→                  
+  1918→                  {/* Search & Filters */}
+  1919→                  <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+  1920→                    <div className="relative flex-1 md:w-64">
+  1921→                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+  1922→                      <Input
+  1923→                        placeholder="Rechercher..."
+  1924→                        className="pl-10"
+  1925→                        value={searchQuery}
+  1926→                        onChange={(e) => setSearchQuery(e.target.value)}
+  1927→                      />
+  1928→                    </div>
+  1929→                    
+  1930→                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+  1931→                      <SelectTrigger className="w-full sm:w-[150px]">
+  1932→                        <Filter className="w-4 h-4 mr-2" />
+  1933→                        <SelectValue placeholder="Statut" />
+  1934→                      </SelectTrigger>
+  1935→                      <SelectContent>
+  1936→                        <SelectItem value="all">Tous les statuts</SelectItem>
+  1937→                        <SelectItem value="active">Actif</SelectItem>
+  1938→                        <SelectItem value="on_leave">En congé</SelectItem>
+  1939→                        <SelectItem value="resigned">Démissionné</SelectItem>
+  1940→                        <SelectItem value="retired">Retraité</SelectItem>
+  1941→                        <SelectItem value="terminated">Licencié</SelectItem>
+  1942→                      </SelectContent>
+  1943→                    </Select>
+  1944→                    
+  1945→                    <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
+  1946→                      <SelectTrigger className="w-full sm:w-[160px]">
+  1947→                        <Building2 className="w-4 h-4 mr-2" />
+  1948→                        <SelectValue placeholder="Département" />
+  1949→                      </SelectTrigger>
+  1950→                      <SelectContent>
+  1951→                        <SelectItem value="all">Tous les départements</SelectItem>
+  1952→                        {uniqueDepartments.map((dept) => (
+  1953→                          <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+  1954→                        ))}
+  1955→                      </SelectContent>
+  1956→                    </Select>
+  1957→                  </div>
+  1958→                </div>
+  1959→              </CardHeader>
+  1960→              <CardContent>
+  1961→                {loading ? (
+  1962→                  <TableSkeleton rows={6} />
+  1963→                ) : error ? (
+  1964→                  <ErrorState message={error} onRetry={fetchEmployees} />
+  1965→                ) : employees.length === 0 ? (
+  1966→                  <EmptyState type={searchQuery || statusFilter !== 'all' || departmentFilter !== 'all' ? 'search' : 'employees'} />
+  1967→                ) : (
+  1968→                  <>
+  1969→                    <div className="rounded-md border overflow-hidden">
+  1970→                      <Table>
+  1971→                        <TableHeader>
+  1972→                          <TableRow>
+  1973→                            <TableHead className="w-[100px]">Matricule</TableHead>
+  1974→                            <TableHead>Employé</TableHead>
+  1975→                            <TableHead>Département</TableHead>
+  1976→                            <TableHead>Poste</TableHead>
+  1977→                            <TableHead>Statut</TableHead>
+  1978→                            <TableHead>Téléphone</TableHead>
+  1979→                            <TableHead>Email</TableHead>
+  1980→                            <TableHead className="text-right">Actions</TableHead>
+  1981→                          </TableRow>
+  1982→                        </TableHeader>
+  1983→                        <TableBody>
+  1984→                          <AnimatePresence mode="popLayout">
+  1985→                            {employees.map((emp) => (
+  1986→                              <motion.tr
+  1987→                                key={emp.id}
+  1988→                                initial={{ opacity: 0 }}
+  1989→                                animate={{ opacity: 1 }}
+  1990→                                exit={{ opacity: 0 }}
+  1991→                                className="border-b transition-colors hover:bg-muted/50 cursor-pointer"
+  1992→                                onClick={() => handleEmployeeClick(emp)}
+  1993→                              >
+  1994→                                <TableCell className="font-mono text-xs font-medium">
+  1995→                                  {emp.matricule}
+  1996→                                </TableCell>
+  1997→                                <TableCell>
+  1998→                                  <div className="flex items-center gap-3">
+  1999→                                    <Avatar className="h-9 w-9">
+  2000→                                      <AvatarFallback className="bg-primary/10 text-primary text-sm">
+
+[showing lines 1-2000 of 2841; use offset=2001 with limit to continue reading]

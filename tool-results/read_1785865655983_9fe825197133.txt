@@ -1,0 +1,502 @@
+     1→     1→'use client'
+     2→     2→
+     3→     3→import React, { useState, useEffect, useCallback, useMemo } from 'react'
+     4→     4→import { 
+     5→     5→  Users, 
+     6→     6→  UserPlus,
+     7→     7→  Search,
+     8→     8→  Phone,
+     9→     9→  Mail,
+    10→    10→  Briefcase,
+    11→    11→  Building2,
+    12→    12→  Calendar,
+    13→    13→  DollarSign,
+    14→    14→  FileText,
+    15→    15→  CreditCard,
+    16→    16→  MapPin,
+    17→    17→  IdCard,
+    18→    18→  Cake,
+    19→    19→  AlertCircle,
+    20→    20→  RefreshCw,
+    21→    21→  X,
+    22→    22→  ChevronDown,
+    23→    23→  Filter,
+    24→    24→  // New icons for Contracts tab
+    25→    25→  FileSignature,
+    26→    26→  CheckCircle2,
+    27→    27→  XCircle,
+    28→    28→  Clock,
+    29→    29→  Plus,
+    30→    30→  Edit3,
+    31→    31→  Eye,
+    32→    32→  Power,
+    33→    33→  Ban,
+    34→    34→  Upload,
+    35→    35→  Shield,
+    36→    36→  // New icons for Leave Management
+    37→    37→  Sun,
+    38→    38→  Heart,
+    39→    39→  Baby,
+    40→    40→  Star,
+    41→    41→  Plane,
+    42→    42→  CalendarCheck,
+    43→    43→  CalendarX,
+    44→    44→  Send,
+    45→    45→  UserCheck,
+    46→    46→  UserX,
+    47→    47→  // New icons for Attendance
+    48→    48→  LogIn,
+    49→    49→  LogOut,
+    50→    50→  Timer,
+    51→    51→  Activity,
+    52→    52→  Download,
+    53→    53→  MoreVertical,
+    54→    54→  ArrowRightLeft
+    55→    55→} from 'lucide-react'
+    56→    56→import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+    57→    57→import { Button } from '@/components/ui/button'
+    58→    58→import { Badge } from '@/components/ui/badge'
+    59→    59→import { Input } from '@/components/ui/input'
+    60→    60→import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+    61→    61→import {
+    62→    62→  Table,
+    63→    63→  TableBody,
+    64→    64→  TableCell,
+    65→    65→  TableHead,
+    66→    66→  TableHeader,
+    67→    67→  TableRow,
+    68→    68→} from '@/components/ui/table'
+    69→    69→import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+    70→    70→import { Progress } from '@/components/ui/progress'
+    71→    71→import { Skeleton } from '@/components/ui/skeleton'
+    72→    72→import { KpiCard } from '@/components/dashboard/kpi-card'
+    73→    73→import {
+    74→    74→  Dialog,
+    75→    75→  DialogContent,
+    76→    76→  DialogHeader,
+    77→    77→  DialogTitle,
+    78→    78→  DialogDescription,
+    79→    79→  DialogFooter,
+    80→    80→} from '@/components/ui/dialog'
+    81→    81→import {
+    82→    82→  Select,
+    83→    83→  SelectContent,
+    84→    84→  SelectItem,
+    85→    85→  SelectTrigger,
+    86→    86→  SelectValue,
+    87→    87→} from '@/components/ui/select'
+    88→    88→import {
+    89→    89→  AlertDialog,
+    90→    90→  AlertDialogAction,
+    91→    91→  AlertDialogCancel,
+    92→    92→  AlertDialogContent,
+    93→    93→  AlertDialogDescription,
+    94→    94→  AlertDialogFooter,
+    95→    95→  AlertDialogHeader,
+    96→    96→  AlertDialogTitle,
+    97→    97→} from '@/components/ui/alert-dialog'
+    98→    98→import { Label } from '@/components/ui/label'
+    99→    99→import { Textarea } from '@/components/ui/textarea'
+   100→   100→import { Checkbox } from '@/components/ui/checkbox'
+   101→   101→import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+   102→   102→import { Separator } from '@/components/ui/separator'
+   103→   103→import { motion, AnimatePresence } from 'framer-motion'
+   104→   104→import { toast } from 'sonner'
+   105→   105→
+   106→   106→// ============================================================
+   107→   107→// TYPES
+   108→   108→// ============================================================
+   109→   109→
+   110→   110→interface Employee {
+   111→   111→  id: string
+   112→   112→  matricule: string
+   113→   113→  firstName: string
+   114→   114→  lastName: string
+   115→   115→  firstNameAr?: string | null
+   116→   116→  lastNameAr?: string | null
+   117→   117→  gender: string
+   118→   118→  dateOfBirth?: string | null
+   119→   119→  placeOfBirth?: string | null
+   120→   120→  nationality?: string
+   121→   121→  cin?: string | null
+   122→   122→  cnasNumber?: string | null
+   123→   123→  casnosNumber?: string | null
+   124→   124→  personalEmail?: string | null
+   125→   125→  workEmail?: string | null
+   126→   126→  phone?: string | null
+   127→   127→  address?: string | null
+   128→   128→  city?: string | null
+   129→   129→  wilayaCode?: string | null
+   130→   130→  department?: string | null
+   131→   131→  jobTitle?: string | null
+   132→   132→  jobPosition?: string | null
+   133→   133→  managerId?: string | null
+   134→   134→  contractType: 'cdi' | 'cdd' | 'internship' | 'temporary' | 'part_time'
+   135→   135→  contractStartDate: string
+   136→   136→  contractEndDate?: string | null
+   137→   137→  employeeStatus: 'active' | 'on_leave' | 'resigned' | 'retired' | 'terminated'
+   138→   138→  baseSalary: number
+   139→   139→  dailyRate: number
+   140→   140→  hourlyRate: number
+   141→   141→  bankName?: string | null
+   142→   142→  bankAccount?: string | null
+   143→   143→  cvFile?: string | null
+   144→   144→  contractFile?: string | null
+   145→   145→  cinFile?: string | null
+   146→   146→  photo?: string | null
+   147→   147→  isActive: boolean
+   148→   148→  hireDate?: string | null
+   149→   149→  terminationDate?: string | null
+   150→   150→  terminationReason?: string | null
+   151→   151→  createdAt: string
+   152→   152→  updatedAt: string
+   153→   153→  manager?: { firstName: string; lastName: string; matricule: string } | null
+   154→   154→  _count?: { payrolls: number; leaves: number; subordinates?: number }
+   155→   155→}
+   156→   156→
+   157→   157→interface PayrollRecord {
+   158→   158→  id: string
+   159→   159→  reference: string
+   160→   160→  period: string
+   161→   161→  status: string
+   162→   162→  baseSalary: number
+   163→   163→  grossSalary: number
+   164→   164→  netPayable: number
+   165→   165→  totalCotisations: number
+   166→   166→  totalRetenues: number
+   167→   167→  employee: {
+   168→   168→    matricule: string
+   169→   169→    firstName: string
+   170→   170→    lastName: string
+   171→   171→    department?: string | null
+   172→   172→    jobTitle?: string | null
+   173→   173→    baseSalary: number
+   174→   174→  }
+   175→   175→}
+   176→   176→
+   177→   177→// Contract Types
+   178→   178→interface Contract {
+   179→   179→  id: string
+   180→   180→  reference: string
+   181→   181→  employeeId: string
+   182→   182→  employeeName: string
+   183→   183→  type: 'CDI' | 'CDD' | 'Stage' | 'Temporaire' | 'Temps_Partiel'
+   184→   184→  status: 'draft' | 'active' | 'suspended' | 'terminated' | 'expired' | 'renewed'
+   185→   185→  startDate: string
+   186→   186→  endDate: string | null
+   187→   187→  trialEndDate: string | null
+   188→   188→  baseSalary: number
+   189→   189→  currency: string
+   190→   190→  paymentFrequency: 'monthly' | 'weekly' | 'biweekly'
+   191→   191→  department: string
+   192→   192→  jobTitle: string
+   193→   193→  grade: string
+   194→   194→  weeklyHours: number
+   195→   195→  annualLeaveDays: number
+   196→   196→  transportAllowance: number
+   197→   197→  housingAllowance: number
+   198→   198→  foodAllowance: number
+   199→   199→  nssNumber: string
+   200→   200→  cnasNumber: string
+   201→   201→  casnosNumber: string
+   202→   202→  contractUrl: string | null
+   203→   203→  internalNotes: string | null
+   204→   204→  createdAt: string
+   205→   205→  updatedAt: string
+   206→   206→}
+   207→   207→
+   208→   208→// Leave Types
+   209→   209→interface LeaveRequest {
+   210→   210→  id: string
+   211→   211→  employeeId: string
+   212→   212→  employeeName: string
+   213→   213→  employeePhoto?: string | null
+   214→   214→  type: 'annual' | 'sickness' | 'maternity' | 'paternity' | 'unpaid' | 'exceptional' | 'marriage' | 'birth' | 'death' | 'pilgrimage'
+   215→   215→  startDate: string
+   216→   216→  endDate: string
+   217→   217→  daysCount: number
+   218→   218→  isHalfDay: boolean
+   219→   219→  halfDayPart: 'morning' | 'evening' | null
+   220→   220→  status: 'draft' | 'submitted' | 'approved' | 'rejected' | 'cancelled'
+   221→   221→  reason: string | null
+   222→   222→  rejectionReason: string | null
+   223→   223→  approvedBy: string | null
+   224→   224→  approvedAt: string | null
+   225→   225→  createdAt: string
+   226→   226→  updatedAt: string
+   227→   227→}
+   228→   228→
+   229→   229→// Attendance Types
+   230→   230→interface AttendanceRecord {
+   231→   231→  id: string
+   232→   232→  employeeId: string
+   233→   233→  employeeName: string
+   234→   234→  employeePhoto?: string | null
+   235→   235→  date: string
+   236→   236→  clockIn: string | null
+   237→   237→  clockOut: string | null
+   238→   238→  workedHours: number
+   239→   239→  overtimeHours: number
+   240→   240→  breakMinutes: number
+   241→   241→  status: 'present' | 'absent' | 'late' | 'half_day' | 'on_leave' | 'holiday' | 'weekend'
+   242→   242→  notes: string | null
+   243→   243→  department?: string | null
+   244→   244→}
+   245→   245→
+   246→   246→interface HrStats {
+   247→   247→  totalEmployees: number
+   248→   248→  activeEmployees: number
+   249→   249→  onLeaveCount: number
+   250→   250→  monthlyPayrollMass: number
+   251→   251→  newHiresThisMonth: number
+   252→   252→  departments: { name: string; count: number }[]
+   253→   253→  absenteeismRate: number
+   254→   254→}
+   255→   255→
+   256→   256→// ============================================================
+   257→   257→// CONSTANTS & HELPERS
+   258→   258→// ============================================================
+   259→   259→
+   260→   260→const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
+   261→   261→  active: { 
+   262→   262→    label: 'Actif', 
+   263→   263→    className: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-green-200' 
+   264→   264→  },
+   265→   265→  on_leave: { 
+   266→   266→    label: 'En Congé', 
+   267→   267→    className: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 border-yellow-200' 
+   268→   268→  },
+   269→   269→  resigned: { 
+   270→   270→    label: 'Démissionné', 
+   271→   271→    className: 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400 border-gray-200' 
+   272→   272→  },
+   273→   273→  retired: { 
+   274→   274→    label: 'Retraité', 
+   275→   275→    className: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200' 
+   276→   276→  },
+   277→   277→  terminated: { 
+   278→   278→    label: 'Licencié', 
+   279→   279→    className: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200' 
+   280→   280→  },
+   281→   281→}
+   282→   282→
+   283→   283→const CONTRACT_LABELS: Record<string, string> = {
+   284→   284→  cdi: 'CDI',
+   285→   285→  cdd: 'CDD',
+   286→   286→  internship: 'Stage',
+   287→   287→  temporary: 'Temporaire',
+   288→   288→  part_time: 'Temps Partiel',
+   289→   289→}
+   290→   290→
+   291→   291→// Contract Status Configuration (French)
+   292→   292→const CONTRACT_STATUS_CONFIG: Record<string, { label: string; color: string }> = {
+   293→   293→  draft: { label: 'Brouillon', color: 'bg-gray-100 text-gray-700' },
+   294→   294→  active: { label: 'Actif', color: 'bg-green-100 text-green-700' },
+   295→   295→  suspended: { label: 'Suspendu', color: 'bg-yellow-100 text-yellow-700' },
+   296→   296→  terminated: { label: 'Résilié', color: 'bg-red-100 text-red-700' },
+   297→   297→  expired: { label: 'Expiré', color: 'bg-orange-100 text-orange-700' },
+   298→   298→  renewed: { label: 'Renouvelé', color: 'bg-blue-100 text-blue-700' },
+   299→   299→}
+   300→   300→
+   301→   301→// Contract Type Configuration
+   302→   302→const CONTRACT_TYPE_CONFIG: Record<string, { label: string; color: string }> = {
+   303→   303→  CDI: { label: 'CDI', color: 'bg-blue-100 text-blue-700' },
+   304→   304→  CDD: { label: 'CDD', color: 'bg-purple-100 text-purple-700' },
+   305→   305→  Stage: { label: 'Stage', color: 'bg-cyan-100 text-cyan-700' },
+   306→   306→  Temporaire: { label: 'Temporaire', color: 'bg-orange-100 text-orange-700' },
+   307→   307→  Temps_Partiel: { label: 'Temps Partiel', color: 'bg-pink-100 text-pink-700' },
+   308→   308→}
+   309→   309→
+   310→   310→// Leave Status Configuration (French)
+   311→   311→const LEAVE_STATUS_CONFIG: Record<string, { label: string; color: string }> = {
+   312→   312→  draft: { label: 'Brouillon', color: 'bg-gray-100 text-gray-700' },
+   313→   313→  submitted: { label: 'Soumise', color: 'bg-blue-100 text-blue-700' },
+   314→   314→  approved: { label: 'Approuvé', color: 'bg-green-100 text-green-700' },
+   315→   315→  rejected: { label: 'Rejetée', color: 'bg-red-100 text-red-700' },
+   316→   316→  cancelled: { label: 'Annulée', color: 'bg-gray-100 text-gray-500' },
+   317→   317→}
+   318→   318→
+   319→   319→// Leave Types with icons and colors
+   320→   320→const LEAVE_TYPES: Record<string, { label: string; icon: React.ElementType; color: string }> = {
+   321→   321→  annual: { label: 'Congé Annuel', icon: Sun, color: 'bg-yellow-100 text-yellow-700' },
+   322→   322→  sickness: { label: 'Maladie', icon: Heart, color: 'bg-red-100 text-red-700' },
+   323→   323→  maternity: { label: 'Maternité', icon: Baby, color: 'bg-pink-100 text-pink-700' },
+   324→   324→  paternity: { label: 'Paternité', icon: Users, color: 'bg-blue-100 text-blue-700' },
+   325→   325→  unpaid: { label: 'Sans Solde', icon: Clock, color: 'bg-gray-100 text-gray-700' },
+   326→   326→  exceptional: { label: 'Exceptionnel', icon: Star, color: 'bg-purple-100 text-purple-700' },
+   327→   327→  marriage: { label: 'Mariage', icon: Heart, color: 'bg-pink-100 text-pink-800' },
+   328→   328→  birth: { label: 'Naissance', icon: Baby, color: 'bg-cyan-100 text-cyan-700' },
+   329→   329→  death: { label: 'Décès', icon: XCircle, color: 'bg-black/10 text-black' },
+   330→   330→  pilgrimage: { label: 'Hadj/Omra', icon: Star, color: 'bg-emerald-100 text-emerald-700' },
+   331→   331→}
+   332→   332→
+   333→   333→// Attendance Status Configuration
+   334→   334→const ATTENDANCE_STATUS_CONFIG: Record<string, { label: string; color: string; dotColor: string }> = {
+   335→   335→  present: { label: 'Présent', color: 'bg-green-100 text-green-700', dotColor: 'bg-green-500' },
+   336→   336→  absent: { label: 'Absent', color: 'bg-red-100 text-red-700', dotColor: 'bg-red-500' },
+   337→   337→  late: { label: 'En retard', color: 'bg-orange-100 text-orange-700', dotColor: 'bg-orange-500' },
+   338→   338→  half_day: { label: 'Demi-journée', color: 'bg-yellow-100 text-yellow-700', dotColor: 'bg-yellow-500' },
+   339→   339→  on_leave: { label: 'En congé', color: 'bg-blue-100 text-blue-700', dotColor: 'bg-blue-500' },
+   340→   340→  holiday: { label: 'Férié', color: 'bg-purple-100 text-purple-700', dotColor: 'bg-purple-500' },
+   341→   341→  weekend: { label: 'Week-end', color: 'bg-gray-100 text-gray-700', dotColor: 'bg-gray-400' },
+   342→   342→}
+   343→   343→
+   344→   344→const formatCurrency = (value: number) => 
+   345→   345→  new Intl.NumberFormat('fr-DZ', {
+   346→   346→    style: 'currency',
+   347→   347→    currency: 'DZD',
+   348→   348→    minimumFractionDigits: 0,
+   349→   349→    maximumFractionDigits: 0,
+   350→   350→  }).format(value)
+   351→   351→
+   352→   352→const formatDate = (dateStr: string | null | undefined) => {
+   353→   353→  if (!dateStr) return '-'
+   354→   354→  return new Date(dateStr).toLocaleDateString('fr-DZ', {
+   355→   355→    day: '2-digit',
+   356→   356→    month: '2-digit',
+   357→   357→    year: 'numeric',
+   358→   358→  })
+   359→   359→}
+   360→   360→
+   361→   361→const formatDateTime = (dateStr: string | null | undefined) => {
+   362→   362→  if (!dateStr) return '-'
+   363→   363→  return new Date(dateStr).toLocaleString('fr-DZ', {
+   364→   364→    day: '2-digit',
+   365→   365→    month: '2-digit',
+   366→   366→    year: 'numeric',
+   367→   367→    hour: '2-digit',
+   368→   368→    minute: '2-digit',
+   369→   369→  })
+   370→   370→}
+   371→   371→
+   372→   372→const getInitials = (firstName: string, lastName: string) => 
+   373→   373→  `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase()
+   374→   374→
+   375→   375→// Generate mock data for contracts
+   376→   376→const generateMockContracts = (): Contract[] => [
+   377→   377→  { id: '1', reference: 'CTR-2024-001', employeeId: 'emp1', employeeName: 'Ahmed Benali', type: 'CDI', status: 'active', startDate: '2024-01-15', endDate: null, trialEndDate: '2024-04-15', baseSalary: 85000, currency: 'DZD', paymentFrequency: 'monthly', department: 'Informatique', jobTitle: 'Développeur Senior', grade: 'P5', weeklyHours: 40, annualLeaveDays: 30, transportAllowance: 8000, housingAllowance: 0, foodAllowance: 4500, nssNumber: 'NSS123456', cnasNumber: 'CNAS789012', casnosNumber: 'CASNOS345678', contractUrl: '/files/contracts/ctr1.pdf', internalNotes: null, createdAt: '2024-01-10T10:00:00Z', updatedAt: '2024-01-15T14:30:00Z' },
+   378→   378→  { id: '2', reference: 'CTR-2024-002', employeeId: 'emp2', employeeName: 'Fatima Zerhouni', type: 'CDD', status: 'active', startDate: '2024-03-01', endDate: '2025-02-28', trialEndDate: '2024-04-01', baseSalary: 65000, currency: 'DZD', paymentFrequency: 'monthly', department: 'Marketing', jobTitle: 'Chef de Projet Digital', grade: 'P4', weeklyHours: 40, annualLeaveDays: 25, transportAllowance: 8000, housingAllowance: 12000, foodAllowance: 4500, nssNumber: 'NSS234567', cnasNumber: 'CNAS890123', casnosNumber: 'CASNOS456789', contractUrl: '/files/contracts/ctr2.pdf', internalNotes: 'Renouvellement possible', createdAt: '2024-02-25T09:00:00Z', updatedAt: '2024-03-01T11:00:00Z' },
+   379→   379→  { id: '3', reference: 'CTR-2024-003', employeeId: 'emp3', employeeName: 'Karim Hadjeres', type: 'Stage', status: 'draft', startDate: '2024-06-01', endDate: '2024-08-31', trialEndDate: null, baseSalary: 18000, currency: 'DZD', paymentFrequency: 'monthly', department: 'Informatique', jobTitle: 'Stagiaire Développeur', grade: 'S1', weeklyHours: 35, annualLeaveDays: 5, transportAllowance: 4000, housingAllowance: 0, foodAllowance: 2500, nssNumber: '', cnasNumber: '', casnosNumber: '', contractUrl: null, internalNotes: 'Stage PFE - Université USTHB', createdAt: '2024-05-20T14:00:00Z', updatedAt: '2024-05-20T14:00:00Z' },
+   380→   380→  { id: '4', reference: 'CTR-2023-015', employeeId: 'emp4', employeeName: 'Amina Boudrahem', type: 'CDI', status: 'suspended', startDate: '2023-06-01', endDate: null, trialEndDate: '2023-09-01', baseSalary: 75000, currency: 'DZD', paymentFrequency: 'monthly', department: 'Ressources Humaines', jobTitle: 'Responsable RH', grade: 'P4', weeklyHours: 39, annualLeaveDays: 30, transportAllowance: 8000, housingAllowance: 8000, foodAllowance: 4500, nssNumber: 'NSS345678', cnasNumber: 'CNAS901234', casnosNumber: 'CASNOS567890', contractUrl: '/files/contracts/ctr4.pdf', internalNotes: 'Suspension temporaire - congé maternité prolongé', createdAt: '2023-05-20T10:00:00Z', updatedAt: '2024-04-01T09:00:00Z' },
+   381→   381→  { id: '5', reference: 'CTR-2023-008', employeeId: 'emp5', employeeName: 'Yacine Mebarki', type: 'CDD', status: 'terminated', startDate: '2023-09-01', endDate: '2024-04-30', trialEndDate: null, baseSalary: 55000, currency: 'DZD', paymentFrequency: 'monthly', department: 'Comptabilité', jobTitle: 'Comptable', grade: 'P3', weeklyHours: 39, annualLeaveDays: 25, transportAllowance: 6000, housingAllowance: 0, foodAllowance: 3500, nssNumber: 'NSS456789', cnasNumber: 'CNAS012345', casnosNumber: 'CASNOS678901', contractUrl: '/files/contracts/ctr5.pdf', internalNotes: 'Fin de contrat - non renouvelé', createdAt: '2023-08-20T11:00:00Z', updatedAt: '2024-04-30T16:00:00Z' },
+   382→   382→  { id: '6', reference: 'CTR-2023-003', employeeId: 'emp6', employeeName: 'Nadia Belkacem', type: 'CDI', status: 'expired', startDate: '2023-01-01', endDate: '2023-12-31', trialEndDate: '2023-04-01', baseSalary: 95000, currency: 'DZD', paymentFrequency: 'monthly', department: 'Direction', jobTitle: 'Directrice Technique', grade: 'P6', weeklyHours: 40, annualLeaveDays: 30, transportAllowance: 10000, housingAllowance: 15000, foodAllowance: 5000, nssNumber: 'NSS567890', cnasNumber: 'CNAS123456', casnosNumber: 'CASNOS789012', contractUrl: '/files/contracts/ctr6.pdf', internalNotes: 'Contrat expiré - en attente de renouvellement', createdAt: '2022-12-15T10:00:00Z', updatedAt: '2023-12-31T23:59:00Z' },
+   383→   383→]
+   384→   384→
+   385→   385→// Generate mock data for leave requests
+   386→   386→const generateMockLeaves = (): LeaveRequest[] => [
+   387→   387→  { id: '1', employeeId: 'emp1', employeeName: 'Ahmed Benali', type: 'annual', startDate: '2024-07-01', endDate: '2024-07-15', daysCount: 15, isHalfDay: false, halfDayPart: null, status: 'approved', reason: 'Vacances familiales', rejectionReason: null, approvedBy: 'admin', approvedAt: '2024-06-20T10:00:00Z', createdAt: '2024-06-01T09:00:00Z', updatedAt: '2024-06-20T10:00:00Z' },
+   388→   388→  { id: '2', employeeId: 'emp2', employeeName: 'Fatima Zerhouni', type: 'sickness', startDate: '2024-07-10', endDate: '2024-07-12', daysCount: 3, isHalfDay: false, halfDayPart: null, status: 'submitted', reason: 'Grippe forte avec fièvre', rejectionReason: null, approvedBy: null, approvedAt: null, createdAt: '2024-07-10T08:00:00Z', updatedAt: '2024-07-10T08:00:00Z' },
+   389→   389→  { id: '3', employeeId: 'emp4', employeeName: 'Amina Boudrahem', type: 'maternity', startDate: '2024-05-01', endDate: '2024-08-31', daysCount: 124, isHalfDay: false, halfDayPart: null, status: 'approved', reason: 'Congé maternité légal', rejectionReason: null, approvedBy: 'admin', approvedAt: '2024-04-15T14:00:00Z', createdAt: '2024-03-01T10:00:00Z', updatedAt: '2024-04-15T14:00:00Z' },
+   390→   390→  { id: '4', employeeId: 'emp7', employeeName: 'Omar Khaled', type: 'exceptional', startDate: '2024-07-18', endDate: '2024-07-18', daysCount: 1, isHalfDay: true, halfDayPart: 'morning', status: 'submitted', reason: 'Démarches administratives urgentes', rejectionReason: null, approvedBy: null, approvedAt: null, createdAt: '2024-07-16T11:00:00Z', updatedAt: '2024-07-16T11:00:00Z' },
+   391→   391→  { id: '5', employeeId: 'emp8', employeeName: 'Lina Mansouri', type: 'marriage', startDate: '2024-08-15', endDate: '2024-08-22', daysCount: 8, isHalfDay: false, halfDayPart: null, status: 'draft', reason: 'Mariage prévu le 17 août', rejectionReason: null, approvedBy: null, approvedAt: null, createdAt: '2024-07-10T15:00:00Z', updatedAt: '2024-07-10T15:00:00Z' },
+   392→   392→  { id: '6', employeeId: 'emp9', employeeName: 'Rachid Hamadi', type: 'pilgrimage', startDate: '2024-06-10', endDate: '2024-07-15', daysCount: 36, isHalfDay: false, halfDayPart: null, status: 'approved', reason: 'Hadj 2024', rejectionReason: null, approvedBy: 'admin', approvedAt: '2024-05-01T09:00:00Z', createdAt: '2024-04-01T10:00:00Z', updatedAt: '2024-05-01T09:00:00Z' },
+   393→   393→  { id: '7', employeeId: 'emp10', employeeName: 'Samira Djelloul', type: 'birth', startDate: '2024-07-20', endDate: '2024-07-24', daysCount: 5, isHalfDay: false, halfDayPart: null, status: 'rejected', reason: 'Naissance d\'un enfant', rejectionReason: 'Dates non conformes au règlement intérieur', approvedBy: 'manager', approvedAt: '2024-07-15T11:00:00Z', createdAt: '2024-07-12T09:00:00Z', updatedAt: '2024-07-15T11:00:00Z' },
+   394→   394→]
+   395→   395→
+   396→   396→// Generate mock attendance records
+   397→   397→const generateMockAttendance = (): AttendanceRecord[] => {
+   398→   398→  const today = new Date().toISOString().split('T')[0]
+   399→   399→  return [
+   400→   400→    { id: '1', employeeId: 'emp1', employeeName: 'Ahmed Benali', date: today, clockIn: '08:25', clockOut: '17:32', workedHours: 8.12, overtimeHours: 0.62, breakMinutes: 60, status: 'present', notes: null, department: 'Informatique' },
+   401→   401→    { id: '2', employeeId: 'emp2', employeeName: 'Fatima Zerhouni', date: today, clockIn: '08:55', clockOut: null, workedHours: 0, overtimeHours: 0, breakMinutes: 0, status: 'late', notes: 'En cours', department: 'Marketing' },
+   402→   402→    { id: '3', employeeId: 'emp3', employeeName: 'Karim Hadjeres', date: today, clockIn: '08:15', clockOut: '17:00', workedHours: 8.75, overtimeHours: 0.25, breakMinutes: 60, status: 'present', notes: null, department: 'Informatique' },
+   403→   403→    { id: '4', employeeId: 'emp4', employeeName: 'Amina Boudrahem', date: today, clockIn: null, clockOut: null, workedHours: 0, overtimeHours: 0, breakMinutes: 0, status: 'on_leave', notes: 'Congé maternité', department: 'Ressources Humaines' },
+   404→   404→    { id: '5', employeeId: 'emp5', employeeName: 'Yacine Mebarki', date: today, clockIn: null, clockOut: null, workedHours: 0, overtimeHours: 0, breakMinutes: 0, status: 'absent', notes: 'Absence non justifiée', department: 'Comptabilité' },
+   405→   405→    { id: '6', employeeId: 'emp6', employeeName: 'Nadia Belkacem', date: today, clockIn: '08:00', clockOut: '13:00', workedHours: 5, overtimeHours: 0, breakMinutes: 30, status: 'half_day', notes: 'Départ anticipé - rendez-vous médical', department: 'Direction' },
+   406→   406→    { id: '7', employeeId: 'emp7', employeeName: 'Omar Khaled', date: today, clockIn: '08:30', clockOut: '17:45', workedHours: 8.25, overtimeHours: 0.75, breakMinutes: 60, status: 'present', notes: null, department: 'Commercial' },
+   407→   407→    { id: '8', employeeId: 'emp8', employeeName: 'Lina Mansouri', date: today, clockIn: '09:15', clockOut: null, workedHours: 0, overtimeHours: 0, breakMinutes: 0, status: 'late', notes: 'Retard - problèmes de transport', department: 'Communication' },
+   408→   408→  ]
+   409→   409→}
+   410→   410→
+   411→   411→// ============================================================
+   412→   412→// LOADING SKELETON COMPONENTS
+   413→   413→// ============================================================
+   414→   414→
+   415→   415→function KpiSkeleton() {
+   416→   416→  return (
+   417→   417→    <Card>
+   418→   418→      <CardHeader className="flex flex-row items-center justify-between pb-2">
+   419→   419→        <Skeleton className="h-4 w-24" />
+   420→   420→        <Skeleton className="h-10 w-10 rounded-lg" />
+   421→   421→      </CardHeader>
+   422→   422→      <CardContent>
+   423→   423→        <Skeleton className="h-8 w-32 mb-2" />
+   424→   424→        <Skeleton className="h-4 w-20" />
+   425→   425→      </CardContent>
+   426→   426→    </Card>
+   427→   427→  )
+   428→   428→}
+   429→   429→
+   430→   430→function TableSkeleton({ rows = 5 }: { rows?: number }) {
+   431→   431→  return (
+   432→   432→    <div className="space-y-3">
+   433→   433→      {[...Array(rows)].map((_, i) => (
+   434→   434→        <div key={i} className="flex items-center space-x-4 p-4">
+   435→   435→          <Skeleton className="h-10 w-10 rounded-full" />
+   436→   436→          <div className="space-y-2 flex-1">
+   437→   437→            <Skeleton className="h-4 w-[250px]" />
+   438→   438→            <Skeleton className="h-3 w-[200px]" />
+   439→   439→          </div>
+   440→   440→          <Skeleton className="h-6 w-20" />
+   441→   441→          <Skeleton className="h-6 w-24" />
+   442→   442→        </div>
+   443→   443→      ))}
+   444→   444→    </div>
+   445→   445→  )
+   446→   446→}
+   447→   447→
+   448→   448→// ============================================================
+   449→   449→// ERROR COMPONENT
+   450→   450→// ============================================================
+   451→   451→
+   452→   452→function ErrorState({ message, onRetry }: { message: string; onRetry: () => void }) {
+   453→   453→  return (
+   454→   454→    <div className="flex flex-col items-center justify-center py-12 space-y-4">
+   455→   455→      <div className="p-4 rounded-full bg-red-100 dark:bg-red-900/20">
+   456→   456→        <AlertCircle className="w-8 h-8 text-red-600" />
+   457→   457→      </div>
+   458→   458→      <h3 className="text-lg font-semibold text-foreground">Erreur de chargement</h3>
+   459→   459→      <p className="text-sm text-muted-foreground text-center max-w-md">{message}</p>
+   460→   460→      <Button onClick={onRetry} variant="outline" className="gap-2">
+   461→   461→        <RefreshCw className="w-4 h-4" />
+   462→   462→        Réessayer
+   463→   463→      </Button>
+   464→   464→    </div>
+   465→   465→  )
+   466→   466→}
+   467→   467→
+   468→   468→// ============================================================
+   469→   469→// EMPTY STATE COMPONENT
+   470→   470→// ============================================================
+   471→   471→
+   472→   472→function EmptyState({ type }: { type: 'employees' | 'search' | 'contracts' | 'leaves' | 'attendance' }) {
+   473→   473→  const config = {
+   474→   474→    employees: {
+   475→   475→      icon: Users,
+   476→   476→      title: 'Aucun employé trouvé',
+   477→   477→      description: 'Commencez par ajouter des employés à votre système.',
+   478→   478→    },
+   479→   479→    search: {
+   480→   480→      icon: Search,
+   481→   481→      title: 'Aucun résultat',
+   482→   482→      description: 'Essayez de modifier vos critères de recherche ou de filtre.',
+   483→   483→    },
+   484→   484→    contracts: {
+   485→   485→      icon: FileSignature,
+   486→   486→      title: 'Aucun contrat trouvé',
+   487→   487→      description: 'Aucun contrat ne correspond à vos critères de recherche.',
+   488→   488→    },
+   489→   489→    leaves: {
+   490→   490→      icon: CalendarCheck,
+   491→   491→      title: 'Aucune demande de congé',
+   492→   492→      description: 'Aucune demande de congé ne correspond à vos critères.',
+   493→   493→    },
+   494→   494→    attendance: {
+   495→   495→      icon: Activity,
+   496→   496→      title: 'Aucun enregistrement',
+   497→   497→      description: 'Aucun enregistrement de présence pour cette période.',
+   498→   498→    },
+   499→   499→  }
+   500→   500→  
+
+[showing lines 1-500 of 2002; use offset=501 with limit to continue reading]

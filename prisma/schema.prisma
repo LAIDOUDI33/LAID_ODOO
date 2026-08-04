@@ -62,6 +62,10 @@ model User {
   salesOrders          SalesOrder[]    @relation("SalesPersonOrders")
   quotations           Quotation[]     @relation("QuotationSalesPersons")
   
+  // Relations Calendar & Documents
+  createdEvents        CalendarEvent[]
+  uploadedDocuments    Document[]
+  
   @@map("users")
 }
 
@@ -135,6 +139,12 @@ model Company {
   purchaseOrders    PurchaseOrder[]
   salesOrders       SalesOrder[]
   quotations        Quotation[]
+  
+  // Phase 3 Relations (Operations)
+  calendarEvents    CalendarEvent[]
+  contracts         Contract[]
+  documents         Document[]
+  publicHolidays    PublicHoliday[]
   
   @@map("companies")
 }
@@ -778,6 +788,8 @@ model Employee {
   payrolls            Payroll[]
   leaves              LeaveRequest[]
   attendances         Attendance[]
+  contracts           Contract[]
+  managedContracts    Contract[]      @relation("ContractManager")
   
   createdAt           DateTime       @default(now())
   updatedAt           DateTime       @updatedAt
@@ -2393,7 +2405,228 @@ model QuotationLine {
 }
 
 // ============================================================
+// CALENDAR & EVENTS (CALENDRIER)
+// ============================================================
+
+enum EventType {
+  holiday
+  meeting
+  deadline
+  reminder
+  training
+  event
+  leave
+}
+
+model CalendarEvent {
+  id            String     @id @default(cuid())
+  title         String
+  description   String?
+  type          EventType  @default(event)
+  startDate     DateTime
+  endDate       DateTime?
+  allDay        Boolean    @default(false)
+  location      String?
+  color         String?    // Hex color for UI
+  
+  // Participants
+  employeeIds   String?    // JSON array of employee IDs
+  isPublic      Boolean    @default(false)
+  
+  // Recurrence
+  isRecurring   Boolean    @default(false)
+  recurrenceRule String?  // RRULE format
+  
+  // Reminders
+  reminderMinutes Int     @default(0) // minutes before event
+  
+  // Linking
+  sourceType    String?    // 'leave', 'contract', 'meeting', etc.
+  sourceId      String?
+  
+  companyId     String
+  company       Company    @relation(fields: [companyId], references: [id])
+  createdById   String?
+  createdBy     User?      @relation(fields: [createdById], references: [id])
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  @@map("calendar_events")
+}
+
+// ============================================================
+// CONTRACTS (CONTRATS DE TRAVAIL)
+// ============================================================
+
+enum ContractStatus {
+  draft
+  active
+  suspended
+  terminated
+  expired
+  renewed
+}
+
+model Contract {
+  id                String          @id @default(cuid())
+  reference         String          @unique // CTR-YYYY-XXX
+  type              String          // cdi, cdd, internship, temporary, part_time
+  status            ContractStatus  @default(draft)
+  
+  // Dates
+  startDate         DateTime
+  endDate           DateTime?
+  trialEndDate     DateTime?
+  terminationDate  DateTime?
+  terminationReason String?
+  renewalCount     Int             @default(0)
+  
+  // Financial
+  baseSalary        Float
+  currency          String          @default("DZD")
+  paymentFrequency  String          @default("monthly") // weekly, biweekly, monthly
+  
+  // Benefits
+  transportAllowance    Float    @default(0)
+  housingAllowance     Float    @default(0)
+  foodAllowance        Float    @default(0)
+  otherBenefits        String?  // JSON object
+  
+  // Working conditions
+  weeklyHours       Float    @default(40)
+  daysLeave         Int      @default(30) // Annual leave days
+  sickLeaveDays     Int      @default(15)
+  location          String?
+  department        String?
+  jobTitle          String?
+  jobGrade          String?
+  
+  // Legal (Algerian compliance)
+  nssNumber         String?  // Numéro de Sécurité Sociale
+  cnasNumber       String?
+  casnosNumber     String?
+  mutuelleNumber   String?
+  
+  // Files
+  contractFileUrl   String?
+  annexFilesUrls    String?  // JSON array of URLs
+  
+  // Notes
+  internalNotes     String?
+  specialClauses    String?
+  
+  // Relations
+  employeeId        String
+  employee          Employee  @relation(fields: [employeeId], references: [id])
+  companyId         String
+  company           Company   @relation(fields: [companyId], references: [id])
+  managerId         String?
+  manager           Employee? @relation("ContractManager", fields: [managerId], references: [id])
+  
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  @@map("contracts")
+}
+
+// ============================================================
+// DOCUMENT MANAGEMENT (GESTION DOCUMENTAIRE)
+// ============================================================
+
+enum DocumentCategory {
+  hr                  // RH: Contrats, CVs
+  finance             // Finance: Factures, Bilans
+  legal               // Juridique: Statuts, Autorisations
+  administrative      // Administratif
+  technical           // Technique
+  commercial          // Commercial: Devis, Bons de commande
+  inventory           // Inventaire
+  payroll             // Paie: Bulletins
+  other
+}
+
+model Document {
+  id                String            @id @default(cuid())
+  name              String
+  description       String?
+  fileName          String
+  fileSize          Int               @default(0) // bytes
+  mimeType          String?
+  category          DocumentCategory  @default(other)
+  tags              String?           // JSON array of tags
+  
+  // Storage
+  fileUrl           String            // URL/path to stored file
+  thumbnailUrl      String?
+  storageProvider   String            @default("local") // local, s3, gcs
+  
+  // Versioning
+  version           Int               @default(1)
+  parentVersionId   String?
+  parentVersion     Document?         @relation("DocumentVersions", fields: [parentVersionId], references: [id])
+  versions          Document[]        @relation("DocumentVersions")
+  
+  // Access Control
+  isConfidential    Boolean           @default(false)
+  allowedRoles      String?           // JSON array of roles that can access
+  allowedUserIds    String?           // JSON array of user IDs
+  
+  // Status
+  status            String            @default("active") // active, archived, deleted, pending_approval
+  
+  // Linking
+  entityType        String?          // 'employee', 'contract', 'invoice', 'po', etc.
+  entityId          String?
+  
+  // Metadata
+  uploadedById      String
+  uploadedBy        User              @relation(fields: [uploadedById], references: [id])
+  companyId         String
+  company           Company           @relation(fields: [companyId], references: [id])
+  
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  
+  @@map("documents")
+}
+
+// ============================================================
+// PUBLIC HOLIDAYS (JOURS FÉRIERS ALGÉRIENS)
+// ============================================================
+
+enum HolidayType {
+  national
+  religious
+  cultural
+  custom
+}
+
+model PublicHoliday {
+  id                String       @id @default(cuid())
+  name              String
+  nameAr            String?      // Nom en arabe
+  date              DateTime     // For fixed annual holidays, use YYYY-MM-DD (will repeat yearly)
+  type              HolidayType  @default(national)
+  isRecurring       Boolean      @default(true) // True = repeats every year
+  durationDays      Int          @default(1) // 1 day, or more for multi-day holidays like Aid
+  
+  description       String?
+  isActive          Boolean      @default(true)
+  
+  companyId         String
+  company           Company      @relation(fields: [companyId], references: [id])
+  
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  
+  @@unique([companyId, date])
+  @@map("public_holidays")
+}
+
+// ============================================================
 // END OF SCHEMA - HASSIBA Suite ERP v2.0.0 Enterprise
-// Total: 60+ Models with full Algerian ERP functionality
+// Total: 64+ Models with full Algerian ERP functionality
 // Phase 1 Complete: Added Purchase Orders, Sales Orders, Quotations
+// Phase 3 Complete: Added CalendarEvents, Contracts, Documents, PublicHolidays
 // ============================================================

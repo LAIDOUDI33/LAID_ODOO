@@ -1,0 +1,1246 @@
+     1→'use client'
+     2→
+     3→import React, { useState, useEffect, useCallback, useMemo } from 'react'
+     4→import { 
+     5→  Users, 
+     6→  UserPlus,
+     7→  Search,
+     8→  Phone,
+     9→  Mail,
+    10→  Briefcase,
+    11→  Building2,
+    12→  Calendar,
+    13→  DollarSign,
+    14→  FileText,
+    15→  CreditCard,
+    16→  MapPin,
+    17→  IdCard,
+    18→  Cake,
+    19→  AlertCircle,
+    20→  RefreshCw,
+    21→  X,
+    22→  ChevronDown,
+    23→  Filter
+    24→} from 'lucide-react'
+    25→import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+    26→import { Button } from '@/components/ui/button'
+    27→import { Badge } from '@/components/ui/badge'
+    28→import { Input } from '@/components/ui/input'
+    29→import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+    30→import {
+    31→  Table,
+    32→  TableBody,
+    33→  TableCell,
+    34→  TableHead,
+    35→  TableHeader,
+    36→  TableRow,
+    37→} from '@/components/ui/table'
+    38→import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+    39→import { Progress } from '@/components/ui/progress'
+    40→import { Skeleton } from '@/components/ui/skeleton'
+    41→import { KpiCard } from '@/components/dashboard/kpi-card'
+    42→import {
+    43→  Dialog,
+    44→  DialogContent,
+    45→  DialogHeader,
+    46→  DialogTitle,
+    47→  DialogDescription,
+    48→} from '@/components/ui/dialog'
+    49→import {
+    50→  Select,
+    51→  SelectContent,
+    52→  SelectItem,
+    53→  SelectTrigger,
+    54→  SelectValue,
+    55→} from '@/components/ui/select'
+    56→import { motion, AnimatePresence } from 'framer-motion'
+    57→
+    58→// ============================================================
+    59→// TYPES
+    60→// ============================================================
+    61→
+    62→interface Employee {
+    63→  id: string
+    64→  matricule: string
+    65→  firstName: string
+    66→  lastName: string
+    67→  firstNameAr?: string | null
+    68→  lastNameAr?: string | null
+    69→  gender: string
+    70→  dateOfBirth?: string | null
+    71→  placeOfBirth?: string | null
+    72→  nationality?: string
+    73→  cin?: string | null
+    74→  cnasNumber?: string | null
+    75→  casnosNumber?: string | null
+    76→  personalEmail?: string | null
+    77→  workEmail?: string | null
+    78→  phone?: string | null
+    79→  address?: string | null
+    80→  city?: string | null
+    81→  wilayaCode?: string | null
+    82→  department?: string | null
+    83→  jobTitle?: string | null
+    84→  jobPosition?: string | null
+    85→  managerId?: string | null
+    86→  contractType: 'cdi' | 'cdd' | 'internship' | 'temporary' | 'part_time'
+    87→  contractStartDate: string
+    88→  contractEndDate?: string | null
+    89→  employeeStatus: 'active' | 'on_leave' | 'resigned' | 'retired' | 'terminated'
+    90→  baseSalary: number
+    91→  dailyRate: number
+    92→  hourlyRate: number
+    93→  bankName?: string | null
+    94→  bankAccount?: string | null
+    95→  cvFile?: string | null
+    96→  contractFile?: string | null
+    97→  cinFile?: string | null
+    98→  photo?: string | null
+    99→  isActive: boolean
+   100→  hireDate?: string | null
+   101→  terminationDate?: string | null
+   102→  terminationReason?: string | null
+   103→  createdAt: string
+   104→  updatedAt: string
+   105→  manager?: { firstName: string; lastName: string; matricule: string } | null
+   106→  _count?: { payrolls: number; leaves: number; subordinates?: number }
+   107→}
+   108→
+   109→interface PayrollRecord {
+   110→  id: string
+   111→  reference: string
+   112→  period: string
+   113→  status: string
+   114→  baseSalary: number
+   115→  grossSalary: number
+   116→  netPayable: number
+   117→  totalCotisations: number
+   118→  totalRetenues: number
+   119→  employee: {
+   120→    matricule: string
+   121→    firstName: string
+   122→    lastName: string
+   123→    department?: string | null
+   124→    jobTitle?: string | null
+   125→    baseSalary: number
+   126→  }
+   127→}
+   128→
+   129→interface HrStats {
+   130→  totalEmployees: number
+   131→  activeEmployees: number
+   132→  onLeaveCount: number
+   133→  monthlyPayrollMass: number
+   134→  newHiresThisMonth: number
+   135→  departments: { name: string; count: number }[]
+   136→  absenteeismRate: number
+   137→}
+   138→
+   139→// ============================================================
+   140→// CONSTANTS & HELPERS
+   141→// ============================================================
+   142→
+   143→const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
+   144→  active: { 
+   145→    label: 'Actif', 
+   146→    className: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-green-200' 
+   147→  },
+   148→  on_leave: { 
+   149→    label: 'En Congé', 
+   150→    className: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 border-yellow-200' 
+   151→  },
+   152→  resigned: { 
+   153→    label: 'Démissionné', 
+   154→    className: 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400 border-gray-200' 
+   155→  },
+   156→  retired: { 
+   157→    label: 'Retraité', 
+   158→    className: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200' 
+   159→  },
+   160→  terminated: { 
+   161→    label: 'Licencié', 
+   162→    className: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200' 
+   163→  },
+   164→}
+   165→
+   166→const CONTRACT_LABELS: Record<string, string> = {
+   167→  cdi: 'CDI',
+   168→  cdd: 'CDD',
+   169→  internship: 'Stage',
+   170→  temporary: 'Temporaire',
+   171→  part_time: 'Temps Partiel',
+   172→}
+   173→
+   174→const formatCurrency = (value: number) => 
+   175→  new Intl.NumberFormat('fr-DZ', {
+   176→    style: 'currency',
+   177→    currency: 'DZD',
+   178→    minimumFractionDigits: 0,
+   179→    maximumFractionDigits: 0,
+   180→  }).format(value)
+   181→
+   182→const formatDate = (dateStr: string | null | undefined) => {
+   183→  if (!dateStr) return '-'
+   184→  return new Date(dateStr).toLocaleDateString('fr-DZ', {
+   185→    day: '2-digit',
+   186→    month: '2-digit',
+   187→    year: 'numeric',
+   188→  })
+   189→}
+   190→
+   191→const getInitials = (firstName: string, lastName: string) => 
+   192→  `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase()
+   193→
+   194→// ============================================================
+   195→// LOADING SKELETON COMPONENTS
+   196→// ============================================================
+   197→
+   198→function KpiSkeleton() {
+   199→  return (
+   200→    <Card>
+   201→      <CardHeader className="flex flex-row items-center justify-between pb-2">
+   202→        <Skeleton className="h-4 w-24" />
+   203→        <Skeleton className="h-10 w-10 rounded-lg" />
+   204→      </CardHeader>
+   205→      <CardContent>
+   206→        <Skeleton className="h-8 w-32 mb-2" />
+   207→        <Skeleton className="h-4 w-20" />
+   208→      </CardContent>
+   209→    </Card>
+   210→  )
+   211→}
+   212→
+   213→function TableSkeleton({ rows = 5 }: { rows?: number }) {
+   214→  return (
+   215→    <div className="space-y-3">
+   216→      {[...Array(rows)].map((_, i) => (
+   217→        <div key={i} className="flex items-center space-x-4 p-4">
+   218→          <Skeleton className="h-10 w-10 rounded-full" />
+   219→          <div className="space-y-2 flex-1">
+   220→            <Skeleton className="h-4 w-[250px]" />
+   221→            <Skeleton className="h-3 w-[200px]" />
+   222→          </div>
+   223→          <Skeleton className="h-6 w-20" />
+   224→          <Skeleton className="h-6 w-24" />
+   225→        </div>
+   226→      ))}
+   227→    </div>
+   228→  )
+   229→}
+   230→
+   231→// ============================================================
+   232→// ERROR COMPONENT
+   233→// ============================================================
+   234→
+   235→function ErrorState({ message, onRetry }: { message: string; onRetry: () => void }) {
+   236→  return (
+   237→    <div className="flex flex-col items-center justify-center py-12 space-y-4">
+   238→      <div className="p-4 rounded-full bg-red-100 dark:bg-red-900/20">
+   239→        <AlertCircle className="w-8 h-8 text-red-600" />
+   240→      </div>
+   241→      <h3 className="text-lg font-semibold text-foreground">Erreur de chargement</h3>
+   242→      <p className="text-sm text-muted-foreground text-center max-w-md">{message}</p>
+   243→      <Button onClick={onRetry} variant="outline" className="gap-2">
+   244→        <RefreshCw className="w-4 h-4" />
+   245→        Réessayer
+   246→      </Button>
+   247→    </div>
+   248→  )
+   249→}
+   250→
+   251→// ============================================================
+   252→// EMPTY STATE COMPONENT
+   253→// ============================================================
+   254→
+   255→function EmptyState({ type }: { type: 'employees' | 'search' }) {
+   256→  const config = {
+   257→    employees: {
+   258→      icon: Users,
+   259→      title: 'Aucun employé trouvé',
+   260→      description: 'Commencez par ajouter des employés à votre système.',
+   261→    },
+   262→    search: {
+   263→      icon: Search,
+   264→      title: 'Aucun résultat',
+   265→      description: 'Essayez de modifier vos critères de recherche ou de filtre.',
+   266→    },
+   267→  }
+   268→  
+   269→  const { icon: Icon, title, description } = config[type]
+   270→  
+   271→  return (
+   272→    <div className="flex flex-col items-center justify-center py-12 space-y-4">
+   273→      <div className="p-4 rounded-full bg-muted">
+   274→        <Icon className="w-8 h-8 text-muted-foreground" />
+   275→      </div>
+   276→      <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+   277→      <p className="text-sm text-muted-foreground text-center">{description}</p>
+   278→    </div>
+   279→  )
+   280→}
+   281→
+   282→// ============================================================
+   283→// EMPLOYEE DETAIL MODAL
+   284→// ============================================================
+   285→
+   286→function EmployeeDetailModal({ 
+   287→  employee, 
+   288→  isOpen, 
+   289→  onClose 
+   290→}: { 
+   291→  employee: Employee | null
+   292→  isOpen: boolean
+   293→  onClose: () => void 
+   294→}) {
+   295→  if (!employee) return null
+   296→
+   297→  return (
+   298→    <Dialog open={isOpen} onOpenChange={onClose}>
+   299→      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+   300→        <DialogHeader>
+   301→          <DialogTitle className="flex items-center gap-3">
+   302→            <Avatar className="h-12 w-12">
+   303→              <AvatarFallback className="bg-primary/10 text-primary text-lg">
+   304→                {getInitials(employee.firstName, employee.lastName)}
+   305→              </AvatarFallback>
+   306→            </Avatar>
+   307→            <div>
+   308→              <span>{employee.firstName} {employee.lastName}</span>
+   309→              <p className="text-sm font-normal text-muted-foreground">{employee.matricule}</p>
+   310→            </div>
+   311→          </DialogTitle>
+   312→          <DialogDescription>
+   313→            Fiche employé • {STATUS_CONFIG[employee.employeeStatus]?.label || employee.employeeStatus}
+   314→          </DialogDescription>
+   315→        </DialogHeader>
+   316→
+   317→        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+   318→          {/* Personal Information */}
+   319→          <div className="space-y-4">
+   320→            <h4 className="font-semibold flex items-center gap-2 text-sm uppercase tracking-wider text-muted-foreground">
+   321→              <IdCard className="w-4 h-4" />
+   322→              Informations Personnelles
+   323→            </h4>
+   324→            <div className="space-y-3 bg-muted/50 p-4 rounded-lg">
+   325→              <InfoRow label="Nom complet" value={`${employee.firstName} ${employee.lastName}`} />
+   326→              <InfoRow label="CIN" value={employee.cin || '-'} />
+   327→              <InfoRow 
+   328→                label="Date de naissance" 
+   329→                value={formatDate(employee.dateOfBirth)}
+   330→                icon={<Cake className="w-3 h-3" />}
+   331→              />
+   332→              <InfoRow 
+   333→                label="Lieu de naissance" 
+   334→                value={employee.placeOfBirth || '-'}
+   335→                icon={<MapPin className="w-3 h-3" />}
+   336→              />
+   337→              <InfoRow label="Nationalité" value={employee.nationality || 'DZ'} />
+   338→              <InfoRow label="Genre" value={employee.gender === 'M' ? 'Masculin' : 'Féminin'} />
+   339→            </div>
+   340→          </div>
+   341→
+   342→          {/* Contact Information */}
+   343→          <div className="space-y-4">
+   344→            <h4 className="font-semibold flex items-center gap-2 text-sm uppercase tracking-wider text-muted-foreground">
+   345→              <Phone className="w-4 h-4" />
+   346→              Contact
+   347→            </h4>
+   348→            <div className="space-y-3 bg-muted/50 p-4 rounded-lg">
+   349→              <InfoRow 
+   350→                label="Email pro" 
+   351→                value={employee.workEmail || '-'}
+   352→                icon={<Mail className="w-3 h-3" />}
+   353→              />
+   354→              <InfoRow 
+   355→                label="Téléphone" 
+   356→                value={employee.phone || '-'}
+   357→                icon={<Phone className="w-3 h-3" />}
+   358→              />
+   359→              <InfoRow label="Adresse" value={employee.address || '-'} />
+   360→              <InfoRow label="Ville" value={employee.city || '-'} />
+   361→            </div>
+   362→          </div>
+   363→
+   364→          {/* Contract Information */}
+   365→          <div className="space-y-4">
+   366→            <h4 className="font-semibold flex items-center gap-2 text-sm uppercase tracking-wider text-muted-foreground">
+   367→              <Briefcase className="w-4 h-4" />
+   368→              Contrat & Poste
+   369→            </h4>
+   370→            <div className="space-y-3 bg-muted/50 p-4 rounded-lg">
+   371→              <InfoRow 
+   372→                label="Type de contrat" 
+   373→                value={
+   374→                  <Badge variant="outline">
+   375→                    {CONTRACT_LABELS[employee.contractType] || employee.contractType}
+   376→                  </Badge>
+   377→                }
+   378→              />
+   379→              <InfoRow label="Département" value={
+   380→                employee.department ? (
+   381→                  <Badge variant="secondary">{employee.department}</Badge>
+   382→                ) : '-'
+   383→              } />
+   384→              <InfoRow label="Poste" value={employee.jobTitle || '-'} />
+   385→              <InfoRow label="Fonction" value={employee.jobPosition || '-'} />
+   386→              <InfoRow 
+   387→                label="Début contrat" 
+   388→                value={formatDate(employee.contractStartDate)}
+   389→                icon={<Calendar className="w-3 h-3" />}
+   390→              />
+   391→              <InfoRow 
+   392→                label="Fin contrat" 
+   393→                value={employee.contractEndDate ? formatDate(employee.contractEndDate) : '-'}
+   394→              />
+   395→              <InfoRow 
+   396→                label="Statut" 
+   397→                value={
+   398→                  <Badge variant="outline" className={STATUS_CONFIG[employee.employeeStatus]?.className}>
+   399→                    {STATUS_CONFIG[employee.employeeStatus]?.label}
+   400→                  </Badge>
+   401→                }
+   402→              />
+   403→            </div>
+   404→          </div>
+   405→
+   406→          {/* Salary & Bank */}
+   407→          <div className="space-y-4">
+   408→            <h4 className="font-semibold flex items-center gap-2 text-sm uppercase tracking-wider text-muted-foreground">
+   409→              <DollarSign className="w-4 h-4" />
+   410→              Salaire & Banque
+   411→            </h4>
+   412→            <div className="space-y-3 bg-muted/50 p-4 rounded-lg">
+   413→              <InfoRow 
+   414→                label="Salaire de base" 
+   415→                value={<span className="font-semibold text-green-600">{formatCurrency(employee.baseSalary)}</span>}
+   416→              />
+   417→              <InfoRow label="Taux journalier" value={formatCurrency(employee.dailyRate)} />
+   418→              <InfoRow label="Taux horaire" value={formatCurrency(employee.hourlyRate)} />
+   419→              
+   420→              <div className="pt-2 border-t border-border mt-2">
+   421→                <InfoRow label="Banque" value={employee.bankName || '-'} />
+   422→                <InfoRow 
+   423→                  label="Compte bancaire" 
+   424→                  value={employee.bankAccount ? (
+   425→                    <span className="font-mono text-xs">{employee.bankAccount}</span>
+   426→                  ) : '-'}
+   427→                  icon={<CreditCard className="w-3 h-3" />}
+   428→                />
+   429→              </div>
+   430→            </div>
+   431→          </div>
+   432→
+   433→          {/* Social Security */}
+   434→          <div className="space-y-4 md:col-span-2">
+   435→            <h4 className="font-semibold flex items-center gap-2 text-sm uppercase tracking-wider text-muted-foreground">
+   436→              <FileText className="w-4 h-4" />
+   437→              Sécurité Sociale & Documents
+   438→            </h4>
+   439→            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-muted/50 p-4 rounded-lg">
+   440→              <InfoRow label="N° CNAS" value={employee.cnasNumber || '-'} />
+   441→              <InfoRow label="N° CASNOS" value={employee.casnosNumber || '-'} />
+   442→              <InfoRow 
+   443→                label="CV" 
+   444→                value={employee.cvFile ? 'Disponible' : '-'}
+   445→                valueClassName={employee.cvFile ? 'text-green-600' : ''}
+   446→              />
+   447→              <InfoRow 
+   448→                label="Contrat signé" 
+   449→                value={employee.contractFile ? 'Disponible' : '-'}
+   450→                valueClassName={employee.contractFile ? 'text-green-600' : ''}
+   451→              />
+   452→              <InfoRow 
+   453→                label="Copie CIN" 
+   454→                value={employee.cinFile ? 'Disponible' : '-'}
+   455→                valueClassName={employee.cinFile ? 'text-green-600' : ''}
+   456→              />
+   457→            </div>
+   458→          </div>
+   459→        </div>
+   460→
+   461→        {/* Manager Info */}
+   462→        {employee.manager && (
+   463→          <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+   464→            <p className="text-sm text-muted-foreground mb-1">Responsable hiérarchique</p>
+   465→            <p className="font-medium">
+   466→              {employee.manager.firstName} {employee.manager.lastName} ({employee.manager.matricule})
+   467→            </p>
+   468→          </div>
+   469→        )}
+   470→
+   471→        {/* Stats */}
+   472→        <div className="mt-4 flex gap-4 text-sm text-muted-foreground">
+   473→          <span>Paies: {employee._count?.payrolls || 0}</span>
+   474→          <span>Congés: {employee._count?.leaves || 0}</span>
+   475→          <span>Créé le: {formatDate(employee.createdAt)}</span>
+   476→        </div>
+   477→      </DialogContent>
+   478→    </Dialog>
+   479→  )
+   480→}
+   481→
+   482→// ============================================================
+   483→// INFO ROW HELPER
+   484→// ============================================================
+   485→
+   486→function InfoRow({ 
+   487→  label, 
+   488→  value, 
+   489→  icon,
+   490→  valueClassName = '' 
+   491→}: { 
+   492→  label: string
+   493→  value: React.ReactNode
+   494→  icon?: React.ReactNode
+   495→  valueClassName?: string 
+   496→}) {
+   497→  return (
+   498→    <div className="flex justify-between items-start gap-2">
+   499→      <span className="text-xs text-muted-foreground flex items-center gap-1">
+   500→        {icon}
+   501→        {label}
+   502→      </span>
+   503→      <span className={`text-sm font-medium text-right ${valueClassName}`}>{value}</span>
+   504→    </div>
+   505→  )
+   506→}
+   507→
+   508→// ============================================================
+   509→// MAIN HR PAGE COMPONENT
+   510→// ============================================================
+   511→
+   512→export default function HrPage() {
+   513→  // State
+   514→  const [employees, setEmployees] = useState<Employee[]>([])
+   515→  const [payrollData, setPayrollData] = useState<PayrollRecord[]>([])
+   516→  const [loading, setLoading] = useState(true)
+   517→  const [error, setError] = useState<string | null>(null)
+   518→  
+   519→  // Filters & Search
+   520→  const [searchQuery, setSearchQuery] = useState('')
+   521→  const [departmentFilter, setDepartmentFilter] = useState('all')
+   522→  const [statusFilter, setStatusFilter] = useState('all')
+   523→  
+   524→  // Modal
+   525→  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null)
+   526→  const [isModalOpen, setIsModalOpen] = useState(false)
+   527→
+   528→  // Fetch employees
+   529→  const fetchEmployees = useCallback(async () => {
+   530→    try {
+   531→      setLoading(true)
+   532→      setError(null)
+   533→      
+   534→      const params = new URLSearchParams()
+   535→      if (departmentFilter !== 'all') params.append('department', departmentFilter)
+   536→      if (statusFilter !== 'all') params.append('status', statusFilter)
+   537→      if (searchQuery) params.append('search', searchQuery)
+   538→      
+   539→      const response = await fetch(`/api/employees?${params.toString()}`)
+   540→      const result = await response.json()
+   541→      
+   542→      if (!result.success) {
+   543→        throw new Error(result.error || 'Failed to fetch employees')
+   544→      }
+   545→      
+   546→      setEmployees(result.data)
+   547→    } catch (err) {
+   548→      setError(err instanceof Error ? err.message : 'An error occurred')
+   549→    } finally {
+   550→      setLoading(false)
+   551→    }
+   552→  }, [departmentFilter, statusFilter, searchQuery])
+   553→
+   554→  // Fetch payroll data
+   555→  const fetchPayrollData = useCallback(async () => {
+   556→    try {
+   557→      const currentPeriod = new Date().toISOString().slice(0, 7) // YYYY-MM
+   558→      const response = await fetch(`/api/payroll?period=${currentPeriod}`)
+   559→      const result = await response.json()
+   560→      
+   561→      if (result.success) {
+   562→        setPayrollData(result.data)
+   563→      }
+   564→    } catch (err) {
+   565→      console.error('Failed to fetch payroll:', err)
+   566→    }
+   567→  }, [])
+   568→
+   569→  // Initial load
+   570→  useEffect(() => {
+   571→    fetchEmployees()
+   572→    fetchPayrollData()
+   573→  }, [])
+   574→
+   575→  // Refetch when filters change (debounced)
+   576→  useEffect(() => {
+   577→    const timer = setTimeout(() => {
+   578→      if (!loading) {
+   579→        fetchEmployees()
+   580→      }
+   581→    }, 300)
+   582→    
+   583→    return () => clearTimeout(timer)
+   584→  }, [departmentFilter, statusFilter, searchQuery, loading, fetchEmployees])
+   585→
+   586→  // Computed values
+   587→  const stats: HrStats = useMemo(() => {
+   588→    const total = employees.length
+   589→    const active = employees.filter(e => e.employeeStatus === 'active').length
+   590→    const onLeave = employees.filter(e => e.employeeStatus === 'on_leave').length
+   591→    
+   592→    // Calculate payroll mass from fetched data or use sum of base salaries
+   593→    let monthlyPayrollMass = payrollData.reduce((sum, p) => sum + p.grossSalary, 0)
+   594→    if (monthlyPayrollMass === 0 && employees.length > 0) {
+   595→      monthlyPayrollMass = employees.reduce((sum, e) => sum + e.baseSalary, 0)
+   596→    }
+   597→    
+   598→    // New hires this month
+   599→    const now = new Date()
+   600→    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+   601→    const newHires = employees.filter(e => {
+   602→      const hireDate = new Date(e.hireDate || e.contractStartDate)
+   603→      return hireDate >= startOfMonth
+   604→    }).length
+   605→    
+   606→    // Departments distribution
+   607→    const deptMap: Record<string, number> = {}
+   608→    employees.forEach(emp => {
+   609→      const dept = emp.department || 'Non assigné'
+   610→      deptMap[dept] = (deptMap[dept] || 0) + 1
+   611→    })
+   612→    const departments = Object.entries(deptMap)
+   613→      .map(([name, count]) => ({ name, count }))
+   614→      .sort((a, b) => b.count - a.count)
+   615→    
+   616→    // Absenteeism rate (on_leave / total * 100)
+   617→    const absenteeismRate = total > 0 ? (onLeave / total) * 100 : 0
+   618→    
+   619→    return {
+   620→      totalEmployees: total,
+   621→      activeEmployees: active,
+   622→      onLeaveCount: onLeave,
+   623→      monthlyPayrollMass,
+   624→      newHiresThisMonth: newHires,
+   625→      departments,
+   626→      absenteeismRate: Math.round(absenteeismRate * 10) / 10,
+   627→    }
+   628→  }, [employees, payrollData])
+   629→
+   630→  // Unique departments for filter
+   631→  const uniqueDepartments = useMemo(() => {
+   632→    const depts = [...new Set(employees.map(e => e.department).filter(Boolean))] as string[]
+   633→    return depts.sort()
+   634→  }, [employees])
+   635→
+   636→  // Handle employee click
+   637→  const handleEmployeeClick = (employee: Employee) => {
+   638→    setSelectedEmployee(employee)
+   639→    setIsModalOpen(true)
+   640→  }
+   641→
+   642→  // Status badge component
+   643→  const StatusBadge = ({ status }: { status: string }) => {
+   644→    const config = STATUS_CONFIG[status]
+   645→    return (
+   646→      <Badge variant="outline" className={config?.className || ''}>
+   647→        {config?.label || status}
+   648→      </Badge>
+   649→    )
+   650→  }
+   651→
+   652→  // ============================================================
+   653→  // RENDER
+   654→  // ============================================================
+   655→
+   656→  return (
+   657→    <div className="space-y-6">
+   658→      {/* Page Header */}
+   659→      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+   660→        <div>
+   661→          <h1 className="text-2xl md:text-3xl font-bold tracking-tight flex items-center gap-3">
+   662→            <Users className="w-8 h-8 text-primary" />
+   663→            Ressources Humaines
+   664→          </h1>
+   665→          <p className="text-muted-foreground mt-1">
+   666→            Gestion des employés, congés et paie
+   667→          </p>
+   668→        </div>
+   669→        <div className="flex items-center gap-2">
+   670→          <Button size="sm" variant="outline" className="gap-2" onClick={fetchEmployees}>
+   671→            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+   672→            Actualiser
+   673→          </Button>
+   674→        </div>
+   675→      </div>
+   676→
+   677→      {/* KPI Cards */}
+   678→      {loading ? (
+   679→        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+   680→          {[...Array(4)].map((_, i) => <KpiSkeleton key={i} />)}
+   681→        </div>
+   682→      ) : error ? (
+   683→        <ErrorState message={error} onRetry={fetchEmployees} />
+   684→      ) : (
+   685→        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+   686→          <KpiCard
+   687→            title="Effectif Total"
+   688→            value={stats.totalEmployees}
+   689→            icon={Users}
+   690→            iconColor="text-dz-green"
+   691→            iconBg="bg-dz-green/10"
+   692→            format="number"
+   693→            delay={0}
+   694→          />
+   695→          <KpiCard
+   696→            title="Masse Salariale"
+   697→            value={stats.monthlyPayrollMass}
+   698→            change={2.5}
+   699→            icon={DollarSign}
+   700→            iconColor="text-emerald-600"
+   701→            iconBg="bg-emerald-100 dark:bg-emerald-900/30"
+   702→            format="currency"
+   703→            delay={0.05}
+   704→          />
+   705→          <KpiCard
+   706→            title="Nouvelles Recrues"
+   707→            value={stats.newHiresThisMonth}
+   708→            icon={UserPlus}
+   709→            iconColor="text-violet-600"
+   710→            iconBg="bg-violet-100 dark:bg-violet-900/30"
+   711→            format="number"
+   712→            delay={0.1}
+   713→          />
+   714→          <KpiCard
+   715→            title="Taux d'Absentéisme"
+   716→            value={stats.absenteeismRate}
+   717→            change={stats.absenteeismRate > 5 ? -0.5 : 0.3}
+   718→            icon={Calendar}
+   719→            iconColor="text-orange-600"
+   720→            iconBg="bg-orange-100 dark:bg-orange-900/30"
+   721→            format="percentage"
+   722→            delay={0.15}
+   723→          />
+   724→        </div>
+   725→      )}
+   726→
+   727→      {/* Main Content - Tabs */}
+   728→      <Tabs defaultValue="employes" className="space-y-4">
+   729→        <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
+   730→          <TabsTrigger value="employes" className="gap-2">
+   731→            <Users className="w-4 h-4" />
+   732→            Employés
+   733→          </TabsTrigger>
+   734→          <TabsTrigger value="conges" className="gap-2">
+   735→            <Calendar className="w-4 h-4" />
+   736→            Congés
+   737→          </TabsTrigger>
+   738→          <TabsTrigger value="presence" className="gap-2">
+   739→            <Briefcase className="w-4 h-4" />
+   740→            Présence
+   741→          </TabsTrigger>
+   742→          <TabsTrigger value="paie" className="gap-2">
+   743→            <DollarSign className="w-4 h-4" />
+   744→            Paie
+   745→          </TabsTrigger>
+   746→        </TabsList>
+   747→
+   748→        {/* ============================================================ */}
+   749→        {/* EMPLOYÉS TAB */}
+   750→        {/* ============================================================ */}
+   751→        <TabsContent value="employes" className="space-y-4">
+   752→          <motion.div
+   753→            initial={{ opacity: 0, y: 20 }}
+   754→            animate={{ opacity: 1, y: 0 }}
+   755→            transition={{ duration: 0.3 }}
+   756→          >
+   757→            <Card>
+   758→              <CardHeader className="pb-3">
+   759→                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+   760→                  <div className="flex items-center gap-3">
+   761→                    <CardTitle>Annuaire des Employés</CardTitle>
+   762→                    {!loading && !error && (
+   763→                      <Badge variant="secondary" className="bg-dz-green/10 text-dz-green">
+   764→                        {stats.totalEmployees} employé{stats.totalEmployees > 1 ? 's' : ''}
+   765→                      </Badge>
+   766→                    )}
+   767→                  </div>
+   768→                  
+   769→                  {/* Search & Filters */}
+   770→                  <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+   771→                    <div className="relative flex-1 md:w-64">
+   772→                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+   773→                      <Input
+   774→                        placeholder="Rechercher..."
+   775→                        className="pl-10"
+   776→                        value={searchQuery}
+   777→                        onChange={(e) => setSearchQuery(e.target.value)}
+   778→                      />
+   779→                    </div>
+   780→                    
+   781→                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+   782→                      <SelectTrigger className="w-full sm:w-[150px]">
+   783→                        <Filter className="w-4 h-4 mr-2" />
+   784→                        <SelectValue placeholder="Statut" />
+   785→                      </SelectTrigger>
+   786→                      <SelectContent>
+   787→                        <SelectItem value="all">Tous les statuts</SelectItem>
+   788→                        <SelectItem value="active">Actif</SelectItem>
+   789→                        <SelectItem value="on_leave">En congé</SelectItem>
+   790→                        <SelectItem value="resigned">Démissionné</SelectItem>
+   791→                        <SelectItem value="retired">Retraité</SelectItem>
+   792→                        <SelectItem value="terminated">Licencié</SelectItem>
+   793→                      </SelectContent>
+   794→                    </Select>
+   795→                    
+   796→                    <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
+   797→                      <SelectTrigger className="w-full sm:w-[160px]">
+   798→                        <Building2 className="w-4 h-4 mr-2" />
+   799→                        <SelectValue placeholder="Département" />
+   800→                      </SelectTrigger>
+   801→                      <SelectContent>
+   802→                        <SelectItem value="all">Tous les départements</SelectItem>
+   803→                        {uniqueDepartments.map((dept) => (
+   804→                          <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+   805→                        ))}
+   806→                      </SelectContent>
+   807→                    </Select>
+   808→                  </div>
+   809→                </div>
+   810→              </CardHeader>
+   811→              <CardContent>
+   812→                {loading ? (
+   813→                  <TableSkeleton rows={6} />
+   814→                ) : error ? (
+   815→                  <ErrorState message={error} onRetry={fetchEmployees} />
+   816→                ) : employees.length === 0 ? (
+   817→                  <EmptyState type={searchQuery || statusFilter !== 'all' || departmentFilter !== 'all' ? 'search' : 'employees'} />
+   818→                ) : (
+   819→                  <>
+   820→                    <div className="rounded-md border overflow-hidden">
+   821→                      <Table>
+   822→                        <TableHeader>
+   823→                          <TableRow>
+   824→                            <TableHead className="w-[100px]">Matricule</TableHead>
+   825→                            <TableHead>Employé</TableHead>
+   826→                            <TableHead>Département</TableHead>
+   827→                            <TableHead>Poste</TableHead>
+   828→                            <TableHead>Statut</TableHead>
+   829→                            <TableHead>Téléphone</TableHead>
+   830→                            <TableHead>Email</TableHead>
+   831→                            <TableHead className="text-right">Actions</TableHead>
+   832→                          </TableRow>
+   833→                        </TableHeader>
+   834→                        <TableBody>
+   835→                          <AnimatePresence mode="popLayout">
+   836→                            {employees.map((emp) => (
+   837→                              <motion.tr
+   838→                                key={emp.id}
+   839→                                initial={{ opacity: 0 }}
+   840→                                animate={{ opacity: 1 }}
+   841→                                exit={{ opacity: 0 }}
+   842→                                className="border-b transition-colors hover:bg-muted/50 cursor-pointer"
+   843→                                onClick={() => handleEmployeeClick(emp)}
+   844→                              >
+   845→                                <TableCell className="font-mono text-xs font-medium">
+   846→                                  {emp.matricule}
+   847→                                </TableCell>
+   848→                                <TableCell>
+   849→                                  <div className="flex items-center gap-3">
+   850→                                    <Avatar className="h-9 w-9">
+   851→                                      <AvatarFallback className="bg-primary/10 text-primary text-sm">
+   852→                                        {getInitials(emp.firstName, emp.lastName)}
+   853→                                      </AvatarFallback>
+   854→                                    </Avatar>
+   855→                                    <div>
+   856→                                      <p className="font-medium">
+   857→                                        {emp.firstName} {emp.lastName}
+   858→                                      </p>
+   859→                                      <p className="text-xs text-muted-foreground">
+   860→                                        {CONTRACT_LABELS[emp.contractType]}
+   861→                                      </p>
+   862→                                    </div>
+   863→                                  </div>
+   864→                                </TableCell>
+   865→                                <TableCell>
+   866→                                  {emp.department ? (
+   867→                                    <Badge variant="secondary">{emp.department}</Badge>
+   868→                                  ) : (
+   869→                                    <span className="text-muted-foreground text-sm">-</span>
+   870→                                  )}
+   871→                                </TableCell>
+   872→                                <TableCell className="max-w-[150px] truncate">
+   873→                                  {emp.jobTitle || emp.jobPosition || '-'}
+   874→                                </TableCell>
+   875→                                <TableCell>
+   876→                                  <StatusBadge status={emp.employeeStatus} />
+   877→                                </TableCell>
+   878→                                <TableCell className="text-sm">
+   879→                                  {emp.phone || '-'}
+   880→                                </TableCell>
+   881→                                <TableCell className="text-sm max-w-[180px] truncate">
+   882→                                  {emp.workEmail || emp.personalEmail || '-'}
+   883→                                </TableCell>
+   884→                                <TableCell className="text-right">
+   885→                                  <Button 
+   886→                                    variant="ghost" 
+   887→                                    size="sm"
+   888→                                    onClick={(e) => {
+   889→                                      e.stopPropagation()
+   890→                                      handleEmployeeClick(emp)
+   891→                                    }}
+   892→                                  >
+   893→                                    Voir
+   894→                                  </Button>
+   895→                                </TableCell>
+   896→                              </motion.tr>
+   897→                            ))}
+   898→                          </AnimatePresence>
+   899→                        </TableBody>
+   900→                      </Table>
+   901→                    </div>
+   902→                    
+   903→                    {/* Summary footer */}
+   904→                    <div className="mt-4 flex flex-wrap justify-between items-center gap-4 text-sm text-muted-foreground">
+   905→                      <p>
+   906→                        Affichage de <strong>{employees.length}</strong> employé{employees.length > 1 ? 's' : ''}
+   907→                      </p>
+   908→                      <div className="flex gap-4">
+   909→                        <span className="flex items-center gap-1">
+   910→                          <span className="w-2 h-2 rounded-full bg-green-500"></span>
+   911→                          Actifs: {stats.activeEmployees}
+   912→                        </span>
+   913→                        <span className="flex items-center gap-1">
+   914→                          <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
+   915→                          En congé: {stats.onLeaveCount}
+   916→                        </span>
+   917→                      </div>
+   918→                    </div>
+   919→                  </>
+   920→                )}
+   921→              </CardContent>
+   922→            </Card>
+   923→
+   924→            {/* Department Distribution */}
+   925→            {!loading && !error && stats.departments.length > 0 && (
+   926→              <Card className="mt-6">
+   927→                <CardHeader>
+   928→                  <CardTitle className="flex items-center gap-2">
+   929→                    <Building2 className="w-5 h-5" />
+   930→                    Répartition par Département
+   931→                  </CardTitle>
+   932→                  <CardDescription>
+   933→                    Distribution des {stats.totalEmployees} employés
+   934→                  </CardDescription>
+   935→                </CardHeader>
+   936→                <CardContent>
+   937→                  <div className="space-y-4 max-h-[350px] overflow-y-auto pr-2">
+   938→                    {stats.departments.map((dept) => {
+   939→                      const percentage = ((dept.count / stats.totalEmployees) * 100).toFixed(1)
+   940→                      return (
+   941→                        <div key={dept.name} className="space-y-2">
+   942→                          <div className="flex items-center justify-between text-sm">
+   943→                            <span className="font-medium">{dept.name}</span>
+   944→                            <span className="text-muted-foreground">
+   945→                              {new Intl.NumberFormat('fr-DZ').format(dept.count)} ({percentage}%)
+   946→                            </span>
+   947→                          </div>
+   948→                          <Progress value={parseFloat(percentage)} className="h-2" />
+   949→                        </div>
+   950→                      )
+   951→                    })}
+   952→                  </div>
+   953→                </CardContent>
+   954→              </Card>
+   955→            )}
+   956→          </motion.div>
+   957→        </TabsContent>
+   958→
+   959→        {/* ============================================================ */}
+   960→        {/* CONGÉS TAB */}
+   961→        {/* ============================================================ */}
+   962→        <TabsContent value="conges" className="space-y-4">
+   963→          <motion.div
+   964→            initial={{ opacity: 0, y: 20 }}
+   965→            animate={{ opacity: 1, y: 0 }}
+   966→            transition={{ duration: 0.3 }}
+   967→          >
+   968→            <Card>
+   969→              <CardHeader>
+   970→                <CardTitle className="flex items-center gap-2">
+   971→                  <Calendar className="w-5 h-5" />
+   972→                  Gestion des Congés
+   973→                </CardTitle>
+   974→                <CardDescription>Suivi des demandes de congés</CardDescription>
+   975→              </CardHeader>
+   976→              <CardContent>
+   977→                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+   978→                  <div className="p-6 rounded-lg border border-border text-center hover:bg-muted/50 transition-colors">
+   979→                    <p className="text-4xl font-bold text-yellow-600">
+   980→                      {stats.onLeaveCount}
+   981→                    </p>
+   982→                    <p className="text-sm text-muted-foreground mt-1">En congé aujourd'hui</p>
+   983→                  </div>
+   984→                  <div className="p-6 rounded-lg border border-border text-center hover:bg-muted/50 transition-colors">
+   985→                    <p className="text-4xl font-bold text-blue-600">
+   986→                      {employees.reduce((sum, e) => sum + (e._count?.leaves || 0), 0)}
+   987→                    </p>
+   988→                    <p className="text-sm text-muted-foreground mt-1">Total des demandes</p>
+   989→                  </div>
+   990→                  <div className="p-6 rounded-lg border border-border text-center hover:bg-muted/50 transition-colors">
+   991→                    <p className="text-4xl font-bold text-green-600">30j</p>
+   992→                    <p className="text-sm text-muted-foreground mt-1">Congés moyens/employé/an</p>
+   993→                  </div>
+   994→                </div>
+   995→
+   996→                {/* Leave summary by status */}
+   997→                <div className="mt-6">
+   998→                  <h4 className="font-semibold mb-4">Résumé par statut</h4>
+   999→                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+  1000→                    {[
+  1001→                      { label: 'Actif', count: stats.activeEmployees, color: 'green' },
+  1002→                      { label: 'En congé', count: stats.onLeaveCount, color: 'yellow' },
+  1003→                      { label: 'Autres', count: stats.totalEmployees - stats.activeEmployees - stats.onLeaveCount, color: 'gray' },
+  1004→                      { label: 'Total', count: stats.totalEmployees, color: 'blue' },
+  1005→                    ].map(({ label, count, color }) => (
+  1006→                      <div key={label} className={`p-4 rounded-lg bg-${color}-50 dark:bg-${color}-900/20 text-center`}>
+  1007→                        <p className="text-2xl font-bold">{count}</p>
+  1008→                        <p className="text-xs text-muted-foreground">{label}</p>
+  1009→                      </div>
+  1010→                    ))}
+  1011→                  </div>
+  1012→                </div>
+  1013→
+  1014→                {/* Placeholder for leave requests table */}
+  1015→                <div className="mt-6 p-8 border border-dashed border-border rounded-lg text-center">
+  1016→                  <Calendar className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+  1017→                  <h4 className="font-semibold mb-2">Module de gestion des congés</h4>
+  1018→                  <p className="text-sm text-muted-foreground mb-4">
+  1019→                    Visualisez et gérez les demandes de congés des employés.
+  1020→                  </p>
+  1021→                  <Button variant="outline" disabled>
+  1022→                    Bientôt disponible
+  1023→                  </Button>
+  1024→                </div>
+  1025→              </CardContent>
+  1026→            </Card>
+  1027→          </motion.div>
+  1028→        </TabsContent>
+  1029→
+  1030→        {/* ============================================================ */}
+  1031→        {/* PRÉSENCE TAB */}
+  1032→        {/* ============================================================ */}
+  1033→        <TabsContent value="presence" className="space-y-4">
+  1034→          <motion.div
+  1035→            initial={{ opacity: 0, y: 20 }}
+  1036→            animate={{ opacity: 1, y: 0 }}
+  1037→            transition={{ duration: 0.3 }}
+  1038→          >
+  1039→            <Card>
+  1040→              <CardHeader>
+  1041→                <CardTitle className="flex items-center gap-2">
+  1042→                  <Briefcase className="w-5 h-5" />
+  1043→                  Suivi de Présence
+  1044→                </CardTitle>
+  1045→                <CardDescription>
+  1046→                  Temps réel - Dernière mise à jour: {new Date().toLocaleTimeString('fr-DZ')}
+  1047→                </CardDescription>
+  1048→              </CardHeader>
+  1049→              <CardContent>
+  1050→                <div className="text-center py-8">
+  1051→                  <div className="text-6xl font-bold text-primary mb-2">
+  1052→                    {stats.activeEmployees.toLocaleString('fr-DZ')}
+  1053→                  </div>
+  1054→                  <p className="text-muted-foreground">
+  1055→                    sur {stats.totalEmployees} employés présents ({stats.totalEmployees > 0 ? Math.round((stats.activeEmployees / stats.totalEmployees) * 100) : 0}%)
+  1056→                  </p>
+  1057→                  
+  1058→                  <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
+  1059→                    <div className="p-4 rounded-lg bg-green-50 dark:bg-green-900/20">
+  1060→                      <div className="flex items-center gap-2 mb-2">
+  1061→                        <span className="w-3 h-3 rounded-full bg-green-500"></span>
+  1062→                        <span className="text-sm font-medium">Présents</span>
+  1063→                      </div>
+  1064→                      <p className="text-2xl font-bold text-green-600">{stats.activeEmployees}</p>
+  1065→                    </div>
+  1066→                    <div className="p-4 rounded-lg bg-yellow-50 dark:bg-yellow-900/20">
+  1067→                      <div className="flex items-center gap-2 mb-2">
+  1068→                        <span className="w-3 h-3 rounded-full bg-yellow-500"></span>
+  1069→                        <span className="text-sm font-medium">En congé</span>
+  1070→                      </div>
+  1071→                      <p className="text-2xl font-bold text-yellow-600">{stats.onLeaveCount}</p>
+  1072→                    </div>
+  1073→                    <div className="p-4 rounded-lg bg-red-50 dark:bg-red-900/20">
+  1074→                      <div className="flex items-center gap-2 mb-2">
+  1075→                        <span className="w-3 h-3 rounded-full bg-red-500"></span>
+  1076→                        <span className="text-sm font-medium">Absents</span>
+  1077→                      </div>
+  1078→                      <p className="text-2xl font-bold text-red-600">
+  1079→                        {Math.max(0, stats.totalEmployees - stats.activeEmployees - stats.onLeaveCount)}
+  1080→                      </p>
+  1081→                    </div>
+  1082→                    <div className="p-4 rounded-lg bg-purple-50 dark:bg-purple-900/20">
+  1083→                      <div className="flex items-center gap-2 mb-2">
+  1084→                        <span className="w-3 h-3 rounded-full bg-purple-500"></span>
+  1085→                        <span className="text-sm font-medium">Télétravail</span>
+  1086→                      </div>
+  1087→                      <p className="text-2xl font-bold text-purple-600">-</p>
+  1088→                    </div>
+  1089→                  </div>
+  1090→                </div>
+  1091→
+  1092→                {/* Attendance placeholder */}
+  1093→                <div className="mt-6 p-8 border border-dashed border-border rounded-lg text-center">
+  1094→                  <Briefcase className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+  1095→                  <h4 className="font-semibold mb-2">Module de pointage</h4>
+  1096→                  <p className="text-sm text-muted-foreground mb-4">
+  1097→                    Intégration avec les systèmes de pointage biométrique et badgeuse.
+  1098→                  </p>
+  1099→                  <Button variant="outline" disabled>
+  1100→                    Configuration requise
+  1101→                  </Button>
+  1102→                </div>
+  1103→              </CardContent>
+  1104→            </Card>
+  1105→          </motion.div>
+  1106→        </TabsContent>
+  1107→
+  1108→        {/* ============================================================ */}
+  1109→        {/* PAIE TAB */}
+  1110→        {/* ============================================================ */}
+  1111→        <TabsContent value="paie" className="space-y-4">
+  1112→          <motion.div
+  1113→            initial={{ opacity: 0, y: 20 }}
+  1114→            animate={{ opacity: 1, y: 0 }}
+  1115→            transition={{ duration: 0.3 }}
+  1116→          >
+  1117→            <Card>
+  1118→              <CardHeader>
+  1119→                <CardTitle>Gestion de la Paie</CardTitle>
+  1120→                <CardDescription>
+  1121→                  Traitement des salaires • IRG/CNAS/CASNOS conforme
+  1122→                </CardDescription>
+  1123→              </CardHeader>
+  1124→              <CardContent>
+  1125→                {/* Payroll Actions */}
+  1126→                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+  1127→                  <div className="p-4 rounded-lg border border-border hover:bg-muted/50 cursor-pointer transition-colors">
+  1128→                    <Calendar className="w-10 h-10 text-primary mb-3" />
+  1129→                    <h3 className="font-semibold">Bulletins de Paie</h3>
+  1130→                    <p className="text-sm text-muted-foreground mt-1">
+  1131→                      Générer pour {stats.totalEmployees} employés
+  1132→                    </p>
+  1133→                  </div>
+  1134→                  <div className="p-4 rounded-lg border border-border hover:bg-muted/50 cursor-pointer transition-colors">
+  1135→                    <Briefcase className="w-10 h-10 text-primary mb-3" />
+  1136→                    <h3 className="font-semibold">Déclarations CNAS</h3>
+  1137→                    <p className="text-sm text-muted-foreground mt-1">Cotisations sociales (9%)</p>
+  1138→                  </div>
+  1139→                  <div className="p-4 rounded-lg border border-border hover:bg-muted/50 cursor-pointer transition-colors">
+  1140→                    <CreditCard className="w-10 h-10 text-primary mb-3" />
+  1141→                    <h3 className="font-semibold">Déclarations CASNOS</h3>
+  1142→                    <p className="text-sm text-muted-foreground mt-1">Retraite (12.5%+7.5%)</p>
+  1143→                  </div>
+  1144→                  <div className="p-4 rounded-lg border border-border hover:bg-muted/50 cursor-pointer transition-colors">
+  1145→                    <FileText className="w-10 h-10 text-primary mb-3" />
+  1146→                    <h3 className="font-semibold">IRG Barème</h3>
+  1147→                    <p className="text-sm text-muted-foreground mt-1">Calcul automatique IRG</p>
+  1148→                  </div>
+  1149→                </div>
+  1150→
+  1151→                {/* Payroll Summary */}
+  1152→                <div className="p-4 rounded-lg bg-muted/50">
+  1153→                  <h4 className="font-semibold mb-4">Résumé Masse Salariale Mensuelle</h4>
+  1154→                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+  1155→                    <div>
+  1156→                      <p className="text-sm text-muted-foreground">Brut Total</p>
+  1157→                      <p className="text-xl font-bold">{formatCurrency(stats.monthlyPayrollMass)}</p>
+  1158→                    </div>
+  1159→                    <div>
+  1160→                      <p className="text-sm text-muted-foreground">CNAS (~9%)</p>
+  1161→                      <p className="text-xl font-bold text-red-600">
+  1162→                        {formatCurrency(stats.monthlyPayrollMass * 0.09)}
+  1163→                      </p>
+  1164→                    </div>
+  1165→                    <div>
+  1166→                      <p className="text-sm text-muted-foreground">CASNOS (~20%)</p>
+  1167→                      <p className="text-xl font-bold text-red-600">
+  1168→                        {formatCurrency(stats.monthlyPayrollMass * 0.20)}
+  1169→                      </p>
+  1170→                    </div>
+  1171→                    <div>
+  1172→                      <p className="text-sm text-muted-foreground">Net estimé</p>
+  1173→                      <p className="text-xl font-bold text-green-600">
+  1174→                        {formatCurrency(stats.monthlyPayrollMass * 0.71)}
+  1175→                      </p>
+  1176→                    </div>
+  1177→                  </div>
+  1178→                </div>
+  1179→
+  1180→                {/* Recent Payroll Records */}
+  1181→                {payrollData.length > 0 && (
+  1182→                  <div className="mt-6">
+  1183→                    <h4 className="font-semibold mb-4">Bulletins récents</h4>
+  1184→                    <div className="rounded-md border overflow-hidden">
+  1185→                      <Table>
+  1186→                        <TableHeader>
+  1187→                          <TableRow>
+  1188→                            <TableHead>Référence</TableHead>
+  1189→                            <TableHead>Employé</TableHead>
+  1190→                            <TableHead>Période</TableHead>
+  1191→                            <TableHead>Brut</TableHead>
+  1192→                            <TableHead>Net</TableHead>
+  1193→                            <TableHead>Statut</TableHead>
+  1194→                          </TableRow>
+  1195→                        </TableHeader>
+  1196→                        <TableBody>
+  1197→                          {payrollData.slice(0, 10).map((payroll) => (
+  1198→                            <TableRow key={payroll.id}>
+  1199→                              <TableCell className="font-mono text-xs">{payroll.reference}</TableCell>
+  1200→                              <TableCell>
+  1201→                                {payroll.employee.firstName} {payroll.employee.lastName}
+  1202→                              </TableCell>
+  1203→                              <TableCell>{payroll.period}</TableCell>
+  1204→                              <TableCell>{formatCurrency(payroll.grossSalary)}</TableCell>
+  1205→                              <TableCell className="font-semibold text-green-600">
+  1206→                                {formatCurrency(payroll.netPayable)}
+  1207→                              </TableCell>
+  1208→                              <TableCell>
+  1209→                                <Badge 
+  1210→                                  variant="outline" 
+  1211→                                  className={
+  1212→                                    payroll.status === 'paid' 
+  1213→                                      ? 'bg-green-100 text-green-700' 
+  1214→                                      : payroll.status === 'validated'
+  1215→                                      ? 'bg-blue-100 text-blue-700'
+  1216→                                      : 'bg-yellow-100 text-yellow-700'
+  1217→                                  }
+  1218→                                >
+  1219→                                  {payroll.status === 'paid' ? 'Payé' : 
+  1220→                                   payroll.status === 'validated' ? 'Validé' :
+  1221→                                   payroll.status === 'calculated' ? 'Calculé' : 'Brouillon'}
+  1222→                                </Badge>
+  1223→                              </TableCell>
+  1224→                            </TableRow>
+  1225→                          ))}
+  1226→                        </TableBody>
+  1227→                      </Table>
+  1228→                    </div>
+  1229→                  </div>
+  1230→                )}
+  1231→              </CardContent>
+  1232→            </Card>
+  1233→          </motion.div>
+  1234→        </TabsContent>
+  1235→      </Tabs>
+  1236→
+  1237→      {/* Employee Detail Modal */}
+  1238→      <EmployeeDetailModal
+  1239→        employee={selectedEmployee}
+  1240→        isOpen={isModalOpen}
+  1241→        onClose={() => setIsModalOpen(false)}
+  1242→      />
+  1243→    </div>
+  1244→  )
+  1245→}
+  1246→

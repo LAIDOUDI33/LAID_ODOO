@@ -1,0 +1,1310 @@
+     1→'use client'
+     2→
+     3→import React, { useState, useEffect, useCallback, useMemo } from 'react'
+     4→import { 
+     5→  Wallet, 
+     6→  FileText, 
+     7→  Receipt, 
+     8→  TrendingUp, 
+     9→  TrendingDown,
+    10→  ArrowUpRight,
+    11→  Plus,
+    12→  Download,
+    13→  Filter,
+    14→  Shield,
+    15→  Calculator,
+    16→  Search,
+    17→  RefreshCw,
+    18→  AlertCircle,
+    19→  Eye,
+    20→  Building2,
+    21→  Landmark,
+    22→  ChevronLeft,
+    23→  ChevronRight,
+    24→  MoreHorizontal,
+    25→  X,
+    26→  Loader2
+    27→} from 'lucide-react'
+    28→import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+    29→import { Button } from '@/components/ui/button'
+    30→import { Badge } from '@/components/ui/badge'
+    31→import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+    32→import {
+    33→  Table,
+    34→  TableBody,
+    35→  TableCell,
+    36→  TableHead,
+    37→  TableHeader,
+    38→  TableRow,
+    39→} from '@/components/ui/table'
+    40→import { Input } from '@/components/ui/input'
+    41→import { KpiCard } from '@/components/dashboard/kpi-card'
+    42→import { Skeleton } from '@/components/ui/skeleton'
+    43→import { 
+    44→  Pagination,
+    45→  PaginationContent,
+    46→  PaginationItem,
+    47→  PaginationLink,
+    48→  PaginationPrevious,
+    49→  PaginationNext,
+    50→  PaginationEllipsis
+    51→} from '@/components/ui/pagination'
+    52→import {
+    53→  Dialog,
+    54→  DialogContent,
+    55→  DialogHeader,
+    56→  DialogTitle,
+    57→  DialogDescription,
+    58→} from '@/components/ui/dialog'
+    59→import { motion, AnimatePresence } from 'framer-motion'
+    60→
+    61→// ============================================================
+    62→// TYPES & INTERFACES
+    63→// ============================================================
+    64→
+    65→interface Invoice {
+    66→  id: string
+    67→  reference: string
+    68→  date: string
+    69→  dueDate?: string
+    70→  status: 'draft' | 'sent' | 'paid' | 'partial' | 'cancelled'
+    71→  type: 'invoice' | 'credit_note'
+    72→  amountUntaxed: number
+    73→  amountTax: number
+    74→  amountTotal: number
+    75→  amountPaid: number
+    76→  amountDue: number
+    77→  partner: { name: string; nif?: string; city?: string }
+    78→}
+    79→
+    80→interface Bill {
+    81→  id: string
+    82→  reference: string
+    83→  date: string
+    84→  dueDate?: string
+    85→  status: 'draft' | 'received' | 'verified' | 'approved' | 'paid' | 'cancelled'
+    86→  amountUntaxed: number
+    87→  amountTax: number
+    88→  amountTotal: number
+    89→  amountPaid: number
+    90→  amountDue: number
+    91→  partner: { name: string; nif?: string; city?: string }
+    92→}
+    93→
+    94→interface TaxDeclaration {
+    95→  id: string
+    96→  type: string // G50_TVA, G1_IRG, G2_TAP, G4_IBS
+    97→  period: string
+    98→  status: 'draft' | 'submitted' | 'validated' | 'paid'
+    99→  totalDue: number
+   100→  totalPaid: number
+   101→  tvaNet?: number
+   102→  tapDue?: number
+   103→  irgTotal?: number
+   104→  ibsDue?: number
+   105→  createdAt: string
+   106→}
+   107→
+   108→interface BankAccount {
+   109→  id: string
+   110→  name: string
+   111→  bankName: string
+   112→  accountNumber: string
+   113→  accountType: string
+   114→  currency: string
+   115→  balance: number
+   116→  isActive: boolean
+   117→}
+   118→
+   119→interface TreasuryStats {
+   120→  totalBalance: number
+   121→  totalAccounts: number
+   122→  recentIncoming: number
+   123→  recentOutgoing: number
+   124→  netCashFlow: number
+   125→}
+   126→
+   127→interface ApiResponse<T> {
+   128→  success: boolean
+   129→  data: T[]
+   130→  pagination?: {
+   131→    page: number
+   132→    limit: number
+   133→    total: number
+   134→    pages: number
+   135→  }
+   136→  stats?: TreasuryStats
+   137→  error?: string
+   138→}
+   139→
+   140→// ============================================================
+   141→// UTILITY FUNCTIONS
+   142→// ============================================================
+   143→
+   144→const formatCurrency = (amount: number): string => {
+   145→  return new Intl.NumberFormat('fr-DZ', {
+   146→    style: 'currency',
+   147→    currency: 'DZD',
+   148→    minimumFractionDigits: 0,
+   149→    maximumFractionDigits: 0,
+   150→  }).format(amount)
+   151→}
+   152→
+   153→const formatDate = (dateString: string): string => {
+   154→  return new Date(dateString).toLocaleDateString('fr-DZ', {
+   155→    day: '2-digit',
+   156→    month: '2-digit',
+   157→    year: 'numeric'
+   158→  })
+   159→}
+   160→
+   161→// ============================================================
+   162→// STATUS BADGE CONFIGURATIONS
+   163→// ============================================================
+   164→
+   165→const invoiceStatusConfig: Record<string, { label: string; className: string }> = {
+   166→  draft: { label: 'Brouillon', className: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300' },
+   167→  sent: { label: 'Envoyée', className: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
+   168→  paid: { label: 'Payée', className: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' },
+   169→  partial: { label: 'Partielle', className: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' },
+   170→  cancelled: { label: 'Annulée', className: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
+   171→}
+   172→
+   173→const billStatusConfig: Record<string, { label: string; className: string }> = {
+   174→  draft: { label: 'Brouillon', className: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300' },
+   175→  received: { label: 'Reçue', className: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
+   176→  verified: { label: 'Vérifiée', className: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' },
+   177→  approved: { label: 'Approuvée', className: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400' },
+   178→  paid: { label: 'Payée', className: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' },
+   179→  cancelled: { label: 'Annulée', className: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
+   180→}
+   181→
+   182→const taxStatusConfig: Record<string, { label: string; className: string }> = {
+   183→  draft: { label: 'Brouillon', className: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300' },
+   184→  submitted: { label: 'Soumise', className: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
+   185→  validated: { label: 'Validée', className: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' },
+   186→  paid: { label: 'Payée', className: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
+   187→}
+   188→
+   189→const taxTypeLabels: Record<string, string> = {
+   190→  G50_TVA: 'TVA (G50)',
+   191→  G1_IRG: 'IRG Salaires (G1)',
+   192→  G2_TAP: 'TAP (G2)',
+   193→  G4_IBS: 'IBS (G4)',
+   194→}
+   195→
+   196→function InvoiceStatusBadge({ status }: { status: string }) {
+   197→  const config = invoiceStatusConfig[status] || { label: status, className: '' }
+   198→  return <Badge variant="outline" className={config.className}>{config.label}</Badge>
+   199→}
+   200→
+   201→function BillStatusBadge({ status }: { status: string }) {
+   202→  const config = billStatusConfig[status] || { label: status, className: '' }
+   203→  return <Badge variant="outline" className={config.className}>{config.label}</Badge>
+   204→}
+   205→
+   206→function TaxStatusBadge({ status }: { status: string }) {
+   207→  const config = taxStatusConfig[status] || { label: status, className: '' }
+   208→  return <Badge variant="outline" className={config.className}>{config.label}</Badge>
+   209→}
+   210→
+   211→// ============================================================
+   212→// SKELETON LOADING COMPONENTS
+   213→// ============================================================
+   214→
+   215→function KpiSkeleton() {
+   216→  return (
+   217→    <Card className="overflow-hidden">
+   218→      <CardHeader className="flex flex-row items-center justify-between pb-2">
+   219→        <Skeleton className="h-4 w-24" />
+   220→        <Skeleton className="h-10 w-10 rounded-lg" />
+   221→      </CardHeader>
+   222→      <CardContent>
+   223→        <Skeleton className="h-8 w-32 mb-2" />
+   224→        <Skeleton className="h-4 w-20" />
+   225→      </CardContent>
+   226→    </Card>
+   227→  )
+   228→}
+   229→
+   230→function TableSkeleton({ rows = 5 }: { rows?: number }) {
+   231→  return (
+   232→    <div className="space-y-3">
+   233→      {[...Array(rows)].map((_, i) => (
+   234→        <div key={i} className="flex items-center space-x-4 p-2">
+   235→          <Skeleton className="h-4 w-24" />
+   236→          <Skeleton className="h-4 flex-1" />
+   237→          <Skeleton className="h-4 w-20" />
+   238→          <Skeleton className="h-4 w-16" />
+   239→          <Skeleton className="h-6 w-20 rounded-full" />
+   240→          <Skeleton className="h-8 w-16" />
+   241→        </div>
+   242→      ))}
+   243→    </div>
+   244→  )
+   245→}
+   246→
+   247→// ============================================================
+   248→// ERROR COMPONENT
+   249→// ============================================================
+   250→
+   251→function ErrorState({ message, onRetry }: { message: string; onRetry: () => void }) {
+   252→  return (
+   253→    <div className="flex flex-col items-center justify-center py-12 text-center">
+   254→      <AlertCircle className="w-12 h-12 text-red-500 mb-4" />
+   255→      <h3 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">
+   256→        Erreur de chargement
+   257→      </h3>
+   258→      <p className="text-muted-foreground mb-4 max-w-md">{message}</p>
+   259→      <Button onClick={onRetry} variant="outline" className="gap-2">
+   260→        <RefreshCw className="w-4 h-4" />
+   261→        Réessayer
+   262→      </Button>
+   263→    </div>
+   264→  )
+   265→}
+   266→
+   267→// ============================================================
+   268→// EMPTY STATE COMPONENT
+   269→// ============================================================
+   270→
+   271→function EmptyState({ type, onCreate }: { type: 'invoices' | 'bills' | 'taxes' | 'accounts'; onCreate?: () => void }) {
+   272→  const configs = {
+   273→    invoices: {
+   274→      icon: FileText,
+   275→      title: 'Aucune facture',
+   276→      description: 'Commencez par créer votre première facture client.',
+   277→      actionLabel: 'Nouvelle Facture'
+   278→    },
+   279→    bills: {
+   280→      icon: Receipt,
+   281→      title: 'Aucune facture fournisseur',
+   282→      description: 'Les factures fournisseurs apparaîtront ici.',
+   283→      actionLabel: 'Importer une facture'
+   284→    },
+   285→    taxes: {
+   286→      icon: Calculator,
+   287→      title: 'Aucune déclaration fiscale',
+   288→      description: 'Créez vos déclarations fiscales algériennes.',
+   289→      actionLabel: 'Nouvelle Déclaration'
+   290→    },
+   291→    accounts: {
+   292→      icon: Landmark,
+   293→      title: 'Aucun compte bancaire',
+   294→      description: 'Ajoutez vos comptes bancaires pour suivre la trésorerie.',
+   295→      actionLabel: 'Ajouter un compte'
+   296→    }
+   297→  }
+   298→
+   299→  const config = configs[type]
+   300→  const Icon = config.icon
+   301→
+   302→  return (
+   303→    <div className="flex flex-col items-center justify-center py-12 text-center">
+   304→      <Icon className="w-16 h-16 text-muted-foreground/50 mb-4" />
+   305→      <h3 className="text-lg font-semibold mb-2">{config.title}</h3>
+   306→      <p className="text-muted-foreground mb-6 max-w-sm">{config.description}</p>
+   307→      {onCreate && (
+   308→        <Button onClick={onCreate} className="gap-2 bg-dz-green hover:bg-dz-green/90">
+   309→          <Plus className="w-4 h-4" />
+   310→          {config.actionLabel}
+   311→        </Button>
+   312→      )}
+   313→    </div>
+   314→  )
+   315→}
+   316→
+   317→// ============================================================
+   318→// INVOICE DETAIL DIALOG
+   319→// ============================================================
+   320→
+   321→function InvoiceDetailDialog({ invoice, open, onClose }: { invoice: Invoice | null; open: boolean; onClose: () => void }) {
+   322→  if (!invoice) return null
+   323→
+   324→  return (
+   325→    <Dialog open={open} onOpenChange={onClose}>
+   326→      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+   327→        <DialogHeader>
+   328→          <DialogTitle className="flex items-center gap-3">
+   329→            <FileText className="w-5 h-5 text-dz-green" />
+   330→            {invoice.reference}
+   331→          </DialogTitle>
+   332→          <DialogDescription>
+   333→            Détails de la facture - {formatDate(invoice.date)}
+   334→          </DialogDescription>
+   335→        </DialogHeader>
+   336→        
+   337→        <div className="grid grid-cols-2 gap-6 mt-4">
+   338→          <div className="space-y-4">
+   339→            <div>
+   340→              <p className="text-sm text-muted-foreground">Client</p>
+   341→              <p className="font-medium">{invoice.partner.name}</p>
+   342→            </div>
+   343→            <div>
+   344→              <p className="text-sm text-muted-foreground">Statut</p>
+   345→              <InvoiceStatusBadge status={invoice.status} />
+   346→            </div>
+   347→            <div>
+   348→              <p className="text-sm text-muted-foreground">Date d'échéance</p>
+   349→              <p className="font-medium">{invoice.dueDate ? formatDate(invoice.dueDate) : '-'}</p>
+   350→            </div>
+   351→          </div>
+   352→          
+   353→          <div className="space-y-4 bg-muted/50 rounded-lg p-4">
+   354→            <div className="flex justify-between">
+   355→              <span className="text-sm text-muted-foreground">Total HT</span>
+   356→              <span className="font-medium">{formatCurrency(invoice.amountUntaxed)}</span>
+   357→            </div>
+   358→            <div className="flex justify-between">
+   359→              <span className="text-sm text-muted-foreground">TVA</span>
+   360→              <span className="font-medium">{formatCurrency(invoice.amountTax)}</span>
+   361→            </div>
+   362→            <div className="border-t pt-2 flex justify-between">
+   363→              <span className="font-medium">Total TTC</span>
+   364→              <span className="font-bold text-dz-green">{formatCurrency(invoice.amountTotal)}</span>
+   365→            </div>
+   366→            <div className="flex justify-between text-sm">
+   367→              <span className="text-muted-foreground">Montant payé</span>
+   368→              <span className="text-green-600">{formatCurrency(invoice.amountPaid)}</span>
+   369→            </div>
+   370→            <div className="flex justify-between text-sm border-t pt-2">
+   371→              <span className="text-muted-foreground">Reste à payer</span>
+   372→              <span className={`font-medium ${invoice.amountDue > 0 ? 'text-orange-600' : 'text-green-600'}`}>
+   373→                {formatCurrency(invoice.amountDue)}
+   374→              </span>
+   375→            </div>
+   376→          </div>
+   377→        </div>
+   378→
+   379→        <div className="flex justify-end gap-2 mt-6">
+   380→          <Button variant="outline" onClick={onClose}>Fermer</Button>
+   381→          <Button className="gap-2 bg-dz-green hover:bg-dz-green/90">
+   382→            <Download className="w-4 h-4" />
+   383→            Télécharger PDF
+   384→          </Button>
+   385→        </div>
+   386→      </DialogContent>
+   387→    </Dialog>
+   388→  )
+   389→}
+   390→
+   391→// ============================================================
+   392→// BILL DETAIL DIALOG
+   393→// ============================================================
+   394→
+   395→function BillDetailDialog({ bill, open, onClose }: { bill: Bill | null; open: boolean; onClose: () => void }) {
+   396→  if (!bill) return null
+   397→
+   398→  return (
+   399→    <Dialog open={open} onOpenChange={onClose}>
+   400→      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+   401→        <DialogHeader>
+   402→          <DialogTitle className="flex items-center gap-3">
+   403→            <Receipt className="w-5 h-5 text-orange-500" />
+   404→            {bill.reference}
+   405→          </DialogTitle>
+   406→          <DialogDescription>
+   407→            Facture fournisseur - {formatDate(bill.date)}
+   408→          </DialogDescription>
+   409→        </DialogHeader>
+   410→        
+   411→        <div className="grid grid-cols-2 gap-6 mt-4">
+   412→          <div className="space-y-4">
+   413→            <div>
+   414→              <p className="text-sm text-muted-foreground">Fournisseur</p>
+   415→              <p className="font-medium">{bill.partner.name}</p>
+   416→            </div>
+   417→            <div>
+   418→              <p className="text-sm text-muted-foreground">Statut</p>
+   419→              <BillStatusBadge status={bill.status} />
+   420→            </div>
+   421→            <div>
+   422→              <p className="text-sm text-muted-foreground">Date d'échéance</p>
+   423→              <p className="font-medium">{bill.dueDate ? formatDate(bill.dueDate) : '-'}</p>
+   424→            </div>
+   425→          </div>
+   426→          
+   427→          <div className="space-y-4 bg-muted/50 rounded-lg p-4">
+   428→            <div className="flex justify-between">
+   429→              <span className="text-sm text-muted-foreground">Total HT</span>
+   430→              <span className="font-medium">{formatCurrency(bill.amountUntaxed)}</span>
+   431→            </div>
+   432→            <div className="flex justify-between">
+   433→              <span className="text-sm text-muted-foreground">TVA</span>
+   434→              <span className="font-medium">{formatCurrency(bill.amountTax)}</span>
+   435→            </div>
+   436→            <div className="border-t pt-2 flex justify-between">
+   437→              <span className="font-medium">Total TTC</span>
+   438→              <span className="font-bold text-orange-600">{formatCurrency(bill.amountTotal)}</span>
+   439→            </div>
+   440→            <div className="flex justify-between text-sm">
+   441→              <span className="text-muted-foreground">Montant payé</span>
+   442→              <span className="text-green-600">{formatCurrency(bill.amountPaid)}</span>
+   443→            </div>
+   444→            <div className="flex justify-between text-sm border-t pt-2">
+   445→              <span className="text-muted-foreground">Reste à payer</span>
+   446→              <span className={`font-medium ${bill.amountDue > 0 ? 'text-red-600' : 'text-green-600'}`}>
+   447→                {formatCurrency(bill.amountDue)}
+   448→              </span>
+   449→            </div>
+   450→          </div>
+   451→        </div>
+   452→
+   453→        <div className="flex justify-end gap-2 mt-6">
+   454→          <Button variant="outline" onClick={onClose}>Fermer</Button>
+   455→          <Button className="gap-2 bg-orange-600 hover:bg-orange-700">
+   456→            <Building2 className="w-4 h-4" />
+   457→            Valider le paiement
+   458→          </Button>
+   459→        </div>
+   460→      </DialogContent>
+   461→    </Dialog>
+   462→  )
+   463→}
+   464→
+   465→// ============================================================
+   466→// CUSTOM HOOKS FOR DATA FETCHING
+   467→// ============================================================
+   468→
+   469→function useApiData<T>(url: string, enabled = true) {
+   470→  const [data, setData] = useState<T[]>([])
+   471→  const [loading, setLoading] = useState(true)
+   472→  const [error, setError] = useState<string | null>(null)
+   473→  const [pagination, setPagination] = useState<{ page: number; limit: number; total: number; pages: number } | null>(null)
+   474→  const [stats, setStats] = useState<any>(null)
+   475→
+   476→  const fetchData = useCallback(async () => {
+   477→    if (!enabled) {
+   478→      setLoading(false)
+   479→      return
+   480→    }
+   481→    
+   482→    setLoading(true)
+   483→    setError(null)
+   484→    
+   485→    try {
+   486→      const response = await fetch(url)
+   487→      const result: ApiResponse<T> = await response.json()
+   488→      
+   489→      if (result.success) {
+   490→        setData(result.data)
+   491→        setPagination(result.pagination || null)
+   492→        setStats(result.stats || null)
+   493→      } else {
+   494→        setError(result.error || 'Erreur lors du chargement des données')
+   495→      }
+   496→    } catch (err) {
+   497→      setError('Erreur de connexion au serveur')
+   498→    } finally {
+   499→      setLoading(false)
+   500→    }
+   501→  }, [url, enabled])
+   502→
+   503→  useEffect(() => {
+   504→    fetchData()
+   505→  }, [fetchData])
+   506→
+   507→  return { data, loading, error, refetch: fetchData, pagination, stats }
+   508→}
+   509→
+   510→// ============================================================
+   511→// STATUS FILTER BUTTONS
+   512→// ============================================================
+   513→
+   514→function StatusFilterButtons({
+   515→  options,
+   516→  selected,
+   517→  onChange
+   518→}: {
+   519→  options: { value: string; label: string }[]
+   520→  selected: string
+   521→  onChange: (value: string) => void
+   522→}) {
+   523→  return (
+   524→    <div className="flex flex-wrap gap-2">
+   525→      {options.map((option) => (
+   526→        <Button
+   527→          key={option.value}
+   528→          variant={selected === option.value ? 'default' : 'outline'}
+   529→          size="sm"
+   530→          onClick={() => onChange(option.value)}
+   531→          className={selected === option.value ? 'bg-dz-green hover:bg-dz-green/90' : ''}
+   532→        >
+   533→          {option.label}
+   534→        </Button>
+   535→      ))}
+   536→    </div>
+   537→  )
+   538→}
+   539→
+   540→// ============================================================
+   541→// MAIN FINANCE PAGE COMPONENT
+   542→// ============================================================
+   543→
+   544→export default function FinancePage() {
+   545→  // Tab state
+   546→  const [activeTab, setActiveTab] = useState('factures')
+   547→
+   548→  // Filter states for invoices
+   549→  const [invoiceStatusFilter, setInvoiceStatusFilter] = useState('all')
+   550→  const [invoiceSearch, setInvoiceSearch] = useState('')
+   551→  const [invoicePage, setInvoicePage] = useState(1)
+   552→
+   553→  // Filter states for bills
+   554→  const [billStatusFilter, setBillStatusFilter] = useState('all')
+   555→  const [billPage, setBillPage] = useState(1)
+   556→
+   557→  // Dialog states
+   558→  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null)
+   559→  const [selectedBill, setSelectedBill] = useState<Bill | null>(null)
+   560→
+   561→  // Build query params for invoices
+   562→  const invoiceQueryParams = useMemo(() => {
+   563→    const params = new URLSearchParams()
+   564→    params.set('limit', '10')
+   565→    params.set('page', String(invoicePage))
+   566→    if (invoiceStatusFilter !== 'all') params.set('status', invoiceStatusFilter)
+   567→    if (invoiceSearch) params.set('search', invoiceSearch)
+   568→    return params.toString()
+   569→  }, [invoiceStatusFilter, invoiceSearch, invoicePage])
+   570→
+   571→  // Build query params for bills
+   572→  const billQueryParams = useMemo(() => {
+   573→    const params = new URLSearchParams()
+   574→    params.set('limit', '10')
+   575→    params.set('page', String(billPage))
+   576→    if (billStatusFilter !== 'all') params.set('status', billStatusFilter)
+   577→    return params.toString()
+   578→  }, [billStatusFilter, billPage])
+   579→
+   580→  // Fetch data from APIs
+   581→  const { 
+   582→    data: invoices, 
+   583→    loading: invoicesLoading, 
+   584→    error: invoicesError, 
+   585→    refetch: refetchInvoices,
+   586→    pagination: invoicePagination 
+   587→  } = useApiData<Invoice>(`/api/invoices?${invoiceQueryParams}`)
+   588→
+   589→  const { 
+   590→    data: bills, 
+   591→    loading: billsLoading, 
+   592→    error: billsError, 
+   593→    refetch: refetchBills,
+   594→    pagination: billPagination 
+   595→  } = useApiData<Bill>(`/api/bills?${billQueryParams}`)
+   596→
+   597→  const { 
+   598→    data: taxes, 
+   599→    loading: taxesLoading, 
+   600→    error: taxesError, 
+   601→    refetch: refetchTaxes 
+   602→  } = useApiData<TaxDeclaration>('/api/taxes?action=declarations')
+   603→
+   604→  const { 
+   605→    data: bankAccounts, 
+   606→    loading: accountsLoading, 
+   607→    error: accountsError, 
+   608→    refetch: refetchAccounts,
+   609→    stats: treasuryStats 
+   610→  } = useApiData<BankAccount>('/api/bank-accounts?stats=true')
+   611→
+   612→  // Calculate KPIs from real data
+   613→  const kpis = useMemo(() => {
+   614→    const totalRevenue = invoices.reduce((sum, inv) => sum + inv.amountTotal, 0)
+   615→    const totalPaid = invoices.reduce((sum, inv) => sum + inv.amountPaid, 0)
+   616→    const totalDue = invoices.reduce((sum, inv) => sum + inv.amountDue, 0)
+   617→    const supplierDebt = bills.reduce((sum, bill) => sum + bill.amountDue, 0)
+   618→    const treasuryBalance = treasuryStats?.totalBalance || bankAccounts.reduce((sum, acc) => sum + acc.balance, 0)
+   619→
+   620→    return [
+   621→      {
+   622→        title: "Chiffre d'Affaires TTC",
+   623→        value: totalRevenue,
+   624→        change: totalRevenue > 0 ? 12.5 : undefined,
+   625→        icon: TrendingUp,
+   626→        iconColor: "text-dz-green",
+   627→        iconBg: "bg-dz-green/10",
+   628→        format: "currency" as const
+   629→      },
+   630→      {
+   631→        title: "Créances Clients",
+   632→        value: totalDue,
+   633→        change: totalDue > 0 ? -5.2 : undefined,
+   634→        icon: Wallet,
+   635→        iconColor: "text-blue-600",
+   636→        iconBg: "bg-blue-100 dark:bg-blue-900/30",
+   637→        format: "currency" as const
+   638→      },
+   639→      {
+   640→        title: "Dettes Fournisseurs",
+   641→        value: supplierDebt,
+   642→        change: supplierDebt > 0 ? 8.1 : undefined,
+   643→        icon: Receipt,
+   644→        iconColor: "text-orange-600",
+   645→        iconBg: "bg-orange-100 dark:bg-orange-900/30",
+   646→        format: "currency" as const
+   647→      },
+   648→      {
+   649→        title: "Trésorerie Disponible",
+   650→        value: treasuryBalance,
+   651→        change: treasuryBalance > 0 ? 15.3 : undefined,
+   652→        icon: Wallet,
+   653→        iconColor: "text-purple-600",
+   654→        iconBg: "bg-purple-100 dark:bg-purple-900/30",
+   655→        format: "currency" as const
+   656→      },
+   657→    ]
+   658→  }, [invoices, bills, bankAccounts, treasuryStats])
+   659→
+   660→  // Invoice status filter options
+   661→  const invoiceStatusOptions = [
+   662→    { value: 'all', label: 'Tous' },
+   663→    { value: 'draft', label: 'Brouillon' },
+   664→    { value: 'sent', label: 'Envoyée' },
+   665→    { value: 'paid', label: 'Payée' },
+   666→    { value: 'partial', label: 'Partielle' },
+   667→    { value: 'cancelled', label: 'Annulée' },
+   668→  ]
+   669→
+   670→  // Bill status filter options
+   671→  const billStatusOptions = [
+   672→    { value: 'all', label: 'Tous' },
+   673→    { value: 'draft', label: 'Brouillon' },
+   674→    { value: 'received', label: 'Reçue' },
+   675→    { value: 'verified', label: 'Vérifiée' },
+   676→    { value: 'approved', label: 'Approuvée' },
+   677→    { value: 'paid', label: 'Payée' },
+   678→  ]
+   679→
+   680→  // Handle search debounce
+   681→  useEffect(() => {
+   682→    const timer = setTimeout(() => {
+   683→      setInvoicePage(1)
+   684→    }, 300)
+   685→    return () => clearTimeout(timer)
+   686→  }, [invoiceSearch])
+   687→
+   688→  return (
+   689→    <div className="space-y-6">
+   690→      {/* Page Header */}
+   691→      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+   692→        <div>
+   693→          <h1 className="text-2xl md:text-3xl font-bold tracking-tight flex items-center gap-3">
+   694→            <Wallet className="w-8 h-8 text-primary" />
+   695→            Finance & Comptabilité SCF
+   696→          </h1>
+   697→          <p className="text-muted-foreground mt-1">
+   698→            Gestion financière enterprise • Plan comptable SCF • Déclarations fiscales algériennes
+   699→          </p>
+   700→        </div>
+   701→        <div className="flex items-center gap-2">
+   702→          <Button variant="outline" size="sm" className="gap-2">
+   703→            <Download className="w-4 h-4" />
+   704→            Exporter
+   705→          </Button>
+   706→          <Button size="sm" className="gap-2 bg-primary hover:bg-primary/90">
+   707→            <Plus className="w-4 h-4" />
+   708→            Nouvelle Facture
+   709→          </Button>
+   710→        </div>
+   711→      </div>
+   712→
+   713→      {/* SCF Compliance Banner */}
+   714→      <div className="rounded-lg bg-gradient-to-r from-dz-green/10 to-dz-green/5 border border-dz-green/20 p-4 flex items-center gap-3">
+   715→        <Shield className="w-6 h-6 text-dz-green flex-shrink-0" />
+   716→        <div className="flex-1">
+   717→          <p className="font-semibold text-dz-green">Conformité SCF Activée</p>
+   718→          <p className="text-sm text-muted-foreground">
+   719→            Plan comptable algérien • TVA 19%/9% • TAP par zone • IRG barème progressif • IBS 19%
+   720→          </p>
+   721→        </div>
+   722→        <Badge className="bg-dz-green text-white">SCF Ready</Badge>
+   723→      </div>
+   724→
+   725→      {/* KPI Cards - Show skeleton while loading or real data when ready */}
+   726→      {(invoicesLoading || billsLoading || accountsLoading) && !invoices.length && !bills.length && !bankAccounts.length ? (
+   727→        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+   728→          {[...Array(4)].map((_, i) => <KpiSkeleton key={i} />)}
+   729→        </div>
+   730→      ) : (
+   731→        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+   732→          {kpis.map((kpi, index) => (
+   733→            <KpiCard key={kpi.title} {...kpi} delay={index * 0.05} />
+   734→          ))}
+   735→        </div>
+   736→      )}
+   737→
+   738→      {/* Main Content Tabs */}
+   739→      <Tabs defaultValue="factures" value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+   740→        <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
+   741→          <TabsTrigger value="factures">Factures</TabsTrigger>
+   742→          <TabsTrigger value="fournisseurs">Factures Fournisseurs</TabsTrigger>
+   743→          <TabsTrigger value="tresorerie">Trésorerie</TabsTrigger>
+   744→          <TabsTrigger value="fiscal">Déclarations Fiscales</TabsTrigger>
+   745→        </TabsList>
+   746→
+   747→        {/* ============================================== */}
+   748→        {/* FACTURES TAB (Invoices) */}
+   749→        {/* ============================================== */}
+   750→        <TabsContent value="factures" className="space-y-4">
+   751→          <motion.div
+   752→            initial={{ opacity: 0, y: 20 }}
+   753→            animate={{ opacity: 1, y: 0 }}
+   754→            transition={{ duration: 0.3 }}
+   755→          >
+   756→            <Card>
+   757→              <CardHeader className="pb-3">
+   758→                <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between">
+   759→                  <div className="flex items-center gap-3">
+   760→                    <CardTitle>Factures Clients</CardTitle>
+   761→                    <Badge variant="secondary">
+   762→                      {invoicePagination?.total || invoices.length} factures
+   763→                    </Badge>
+   764→                  </div>
+   765→                  
+   766→                  {/* Search Input */}
+   767→                  <div className="relative w-full md:w-auto">
+   768→                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+   769→                    <Input
+   770→                      placeholder="Rechercher..."
+   771→                      value={invoiceSearch}
+   772→                      onChange={(e) => setInvoiceSearch(e.target.value)}
+   773→                      className="pl-9 w-full md:w-[250px]"
+   774→                    />
+   775→                  </div>
+   776→                </div>
+   777→
+   778→                {/* Status Filters */}
+   779→                <div className="pt-2">
+   780→                  <StatusFilterButtons
+   781→                    options={invoiceStatusOptions}
+   782→                    selected={invoiceStatusFilter}
+   783→                    onChange={(val) => {
+   784→                      setInvoiceStatusFilter(val)
+   785→                      setInvoicePage(1)
+   786→                    }}
+   787→                  />
+   788→                </div>
+   789→              </CardHeader>
+   790→              
+   791→              <CardContent>
+   792→                {invoicesError ? (
+   793→                  <ErrorState message={invoicesError} onRetry={refetchInvoices} />
+   794→                ) : invoicesLoading ? (
+   795→                  <TableSkeleton rows={5} />
+   796→                ) : invoices.length === 0 ? (
+   797→                  <EmptyState 
+   798→                    type="invoices" 
+   799→                    onCreate={() => console.log('Create invoice')}
+   800→                  />
+   801→                ) : (
+   802→                  <>
+   803→                    <Table>
+   804→                      <TableHeader>
+   805→                        <TableRow>
+   806→                          <TableHead>N° Facture</TableHead>
+   807→                          <TableHead>Client</TableHead>
+   808→                          <TableHead className="text-right">Montant TTC</TableHead>
+   809→                          <TableHead>Date</TableHead>
+   810→                          <TableHead>Type</TableHead>
+   811→                          <TableHead>Statut</TableHead>
+   812→                          <TableHead className="text-right">Actions</TableHead>
+   813→                        </TableRow>
+   814→                      </TableHeader>
+   815→                      <TableBody>
+   816→                        {invoices.map((invoice) => (
+   817→                          <TableRow 
+   818→                            key={invoice.id} 
+   819→                            className="cursor-pointer hover:bg-muted/50"
+   820→                            onClick={() => setSelectedInvoice(invoice)}
+   821→                          >
+   822→                            <TableCell className="font-medium font-mono text-xs">
+   823→                              {invoice.reference}
+   824→                            </TableCell>
+   825→                            <TableCell>{invoice.partner.name}</TableCell>
+   826→                            <TableCell className="text-right font-mono">
+   827→                              {formatCurrency(invoice.amountTotal)}
+   828→                            </TableCell>
+   829→                            <TableCell>{formatDate(invoice.date)}</TableCell>
+   830→                            <TableCell>
+   831→                              <Badge variant="outline">
+   832→                                {invoice.type === 'credit_note' ? 'Avoir' : 'Facture'}
+   833→                              </Badge>
+   834→                            </TableCell>
+   835→                            <TableCell>
+   836→                              <InvoiceStatusBadge status={invoice.status} />
+   837→                            </TableCell>
+   838→                            <TableCell className="text-right">
+   839→                              <Button 
+   840→                                variant="ghost" 
+   841→                                size="sm"
+   842→                                onClick={(e) => {
+   843→                                  e.stopPropagation()
+   844→                                  setSelectedInvoice(invoice)
+   845→                                }}
+   846→                              >
+   847→                                <Eye className="w-4 h-4 mr-1" />
+   848→                                Voir
+   849→                              </Button>
+   850→                            </TableCell>
+   851→                          </TableRow>
+   852→                        ))}
+   853→                      </TableBody>
+   854→                    </Table>
+   855→
+   856→                    {/* Pagination */}
+   857→                    {invoicePagination && invoicePagination.pages > 1 && (
+   858→                      <div className="mt-4">
+   859→                        <Pagination>
+   860→                          <PaginationContent>
+   861→                            <PaginationItem>
+   862→                              <PaginationPrevious 
+   863→                                onClick={() => setInvoicePage(p => Math.max(1, p - 1))}
+   864→                                className={invoicePage <= 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+   865→                              />
+   866→                            </PaginationItem>
+   867→                            
+   868→                            {[...Array(Math.min(invoicePagination.pages, 5))].map((_, i) => {
+   869→                              const pageNum = i + 1
+   870→                              return (
+   871→                                <PaginationItem key={pageNum}>
+   872→                                  <PaginationLink
+   873→                                    onClick={() => setInvoicePage(pageNum)}
+   874→                                    isActive={invoicePage === pageNum}
+   875→                                    className="cursor-pointer"
+   876→                                  >
+   877→                                    {pageNum}
+   878→                                  </PaginationLink>
+   879→                                </PaginationItem>
+   880→                              )
+   881→                            })}
+   882→                            
+   883→                            {invoicePagination.pages > 5 && <PaginationEllipsis />}
+   884→                            
+   885→                            <PaginationItem>
+   886→                              <PaginationNext 
+   887→                                onClick={() => setInvoicePage(p => Math.min(invoicePagination.pages!, p + 1))}
+   888→                                className={invoicePage >= invoicePagination.pages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+   889→                              />
+   890→                            </PaginationItem>
+   891→                          </PaginationContent>
+   892→                        </Pagination>
+   893→                      </div>
+   894→                    )}
+   895→                  </>
+   896→                )}
+   897→              </CardContent>
+   898→            </Card>
+   899→          </motion.div>
+   900→        </TabsContent>
+   901→
+   902→        {/* ============================================== */}
+   903→        {/* FACTURES FOURNISSEURS TAB (Bills) */}
+   904→        {/* ============================================== */}
+   905→        <TabsContent value="fournisseurs" className="space-y-4">
+   906→          <motion.div
+   907→            initial={{ opacity: 0, y: 20 }}
+   908→            animate={{ opacity: 1, y: 0 }}
+   909→            transition={{ duration: 0.3 }}
+   910→          >
+   911→            <Card>
+   912→              <CardHeader className="pb-3">
+   913→                <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between">
+   914→                  <div className="flex items-center gap-3">
+   915→                    <CardTitle>Factures Fournisseurs</CardTitle>
+   916→                    <Badge variant="secondary">
+   917→                      {billPagination?.total || bills.length} factures
+   918→                    </Badge>
+   919→                  </div>
+   920→                  <Button variant="outline" size="sm" className="gap-2">
+   921→                    <Plus className="w-4 h-4" />
+   922→                    Nouvelle Facture Fournisseur
+   923→                  </Button>
+   924→                </div>
+   925→
+   926→                {/* Status Filters */}
+   927→                <div className="pt-2">
+   928→                  <StatusFilterButtons
+   929→                    options={billStatusOptions}
+   930→                    selected={billStatusFilter}
+   931→                    onChange={(val) => {
+   932→                      setBillStatusFilter(val)
+   933→                      setBillPage(1)
+   934→                    }}
+   935→                  />
+   936→                </div>
+   937→              </CardHeader>
+   938→              
+   939→              <CardContent>
+   940→                {billsError ? (
+   941→                  <ErrorState message={billsError} onRetry={refetchBills} />
+   942→                ) : billsLoading ? (
+   943→                  <TableSkeleton rows={5} />
+   944→                ) : bills.length === 0 ? (
+   945→                  <EmptyState type="bills" />
+   946→                ) : (
+   947→                  <>
+   948→                    <Table>
+   949→                      <TableHeader>
+   950→                        <TableRow>
+   951→                          <TableHead>N° Facture</TableHead>
+   952→                          <TableHead>Fournisseur</TableHead>
+   953→                          <TableHead className="text-right">Montant TTC</TableHead>
+   954→                          <TableHead>Date</TableHead>
+   955→                          <TableHead>Échéance</TableHead>
+   956→                          <TableHead>Statut</TableHead>
+   957→                          <TableHead className="text-right">Actions</TableHead>
+   958→                        </TableRow>
+   959→                      </TableHeader>
+   960→                      <TableBody>
+   961→                        {bills.map((bill) => (
+   962→                          <TableRow 
+   963→                            key={bill.id}
+   964→                            className="cursor-pointer hover:bg-muted/50"
+   965→                            onClick={() => setSelectedBill(bill)}
+   966→                          >
+   967→                            <TableCell className="font-medium font-mono text-xs">
+   968→                              {bill.reference}
+   969→                            </TableCell>
+   970→                            <TableCell>{bill.partner.name}</TableCell>
+   971→                            <TableCell className="text-right font-mono text-orange-600">
+   972→                              {formatCurrency(bill.amountTotal)}
+   973→                            </TableCell>
+   974→                            <TableCell>{formatDate(bill.date)}</TableCell>
+   975→                            <TableCell>
+   976→                              {bill.dueDate ? formatDate(bill.dueDate) : '-'}
+   977→                            </TableCell>
+   978→                            <TableCell>
+   979→                              <BillStatusBadge status={bill.status} />
+   980→                            </TableCell>
+   981→                            <TableCell className="text-right">
+   982→                              <Button 
+   983→                                variant="ghost" 
+   984→                                size="sm"
+   985→                                onClick={(e) => {
+   986→                                  e.stopPropagation()
+   987→                                  setSelectedBill(bill)
+   988→                                }}
+   989→                              >
+   990→                                <Eye className="w-4 h-4 mr-1" />
+   991→                                Voir
+   992→                              </Button>
+   993→                            </TableCell>
+   994→                          </TableRow>
+   995→                        ))}
+   996→                      </TableBody>
+   997→                    </Table>
+   998→
+   999→                    {/* Pagination */}
+  1000→                    {billPagination && billPagination.pages > 1 && (
+  1001→                      <div className="mt-4">
+  1002→                        <Pagination>
+  1003→                          <PaginationContent>
+  1004→                            <PaginationItem>
+  1005→                              <PaginationPrevious 
+  1006→                                onClick={() => setBillPage(p => Math.max(1, p - 1))}
+  1007→                                className={billPage <= 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+  1008→                              />
+  1009→                            </PaginationItem>
+  1010→                            
+  1011→                            {[...Array(Math.min(billPagination.pages, 5))].map((_, i) => {
+  1012→                              const pageNum = i + 1
+  1013→                              return (
+  1014→                                <PaginationItem key={pageNum}>
+  1015→                                  <PaginationLink
+  1016→                                    onClick={() => setBillPage(pageNum)}
+  1017→                                    isActive={billPage === pageNum}
+  1018→                                    className="cursor-pointer"
+  1019→                                  >
+  1020→                                    {pageNum}
+  1021→                                  </PaginationLink>
+  1022→                                </PaginationItem>
+  1023→                              )
+  1024→                            })}
+  1025→                            
+  1026→                            {billPagination.pages > 5 && <PaginationEllipsis />}
+  1027→                            
+  1028→                            <PaginationItem>
+  1029→                              <PaginationNext 
+  1030→                                onClick={() => setBillPage(p => Math.min(billPagination.pages!, p + 1))}
+  1031→                                className={billPage >= billPagination.pages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+  1032→                              />
+  1033→                            </PaginationItem>
+  1034→                          </PaginationContent>
+  1035→                        </Pagination>
+  1036→                      </div>
+  1037→                    )}
+  1038→                  </>
+  1039→                )}
+  1040→              </CardContent>
+  1041→            </Card>
+  1042→          </motion.div>
+  1043→        </TabsContent>
+  1044→
+  1045→        {/* ============================================== */}
+  1046→        {/* TRÉSORERIE TAB (Treasury/Bank Accounts) */}
+  1047→        {/* ============================================== */}
+  1048→        <TabsContent value="tresorerie" className="space-y-4">
+  1049→          <motion.div
+  1050→            initial={{ opacity: 0, y: 20 }}
+  1051→            animate={{ opacity: 1, y: 0 }}
+  1052→            transition={{ duration: 0.3 }}
+  1053→          >
+  1054→            <Card>
+  1055→              <CardHeader>
+  1056→                <div className="flex items-center justify-between">
+  1057→                  <div>
+  1058→                    <CardTitle>Gestion de la Trésorerie</CardTitle>
+  1059→                    <CardDescription>Suivi des comptes bancaires en temps réel</CardDescription>
+  1060→                  </div>
+  1061→                  <Button variant="outline" size="sm" className="gap-2">
+  1062→                    <RefreshCw className="w-4 h-4" />
+  1063→                    Actualiser
+  1064→                  </Button>
+  1065→                </div>
+  1066→              </CardHeader>
+  1067→              <CardContent>
+  1068→                {accountsError ? (
+  1069→                  <ErrorState message={accountsError} onRetry={refetchAccounts} />
+  1070→                ) : accountsLoading ? (
+  1071→                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+  1072→                    {[...Array(3)].map((_, i) => (
+  1073→                      <Card key={i}>
+  1074→                        <CardContent className="p-6">
+  1075→                          <Skeleton className="h-10 w-32 mx-auto mb-4" />
+  1076→                          <Skeleton className="h-8 w-24 mx-auto" />
+  1077→                        </CardContent>
+  1078→                      </Card>
+  1079→                    ))}
+  1080→                  </div>
+  1081→                ) : bankAccounts.length === 0 ? (
+  1082→                  <EmptyState type="accounts" />
+  1083→                ) : (
+  1084→                  <>
+  1085→                    {/* Summary Cards */}
+  1086→                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+  1087→                      <div className="p-4 rounded-lg bg-green-50 dark:bg-green-900/20 text-center">
+  1088→                        <TrendingUp className="w-8 h-8 mx-auto text-green-600 mb-2" />
+  1089→                        <p className="text-xl font-bold text-green-600">
+  1090→                          {formatCurrency(treasuryStats?.totalBalance || 0)}
+  1091→                        </p>
+  1092→                        <p className="text-sm text-muted-foreground">Solde Total</p>
+  1093→                      </div>
+  1094→                      <div className="p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-center">
+  1095→                        <Landmark className="w-8 h-8 mx-auto text-blue-600 mb-2" />
+  1096→                        <p className="text-xl font-bold text-blue-600">
+  1097→                          {treasuryStats?.totalAccounts || bankAccounts.length}
+  1098→                        </p>
+  1099→                        <p className="text-sm text-muted-foreground">Comptes Actifs</p>
+  1100→                      </div>
+  1101→                      <div className="p-4 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-center">
+  1102→                        <ArrowUpRight className="w-8 h-8 mx-auto text-emerald-600 mb-2" />
+  1103→                        <p className="text-xl font-bold text-emerald-600">
+  1104→                          {formatCurrency(treasuryStats?.recentIncoming || 0)}
+  1105→                        </p>
+  1106→                        <p className="text-sm text-muted-foreground">Encaissements (30j)</p>
+  1107→                      </div>
+  1108→                      <div className="p-4 rounded-lg bg-orange-50 dark:bg-orange-900/20 text-center">
+  1109→                        <TrendingDown className="w-8 h-8 mx-auto text-orange-600 mb-2" />
+  1110→                        <p className="text-xl font-bold text-orange-600">
+  1111→                          {formatCurrency(treasuryStats?.recentOutgoing || 0)}
+  1112→                        </p>
+  1113→                        <p className="text-sm text-muted-foreground">Décaissements (30j)</p>
+  1114→                      </div>
+  1115→                    </div>
+  1116→
+  1117→                    {/* Bank Accounts Table */}
+  1118→                    <Table>
+  1119→                      <TableHeader>
+  1120→                        <TableRow>
+  1121→                          <TableHead>Banque</TableHead>
+  1122→                          <TableHead>N° Compte</TableHead>
+  1123→                          <TableHead>Type</TableHead>
+  1124→                          <TableHead className="text-right">Solde (DZD)</TableHead>
+  1125→                          <TableHead>Devise</TableHead>
+  1126→                          <TableHead>Statut</TableHead>
+  1127→                        </TableRow>
+  1128→                      </TableHeader>
+  1129→                      <TableBody>
+  1130→                        {bankAccounts.map((account) => (
+  1131→                          <TableRow key={account.id}>
+  1132→                            <TableCell className="font-medium flex items-center gap-2">
+  1133→                              <Landmark className="w-4 h-4 text-muted-foreground" />
+  1134→                              {account.bankName}
+  1135→                            </TableCell>
+  1136→                            <TableCell className="font-mono text-xs">{account.accountNumber}</TableCell>
+  1137→                            <TableCell>
+  1138→                              <Badge variant="outline">
+  1139→                                {account.accountType === 'current' ? 'Courant' : 
+  1140→                                 account.accountType === 'savings' ? 'Épargne' : 'Terme'}
+  1141→                              </Badge>
+  1142→                            </TableCell>
+  1143→                            <TableCell className={`text-right font-mono font-semibold ${account.balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+  1144→                              {formatCurrency(account.balance)}
+  1145→                            </TableCell>
+  1146→                            <TableCell>{account.currency}</TableCell>
+  1147→                            <TableCell>
+  1148→                              <Badge 
+  1149→                                variant="outline" 
+  1150→                                className={account.isActive 
+  1151→                                  ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+  1152→                                  : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
+  1153→                                }
+  1154→                              >
+  1155→                                {account.isActive ? 'Actif' : 'Inactif'}
+  1156→                              </Badge>
+  1157→                            </TableCell>
+  1158→                          </TableRow>
+  1159→                        ))}
+  1160→                      </TableBody>
+  1161→                    </Table>
+  1162→                  </>
+  1163→                )}
+  1164→              </CardContent>
+  1165→            </Card>
+  1166→          </motion.div>
+  1167→        </TabsContent>
+  1168→
+  1169→        {/* ============================================== */}
+  1170→        {/* DÉCLARATIONS FISCALES TAB (Tax Declarations) */}
+  1171→        {/* ============================================== */}
+  1172→        <TabsContent value="fiscal" className="space-y-4">
+  1173→          <motion.div
+  1174→            initial={{ opacity: 0, y: 20 }}
+  1175→            animate={{ opacity: 1, y: 0 }}
+  1176→            transition={{ duration: 0.3 }}
+  1177→          >
+  1178→            <Card>
+  1179→              <CardHeader>
+  1180→                <div className="flex items-center gap-3">
+  1181→                  <Calculator className="w-6 h-6 text-primary" />
+  1182→                  <div className="flex-1">
+  1183→                    <CardTitle>Déclarations Fiscales Algériennes</CardTitle>
+  1184→                    <CardDescription>Gestion complète des obligations fiscales DZ</CardDescription>
+  1185→                  </div>
+  1186→                  <Button size="sm" className="gap-2 bg-dz-green hover:bg-dz-green/90">
+  1187→                    <Plus className="w-4 h-4" />
+  1188→                    Nouvelle Déclaration
+  1189→                  </Button>
+  1190→                </div>
+  1191→              </CardHeader>
+  1192→              <CardContent>
+  1193→                {taxesError ? (
+  1194→                  <ErrorState message={taxesError} onRetry={refetchTaxes} />
+  1195→                ) : taxesLoading ? (
+  1196→                  <TableSkeleton rows={4} />
+  1197→                ) : taxes.length === 0 ? (
+  1198→                  <EmptyState type="taxes" />
+  1199→                ) : (
+  1200→                  <>
+  1201→                    <Table>
+  1202→                      <TableHeader>
+  1203→                        <TableRow>
+  1204→                          <TableHead>Type de Déclaration</TableHead>
+  1205→                          <TableHead>Période</TableHead>
+  1206→                          <TableHead className="text-right">Montant Dû</TableHead>
+  1207→                          <TableHead className="text-right">Payé</TableHead>
+  1208→                          <TableHead>Statut</TableHead>
+  1209→                          <TableHead>Date Création</TableHead>
+  1210→                          <TableHead className="text-right">Actions</TableHead>
+  1211→                        </TableRow>
+  1212→                      </TableHeader>
+  1213→                      <TableBody>
+  1214→                        {taxes.map((tax) => (
+  1215→                          <TableRow key={tax.id}>
+  1216→                            <TableCell className="font-medium">
+  1217→                              <div className="flex items-center gap-2">
+  1218→                                <Calculator className="w-4 h-4 text-muted-foreground" />
+  1219→                                {taxTypeLabels[tax.type] || tax.type}
+  1220→                              </div>
+  1221→                            </TableCell>
+  1222→                            <TableCell>
+  1223→                              {tax.period.includes('-') 
+  1224→                                ? new Date(tax.period + '-01').toLocaleDateString('fr-DZ', { month: 'long', year: 'numeric' })
+  1225→                                : tax.period
+  1226→                              }
+  1227→                            </TableCell>
+  1228→                            <TableCell className="text-right font-mono text-red-600">
+  1229→                              {formatCurrency(tax.totalDue)}
+  1230→                            </TableCell>
+  1231→                            <TableCell className="text-right font-mono text-green-600">
+  1232→                              {formatCurrency(tax.totalPaid)}
+  1233→                            </TableCell>
+  1234→                            <TableCell>
+  1235→                              <TaxStatusBadge status={tax.status} />
+  1236→                            </TableCell>
+  1237→                            <TableCell>{formatDate(tax.createdAt)}</TableCell>
+  1238→                            <TableCell className="text-right">
+  1239→                              <Button variant="ghost" size="sm">
+  1240→                                <Eye className="w-4 h-4 mr-1" />
+  1241→                                Voir
+  1242→                              </Button>
+  1243→                            </TableCell>
+  1244→                          </TableRow>
+  1245→                        ))}
+  1246→                      </TableBody>
+  1247→                    </Table>
+  1248→
+  1249→                    {/* Tax Summary */}
+  1250→                    <div className="mt-6 p-4 rounded-lg bg-muted/50">
+  1251→                      <h4 className="font-semibold mb-4">Résumé des Obligations Fiscales</h4>
+  1252→                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+  1253→                        <div>
+  1254→                          <p className="text-sm text-muted-foreground">TVA à payer</p>
+  1255→                          <p className="text-xl font-bold text-red-600">
+  1256→                            {formatCurrency(
+  1257→                              taxes.filter(t => t.type === 'G50_TVA').reduce((sum, t) => sum + (t.tvaNet || t.totalDue), 0)
+  1258→                            )}
+  1259→                          </p>
+  1260→                        </div>
+  1261→                        <div>
+  1262→                          <p className="text-sm text-muted-foreground">TAP</p>
+  1263→                          <p className="text-xl font-bold text-orange-600">
+  1264→                            {formatCurrency(
+  1265→                              taxes.filter(t => t.type === 'G2_TAP').reduce((sum, t) => sum + (t.tapDue || t.totalDue), 0)
+  1266→                            )}
+  1267→                          </p>
+  1268→                        </div>
+  1269→                        <div>
+  1270→                          <p className="text-sm text-muted-foreground">IRG Retenu</p>
+  1271→                          <p className="text-xl font-bold text-blue-600">
+  1272→                            {formatCurrency(
+  1273→                              taxes.filter(t => t.type === 'G1_IRG').reduce((sum, t) => sum + (t.irgTotal || t.totalDue), 0)
+  1274→                            )}
+  1275→                          </p>
+  1276→                        </div>
+  1277→                        <div>
+  1278→                          <p className="text-sm text-muted-foreground">IBS</p>
+  1279→                          <p className="text-xl font-bold text-purple-600">
+  1280→                            {formatCurrency(
+  1281→                              taxes.filter(t => t.type === 'G4_IBS').reduce((sum, t) => sum + (t.ibsDue || t.totalDue), 0)
+  1282→                            )}
+  1283→                          </p>
+  1284→                        </div>
+  1285→                      </div>
+  1286→                    </div>
+  1287→                  </>
+  1288→                )}
+  1289→              </CardContent>
+  1290→            </Card>
+  1291→          </motion.div>
+  1292→        </TabsContent>
+  1293→      </Tabs>
+  1294→
+  1295→      {/* Detail Dialogs */}
+  1296→      <InvoiceDetailDialog 
+  1297→        invoice={selectedInvoice} 
+  1298→        open={!!selectedInvoice} 
+  1299→        onClose={() => setSelectedInvoice(null)} 
+  1300→      />
+  1301→      
+  1302→      <BillDetailDialog 
+  1303→        bill={selectedBill} 
+  1304→        open={!!selectedBill} 
+  1305→        onClose={() => setSelectedBill(null)} 
+  1306→      />
+  1307→    </div>
+  1308→  )
+  1309→}
+  1310→

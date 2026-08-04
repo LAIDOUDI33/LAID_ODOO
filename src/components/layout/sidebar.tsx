@@ -14,7 +14,9 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
-  Building2
+  Building2,
+  CalendarDays,
+  FileText
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -59,6 +61,16 @@ const navItems: NavItem[] = [
     title: 'RH & Paie',
     href: '/hr',
     icon: Users,
+  },
+  {
+    title: 'Calendrier',
+    href: '/calendar',
+    icon: CalendarDays,
+  },
+  {
+    title: 'Documents',
+    href: '/documents',
+    icon: FileText,
   },
   {
     title: 'Production',
