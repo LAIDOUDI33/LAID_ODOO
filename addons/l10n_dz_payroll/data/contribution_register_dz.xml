@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Copyright (C) 2024 HASSIBA Suite / LAID ODOO
+For more information, see LICENSE file
+-->
+<odoo>
+
+    <!-- Contribution Registers for Algerian Social Security -->
+    <!-- Registres de Cotisations pour la Sécurité Sociale Algérienne -->
+    
+    <!-- ============================================ -->
+    <!-- REGISTRES COTISATIONS PATRONALES             -->
+    <!-- EMPLOYER CONTRIBUTION REGISTERS              -->
+    <!-- ============================================ -->
+
+    <!-- CNAS - Sécurité Sociale Patronale (26%) -->
+    <record id="contribution_register_cnas_pat_social" model="hr.contribution.register">
+        <field name="name">CNAS - Sécurité Sociale Patronale (26%)</field>
+        <field name="partner_id" ref="l10n_dz.res_partner_cnas"/>
+        <field name="code">CNAS_PAT_SOC_26</field>
+        <field name="category_id" ref="CNAS_PAT_SOCIAL_CAT"/>
+        <field name="note">التأمينات الاجتماعية لصاحب العمل - Part patronale sécurité sociale CNAS 26%</field>
+    </record>
+
+    <!-- CNAS - Accident de Travail (variable par secteur) -->
+    <record id="contribution_register_cnas_pat_accident" model="hr.contribution.register">
+        <field name="name">CNAS - Accident de Travail</field>
+        <field name="partner_id" ref="l10n_dz.res_partner_cnas"/>
+        <field name="code">CNAS_PAT_ACC</field>
+        <field name="category_id" ref="CNAS_PAT_ACCIDENT_CAT"/>
+        <field name="note">حادث العمل - Cotisation accident de travail (taux variable selon secteur d'activité)</field>
+    </record>
+
+    <!-- Taxe d'Apprentissage (2%) -->
+    <record id="contribution_register_taxe_apprentissage" model="hr.contribution.register">
+        <field name="name">Taxe d'Apprentissage (2%)</field>
+        <field name="partner_id" ref="l10n_dz.res_partner_etat_alg"/>
+        <field name="code">TAXE_APPR_2</field>
+        <field name="category_id" ref="TAXES_PRO_PATRONALES"/>
+        <field name="note">ضريبة التعلم - Taxe d'apprentissage au profit de l'État 2%</field>
+    </record>
+
+    <!-- Taxe Formation Continue (1.6%) -->
+    <record id="contribution_register_taxe_formation" model="hr.contribution.register">
+        <field name="name">Taxe Formation Professionnelle Continue (1.6%)</field>
+        <field name="partner_id" ref="l10n_dz.res_partner_etat_alg"/>
+        <field name="code">TAXE_FORM_1.6</field>
+        <field name="category_id" ref="TAXES_PRO_PATRONALES"/>
+        <field name="note">ضريب التكوين المهني - Taxe formation continue 1.6%</field>
+    </record>
+
+    <!-- CACOBAT - Caisse de Chômage (1%) -->
+    <record id="contribution_register_cacobat" model="hr.contribution.register">
+        <field name="name">CACOBAT - Assurance Chômage (1%)</field>
+        <field name="partner_id" ref="l10n_dz.res_partner_cacobat"/>
+        <field name="code">CACOBAT_1</field>
+        <field name="category_id" ref="TAXES_PRO_PATRONALES"/>
+        <field name="note">صندوق البطالة - CACOBAT cotisation chômage 1%</field>
+    </record>
+
+    <!-- Œuvres Sociales (3%) -->
+    <record id="contribution_register_oeuvres_sociales" model="hr.contribution.register">
+        <field name="name">Œuvres Sociales (3%)</field>
+        <field name="partner_id" ref="l10n_dz.res_partner_cnas"/>
+        <field name="code">OEUV_SOC_3</field>
+        <field name="category_id" ref="OEUVRES_SOCIALES_CAT"/>
+        <field name="note">الأعمال الاجتماعية - Cotisation œuvres sociales 3% sur salaire brut plafonné</field>
+    </record>
+
+    <!-- ============================================ -->
+    <!-- REGISTRES COTISATIONS SALARIALES             -->
+    <!-- EMPLOYEE DEDUCTION REGISTERS                 -->
+    <!-- ============================================ -->
+
+    <!-- CNAS - Part Salariale (9%) -->
+    <record id="contribution_register_cnas_salarial" model="hr.contribution.register">
+        <field name="name">CNAS - Part Salariale (9%)</field>
+        <field name="partner_id" ref="l10n_dz.res_partner_cnas"/>
+        <field name="code">CNAS_SAL_9</field>
+        <field name="category_id" ref="CNAS_SALARIALE_CAT"/>
+        <field name="note">التأمينات الاجتماعية للموظف - Part salariale CNAS 9%</field>
+    </record>
+
+    <!-- IRG Retenu à la Source -->
+    <record id="contribution_register_irg" model="hr.contribution.register">
+        <field name="name">IRG - Impôt sur Revenu Global</field>
+        <field name="partner_id" ref="l10n_dz.res_partner_direction_des_impots"/>
+        <field name="code">IRG_RET</field>
+        <field name="category_id" ref="IRG_RETENU_CAT"/>
+        <field name="note">الضريبة على الدخل الإجمالي - IRG retenu à la source selon barème progressif</field>
+    </record>
+
+</odoo>

@@ -1,0 +1,834 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Algerian Localization - Comprehensive Tax Templates
+    Module: l10n_dz (Odoo 19.4)
+    
+    This file contains all major Algerian taxes:
+    - TAP (Taxe sur l'Activité Professionnelle)
+    - IRG (Impôt sur le Revenu Global)
+    - IBS (Impôt sur les Bénéfices des Sociétés)
+    - CNAS (Caisse Nationale de Sécurité Sociale)
+    - CASNOS (Caisse Non Salariés)
+    - Timbre Fiscal (Stamp Duty)
+-->
+<odoo>
+
+    <!-- ============================================================
+         TAP - TAXE SUR L'ACTIVITÉ PROFESSIONNELLE
+         Professional Activity Tax - Applied on services/activities
+         ============================================================ -->
+
+    <!-- TAP 1% Vente (Sale) - Standard rate for most activities -->
+    <record id="tap_vente_1" model="account.tax.template">
+        <field name="chart_template_id" ref="l10n_dz_pcg_chart_template"/>
+        <field name="name">TAP (vente) 1,0%</field>
+        <field name="description">TAP-1.0</field>
+        <field name="amount" eval="1.0"/>
+        <field name="amount_type">percent</field>
+        <field name="sequence" eval="20"/>
+        <field name="type_tax_use">sale</field>
+        <field name="tax_group_id" ref="account.tax_group_taxes"/>
+        <field name="invoice_repartition_line_ids" eval="[(5, 0, 0),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'base',
+            }),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'tax',
+                'account_id': ref('pcg_44575'),
+            }),
+        ]"/>
+        <field name="refund_repartition_line_ids" eval="[(5, 0, 0),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'base',
+            }),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'tax',
+                'account_id': ref('pcg_44575'),
+            }),
+        ]"/>
+    </record>
+
+    <!-- TAP 1% Achat (Purchase) - Deductible TAP -->
+    <record id="tap_achat_1" model="account.tax.template">
+        <field name="chart_template_id" ref="l10n_dz_pcg_chart_template"/>
+        <field name="name">TAP (achat) 1,0%</field>
+        <field name="description">ACH-TAP-1.0</field>
+        <field name="amount" eval="1.0"/>
+        <field name="amount_type">percent</field>
+        <field name="sequence" eval="20"/>
+        <field name="type_tax_use">purchase</field>
+        <field name="tax_group_id" ref="account.tax_group_taxes"/>
+        <field name="invoice_repartition_line_ids" eval="[(5, 0, 0),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'base',
+            }),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'tax',
+                'account_id': ref('pcg_6422'),
+            }),
+        ]"/>
+        <field name="refund_repartition_line_ids" eval="[(5, 0, 0),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'base',
+            }),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'tax',
+                'account_id': ref('pcg_6422'),
+            }),
+        ]"/>
+    </record>
+
+    <!-- TAP 2% Vente (Sale) - For specific activities (banking, insurance) -->
+    <record id="tap_vente_2" model="account.tax.template">
+        <field name="chart_template_id" ref="l10n_dz_pcg_chart_template"/>
+        <field name="name">TAP (vente) 2,0%</field>
+        <field name="description">TAP-2.0</field>
+        <field name="amount" eval="2.0"/>
+        <field name="amount_type">percent</field>
+        <field name="sequence" eval="21"/>
+        <field name="type_tax_use">sale</field>
+        <field name="tax_group_id" ref="account.tax_group_taxes"/>
+        <field name="invoice_repartition_line_ids" eval="[(5, 0, 0),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'base',
+            }),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'tax',
+                'account_id': ref('pcg_44575'),
+            }),
+        ]"/>
+        <field name="refund_repartition_line_ids" eval="[(5, 0, 0),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'base',
+            }),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'tax',
+                'account_id': ref('pcg_44575'),
+            }),
+        ]"/>
+    </record>
+
+    <!-- TAP Exonéré 0% -->
+    <record id="tap_exonere_0" model="account.tax.template">
+        <field name="chart_template_id" ref="l10n_dz_pcg_chart_template"/>
+        <field name="name">TAP Exonéré 0%</field>
+        <field name="description">TAP-EXO-0</field>
+        <field name="amount" eval="0.00"/>
+        <field name="amount_type">percent</field>
+        <field name="sequence" eval="22"/>
+        <field name="type_tax_use">sale</field>
+        <field name="tax_group_id" ref="account.tax_group_taxes"/>
+        <field name="invoice_repartition_line_ids" eval="[(5, 0, 0),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'base',
+            }),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'tax',
+            }),
+        ]"/>
+        <field name="refund_repartition_line_ids" eval="[(5, 0, 0),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'base',
+            }),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'tax',
+            }),
+        ]"/>
+    </record>
+
+
+    <!-- ============================================================
+         IRG - IMPÔT SUR LE REVENU GLOBAL
+         Income Tax / Withholding Tax
+         ============================================================ -->
+
+    <!-- IRG Retenu à la source 10% Vente (Sale) - Withholding tax for services -->
+    <record id="irg_ret_10_vente" model="account.tax.template">
+        <field name="chart_template_id" ref="l10n_dz_pcg_chart_template"/>
+        <field name="name">IRG Retenu à la source (vente) 10,0%</field>
+        <field name="description">IRG-RS-10.0</field>
+        <field name="amount" eval="10.0"/>
+        <field name="amount_type">percent</field>
+        <field name="sequence" eval="30"/>
+        <field name="type_tax_use">sale</field>
+        <field name="tax_group_id" ref="account.tax_group_taxes"/>
+        <field name="invoice_repartition_line_ids" eval="[(5, 0, 0),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'base',
+            }),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'tax',
+                'account_id': ref('pcg_4426'),
+            }),
+        ]"/>
+        <field name="refund_repartition_line_ids" eval="[(5, 0, 0),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'base',
+            }),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'tax',
+                'account_id': ref('pcg_4426'),
+            }),
+        ]"/>
+    </record>
+
+    <!-- IRG Retenu à la source Achat (Purchase) - Deductible withholding -->
+    <record id="irg_ret_10_achat" model="account.tax.template">
+        <field name="chart_template_id" ref="l10n_dz_pcg_chart_template"/>
+        <field name="name">IRG Retenu à la source (achat) 10,0%</field>
+        <field name="description">ACH-IRG-RS-10.0</field>
+        <field name="amount" eval="10.0"/>
+        <field name="amount_type">percent</field>
+        <field name="sequence" eval="30"/>
+        <field name="type_tax_use">purchase</field>
+        <field name="tax_group_id" ref="account.tax_group_taxes"/>
+        <field name="invoice_repartition_line_ids" eval="[(5, 0, 0),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'base',
+            }),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'tax',
+                'account_id': ref('pcg_4426'),
+            }),
+        ]"/>
+        <field name="refund_repartition_line_ids" eval="[(5, 0, 0),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'base',
+            }),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'tax',
+                'account_id': ref('pcg_4426'),
+            }),
+        ]"/>
+    </record>
+
+    <!-- IRG Barème Progressif - Tranche 0% (Exonération) -->
+    <record id="irg_bareme_0" model="account.tax.template">
+        <field name="chart_template_id" ref="l10n_dz_pcg_chart_template"/>
+        <field name="name">IRG Barème 0% (Tranche exonérée)</field>
+        <field name="description">IRG-B0</field>
+        <field name="amount" eval="0.00"/>
+        <field name="amount_type">percent</field>
+        <field name="sequence" eval="31"/>
+        <field name="type_tax_use">none</field>
+        <field name="tax_group_id" ref="account.tax_group_taxes"/>
+        <field name="invoice_repartition_line_ids" eval="[(5, 0, 0),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'base',
+            }),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'tax',
+            }),
+        ]"/>
+        <field name="refund_repartition_line_ids" eval="[(5, 0, 0),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'base',
+            }),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'tax',
+            }),
+        ]"/>
+    </record>
+
+    <!-- IRG Barème Progressif - Tranche 10% -->
+    <record id="irg_bareme_10" model="account.tax.template">
+        <field name="chart_template_id" ref="l10n_dz_pcg_chart_template"/>
+        <field name="name">IRG Barème 10%</field>
+        <field name="description">IRG-B10</field>
+        <field name="amount" eval="10.0"/>
+        <field name="amount_type">percent</field>
+        <field name="sequence" eval="32"/>
+        <field name="type_tax_use">none</field>
+        <field name="tax_group_id" ref="account.tax_group_taxes"/>
+        <field name="invoice_repartition_line_ids" eval="[(5, 0, 0),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'base',
+            }),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'tax',
+                'account_id': ref('pcg_4421'),
+            }),
+        ]"/>
+        <field name="refund_repartition_line_ids" eval="[(5, 0, 0),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'base',
+            }),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'tax',
+                'account_id': ref('pcg_4421'),
+            }),
+        ]"/>
+    </record>
+
+    <!-- IRG Barème Progressif - Tranche 20% -->
+    <record id="irg_bareme_20" model="account.tax.template">
+        <field name="chart_template_id" ref="l10n_dz_pcg_chart_template"/>
+        <field name="name">IRG Barème 20%</field>
+        <field name="description">IRG-B20</field>
+        <field name="amount" eval="20.0"/>
+        <field name="amount_type">percent</field>
+        <field name="sequence" eval="33"/>
+        <field name="type_tax_use">none</field>
+        <field name="tax_group_id" ref="account.tax_group_taxes"/>
+        <field name="invoice_repartition_line_ids" eval="[(5, 0, 0),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'base',
+            }),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'tax',
+                'account_id': ref('pcg_4421'),
+            }),
+        ]"/>
+        <field name="refund_repartition_line_ids" eval="[(5, 0, 0),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'base',
+            }),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'tax',
+                'account_id': ref('pcg_4421'),
+            }),
+        ]"/>
+    </record>
+
+    <!-- IRG Barème Progressif - Tranche 30% -->
+    <record id="irg_bareme_30" model="account.tax.template">
+        <field name="chart_template_id" ref="l10n_dz_pcg_chart_template"/>
+        <field name="name">IRG Barème 30%</field>
+        <field name="description">IRG-B30</field>
+        <field name="amount" eval="30.0"/>
+        <field name="amount_type">percent</field>
+        <field name="sequence" eval="34"/>
+        <field name="type_tax_use">none</field>
+        <field name="tax_group_id" ref="account.tax_group_taxes"/>
+        <field name="invoice_repartition_line_ids" eval="[(5, 0, 0),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'base',
+            }),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'tax',
+                'account_id': ref('pcg_4421'),
+            }),
+        ]"/>
+        <field name="refund_repartition_line_ids" eval="[(5, 0, 0),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'base',
+            }),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'tax',
+                'account_id': ref('pcg_4421'),
+            }),
+        ]"/>
+    </record>
+
+    <!-- IRG Barème Progressif - Tranche 35% -->
+    <record id="irg_bareme_35" model="account.tax.template">
+        <field name="chart_template_id" ref="l10n_dz_pcg_chart_template"/>
+        <field name="name">IRG Barème 35%</field>
+        <field name="description">IRG-B35</field>
+        <field name="amount" eval="35.0"/>
+        <field name="amount_type">percent</field>
+        <field name="sequence" eval="35"/>
+        <field name="type_tax_use">none</field>
+        <field name="tax_group_id" ref="account.tax_group_taxes"/>
+        <field name="invoice_repartition_line_ids" eval="[(5, 0, 0),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'base',
+            }),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'tax',
+                'account_id': ref('pcg_4421'),
+            }),
+        ]"/>
+        <field name="refund_repartition_line_ids" eval="[(5, 0, 0),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'base',
+            }),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'tax',
+                'account_id': ref('pcg_4421'),
+            }),
+        ]"/>
+    </record>
+
+
+    <!-- ============================================================
+         IBS - IMPÔT SUR LES BÉNÉFICES DES SOCIÉTÉS
+         Corporate Income Tax
+         ============================================================ -->
+
+    <!-- IBS 19% - Standard corporate rate (Loi de Finances 2024) -->
+    <record id="ibs_19" model="account.tax.template">
+        <field name="chart_template_id" ref="l10n_dz_pcg_chart_template"/>
+        <field name="name">IBS 19,0%</field>
+        <field name="description">IBS-19.0</field>
+        <field name="amount" eval="19.0"/>
+        <field name="amount_type">percent</field>
+        <field name="sequence" eval="40"/>
+        <field name="type_tax_use">none</field>
+        <field name="tax_group_id" ref="account.tax_group_taxes"/>
+        <field name="invoice_repartition_line_ids" eval="[(5, 0, 0),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'base',
+            }),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'tax',
+                'account_id': ref('pcg_4449'),
+            }),
+        ]"/>
+        <field name="refund_repartition_line_ids" eval="[(5, 0, 0),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'base',
+            }),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'tax',
+                'account_id': ref('pcg_4449'),
+            }),
+        ]"/>
+    </record>
+
+    <!-- IBS 26% - For specific sectors (telecommunications, banking, insurance) -->
+    <record id="ibs_26" model="account.tax.template">
+        <field name="chart_template_id" ref="l10n_dz_pcg_chart_template"/>
+        <field name="name">IBS 26,0% (Secteurs spécifiques)</field>
+        <field name="description">IBS-26.0</field>
+        <field name="amount" eval="26.0"/>
+        <field name="amount_type">percent</field>
+        <field name="sequence" eval="41"/>
+        <field name="type_tax_use">none</field>
+        <field name="tax_group_id" ref="account.tax_group_taxes"/>
+        <field name="invoice_repartition_line_ids" eval="[(5, 0, 0),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'base',
+            }),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'tax',
+                'account_id': ref('pcg_4449'),
+            }),
+        ]"/>
+        <field name="refund_repartition_line_ids" eval="[(5, 0, 0),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'base',
+            }),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'tax',
+                'account_id': ref('pcg_4449'),
+            }),
+        ]"/>
+    </record>
+
+    <!-- IBS Exonéré - SPE/SPI zones (Zones franches) -->
+    <record id="ibs_exonere" model="account.tax.template">
+        <field name="chart_template_id" ref="l10n_dz_pcg_chart_template"/>
+        <field name="name">IBS Exonéré (SPE/SPI)</field>
+        <field name="description">IBS-EXO</field>
+        <field name="amount" eval="0.00"/>
+        <field name="amount_type">percent</field>
+        <field name="sequence" eval="42"/>
+        <field name="type_tax_use">none</field>
+        <field name="tax_group_id" ref="account.tax_group_taxes"/>
+        <field name="invoice_repartition_line_ids" eval="[(5, 0, 0),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'base',
+            }),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'tax',
+            }),
+        ]"/>
+        <field name="refund_repartition_line_ids" eval="[(5, 0, 0),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'base',
+            }),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'tax',
+            }),
+        ]"/>
+    </record>
+
+    <!-- Acompte IBS Provisionnel -->
+    <record id="ibs_acompte_provisionnel" model="account.tax.template">
+        <field name="chart_template_id" ref="l10n_dz_pcg_chart_template"/>
+        <field name="name">Acompte provisionnel I.B.S</field>
+        <field name="description">ACOMPT-IBS</field>
+        <field name="amount" eval="19.0"/>
+        <field name="amount_type">percent</field>
+        <field name="sequence" eval="43"/>
+        <field name="type_tax_use">none</field>
+        <field name="tax_group_id" ref="account.tax_group_taxes"/>
+        <field name="invoice_repartition_line_ids" eval="[(5, 0, 0),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'base',
+            }),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'tax',
+                'account_id': ref('pcg_4441'),
+            }),
+        ]"/>
+        <field name="refund_repartition_line_ids" eval="[(5, 0, 0),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'base',
+            }),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'tax',
+                'account_id': ref('pcg_4441'),
+            }),
+        ]"/>
+    </record>
+
+
+    <!-- ============================================================
+         CNAS - CAISSE NATIONALE DE SÉCURITÉ SOCIALE
+         Social Security Contributions (Employed Workers)
+         ============================================================ -->
+
+    <!-- CNAS Part Patronale 26% - Employer contribution -->
+    <record id="cnas_patronale_26" model="account.tax.template">
+        <field name="chart_template_id" ref="l10n_dz_pcg_chart_template"/>
+        <field name="name">CNAS Part Patronale 26,0%</field>
+        <field name="description">CNAS-PAT-26.0</field>
+        <field name="amount" eval="26.0"/>
+        <field name="amount_type">percent</field>
+        <field name="sequence" eval="50"/>
+        <field name="type_tax_use">none</field>
+        <field name="tax_group_id" ref="account.tax_group_taxes"/>
+        <field name="invoice_repartition_line_ids" eval="[(5, 0, 0),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'base',
+            }),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'tax',
+                'account_id': ref('pcg_4313'),
+            }),
+        ]"/>
+        <field name="refund_repartition_line_ids" eval="[(5, 0, 0),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'base',
+            }),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'tax',
+                'account_id': ref('pcg_4313'),
+            }),
+        ]"/>
+    </record>
+
+    <!-- CNAS Part Salariale 9% - Employee deduction -->
+    <record id="cnas_salariale_9" model="account.tax.template">
+        <field name="chart_template_id" ref="l10n_dz_pcg_chart_template"/>
+        <field name="name">CNAS Part Salariale 9,0%</field>
+        <field name="description">CNAS-SAL-9.0</field>
+        <field name="amount" eval="9.0"/>
+        <field name="amount_type">percent</field>
+        <field name="sequence" eval="51"/>
+        <field name="type_tax_use">none</field>
+        <field name="tax_group_id" ref="account.tax_group_taxes"/>
+        <field name="invoice_repartition_line_ids" eval="[(5, 0, 0),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'base',
+            }),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'tax',
+                'account_id': ref('pcg_4311'),
+            }),
+        ]"/>
+        <field name="refund_repartition_line_ids" eval="[(5, 0, 0),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'base',
+            }),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'tax',
+                'account_id': ref('pcg_4311'),
+            }),
+        ]"/>
+    </record>
+
+
+    <!-- ============================================================
+         CASNOS - CAISSE DE SÉCURITÉ SOCIALE DES NON SALARIÉS
+         Social Security for Self-Employed / Freelancers
+         ============================================================ -->
+
+    <!-- CASNOS Cotisation - Self-employed contribution -->
+    <record id="casnos_cotisation" model="account.tax.template">
+        <field name="chart_template_id" ref="l10n_dz_pcg_chart_template"/>
+        <field name="name">CASNOS Cotisation</field>
+        <field name="description">CASNOS-COT</field>
+        <field name="amount" eval="15.0"/>
+        <field name="amount_type">percent</field>
+        <field name="sequence" eval="55"/>
+        <field name="type_tax_use">none</field>
+        <field name="tax_group_id" ref="account.tax_group_taxes"/>
+        <field name="invoice_repartition_line_ids" eval="[(5, 0, 0),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'base',
+            }),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'tax',
+                'account_id': ref('pcg_4314'),
+            }),
+        ]"/>
+        <field name="refund_repartition_line_ids" eval="[(5, 0, 0),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'base',
+            }),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'tax',
+                'account_id': ref('pcg_4314'),
+            }),
+        ]"/>
+    </record>
+
+
+    <!-- ============================================================
+         TIMBRE FISCAL - STAMP DUTY
+         Droits de timbre sur documents et actes
+         ============================================================ -->
+
+    <!-- Timbre Fiscal 1 DZD - Standard rate for invoices/documents -->
+    <record id="timbre_fiscal_1" model="account.tax.template">
+        <field name="chart_template_id" ref="l10n_dz_pcg_chart_template"/>
+        <field name="name">Timbre Fiscal 1 DZD</field>
+        <field name="description">TF-1</field>
+        <field name="amount" eval="1.0"/>
+        <field name="amount_type">fixed</field>
+        <field name="sequence" eval="60"/>
+        <field name="type_tax_use">sale</field>
+        <field name="tax_group_id" ref="account.tax_group_taxes"/>
+        <field name="include_base_amount" eval="False"/>
+        <field name="invoice_repartition_line_ids" eval="[(5, 0, 0),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'base',
+            }),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'tax',
+                'account_id': ref('pcg_44575'),
+            }),
+        ]"/>
+        <field name="refund_repartition_line_ids" eval="[(5, 0, 0),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'base',
+            }),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'tax',
+                'account_id': ref('pcg_44575'),
+            }),
+        ]"/>
+    </record>
+
+    <!-- Timbre Fiscal 0.5 DZD - Reduced rate -->
+    <record id="timbre_fiscal_05" model="account.tax.template">
+        <field name="chart_template_id" ref="l10n_dz_pcg_chart_template"/>
+        <field name="name">Timbre Fiscal 0,5 DZD</field>
+        <field name="description">TF-0.5</field>
+        <field name="amount" eval="0.5"/>
+        <field name="amount_type">fixed</field>
+        <field name="sequence" eval="61"/>
+        <field name="type_tax_use">sale</field>
+        <field name="tax_group_id" ref="account.tax_group_taxes"/>
+        <field name="include_base_amount" eval="False"/>
+        <field name="invoice_repartition_line_ids" eval="[(5, 0, 0),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'base',
+            }),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'tax',
+                'account_id': ref('pcg_44575'),
+            }),
+        ]"/>
+        <field name="refund_repartition_line_ids" eval="[(5, 0, 0),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'base',
+            }),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'tax',
+                'account_id': ref('pcg_44575'),
+            }),
+        ]"/>
+    </record>
+
+    <!-- Timbre Fiscal 0 DZD - Exempted (for exempt documents) -->
+    <record id="timbre_fiscal_0" model="account.tax.template">
+        <field name="chart_template_id" ref="l10n_dz_pcg_chart_template"/>
+        <field name="name">Timbre Fiscal Exonéré 0 DZD</field>
+        <field name="description">TF-EXO-0</field>
+        <field name="amount" eval="0.00"/>
+        <field name="amount_type">fixed</field>
+        <field name="sequence" eval="62"/>
+        <field name="type_tax_use">sale</field>
+        <field name="tax_group_id" ref="account.tax_group_taxes"/>
+        <field name="include_base_amount" eval="False"/>
+        <field name="invoice_repartition_line_ids" eval="[(5, 0, 0),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'base',
+            }),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'tax',
+            }),
+        ]"/>
+        <field name="refund_repartition_line_ids" eval="[(5, 0, 0),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'base',
+            }),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'tax',
+            }),
+        ]"/>
+    </record>
+
+
+    <!-- ============================================================
+         TAXES PARAFISCALES ADDITIONNELLES
+         Additional Parafiscal Taxes
+         ============================================================ -->
+
+    <!-- Taxe d'Apprentissage -->
+    <record id="taxe_apprentissage" model="account.tax.template">
+        <field name="chart_template_id" ref="l10n_dz_pcg_chart_template"/>
+        <field name="name">Taxe d'Apprentissage 2,0%</field>
+        <field name="description">TA-2.0</field>
+        <field name="amount" eval="2.0"/>
+        <field name="amount_type">percent</field>
+        <field name="sequence" eval="70"/>
+        <field name="type_tax_use">none</field>
+        <field name="tax_group_id" ref="account.tax_group_taxes"/>
+        <field name="invoice_repartition_line_ids" eval="[(5, 0, 0),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'base',
+            }),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'tax',
+                'account_id': ref('pcg_6412'),
+            }),
+        ]"/>
+        <field name="refund_repartition_line_ids" eval="[(5, 0, 0),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'base',
+            }),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'tax',
+                'account_id': ref('pcg_6412'),
+            }),
+        ]"/>
+    </record>
+
+    <!-- Taxe de Formation Professionnelle -->
+    <record id="taxe_formation_pro" model="account.tax.template">
+        <field name="chart_template_id" ref="l10n_dz_pcg_chart_template"/>
+        <field name="name">Taxe de Formation Professionnelle 1,6%</field>
+        <field name="description">TFP-1.6</field>
+        <field name="amount" eval="1.6"/>
+        <field name="amount_type">percent</field>
+        <field name="sequence" eval="71"/>
+        <field name="type_tax_use">none</field>
+        <field name="tax_group_id" ref="account.tax_group_taxes"/>
+        <field name="invoice_repartition_line_ids" eval="[(5, 0, 0),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'base',
+            }),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'tax',
+                'account_id': ref('pcg_6413'),
+            }),
+        ]"/>
+        <field name="refund_repartition_line_ids" eval="[(5, 0, 0),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'base',
+            }),
+            (0, 0, {
+                'factor_percent': 100,
+                'repartition_type': 'tax',
+                'account_id': ref('pcg_6413'),
+            }),
+        ]"/>
+    </record>
+
+</odoo>

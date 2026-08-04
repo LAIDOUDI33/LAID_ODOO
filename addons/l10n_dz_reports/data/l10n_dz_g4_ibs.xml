@@ -1,0 +1,361 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    G4 - Déclaration IBS (Impôt sur les Bénéfices des Sociétés)
+    Algérie - Impôt sur les sociétés
+    
+    Conforme au Code des Impôts Directs et Taxes Assimilées (CIDTA)
+    Loi de Finances 2024 (Taux IBS révisés)
+-->
+<odoo>
+    
+    <!-- ============================================ -->
+    <!-- G4 IBS DECLARATION TEMPLATE                 -->
+    <!-- ============================================ -->
+    <record id="g4_ibs_declaration_template" model="l10n.dz.tax.declaration.template">
+        <field name="name">G4 - Déclaration IBS</field>
+        <field name="code">G4</field>
+        <field name="type">ibs</field>
+        <field name="description">Déclaration de l'Impôt sur les Bénéfices des Sociétés (IBS) - Annuelle avec acomptes trimestriels</field>
+        
+        <!-- Périodicité: Annuelle principale + Acomptes trimestriels -->
+        <field name="periodicity_options">quarterly,yearly</field>
+        <field name="default_periodicity">quarterly</field>  <!-- Par défaut: acompte trimestriel -->
+        
+        <!-- Taux IBS applicables -->
+        <field name="tax_rate_default">19.0</field>  <!-- Taux standard 19% (LF 2024) -->
+    </record>
+
+    <!-- ============================================ -->
+    <!-- G4 LIGNES - RÉSULTAT COMPTABLE              -->
+    <!-- ============================================ -->
+
+    <!-- Ligne 01: Résultat comptable net (bénéfice ou perte) -->
+    <record id="g4_line_01" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g4_ibs_declaration_template"/>
+        <field name="sequence">1</field>
+        <field name="code">01</field>
+        <field name="name">Résultat Comptable Net de l'exercice</field>
+        <field name="category">resultat_comptable</field>
+        <field name="sign">positive</field>
+        <field name="is_mandatory">True</field>
+        <field name="manual_entry">True</field>
+        <field name="description_text">Bénéfice ou perte selon le compte de résultat après impôt</field>
+    </record>
+
+    <!-- Ligne 02: Réintégrations fiscales -->
+    <record id="g4_line_02" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g4_ibs_declaration_template"/>
+        <field name="sequence">2</field>
+        <field name="code">02</field>
+        <field name="name">Charges non déductibles à réintégrer</field>
+        <field name="category">reintegrations</field>
+        <field name="sign">positive</field>
+        <field name="is_mandatory">True</field>
+        <field name="manual_entry">True</field>
+        <field name="description_text">
+            Amendes, pénalités, dons >1% CA, frais excessifs, 
+            véhicules de tourisme, charges personnelles
+        </field>
+    </record>
+
+    <!-- Ligne 03: Amendes et pénalités fiscales -->
+    <record id="g4_line_03" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g4_ibs_declaration_template"/>
+        <field name="sequence">3</field>
+        <field name="code">03</field>
+        <field name="name">Amendes, pénalités et majorations d'impôt</field>
+        <field name="category">reintegrations</field>
+        <field name="sign">positive</field>
+        <field name="is_mandatory">False</field>
+        <field name="manual_entry">True</field>
+    </record>
+
+    <!-- Ligne 04: Frais de sponsoring/dons > 1% CA -->
+    <record id="g4_line_04" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g4_ibs_declaration_template"/>
+        <field name="sequence">4</field>
+        <field name="code">04</field>
+        <field name="name">Dons et libéralités excédant 1% du CA HT</field>
+        <field name="category">reintegrations</field>
+        <field name="sign">positive</field>
+        <field name="is_mandatory">False</field>
+        <field name="manual_entry">True</field>
+    </record>
+
+    <!-- Ligne 05: Taxe véhicule tourisme (CV > 10) -->
+    <record id="g4_line_05" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g4_ibs_declaration_template"/>
+        <field name="sequence">5</field>
+        <field name="code">05</field>
+        <field name="name">Amortissement et entretien véhicules tourisme (>10 CV)</field>
+        <field name="category">reintegrations</field>
+        <field name="sign">positive</field>
+        <field name="is_mandatory">False</field>
+        <field name="manual_entry">True</field>
+    </record>
+
+    <!-- Ligne 06: Frais de réception/restauration excessifs -->
+    <record id="g4_line_06" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g4_ibs_declaration_template"/>
+        <field name="sequence">6</field>
+        <field name="code">06</field>
+        <field name="name">Frais de réception et déplacement excessifs</field>
+        <field name="category">reintegrations</field>
+        <field name="sign">positive</field>
+        <field name="is_mandatory">False</field>
+        <field name="manual_entry">True</field>
+    </record>
+
+    <!-- ============================================ -->
+    <!-- G4 LIGNES - DÉDUCTIONS FISCALES             -->
+    <!-- ============================================ -->
+
+    <!-- Ligne 10: Produits exonérés ou imposés à taux réduits -->
+    <record id="g4_line_10" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g4_ibs_declaration_template"/>
+        <field name="sequence">10</field>
+        <field name="code">10</field>
+        <field name="name">Produits exonérés à déduire</field>
+        <field name="category">deductions</field>
+        <field name="sign">negative</field>
+        <field name="is_mandatory">False</field>
+        <field name="manual_entry">True</field>
+        <field name="description_text">Dividendes reçus, plus-values exonérées, etc.</field>
+    </record>
+
+    <!-- Ligne 11: Déficit fiscal reportable -->
+    <record id="g4_line_11" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g4_ibs_declaration_template"/>
+        <field name="sequence">11</field>
+        <field name="code">11</field>
+        <field name="name">Déficit fiscal antérieur imputable</field>
+        <field name="category">deductions_deficit</field>
+        <field name="sign">negative</field>
+        <field name="is_mandatory">False</field>
+        <field name="manual_entry">True</field>
+        <field name="description_text">Déficit reportable dans la limite de 4 ans</field>
+    </record>
+
+    <!-- Ligne 12: Crédit d'impôt recherche -->
+    <record id="g4_line_12" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g4_ibs_declaration_template"/>
+        <field name="sequence">12</field>
+        <field name="code">12</field>
+        <field name="name">Crédit d'impôt activités R&amp;D</field>
+        <field name="category">deductions_credits</field>
+        <field name="sign">negative</field>
+        <field name="is_mandatory">False</field>
+        <field name="manual_entry">True</field>
+    </record>
+
+    <!-- Ligne 13: Incitations investissements (ANDI) -->
+    <record id="g4_line_13" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g4_ibs_declaration_template"/>
+        <field name="sequence">13</field>
+        <field name="code">13</field>
+        <field name="name">Réductions liées aux dispositifs ANDI</field>
+        <field name="category">deductions_incentives</field>
+        <field name="sign">negative</field>
+        <field name="is_mandatory">False</field>
+        <field name="manual_entry">True</field>
+        <field name="description_text">Avantages fiscaux accordés par l'ANDI</field>
+    </record>
+
+    <!-- Ligne 14: Super-déduction activités Sud -->
+    <record id="g4_line_14" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g4_ibs_declaration_template"/>
+        <field name="sequence">14</field>
+        <field name="code">14</field>
+        <field name="name">Super-déduction investissements Zone Sud</field>
+        <field name="category">deductions_zone</field>
+        <field name="sign">negative</field>
+        <field name="is_mandatory">False</field>
+        <field name="manual_entry">True</field>
+    </record>
+
+    <!-- ============================================ -->
+    <!-- G4 LIGNES - CALCUL RÉSULTAT FISCAL          -->
+    <!-- ============================================ -->
+
+    <!-- Total réintégrations -->
+    <record id="g4_total_reintegration" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g4_ibs_declaration_template"/>
+        <field name="sequence">80</field>
+        <field name="code">TOT_REINT</field>
+        <field name="name">TOTAL RÉINTÉGRATIONS</field>
+        <field name="category">total</field>
+        <field name="is_total">True</field>
+        <field name="total_formula">sum(reintegrations)</field>
+        <field name="is_bold">True</field>
+    </record>
+
+    <!-- Total déductions -->
+    <record id="g4_total_deduction" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g4_ibs_declaration_template"/>
+        <field name="sequence">81</field>
+        <field name="code">TOT_DED</field>
+        <field name="name">TOTAL DÉDUCTIONS</field>
+        <field name="category">total</field>
+        <field name="is_total">True</field>
+        <field name="total_formula">sum(deductions) + sum(deductions_deficit) + sum(deductions_credits) + sum(deductions_incentives) + sum(deductions_zone)</field>
+        <field name="is_bold">True</field>
+    </record>
+
+    <!-- Résultat Fiscal Imposable -->
+    <record id="g4_resultat_fiscal" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g4_ibs_declaration_template"/>
+        <field name="sequence">90</field>
+        <field name="code">RES_FISCAL</field>
+        <field name="name">RÉSULTAT FISCAL IMPOSABLE</field>
+        <field name="category">total</field>
+        <field name="is_total">True</field>
+        <field name="total_formula">resultat_comptable + total_reintegrations - total_deductions</field>
+        <field name="is_bold">True</field>
+        <field name="is_highlighted">True</field>
+    </record>
+
+    <!-- ============================================ -->
+    <!-- G4 LIGNES - CALCUL IBS                      -->
+    <!-- ============================================ -->
+
+    <!-- Ligne 30: IBS calculé au taux standard 19% -->
+    <record id="g4_line_30" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g4_ibs_declaration_template"/>
+        <field name="sequence">30</field>
+        <field name="code">IBS_19</field>
+        <field name="name">IBS calculé (Taux standard 19%)</field>
+        <field name="category">calcul_ibs</field>
+        <field name="ibs_rate">19.0</field>
+        <field name="is_computed">True</field>
+        <field name="compute_formula">resultat_fiscal * 0.19</field>
+        <field name="is_mandatory">True</field>
+    </record>
+
+    <!-- Ligne 31: IBS calculé au taux majoré 26% -->
+    <record id="g4_line_31" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g4_ibs_declaration_template"/>
+        <field name="sequence">31</field>
+        <field name="code">IBS_26</field>
+        <field name="name">IBS calculé (Taux majoré 26%)</field>
+        <field name="category">calcul_ibs</field>
+        <field name="ibs_rate">26.0</field>
+        <field name="is_computed">True</field>
+        <field name="compute_formula">resultat_fiscal * 0.26</field>
+        <field name="is_mandatory">False</field>
+        <field name="description_text">Taux applicable aux activités de distribution, courtage, commerce</field>
+    </record>
+
+    <!-- Ligne 32: Minimum d'impôt (0.5% CA) -->
+    <record id="g4_line_32" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g4_ibs_declaration_template"/>
+        <field name="sequence">32</field>
+        <field name="code">MIN_IMPOT</field>
+        <field name="name">Minimum d'Impôt (0.5% du CA TTC)</field>
+        <field name="category">minimum_impot</field>
+        <field name="is_computed">True</field>
+        <field name="compute_formula">chiffre_affaires_ttc * 0.005</field>
+        <field name="is_mandatory">False</field>
+        <field name="manual_entry">True</field>
+        <field name="description_text">Le minimum d'impôt s'applique si l'IBS calculé est inférieur</field>
+    </record>
+
+    <!-- ============================================ -->
+    <!-- G4 LIGNES - ACOMPTES ET SOLDE               -->
+    <!-- ============================================ -->
+
+    <!-- Ligne 40: Acomptes provisionnels versés -->
+    <record id="g4_line_40" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g4_ibs_declaration_template"/>
+        <field name="sequence">40</field>
+        <field name="code">ACOMPTES</field>
+        <field name="name">Acomptes provisionnels versés (T1+T2+T3)</field>
+        <field name="category">acomptes</field>
+        <field name="sign">negative</field>
+        <field name="is_mandatory">True</field>
+        <field name="manual_entry">True</field>
+        <field name="description_text">Somme des 3 acomptes trimestriels versés durant l'exercice</field>
+    </record>
+
+    <!-- Ligne 41: Reliquat exercice précédent -->
+    <record id="g4_line_41" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g4_ibs_declaration_template"/>
+        <field name="sequence">41</field>
+        <field name="code">RELIQUAT</field>
+        <field name="name">Reliquat IBS exercice précédent</field>
+        <field name="category">regularisation</field>
+        <field name="sign">negative</field>
+        <field name="is_mandatory">False</field>
+        <field name="manual_entry">True</field>
+    </record>
+
+    <!-- Solde IBS dû -->
+    <record id="g4_solde_ibs" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g4_ibs_declaration_template"/>
+        <field name="sequence">99</field>
+        <field name="code">IBS_DU</field>
+        <field name="name">SOLDE IBS À PAYER (ou crédit à reporter)</field>
+        <field name="category">solde</field>
+        <field name="is_solde">True</field>
+        <field name="is_bold">True</field>
+        <field name="is_highlighted">True</field>
+        <field name="solde_formula">max(ibs_calcule, minimum_impot) - acomptes - reliquat</field>
+    </record>
+
+    <!-- ============================================ -->
+    <!-- RÉFÉRENCE AUX TAUX IBS                       -->
+    <!-- ============================================ -->
+    
+    <!--
+    TAUX IBS APPLICABLES (Loi de Finances 2024):
+    ===========================================
+    • Taux standard: 19% du résultat fiscal
+      - Activités de production
+      - Services techniques
+      - Artisanat
+    
+    • Taux majoré: 26% du résultat fiscal
+      - Activités de distribution et courtage
+      - Commerce de gros et détail
+      - Professions libérales (sauf exceptions)
+    
+    • Minimum d'impôt: 0.5% du chiffre d'affaires TTC
+      (non applicable la première année d'activité)
+    
+    • Exonérations:
+      - Zone Sud: selon dispositif ANDI
+      - Start-up: 4 ans d'exonération totale
+      - PME innovation: réductions spécifiques
+    
+    Acomptes provisionnels: 30% de l'IBS dernier exercice clos
+    Échéances: 20/02, 20/05, 20/08, 20/11 de chaque année
+    -->
+
+    <!-- ============================================ -->
+    <!-- G4 - MÉNUS ET ACTIONS                        -->
+    <!-- ============================================ -->
+    
+    <record id="action_g4_ibs_declaration" model="ir.actions.act_window">
+        <field name="name">Déclaration G4 - IBS</field>
+        <field name="res_model">l10n.dz.tax.declaration</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('declaration_type', '=', 'G4')]</field>
+        <field name="context">{'default_declaration_type': 'G4'}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créer une nouvelle déclaration G4 d'IBS
+            </p>
+            <p>
+                La déclaration G4 permet de déclarer l'Impôt sur les Bénéfices des Sociétés 
+                ainsi que les acomptes provisionnels trimestriels.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_g4_ibs_declaration"
+              name="G4 - Déclaration IBS"
+              parent="l10n_dz_reports.menu_fiscal_declarations"
+              action="action_g4_ibs_declaration"
+              sequence="4"
+              groups="account.group_account_user"/>
+
+</odoo>

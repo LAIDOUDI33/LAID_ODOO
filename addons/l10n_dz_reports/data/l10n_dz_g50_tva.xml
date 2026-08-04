@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    G50 - Déclaration de TVA (Taxe sur la Valeur Ajoutée)
+    Algérie - Formulaire G50 Mensuel/Trimestriel
+    
+    Conforme au Code de la TVA Algérien (CTVA)
+    Arrêté Ministériel des Finances
+-->
+<odoo>
+    
+    <!-- ============================================ -->
+    <!-- G50 TVA DECLARATION TEMPLATE                -->
+    <!-- ============================================ -->
+    <record id="g50_tva_declaration_template" model="l10n.dz.tax.declaration.template">
+        <field name="name">G50 - Déclaration de TVA</field>
+        <field name="code">G50</field>
+        <field name="type">tva</field>
+        <field name="description">Déclaration mensuelle ou trimestrielle de la Taxe sur la Valeur Ajoutée</field>
+        
+        <!-- Périodicité autorisée -->
+        <field name="periodicity_options">monthly,quarterly</field>
+        <field name="default_periodicity">monthly</field>
+        
+        <!-- Comptes TVA référencés -->
+        <field name="tax_account_collected_ids" eval="[
+            ref('l10n_dz.tva_normale19'),
+            ref('l10n_dz.tva_specifique9'),
+            ref('l10n_dz.tva_0'),
+            ref('l10n_dz.tva_export_0'),
+        ]"/>
+        <field name="tax_account_deductible_ids" eval="[
+            ref('l10n_dz.tva_acq_normale19'),
+            ref('l10n_dz.tva_acq_specifique9'),
+            ref('l10n_dz.tva_imm_normale19'),
+            ref('l10n_dz.tva_imm_specifique9'),
+            ref('l10n_dz.tva_exo_0'),
+        ]"/>
+    </record>
+
+    <!-- ============================================ -->
+    <!-- G50 LIGNES DE DÉCLARATION - TVA COLLECTÉE   -->
+    <!-- ============================================ -->
+    
+    <!-- Ligne 01: Ventes locales taux normal 19% -->
+    <record id="g50_line_01" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g50_tva_declaration_template"/>
+        <field name="sequence">1</field>
+        <field name="code">01</field>
+        <field name="name">Ventes locales - Taux normal 19%</field>
+        <field name="category">tva_collectee</field>
+        <field name="tax_id" ref="l10n_dz.tva_normale19"/>
+        <field name="sign">positive</field>
+        <field name="is_mandatory">True</field>
+    </record>
+
+    <!-- Ligne 02: Ventes locales taux réduit 9% -->
+    <record id="g50_line_02" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g50_tva_declaration_template"/>
+        <field name="sequence">2</field>
+        <field name="code">02</field>
+        <field name="name">Ventes locales - Taux réduit 9%</field>
+        <field name="category">tva_collectee</field>
+        <field name="tax_id" ref="l10n_dz.tva_specifique9"/>
+        <field name="sign">positive</field>
+        <field name="is_mandatory">False</field>
+    </record>
+
+    <!-- Ligne 03: Ventes locales taux réduit 7% (produits de large consommation) -->
+    <record id="g50_line_03" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g50_tva_declaration_template"/>
+        <field name="sequence">3</field>
+        <field name="code">03</field>
+        <field name="name">Ventes locales - Taux réduit 7%</field>
+        <field name="category">tva_collectee</field>
+        <field name="tax_id" eval="None"/>
+        <field name="sign">positive</field>
+        <field name="is_mandatory">False</field>
+        <field name="manual_entry">True</field>
+    </record>
+
+    <!-- Ligne 04: Exportations et livraisons exonérées (0%) -->
+    <record id="g50_line_04" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g50_tva_declaration_template"/>
+        <field name="sequence">4</field>
+        <field name="code">04</field>
+        <field name="name">Exportations - Exonérées (0%)</field>
+        <field name="category">tva_collectee</field>
+        <field name="tax_id" ref="l10n_dz.tva_export_0"/>
+        <field name="sign">positive</field>
+        <field name="is_mandatory">False</field>
+    </record>
+
+    <!-- Ligne 05: Opérations exonérées article 9 du CTVA -->
+    <record id="g50_line_05" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g50_tva_declaration_template"/>
+        <field name="sequence">5</field>
+        <field name="code">05</field>
+        <field name="name">Opérations exonérées (Art. 9 CTVA)</field>
+        <field name="category">exonerations</field>
+        <field name="tax_id" ref="l10n_dz.tva_0"/>
+        <field name="sign">neutral</field>
+        <field name="is_mandatory">False</field>
+    </record>
+
+    <!-- Ligne 06: Autres opérations non taxables -->
+    <record id="g50_line_06" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g50_tva_declaration_template"/>
+        <field name="sequence">6</field>
+        <field name="code">06</field>
+        <field name="name">Autres opérations non taxables</field>
+        <field name="category">exonerations</field>
+        <field name="tax_id" eval="None"/>
+        <field name="sign">neutral</field>
+        <field name="is_mandatory">False</field>
+        <field name="manual_entry">True</field>
+    </record>
+
+    <!-- ============================================ -->
+    <!-- G50 LIGNES DE DÉCLARATION - TVA DÉDUCTIBLE  -->
+    <!-- ============================================ -->
+
+    <!-- Ligne 10: TVA déductible sur biens et services 19% -->
+    <record id="g50_line_10" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g50_tva_declaration_template"/>
+        <field name="sequence">10</field>
+        <field name="code">10</field>
+        <field name="name">TVA déductible B/S - Taux 19%</field>
+        <field name="category">tva_deductible</field>
+        <field name="tax_id" ref="l10n_dz.tva_acq_normale19"/>
+        <field name="sign">negative</field>
+        <field name="is_mandatory">True</field>
+    </record>
+
+    <!-- Ligne 11: TVA déductible sur biens et services 9% -->
+    <record id="g50_line_11" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g50_tva_declaration_template"/>
+        <field name="sequence">11</field>
+        <field name="code">11</field>
+        <field name="name">TVA déductible B/S - Taux 9%</field>
+        <field name="category">tva_deductible</field>
+        <field name="tax_id" ref="l10n_dz.tva_acq_specifique9"/>
+        <field name="sign">negative</field>
+        <field name="is_mandatory">False</field>
+    </record>
+
+    <!-- Ligne 12: TVA déductible sur immobilisations 19% -->
+    <record id="g50_line_12" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g50_tva_declaration_template"/>
+        <field name="sequence">12</field>
+        <field name="code">12</field>
+        <field name="name">TVA déductible Immobilisations - 19%</field>
+        <field name="category">tva_deductible_immo</field>
+        <field name="tax_id" ref="l10n_dz.tva_imm_normale19"/>
+        <field name="sign">negative</field>
+        <field name="is_mandatory">False</field>
+    </record>
+
+    <!-- Ligne 13: TVA déductible sur immobilisations 9% -->
+    <record id="g50_line_13" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g50_tva_declaration_template"/>
+        <field name="sequence">13</field>
+        <field name="code">13</field>
+        <field name="name">TVA déductible Immobilisations - 9%</field>
+        <field name="category">tva_deductible_immo</field>
+        <field name="tax_id" ref="l10n_dz.tva_imm_specifique9"/>
+        <field name="sign">negative</field>
+        <field name="is_mandatory">False</field>
+    </record>
+
+    <!-- Ligne 14: TVA non déductible (exclusions) -->
+    <record id="g50_line_14" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g50_tva_declaration_template"/>
+        <field name="sequence">14</field>
+        <field name="code">14</field>
+        <field name="name">TVA non déductible</field>
+        <field name="category">tva_non_deductible</field>
+        <field name="tax_id" ref="l10n_dz.tva_exo_0"/>
+        <field name="sign">neutral</field>
+        <field name="is_mandatory">False</field>
+    </record>
+
+    <!-- ============================================ -->
+    <!-- G50 LIGNES DE RÉGULARISATION                 -->
+    <!-- ============================================ -->
+
+    <!-- Ligne 20: Crédit de TVA de la période précédente -->
+    <record id="g50_line_20" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g50_tva_declaration_template"/>
+        <field name="sequence">20</field>
+        <field name="code">20</field>
+        <field name="name">Crédit TVA période précédente</field>
+        <field name="category">regularisation</field>
+        <field name="tax_id" eval="None"/>
+        <field name="sign">negative</field>
+        <field name="is_mandatory">False</field>
+        <field name="manual_entry">True</field>
+    </record>
+
+    <!-- Ligne 21: Reverse charges / Autoliquidation -->
+    <record id="g50_line_21" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g50_tva_declaration_template"/>
+        <field name="sequence">21</field>
+        <field name="code">21</field>
+        <field name="name">TVA autoliquidation (prestataires étrangers)</field>
+        <field name="category">regularisation</field>
+        <field name="tax_id" eval="None"/>
+        <field name="sign">positive</field>
+        <field name="is_mandatory">False</field>
+        <field name="manual_entry">True</field>
+    </record>
+
+    <!-- Ligne 22: Ajustements et régularisations diverses -->
+    <record id="g50_line_22" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g50_tva_declaration_template"/>
+        <field name="sequence">22</field>
+        <field name="code">22</field>
+        <field name="name">Ajustements et régularisations</field>
+        <field name="category">regularisation</field>
+        <field name="tax_id" eval="None"/>
+        <field name="sign">neutral</field>
+        <field name="is_mandatory">False</field>
+        <field name="manual_entry">True</field>
+    </record>
+
+    <!-- ============================================ -->
+    <!-- G50 - TOTALS ET SOLDE TVA                    -->
+    <!-- ============================================ -->
+
+    <!-- Total TVA Collectée -->
+    <record id="g50_total_collectee" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g50_tva_declaration_template"/>
+        <field name="sequence">90</field>
+        <field name="code">TOTAL_C</field>
+        <field name="name">TOTAL TVA COLLECTÉE</field>
+        <field name="category">total</field>
+        <field name="is_total">True</field>
+        <field name="total_formula">sum(tva_collectee)</field>
+        <field name="is_bold">True</field>
+    </record>
+
+    <!-- Total TVA Déductible -->
+    <record id="g50_total_deductible" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g50_tva_declaration_template"/>
+        <field name="sequence">91</field>
+        <field name="code">TOTAL_D</field>
+        <field name="name">TOTAL TVA DÉDUCTIBLE</field>
+        <field name="category">total</field>
+        <field name="is_total">True</field>
+        <field name="total_formula">sum(tva_deductible) + sum(tva_deductible_immo)</field>
+        <field name="is_bold">True</field>
+    </record>
+
+    <!-- Solde TVA à payer ou Crédit -->
+    <record id="g50_solde_tva" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g50_tva_declaration_template"/>
+        <field name="sequence">99</field>
+        <field name="code">SOLDE</field>
+        <field name="name">SOLDE TVA (à payer ou crédit)</field>
+        <field name="category">solde</field>
+        <field name="is_solde">True</field>
+        <field name="solde_formula">total_collectee - total_deductible + regularisation</field>
+        <field name="is_bold">True</field>
+        <field name="is_highlighted">True</field>
+    </record>
+
+    <!-- ============================================ -->
+    <!-- G50 - MÉNUS D'ACTION                         -->
+    <!-- ============================================ -->
+    
+    <record id="action_g50_tva_declaration" model="ir.actions.act_window">
+        <field name="name">Déclaration G50 - TVA</field>
+        <field name="res_model">l10n.dz.tax.declaration</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('declaration_type', '=', 'G50')]</field>
+        <field name="context">{'default_declaration_type': 'G50', 'default_company_id': allowed_companies_ids[0]}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créer une nouvelle déclaration G50 de TVA
+            </p>
+            <p>
+                La déclaration G50 permet de déclarer la TVA collectée sur les ventes 
+                et la TVA déductible sur les achats pour une période donnée.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu Item under Accounting -->
+    <menuitem id="menu_fiscal_declarations"
+              name="Déclarations Fiscales"
+              parent="account.account_menu_finance"
+              sequence="30"
+              groups="account.group_account_user"/>
+
+    <menuitem id="menu_g50_tva_declaration"
+              name="G50 - Déclaration TVA"
+              parent="menu_fiscal_declarations"
+              action="action_g50_tva_declaration"
+              sequence="1"
+              groups="account.group_account_user"/>
+
+</odoo>

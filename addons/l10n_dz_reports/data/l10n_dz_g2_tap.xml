@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    G2 - Déclaration TAP (Taxe sur l'Activité Professionnelle)
+    Algérie - Taxe proportionnelle au Chiffre d'Affaires
+    
+    Conforme à l'Ordonnance 75-35 du 29 avril 1975
+    Modifiée par la Loi de Finances 2024
+-->
+<odoo>
+    
+    <!-- ============================================ -->
+    <!-- G2 TAP DECLARATION TEMPLATE                 -->
+    <!-- ============================================ -->
+    <record id="g2_tap_declaration_template" model="l10n.dz.tax.declaration.template">
+        <field name="name">G2 - Déclaration TAP</field>
+        <field name="code">G2</field>
+        <field name="type">tap</field>
+        <field name="description">Déclaration de la Taxe sur l'Activité Professionnelle (TAP) - Trimestrielle</field>
+        
+        <!-- Périodicité: Trimestrielle obligatoire -->
+        <field name="periodicity_options">quarterly,yearly</field>
+        <field name="default_periodicity">quarterly</field>
+        
+        <!-- Taux TAP applicables -->
+        <field name="tax_rate_default">2.0</field>  <!-- Taux standard 2% -->
+    </record>
+
+    <!-- ============================================ -->
+    <!-- G2 LIGNES - CHIFFRE D'AFFAIRES              -->
+    <!-- ============================================ -->
+
+    <!-- Ligne 01: CA local (Algérie) - Activités de production -->
+    <record id="g2_line_01" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g2_tap_declaration_template"/>
+        <field name="sequence">1</field>
+        <field name="code">01</field>
+        <field name="name">Chiffre d'affaires local - Production industrielle</field>
+        <field name="category">chiffre_affaires</field>
+        <field name="sign">positive</field>
+        <field name="is_mandatory">True</field>
+        <field name="manual_entry">True</field>
+        <field name="tap_rate">2.0</field>  <!-- Taux 2% pour production -->
+    </record>
+
+    <!-- Ligne 02: CA local - Activités commerciales -->
+    <record id="g2_line_02" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g2_tap_declaration_template"/>
+        <field name="sequence">2</field>
+        <field name="code">02</field>
+        <field name="name">Chiffre d'affaires local - Activités commerciales</field>
+        <field name="category">chiffre_affaires</field>
+        <field name="sign">positive</field>
+        <field name="is_mandatory">False</field>
+        <field name="manual_entry">True</field>
+        <field name="tap_rate">2.0</field>
+    </record>
+
+    <!-- Ligne 03: CA local - Services -->
+    <record id="g2_line_03" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g2_tap_declaration_template"/>
+        <field name="sequence">3</field>
+        <field name="code">03</field>
+        <field name="name">Chiffre d'affaires local - Prestations de services</field>
+        <field name="category">chiffre_affaires</field>
+        <field name="sign">positive</field>
+        <field name="is_mandatory">False</field>
+        <field name="manual_entry">True</field>
+        <field name="tap_rate">2.0</field>
+    </record>
+
+    <!-- Ligne 04: CA exportations -->
+    <record id="g2_line_04" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g2_tap_declaration_template"/>
+        <field name="sequence">4</field>
+        <field name="code">04</field>
+        <field name="name">Chiffre d'affaires à l'exportation</field>
+        <field name="category">exonerations</field>
+        <field name="sign">neutral</field>
+        <field name="is_mandatory">False</field>
+        <field name="manual_entry">True</field>
+        <field name="tap_rate">0.0</field>  <!-- Export exonéré -->
+    </record>
+
+    <!-- Ligne 05: CA activités exonérées (secteurs prioritaires) -->
+    <record id="g2_line_05" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g2_tap_declaration_template"/>
+        <field name="sequence">5</field>
+        <field name="code">05</field>
+        <field name="name">CA Activités exonérées (Sud, agriculture, etc.)</field>
+        <field name="category">exonerations</field>
+        <field name="sign">neutral</field>
+        <field name="is_mandatory">False</field>
+        <field name="manual_entry">True</field>
+        <field name="tap_rate">0.0</field>
+    </record>
+
+    <!-- Ligne 06: CA avec taux réduit 1% (certaines activités) -->
+    <record id="g2_line_06" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g2_tap_declaration_template"/>
+        <field name="sequence">6</field>
+        <field name="code">06</field>
+        <field name="name">CA Activités à taux réduit (1%)</field>
+        <field name="category">chiffre_affaires_reduit</field>
+        <field name="sign">positive</field>
+        <field name="is_mandatory">False</field>
+        <field name="manual_entry">True</field>
+        <field name="tap_rate">1.0</field>
+    </record>
+
+    <!-- ============================================ -->
+    <!-- G2 LIGNES - EXONÉRATIONS PARTICULIÈRES      -->
+    <!-- ============================================ -->
+
+    <!-- Ligne 10: Exonération zone Sud (Wilayas 38-58) -->
+    <record id="g2_line_10" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g2_tap_declaration_template"/>
+        <field name="sequence">10</field>
+        <field name="code">10</field>
+        <field name="name">Exonération Zone Sud (Hautes Plaines et Sud)</field>
+        <field name="category">exonerations_zone</field>
+        <field name="sign">negative</field>
+        <field name="is_mandatory">False</field>
+        <field name="manual_entry">True</field>
+        <field name="description_text">Exonération totale pour les activités implantées dans les wilayas du Sud (codes 38 à 58) pendant les 5 premières années</field>
+    </record>
+
+    <!-- Ligne 11: Exonération secteur agricole -->
+    <record id="g2_line_11" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g2_tap_declaration_template"/>
+        <field name="sequence">11</field>
+        <field name="code">11</field>
+        <field name="name">Exonération Secteur Agricole</field>
+        <field name="category">exonerations_secteur</field>
+        <field name="sign">negative</field>
+        <field name="is_mandatory">False</field>
+        <field name="manual_entry">True</field>
+    </record>
+
+    <!-- Ligne 12: Exonération PME start-up (3 ans) -->
+    <record id="g2_line_12" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g2_tap_declaration_template"/>
+        <field name="sequence">12</field>
+        <field name="code">12</field>
+        <field name="name">Exonération Création d'activité (3 ans)</field>
+        <field name="category">exonerations_creation</field>
+        <field name="sign">negative</field>
+        <field name="is_mandatory">False</field>
+        <field name="manual_entry">True</field>
+        <field name="description_text">Exonération pendant 3 ans pour les nouvelles entreprises créées</field>
+    </record>
+
+    <!-- Ligne 13: Autres exonérations et réductions -->
+    <record id="g2_line_13" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g2_tap_declaration_template"/>
+        <field name="sequence">13</field>
+        <field name="code">13</field>
+        <field name="name">Autres exonérations et réductions</field>
+        <field name="category">exonerations_autres</field>
+        <field name="sign">negative</field>
+        <field name="is_mandatory">False</field>
+        <field name="manual_entry">True</field>
+    </record>
+
+    <!-- ============================================ -->
+    <!-- G2 LIGNES - AJUSTEMENTS                     -->
+    <!-- ============================================ -->
+
+    <!-- Ligne 20: CA imposable après exonérations -->
+    <record id="g2_line_20" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g2_tap_declaration_template"/>
+        <field name="sequence">20</field>
+        <field name="code">CA_IMP</field>
+        <field name="name">CHIFFRE D'AFFAIRES IMPOSABLE</field>
+        <field name="category">total</field>
+        <field name="is_total">True</field>
+        <field name="total_formula">sum(chiffre_affaires) + sum(chiffre_affaires_reduit) - sum(exonerations_zone) - sum(exonerations_secteur) - sum(exonerations_creation) - sum(exonerations_autres)</field>
+        <field name="is_bold">True</field>
+    </record>
+
+    <!-- Ligne 21: Acomptes versés durant la période -->
+    <record id="g2_line_21" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g2_tap_declaration_template"/>
+        <field name="sequence">21</field>
+        <field name="code">ACOMPTES</field>
+        <field name="name">Acomptes provisionnels versés</field>
+        <field name="category">acomptes</field>
+        <field name="sign">negative</field>
+        <field name="is_mandatory">False</field>
+        <field name="manual_entry">True</field>
+    </record>
+
+    <!-- Ligne 22: Crédit TAP période précédente -->
+    <record id="g2_line_22" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g2_tap_declaration_template"/>
+        <field name="sequence">22</field>
+        <field name="code">CREDIT_ANT</field>
+        <field name="name">Crédit TAP période précédente</field>
+        <field name="category">regularisation</field>
+        <field name="sign">negative</field>
+        <field name="is_mandatory">False</field>
+        <field name="manual_entry">True</field>
+    </record>
+
+    <!-- ============================================ -->
+    <!-- G2 - SOLDE TAP À PAYER                      -->
+    <!-- ============================================ -->
+
+    <!-- Solde TAP dû -->
+    <record id="g2_solde_tap" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g2_tap_declaration_template"/>
+        <field name="sequence">99</field>
+        <field name="code">TAP_DU</field>
+        <field name="name">TAP NETTE À PAYER</field>
+        <field name="category">solde</field>
+        <field name="is_solde">True</field>
+        <field name="is_bold">True</field>
+        <field name="is_highlighted">True</field>
+        <field name="solde_formula">(ca_imposable * 0.02) + (ca_reduit * 0.01) - acomptes - credit_anterieur</field>
+    </record>
+
+    <!-- ============================================ -->
+    <!-- RÉFÉRENCE AUX TAUX TAP                       -->
+    <!-- ============================================ -->
+    
+    <!--
+    TAUX TAP APPLICABLES:
+    ======================
+    • Taux normal: 2% du chiffre d'affaires
+    • Taux réduit: 1% pour certaines activités spécifiques
+    • Exonérations:
+      - Zone Sud (wilayas 38-58): 100% pendant 5 ans
+      - Secteur agricole: selon dispositif
+      - Nouvelles créations: 3 ans
+      - Exportations: exonérées
+    
+    Base de calcul: Chiffre d'affaires TTC (hors taxes exclues)
+    Périodicité: Trimestrielle (échéance: dernier jour du mois suivant le trimestre)
+    -->
+
+    <!-- ============================================ -->
+    <!-- G2 - MÉNUS ET ACTIONS                        -->
+    <!-- ============================================ -->
+    
+    <record id="action_g2_tap_declaration" model="ir.actions.act_window">
+        <field name="name">Déclaration G2 - TAP</field>
+        <field name="res_model">l10n.dz.tax.declaration</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('declaration_type', '=', 'G2')]</field>
+        <field name="context">{'default_declaration_type': 'G2'}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créer une nouvelle déclaration G2 de TAP
+            </p>
+            <p>
+                La déclaration G2 permet de déclarer la Taxe sur l'Activité Professionnelle 
+                calculée sur le chiffre d'affaires réalisé au cours du trimestre.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_g2_tap_declaration"
+              name="G2 - Déclaration TAP"
+              parent="l10n_dz_reports.menu_fiscal_declarations"
+              action="action_g2_tap_declaration"
+              sequence="3"
+              groups="account.group_account_user"/>
+
+</odoo>

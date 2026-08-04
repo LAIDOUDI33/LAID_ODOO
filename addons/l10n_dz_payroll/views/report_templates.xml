@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Copyright (C) 2024 HASSIBA Suite / LAID ODOO
+For more information, see LICENSE file
+-->
+<odoo>
+
+    <!-- ============================================ -->
+    <!-- TEMPLATS DE RAPPORTS PAIE ALGÉRIENNE         -->
+    <!-- ALGERIAN PAYROLL REPORT TEMPLATES            -->
+    <!-- ============================================ -->
+
+    <!-- Rapport Attestation CNAS -->
+    <template id="report_attestation_cnas">
+        <t t-call="web.html_container">
+            <t t-set="data" t-value="docs[0]"/>
+            
+            <div class="article" style="font-family: 'Arial', 'Simplified Arabic', sans-serif; padding: 20px;">
+                
+                <!-- En-tête -->
+                <div style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #006633; padding-bottom: 15px;">
+                    <h1 style="color: #006633; margin: 0;">
+                        الجمهورية الجزائرية الديمقراطية الشعبية<br/>
+                        REPUBLIQUE ALGERIENNE DEMOCRATIQUE ET POPULAIRE
+                    </h1>
+                    <h2 style="margin: 10px 0;">
+                        شهادة عمل / ATTESTATION DE TRAVAIL
+                    </h2>
+                </div>
+                
+                <!-- Informations Employeur -->
+                <div style="margin-bottom: 25px;">
+                    <h3 style="color: #006633;">معلومات صاحب العمل / Informations Employeur</h3>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <tr>
+                            <td style="padding: 5px; border: 1px solid #ddd;"><strong>Raison Sociale / المؤسسة:</strong></td>
+                            <td style="padding: 5px; border: 1px solid #ddd;" t-esc="data.company_id.name"/>
+                        </tr>
+                        <tr>
+                            <td style="padding: 5px; border: 1px solid #ddd;"><strong>N° CNAS:</strong></td>
+                            <td style="padding: 5px; border: 1px solid #ddd;" t-esc="data.company_id.cnas_numero_employeur or 'N/A'"/>
+                        </tr>
+                        <tr>
+                            <td style="padding: 5px; border: 1px solid #ddd;"><strong>Adresse:</strong></td>
+                            <td style="padding: 5px; border: 1px solid #ddd;">
+                                <span t-esc="data.company_id.street or ''"/>
+                                <span t-if="data.company_id.street2" t-esc="' ' + data.company_id.street2"/>
+                                <span t-if="data.company_id.city" t-esc=", " + data.company_id.city"/>
+                                <span t-if="data.company_id.zip" t-esc=" " + data.company_id.zip"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 5px; border: 1px solid #ddd;"><strong>NIF:</strong></td>
+                            <td style="padding: 5px; border: 1px solid #ddd;" t-esc="data.company_id.vat or 'N/A'"/>
+                        </tr>
+                    </table>
+                </div>
+                
+                <!-- Informations Salarié -->
+                <div style="margin-bottom: 25px;">
+                    <h3 style="color: #006633;">معلومات الموظف / Informations Salarié</h3>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <tr>
+                            <td style="padding: 5px; border: 1px solid #ddd;"><strong>Nom & Prénom / الاسم واللقب:</strong></td>
+                            <td style="padding: 5px; border: 1px solid #ddd;" t-esc="data.employee_id.name"/>
+                        </tr>
+                        <tr>
+                            <td style="padding: 5px; border: 1px solid #ddd;"><strong>Date de Naissance / تاريخ الميلاد:</strong></td>
+                            <td style="padding: 5px; border: 1px solid #ddd;" t-esc="data.employee_id.birthday or 'N/A'"/>
+                        </tr>
+                        <tr>
+                            <td style="padding: 5px; border: 1px solid #ddd;"><strong>N° CNAS:</strong></td>
+                            <td style="padding: 5px; border: 1px solid #ddd;" t-esc="data.employee_id.cnas_numero_affiliation or 'N/A'"/>
+                        </tr>
+                        <tr>
+                            <td style="padding: 5px; border: 1px solid #ddd;"><strong>Type de Contrat / نوع العقد:</strong></td>
+                            <td style="padding: 5px; border: 1px solid #ddd;" t-esc="data.contract_type_id.name or 'N/A'"/>
+                        </tr>
+                    </table>
+                </div>
+                
+                <!-- Période et Salaire -->
+                <div style="margin-bottom: 25px;">
+                    <h3 style="color: #006633;">فترة الدفع / Période de Paie</h3>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <tr>
+                            <td style="padding: 5px; border: 1px solid #ddd;"><strong>Période du / من:</strong></td>
+                            <td style="padding: 5px; border: 1px solid #ddd;" t-esc="data.date_from"/>
+                            <td style="padding: 5px; border: 1px solid #ddd;"><strong>au / إلى:</strong></td>
+                            <td style="padding: 5px; border: 1px solid #ddd;" t-esc="data.date_to"/>
+                        </tr>
+                        <tr>
+                            <td style="padding: 5px; border: 1px solid #ddd;"><strong>Salaire de Base / الراتب الأساسي:</strong></td>
+                            <td colspan="3" style="padding: 5px; border: 1px solid #ddd;">
+                                <span t-esc="'{:,.0f}'.format(data.contract_id.wage or 0)"/> DZD
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 5px; border: 1px solid #ddd;"><strong>Salaire Brut / إجمالي الراتب الخام:</strong></td>
+                            <td colspan="3" style="padding: 5px; border: 1px solid #ddd;">
+                                <span t-esc="'{:,.0f}'.format(sum(l.total for l in data.line_ids if l.category_id.code == 'SALAIRE_BASE') or 0)"/> DZD
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 5px; border: 1px solid #ddd;"><strong>Cotisation CNAS / التأمينات الاجتماعية:</strong></td>
+                            <td colspan="3" style="padding: 5px; border: 1px solid #ddd;">
+                                <span t-esc="'{:,.0f}'.format(data.cnas_salarial_montant or 0)"/> DZD (9%)
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 5px; border: 1px solid #ddd;"><strong>IRG Retenu / الضريبة المحجوزة:</strong></td>
+                            <td colspan="3" style="padding: 5px; border: 1px solid #ddd;">
+                                <span t-esc="'{:,.0f}'.format(data.irg_net or 0)"/> DZD
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <!-- Certification -->
+                <div style="margin-top: 40px; text-align: center;">
+                    <p><strong>نشهد بأن الموظف المذكور أعلاه يعمل لدينا وأن اشتراكاته الاجتماعية منتظمة</strong></p>
+                    <p><strong>Certifions que le salarié mentionné ci-dessus travaille pour nous et que ses cotisations sociales sont à jour.</strong></p>
+                    
+                    <br/><br/>
+                    
+                    <table style="width: 80%; margin: 0 auto;">
+                        <tr>
+                            <td style="text-align: center; width: 50%;">
+                                <p>Le : <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y')"/></p>
+                                <br/>
+                                <p>__________________________</p>
+                                <p><strong>Signature Employeur / توقيع صاحب العمل</strong></p>
+                                <p><em>(Cachet de l'entreprise / ختم المؤسسة)</em></p>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <!-- Pied de page légal -->
+                <div style="margin-top: 40px; font-size: 10px; color: #666; text-align: center; border-top: 1px solid #ccc; padding-top: 10px;">
+                    <p>هذه الوثيقة صادرة وفقا للتشريع الجزائري الساري</p>
+                    <p>Document émis conformément à la législation algérienne en vigueur</p>
+                    <p>Loi 90-11 du 21 avril 1990 - Ordonnance 95-01 relative aux assurances sociales</p>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- Bulletin de Paie Bilingue Arabe/Français -->
+    <template id="bulletin_paie_bilingue">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="payslip">
+            
+            <div class="article" style="font-family: 'Arial', 'Simplified Arabic', sans-serif; font-size: 11px; padding: 15px;">
+                
+                <!-- En-tête Bilingue -->
+                <div style="display: flex; justify-content: space-between; margin-bottom: 20px; border-bottom: 3px double #006633; padding-bottom: 10px;">
+                    <div style="width: 45%;">
+                        <h2 style="color: #006633; margin: 0;">كشف الراتب</h2>
+                        <h3 style="margin: 5px 0;">BULLETIN DE PAIE</h3>
+                    </div>
+                    <div style="width: 55%; text-align: right;">
+                        <strong t-esc="payslip.company_id.name"/><br/>
+                        <span t-esc="payslip.company_id.street or ''"/> 
+                        <span t-if="payslip.company_id.city" t-esc="', ' + payslip.company_id.city"/><br/>
+                        <small>N° CNAS: <span t-esc="payslip.company_id.cnas_numero_employeur or 'N/A'"/></small>
+                    </div>
+                </div>
+                
+                <!-- Informations Employé et Période -->
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; background: #f9f9f9;">
+                    <tr>
+                        <td style="padding: 8px; border: 1px solid #ddd; width: 25%;">
+                            <strong>الموظف / Employé:</strong><br/>
+                            <span t-esc="payslip.employee_id.name"/>
+                        </td>
+                        <td style="padding: 8px; border: 1px solid #ddd; width: 25%;">
+                            <strong>المصففة / Matricule:</strong><br/>
+                            <span t-esc="payslip.employee_id.registration_number or 'N/A'"/>
+                        </td>
+                        <td style="padding: 8px; border: 1px solid #ddd; width: 25%;">
+                            <strong>الفترة / Période:</strong><br/>
+                            Du <span t-esc="payslip.date_from"/> au <span t-esc="payslip.date_to"/>
+                        </td>
+                        <td style="padding: 8px; border: 1px solid #ddd; width: 25%;">
+                            <strong>رقم / N° Bulletin:</strong><br/>
+                            <span t-esc="payslip.number or 'N/A'"/>
+                        </td>
+                    </tr>
+                </table>
+                
+                <!-- Tableau des Éléments de Paie -->
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
+                    <thead>
+                        <tr style="background-color: #006633; color: white;">
+                            <th style="padding: 8px; border: 1px solid #004d26; text-align: right;">البيان / Désignation</th>
+                            <th style="padding: 8px; border: 1px solid #004d26; text-align: center; width: 15%;">Base</th>
+                            <th style="padding: 8px; border: 1px solid #004d26; text-align: center; width: 10%;">Taux %</th>
+                            <th style="padding: 8px; border: 1px solid #004d26; text-align: right; width: 18%;">Montant (DZD)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Section Revenus Bruts -->
+                        <tr style="background-color: #e8f5e9;">
+                            <td colspan="4" style="padding: 5px; border: 1px solid #ddd; font-weight: bold;">
+                                ⬆️ الإيرادات / REVENUS BRUTS
+                            </td>
+                        </tr>
+                        <t t-foreach="payslip.line_ids.filtered(lambda l: l.category_id and l.category_id.code in ['SALAIRE_BASE', 'PRIMES', 'HEURES_SUP', 'ALLOC_FAM'])" t-as="line">
+                        <tr>
+                            <td style="padding: 5px; border: 1px solid #ddd;" t-esc="line.name"/>
+                            <td style="padding: 5px; border: 1px solid #ddd; text-align: center;" t-esc="'{:,.0f}'.format(line.amount or 0) if line.amount_select != 'fix' else '-'"/>
+                            <td style="padding: 5px; border: 1px solid #ddd; text-align: center;" t-esc="'{:.1%}'.format(line.amount_percentage) if line.amount_select == 'percentage' else '-'"/>
+                            <td style="padding: 5px; border: 1px solid #ddd; text-align: right;" t-esc="'{:,.2f}'.format(line.total)"/>
+                        </tr>
+                        </t>
+                        
+                        <!-- Section Cotisations Patronales -->
+                        <tr t-if="payslip.company_id.afficher_charges_patronales" style="background-color: #fff3e0;">
+                            <td colspan="4" style="padding: 5px; border: 1px solid #ddd; font-weight: bold;">
+                                🏢 اشتراكات صاحب العمل / COTISATIONS PATRONALES
+                            </td>
+                        </tr>
+                        <t t-if="payslip.company_id.afficher_charges_patronales" t-foreach="payslip.line_ids.filtered(lambda l: l.category_id and l.category_id.code == 'COT_PAT')" t-as="line">
+                        <tr>
+                            <td style="padding: 5px; border: 1px solid #ddd;" t-esc="line.name"/>
+                            <td style="padding: 5px; border: 1px solid #ddd; text-align: center;" t-esc="'{:,.0f}'.format(line.amount or 0) if line.amount_select != 'fix' else '-'"/>
+                            <td style="padding: 5px; border: 1px solid #ddd; text-align: center;" t-esc="'{:.1%}'.format(line.amount_percentage) if line.amount_select == 'percentage' else '-'"/>
+                            <td style="padding: 5px; border: 1px solid #ddd; text-align: right;" t-esc="'{:,.2f}'.format(line.total)"/>
+                        </tr>
+                        </t>
+                        
+                        <!-- Section Cotisations Salariales -->
+                        <tr style="background-color: #fce4ec;">
+                            <td colspan="4" style="padding: 5px; border: 1px solid #ddd; font-weight: bold;">
+                                ⬇️ الاقتطاعات / RETENUES SALARIALES
+                            </td>
+                        </tr>
+                        <t t-foreach="payslip.line_ids.filtered(lambda l: l.category_id and l.category_id.code == 'COT_SAL')" t-as="line">
+                        <tr>
+                            <td style="padding: 5px; border: 1px solid #ddd;" t-esc="line.name"/>
+                            <td style="padding: 5px; border: 1px solid #ddd; text-align: center;" t-esc="'{:,.0f}'.format(line.amount or 0) if line.amount_select != 'fix' else '-'"/>
+                            <td style="padding: 5px; border: 1px solid #ddd; text-align: center;" t-esc="'{:.1%}'.format(line.amount_percentage) if line.amount_select == 'percentage' else '-'"/>
+                            <td style="padding: 5px; border: 1px solid #ddd; text-align: right;" t-esc="'{:,.2f}'.format(line.total)"/>
+                        </tr>
+                        </t>
+                        
+                        <!-- Total Net à Payer -->
+                        <tr style="background-color: #006633; color: white; font-weight: bold; font-size: 12px;">
+                            <td colspan="3" style="padding: 10px; border: 1px solid #004d26; text-align: right;">
+                                💰 صافي الدفع / NET À PAYER
+                            </td>
+                            <td style="padding: 10px; border: 1px solid #004d26; text-align: right; font-size: 14px;">
+                                <span t-esc="'{:,.2f}'.format(payslip.net_a_payer or 0)"/> DZD
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <!-- Détails IRG -->
+                <div style="background-color: #f5f5f5; padding: 10px; margin-bottom: 15px; border-left: 4px solid #006633;">
+                    <strong>📊 تفاصيل ضريبة الدخل / DÉTAILS IRG:</strong>
+                    <table style="width: 100%; margin-top: 5px;">
+                        <tr>
+                            <td>Base Imposable:</td>
+                            <td style="text-align: right;" t-esc="'{:,.2f}'.format(payslip.irg_brut or 0)"/> DZD
+                        </tr>
+                        <tr>
+                            <td>Abattement 40% (max 1500):</td>
+                            <td style="text-align: right;" t-esc="'{:,.2f}'.format(payslip.irg_abattement or 0)"/> DZD
+                        </tr>
+                        <tr>
+                            <td><strong>IRG Net à Retenir:</strong></td>
+                            <td style="text-align: right; font-weight: bold;" t-esc="'{:,.2f}'.format(payslip.irg_net or 0)"/> DZD
+                        </tr>
+                    </table>
+                </div>
+                
+                <!-- Signatures -->
+                <div style="display: flex; justify-content: space-between; margin-top: 30px;">
+                    <div style="width: 45%; text-align: center;">
+                        <p>Le : _______________</p>
+                        <br/>
+                        <p>_______________________</p>
+                        <p><strong>توقيع الموظف / Signature Salarié</strong></p>
+                    </div>
+                    <div style="width: 45%; text-align: center;">
+                        <p>Le : _______________</p>
+                        <br/>
+                        <p>_______________________</p>
+                        <p><strong>توقيع صاحب العمل / Signature Employeur</strong></p>
+                        <p><em>(ختم المؤسسة / Cachet)</em></p>
+                    </div>
+                </div>
+                
+                <!-- Pied de Page Légal Algérien -->
+                <div style="margin-top: 25px; font-size: 9px; color: #666; border-top: 2px solid #006633; padding-top: 10px; text-align: center;">
+                    <p style="margin: 3px 0;">
+                        <strong>الجمهورية الجزائرية الديمقراطية الشعبية</strong> | 
+                        <strong>REPUBLIQUE ALGERIENNE DEMOCRATIQUE ET POPULAIRE</strong>
+                    </p>
+                    <p style="margin: 3px 0;">
+                        Document conforme à la Loi 90-11 du 21/04/1990 (Code du Travail)
+                    </p>
+                    <p style="margin: 3px 0;">
+                        وثيقة خاصة - Document confidentiel - Ne peut être utilisée comme attestation officielle
+                    </p>
+                    <p style="margin: 3px 0;">
+                        Généré par <strong>HASSIBA Suite ERP v19.4</strong> - Module l10n_dz_payroll
+                    </p>
+                </div>
+                
+            </div>
+            </t>
+        </t>
+    </template>
+
+</odoo>

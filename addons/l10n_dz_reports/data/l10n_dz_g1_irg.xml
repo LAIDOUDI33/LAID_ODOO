@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    G1 - Déclaration IRG (Impôt sur le Revenu Global)
+    Algérie - Retenue à la Source
+    
+    Conforme au Code des Impôts Directs et Taxes Assimilées (CIDTA)
+    Barème IRG progressif 2024
+-->
+<odoo>
+    
+    <!-- ============================================ -->
+    <!-- G1 IRG DECLARATION TEMPLATE                 -->
+    <!-- ============================================ -->
+    <record id="g1_irg_declaration_template" model="l10n.dz.tax.declaration.template">
+        <field name="name">G1 - Déclaration IRG</field>
+        <field name="code">G1</field>
+        <field name="type">irg</field>
+        <field name="description">Déclaration de la retenue à la source IRG sur salaires et revenus assimilés</field>
+        
+        <!-- Périodicité: Mensuelle obligatoire -->
+        <field name="periodicity_options">monthly</field>
+        <field name="default_periodicity">monthly</field>
+        
+        <!-- Référence aux comptes IRG -->
+        <field name="tax_account_collected_ids" eval="[]"/>
+        <field name="tax_account_deductible_ids" eval="[]"/>
+    </record>
+
+    <!-- ============================================ -->
+    <!-- G1 LIGNES - RÉMUNÉRATIONS BRUTES            -->
+    <!-- ============================================ -->
+
+    <!-- Ligne 01: Salaires de base -->
+    <record id="g1_line_01" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g1_irg_declaration_template"/>
+        <field name="sequence">1</field>
+        <field name="code">01</field>
+        <field name="name">Salaires de base et appointements</field>
+        <field name="category">remunerations_brutes</field>
+        <field name="sign">positive</field>
+        <field name="is_mandatory">True</field>
+        <field name="manual_entry">True</field>
+    </record>
+
+    <!-- Ligne 02: Primes et indemnités imposables -->
+    <record id="g1_line_02" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g1_irg_declaration_template"/>
+        <field name="sequence">2</field>
+        <field name="code">02</field>
+        <field name="name">Primes, gratifications et indemnités imposables</field>
+        <field name="category">remunerations_brutes</field>
+        <field name="sign">positive</field>
+        <field name="is_mandatory">False</field>
+        <field name="manual_entry">True</field>
+    </record>
+
+    <!-- Ligne 03: Heures supplémentaires -->
+    <record id="g1_line_03" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g1_irg_declaration_template"/>
+        <field name="sequence">3</field>
+        <field name="code">03</field>
+        <field name="name">Rémunérations heures supplémentaires (majorées)</field>
+        <field name="category">remunerations_brutes</field>
+        <field name="sign">positive</field>
+        <field name="is_mandatory">False</field>
+        <field name="manual_entry">True</field>
+    </record>
+
+    <!-- Ligne 04: Avantages en nature -->
+    <record id="g1_line_04" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g1_irg_declaration_template"/>
+        <field name="sequence">4</field>
+        <field name="code">04</field>
+        <field name="name">Avantages en nature (logement, véhicule, etc.)</field>
+        <field name="category">avantages_nature</field>
+        <field name="sign">positive</field>
+        <field name="is_mandatory">False</field>
+        <field name="manual_entry">True</field>
+    </record>
+
+    <!-- Ligne 05: Allocations familiales (non imposables) -->
+    <record id="g1_line_05" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g1_irg_declaration_template"/>
+        <field name="sequence">5</field>
+        <field name="code">05</field>
+        <field name="name">Allocations familiales (exonérées)</field>
+        <field name="category">exonerations</field>
+        <field name="sign">neutral</field>
+        <field name="is_mandatory">False</field>
+        <field name="manual_entry">True</field>
+    </record>
+
+    <!-- ============================================ -->
+    <!-- G1 LIGNES - COTISATIONS CNAS                -->
+    <!-- ============================================ -->
+
+    <!-- Ligne 10: Part salariale CNAS (assurance sociale) -->
+    <record id="g1_line_10" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g1_irg_declaration_template"/>
+        <field name="sequence">10</field>
+        <field name="code">10</field>
+        <field name="name">Part Salariale - CNAS Assurance Sociale (9%)</field>
+        <field name="category">cotisations_salariales</field>
+        <field name="sign">negative</field>
+        <field name="is_mandatory">True</field>
+        <field name="manual_entry">True</field>
+        <field name="default_rate">9.0</field>
+    </record>
+
+    <!-- Ligne 11: Part patronale CNAS (assurance sociale) -->
+    <record id="g1_line_11" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g1_irg_declaration_template"/>
+        <field name="sequence">11</field>
+        <field name="code">11</field>
+        <field name="name">Part Patronale - CNAS Assurance Sociale (26%)</field>
+        <field name="category">cotisations_patronales</field>
+        <field name="sign">neutral</field>  <!-- Info uniquement pour déclaration -->
+        <field name="is_mandatory">False</field>
+        <field name="manual_entry">True</field>
+        <field name="default_rate">26.0</field>
+    </record>
+
+    <!-- Ligne 12: Cotisation CASNOS (cas des non-salariés) -->
+    <record id="g1_line_12" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g1_irg_declaration_template"/>
+        <field name="sequence">12</field>
+        <field name="code">12</field>
+        <field name="name">Cotisation CASNOS (régime non-salarié)</field>
+        <field name="category">cotisations_salariales</field>
+        <field name="sign">negative</field>
+        <field name="is_mandatory">False</field>
+        <field name="manual_entry">True</field>
+    </record>
+
+    <!-- ============================================ -->
+    <!-- G1 LIGNES - ABATEMENTS ET DÉDUCTIONS         -->
+    <!-- ============================================ -->
+
+    <!-- Ligne 20: Abatement forfaitaire 10% frais professionnels -->
+    <record id="g1_line_20" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g1_irg_declaration_template"/>
+        <field name="sequence">20</field>
+        <field name="code">20</field>
+        <field name="name">Abattement frais professionnels (10%)</field>
+        <field name="category">deductions</field>
+        <field name="sign">negative</field>
+        <field name="is_mandatory">True</field>
+        <field name="is_computed">True</field>
+        <field name="compute_formula">brut_imposable * 0.10</field>
+        <field name="default_rate">10.0</field>
+    </record>
+
+    <!-- Ligne 21: Parts de salaire exonérées (plafond 1000 DA/mois) -->
+    <record id="g1_line_21" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g1_irg_declaration_template"/>
+        <field name="sequence">21</field>
+        <field name="code">21</field>
+        <field name="name">Part exonérée (plafond mensuel 1.000 DA)</field>
+        <field name="category">deductions</field>
+        <field name="sign">negative</field>
+        <field name="is_mandatory">True</field>
+        <field name="manual_entry">True</field>
+    </record>
+
+    <!-- Ligne 22: Déduction famille à charge -->
+    <record id="g1_line_22" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g1_irg_declaration_template"/>
+        <field name="sequence">22</field>
+        <field name="code">22</field>
+        <field name="name">Déduction personnes à charge (2.500 DA/personne)</field>
+        <field name="category">deductions</field>
+        <field name="sign">negative</field>
+        <field name="is_mandatory">False</field>
+        <field name="manual_entry">True</field>
+    </record>
+
+    <!-- ============================================ -->
+    <!-- G1 LIGNES - CALCUL IRG                      -->
+    <!-- ============================================ -->
+
+    <!-- Total brut imposable -->
+    <record id="g1_total_brut" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g1_irg_declaration_template"/>
+        <field name="sequence">90</field>
+        <field name="code">BRUT_IMP</field>
+        <field name="name">TOTAL BRUT IMPOSABLE</field>
+        <field name="category">total</field>
+        <field name="is_total">True</field>
+        <field name="total_formula">sum(remunerations_brutes) + sum(avantages_nature)</field>
+        <field name="is_bold">True</field>
+    </record>
+
+    <!-- Net imposable -->
+    <record id="g1_net_imposable" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g1_irg_declaration_template"/>
+        <field name="sequence">91</field>
+        <field name="code">NET_IMP</field>
+        <field name="name">NET IMPOSABLE (après abattements)</field>
+        <field name="category">total</field>
+        <field name="is_total">True</field>
+        <field name="total_formula">brut_imposable - sum(deductions) - sum(cotisations_salariales)</field>
+        <field name="is_bold">True</field>
+    </record>
+
+    <!-- IRG calculé par barème -->
+    <record id="g1_irg_calculé" model="l10n.dz.tax.declaration.line.template">
+        <field name="template_id" ref="g1_irg_declaration_template"/>
+        <field name="sequence">99</field>
+        <field name="code">IRG_DU</field>
+        <field name="name">IRG RETENU À LA SOURCE (Barème progressif)</field>
+        <field name="category">solde</field>
+        <field name="is_solde">True</field>
+        <field name="is_bold">True</field>
+        <field name="is_highlighted">True</field>
+        <field name="manual_entry">True</field>
+    </record>
+
+    <!-- ============================================ -->
+    <!-- BARÈME IRG 2024 (référence)                  -->
+    <!-- Tranches applicables au net imposable       -->
+    <!-- ============================================ -->
+    
+    <!--
+    BAREME IRG ALGERIE 2024:
+    =========================
+    Tranche 1: 0 - 30.000 DA     = Exonéré (0%)
+    Tranche 2: 30.001 - 120.000 DA = 20% - 3.600 DA (abattement)
+    Tranche 3: 120.001 - 360.000 DA = 30% - 14.400 DA
+    Tranche 4: 360.001 - 1.440.000 DA = 35% - 32.400 DA
+    Tranche 5: Au-delà de 1.440.000 DA = 35% - 32.400 DA
+    
+    Formule générale: IRG = (Net Imposable x Taux) - Abattement fixe
+    -->
+
+    <!-- ============================================ -->
+    <!-- G1 - MÉNUS ET ACTIONS                        -->
+    <!-- ============================================ -->
+    
+    <record id="action_g1_irg_declaration" model="ir.actions.act_window">
+        <field name="name">Déclaration G1 - IRG</field>
+        <field name="res_model">l10n.dz.tax.declaration</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('declaration_type', '=', 'G1')]</field>
+        <field name="context">{'default_declaration_type': 'G1'}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créer une nouvelle déclaration G1 d'IRG
+            </p>
+            <p>
+                La déclaration G1 permet de déclarer la retenue à la source IRG 
+                sur les salaires et rémunérations versées aux employés.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_g1_irg_declaration"
+              name="G1 - Déclaration IRG"
+              parent="l10n_dz_reports.menu_fiscal_declarations"
+              action="action_g1_irg_declaration"
+              sequence="2"
+              groups="account.group_account_user"/>
+
+</odoo>

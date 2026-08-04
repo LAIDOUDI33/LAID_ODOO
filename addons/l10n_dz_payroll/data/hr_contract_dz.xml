@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Copyright (C) 2024 HASSIBA Suite / LAID ODOO
+For more information, see LICENSE file
+-->
+<odoo>
+
+    <!-- ============================================ -->
+    <!-- TYPES DE CONTRATS DE TRAVAIL ALGÉRIENS        -->
+    <!-- ALGERIAN EMPLOYMENT CONTRACT TYPES            -->
+    <!-- Base légale: Loi 90-11 du 21 avril 1990      -->
+    <!-- ============================================ -->
+
+    <!-- CDI - Contrat à Durée Indéterminée -->
+    <record id="hr_contract_type_cdi" model="hr.contract.type">
+        <field name="name">CDI - Contrat à Durée Indéterminée</field>
+        <field name="code">CDI</field>
+        <field name="note">
+            عقد عمل غير محدد المدة
+            Contrat à Durée Indéterminée (forme normale du contrat)
+            
+            **Période d'essai (Article 17 de la loi 90-11):**
+            • Exécutants et ouvriers: 3 mois maximum
+            • Employés et techniciens: 6 mois maximum
+            • Cadres de maîtrise et assimilés: 8 mois maximum
+            • Cadres supérieurs et assimilés: durée convenue
+            
+            **Préavis de départ (Article 73):**
+            • Moins d'année de service: 1 mois
+            • De 2 à 5 ans: 2 mois
+            • Plus de 5 ans: 3 mois
+            
+            **Indemnité de licenciement:**
+            • Moins de 2 ans: 1 mois/mois de service
+            • De 2 à 5 ans: 1.5 mois par année
+            • De 5 à 15 ans: 2 mois par année
+            • Plus de 15 ans: 2.5 mois par année
+        </field>
+    </record>
+
+    <!-- CDD - Contrat à Durée Déterminée -->
+    <record id="hr_contract_type_cdd" model="hr.contract.type">
+        <field name="name">CDD - Contrat à Durée Déterminée</field>
+        <field name="code">CDD</field>
+        <field name="note">
+            عقد عمل محدد المدة
+            Contrat à Durée Déterminée
+            
+            **Cas de recours autorisés (Article 12):**
+            • Remplacement d'un salarié temporairement absent
+            • Accroissement temporaire d'activité
+            • Emplois saisonniers
+            • Travaux occasionnels non courants
+            
+            **Durée maximale:**
+            • Initial: 12 mois maximum (renouvelable 1 fois)
+            • Total avec renouvellement: 24-36 mois selon cas
+            • Travaux réalisés à l'étranger: 4 ans max
+            
+            **Période d'essai:**
+            • &lt; 12 mois: 1 semaine minimum, 1 mois maximum
+            • &gt; 12 mois: 2 semaines minimum, 2 mois maximum
+            • &gt; 24 mois: 1 mois minimum, 3 mois maximum
+            
+            **Indemnité de fin de contrat (prime de précarité):**
+            • Minimum: 7.5% de la rémunération totale brute versée
+        </field>
+    </record>
+
+    <!-- CTT - Contrat de Travail Temporaire (Intérim) -->
+    <record id="hr_contract_type_ctt" model="hr.contract.type">
+        <field name="name">CTT - Travail Temporaire / Intérim</field>
+        <field name="code">CTT</field>
+        <field name="note">
+            عمل مؤقت
+            Contrat de Travail Temporaire (Intérim)
+            
+            **Conditions (Articles 13-14):**
+            • Doit être conclu avec une agence d'intérim agréée
+            • Double contrat: utilisateur + agence
+            
+            **Cas de recours:**
+            • Remplacement d'un salarié absent
+            • Attente d'embauche definitive
+            • Accroissement temporaire d'activité
+            • Travaux temporaires
+            
+            **Durée:**
+            • Maximum 18 mois (renouvelable)
+            • Peut aller à 24 mois dans certains cas
+            
+            **Majoration salariale:**
+            • Indemnité de fin de mission: 10% minimum
+            • Indemnité compensatrice de congé payé: 1/12ème
+        </field>
+    </record>
+
+    <!-- QUOTIDIEN - Journalier -->
+    <record id="hr_contract_type_quotidien" model="hr.contract.type">
+        <field name="name">Quotidien - Journalier</field>
+        <field name="code">QUOTIDIEN</field>
+        <field name="note">
+            يومي
+            Contrat de travail journalier (Journalier)
+            
+            **Caractéristiques:**
+            • Rémunération à la journée ou à la tâche
+            • Pas de période d'essai obligatoire
+            • Paiement quotidien ou hebdomadaire
+            • Soumis au SMIG horaire
+            
+            **Droits applicables:**
+            • CNAS obligatoire si activité régulière
+            • IRG applicable
+            • Accident de travail couvert
+            
+            **Restrictions:**
+            • Ne peut pas dépasser 6 mois consécutifs
+            • Au-delà: transformation en CDI ou CDD obligatoire
+            • Interdit pour les métiers dangereux sans formation
+        </field>
+    </record>
+
+    <!-- CONTRAT_APPRENTISSAGE - Contrat d'Apprentissage -->
+    <record id="hr_contract_type_apprentissage" model="hr.contract.type">
+        <field name="name">Contrat d'Apprentissage</field>
+        <field name="code">APPRENTISSAGE</field>
+        <field name="note">
+            عقد تدريب مهني
+            Contrat d'Apprentissage (Formation professionnelle)
+            
+            **Conditions:**
+            • Âge: 16 à 25 ans
+            • Durée: 6 mois à 4 ans
+            • Formation théorique + pratique obligatoire
+            
+            **Rémunération (pourcentage du SMIG):**
+            • 1ère année: 20% du SMIG
+            • 2ème année: 40% du SMIG
+            • 3ème année: 60% du SMIG
+            • 4ème année: 80% du SMIG
+            
+            **Avantages employeur:**
+            • Exonération cotisations patronales pendant 2 ans
+            • Crédit d'impôt formation
+        </field>
+    </record>
+
+    <!-- ============================================ -->
+    <!-- STRUCTURE SALARIALE PAR TYPE DE CONTRAT       -->
+    <!-- SALARY STRUCTURE BY CONTRACT TYPE             -->
+    <!-- ============================================ -->
+
+    <!-- Structure Salariale CDI Standard -->
+    <record id="hr_payroll_structure_cdi" model="hr.payroll.structure">
+        <field name="name">Paie Algérienne - CDI Standard</field>
+        <field name="code">PAYROLL_DZ_CDI</field>
+        <field name="parent_id" eval="False"/>
+        <field name="company_id" eval="False"/>
+        <field name="note">Structure de paie algérienne standard pour contrats CDI</field>
+        <field name="rule_ids" eval="[
+            ref('hr_rule_sal_base'),
+            ref('hr_rule_prime_anciennete'),
+            ref('hr_prime_logement'),
+            ref('hr_prime_transport'),
+            ref('hr_prime_responsabilite'),
+            ref('hr_alloc_familiale'),
+            ref('hr_heures_sup'),
+            ref('hr_salaire_brut'),
+            ref('hr_cnas_pat_social'),
+            ref('hr_cnas_pat_accident'),
+            ref('hr_taxe_apprentissage'),
+            ref('hr_taxe_formation'),
+            ref('hr_cacobat'),
+            ref('hr_oeuvre_sociale'),
+            ref('hr_total_cotisations_patronales'),
+            ref('hr_cnas_salarial'),
+            ref('hr_irg_retenu'),
+            ref('hr_total_cotisations_salariales'),
+            ref('hr_net_imposable'),
+            ref('hr_net_a_payer'),
+        ]"/>
+    </record>
+
+    <!-- Structure Salariale CDD -->
+    <record id="hr_payroll_structure_cdd" model="hr.payroll.structure">
+        <field name="name">Paie Algérienne - CDD</field>
+        <field name="code">PAYROLL_DZ_CDD</field>
+        <field name="parent_id" eval="False"/>
+        <field name="company_id" eval="False"/>
+        <field name="note">Structure de paie pour contrats à durée déterminée (avec prime de précarité)</field>
+        <field name="rule_ids" eval="[
+            ref('hr_rule_sal_base'),
+            ref('hr_rule_prime_anciennete'),
+            ref('hr_prime_transport'),
+            ref('hr_alloc_familiale'),
+            ref('hr_heures_sup'),
+            ref('hr_salaire_brut'),
+            ref('hr_cnas_pat_social'),
+            ref('hr_cnas_pat_accident'),
+            ref('hr_taxe_apprentissage'),
+            ref('hr_taxe_formation'),
+            ref('hr_cacobat'),
+            ref('hr_oeuvre_sociale'),
+            ref('hr_total_cotisations_patronales'),
+            ref('hr_cnas_salarial'),
+            ref('hr_irg_retenu'),
+            ref('hr_total_cotisations_salariales'),
+            ref('hr_net_imposable'),
+            ref('hr_net_a_payer'),
+        ]"/>
+    </record>
+
+</odoo>

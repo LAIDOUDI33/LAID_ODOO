@@ -1,0 +1,27 @@
+# -*- coding: utf-8 -*-
+# Part of Odoo. See LICENSE file for full copyright and licensing details.
+
+# Security rules for l10n_dz_payroll module
+# Access rights for Algerian Payroll
+
+access_l10n_dz_payroll_user = {
+    'name': 'l10n_dz_payroll User Access',
+    'category_id': 'module_category_hr_payroll',
+    'description': 'User access rights for Algerian Payroll module',
+    'group_id': 'base.group_user',
+    'perm_read': True,
+    'perm_write': False,
+    'perm_create': False,
+    'perm_unlink': False,
+}
+
+access_l10n_dz_payroll_manager = {
+    'name': 'l10n_dz_payroll Manager Access',
+    'category_id': 'module_category_hr_payroll',
+    'description': 'Manager access rights for Algerian Payroll module',
+    'group_id': 'hr_payroll.group_hr_payroll_manager',
+    'perm_read': True,
+    'perm_write': True,
+    'perm_create': True,
+    'perm_unlink': True,
+}

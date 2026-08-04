@@ -1,0 +1,59 @@
+id,name,code,country_id:id
+dz_01,Adrar,01,base.dz
+dz_02,Chlef,02,base.dz
+dz_03,Laghouat,03,base.dz
+dz_04,Oum El Bouaghi,04,base.dz
+dz_05,Batna,05,base.dz
+dz_06,Béjaïa,06,base.dz
+dz_07,Biskra,07,base.dz
+dz_08,Béchar,08,base.dz
+dz_09,Blida,09,base.dz
+dz_10,Bouira,10,base.dz
+dz_11,Tamanrasset,11,base.dz
+dz_12,Tébessa,12,base.dz
+dz_13,Tlemcen,13,base.dz
+dz_14,Tiaret,14,base.dz
+dz_15,Tizi Ouzou,15,base.dz
+dz_16,Alger,16,base.dz
+dz_17,Djelfa,17,base.dz
+dz_18,Jijel,18,base.dz
+dz_19,Sétif,19,base.dz
+dz_20,Saïda,20,base.dz
+dz_21,Skikda,21,base.dz
+dz_22,Sidi Bel Abbès,22,base.dz
+dz_23,Annaba,23,base.dz
+dz_24,Guelma,24,base.dz
+dz_25,Constantine,25,base.dz
+dz_26,Médéa,26,base.dz
+dz_27,Mostaganem,27,base.dz
+dz_28,M'Sila,28,base.dz
+dz_29,Mascara,29,base.dz
+dz_30,Ouargla,30,base.dz
+dz_31,Oran,31,base.dz
+dz_32,El Bayadh,32,base.dz
+dz_33,Illizi,33,base.dz
+dz_34,Bordj Bou Arréridj,34,base.dz
+dz_35,Boumerdès,35,base.dz
+dz_36,El Tarf,36,base.dz
+dz_37,Tindouf,37,base.dz
+dz_38,Tissemsilt,38,base.dz
+dz_39,El Oued,39,base.dz
+dz_40,Khenchela,40,base.dz
+dz_41,Souk Ahras,41,base.dz
+dz_42,Tipaza,42,base.dz
+dz_43,Mila,43,base.dz
+dz_44,Aïn Defla,44,base.dz
+dz_45,Naâma,45,base.dz
+dz_46,Aïn Témouchent,46,base.dz
+dz_47,Ghardaïa,47,base.dz
+dz_48,Relizane,48,base.dz
+dz_49,El M'Ghair,49,base.dz
+dz_50,El Meniaa,50,base.dz
+dz_51,Ouled Djellal,51,base.dz
+dz_52,Bordj Baji Mokhtar,52,base.dz
+dz_53,Béni Abbès,53,base.dz
+dz_54,Timimoun,54,base.dz
+dz_55,Touggourt,55,base.dz
+dz_56,Djanet,56,base.dz
+dz_57,In Salah,57,base.dz
+dz_58,In Guezzam,58,base.dz

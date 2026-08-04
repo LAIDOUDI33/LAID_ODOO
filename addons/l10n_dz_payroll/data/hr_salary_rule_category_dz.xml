@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Copyright (C) 2024 HASSIBA Suite / LAID ODOO
+For more information, see LICENSE file
+-->
+<odoo>
+
+    <!-- Salary Rule Categories for Algerian Payroll -->
+    <!-- Catégories de Règles de Salaires pour la Paie Algérienne -->
+    
+    <!-- ============================================ -->
+    <!-- CATÉGORIES DE REVENUS BRUTS / GROSS INCOME   -->
+    <!-- ============================================ -->
+
+    <!-- Salaire de Base / Basic Salary -->
+    <record id="SALAIRE_BASE" model="hr.salary.rule.category">
+        <field name="name">Salaire de Base</field>
+        <field name="code">SALAIRE_BASE</field>
+        <field name="note">الراتب الأساسي - Salaire de base mensuel selon contrat</field>
+    </record>
+
+    <!-- Primes et Indemnités / Allowances and Bonuses -->
+    <record id="PRIMES_INDEMNITES" model="hr.salary.rule.category">
+        <field name="name">Primes et Indemnités</field>
+        <field name="code">PRIMES</field>
+        <field name="note">المكافآت والتعويضات - Primes, indemnités et allocations</field>
+    </record>
+
+    <!-- Heures Supplémentaires / Overtime -->
+    <record id="HEURES_SUP" model="hr.salary.rule.category">
+        <field name="name">Heures Supplémentaires</field>
+        <field name="code">HEURES_SUP</field>
+        <field name="note">ساعات إضافية - Majoration heures supplémentaires (50%/100%)</field>
+    </record>
+
+    <!-- Allocations Familiales / Family Allowances -->
+    <record id="ALLOC_FAMILIALES" model="hr.salary.rule.category">
+        <field name="name">Allocations Familiales</field>
+        <field name="code">ALLOC_FAM</field>
+        <field name="note">المخصصات العائلية - Allocations pour enfants à charge</field>
+    </record>
+
+    <!-- Avantages en Nature / Benefits in Kind -->
+    <record id="AVANTAGES_NATURE" model="hr.salary.rule.category">
+        <field name="name">Avantages en Nature</field>
+        <field name="code">AV_NATURE</field>
+        <field name="note">مزايا عينية - Logement, nourriture, véhicule, etc.</field>
+    </record>
+
+    <!-- ============================================ -->
+    <!-- CATÉGORIES COTISATIONS PATRONALES            -->
+    <!-- EMPLOYER CONTRIBUTIONS                      -->
+    <!-- ============================================ -->
+
+    <!-- Cotisations Patronales CNAS -->
+    <record id="COTIS_PATRONALES" model="hr.salary.rule.category">
+        <field name="name">Cotisations Patronales (CNAS)</field>
+        <field name="code">COT_PAT</field>
+        <field name="note">اشتراكات صاحب العمل - Charges patronales CNAS/CASNOS</field>
+    </record>
+
+    <!-- Sécurité Sociale Patronale -->
+    <record id="CNAS_PAT_SOCIAL_CAT" model="hr.salary.rule.category">
+        <field name="name">CNAS Patronale - Sécurité Sociale</field>
+        <field name="code">CNAS_PAT_SOC</field>
+        <field name="parent_id" ref="COTIS_PATRONALES"/>
+        <field name="note">التأمينات الاجتماعية لصاحب العمل - Part patronale sécurité sociale (26%)</field>
+    </record>
+
+    <!-- Accident de Travail -->
+    <record id="CNAS_PAT_ACCIDENT_CAT" model="hr.salary.rule.category">
+        <field name="name">CNAS Patronale - Accident de Travail</field>
+        <field name="code">CNAS_PAT_ACC</field>
+        <field name="parent_id" ref="COTIS_PATRONALES"/>
+        <field name="note">حادث العمل - Cotisation accident de travail (variable)</field>
+    </record>
+
+    <!-- Taxes Professionnelles Patronales -->
+    <record id="TAXES_PRO_PATRONALES" model="hr.salary.rule.category">
+        <field name="name">Taxes Professionnelles Patronales</field>
+        <field name="code">TAX_PRO_PAT</field>
+        <field name="parent_id" ref="COTIS_PATRONALES"/>
+        <field name="note">ضرائب مهنية - Taxe apprentissage, formation, CACOBAT</field>
+    </record>
+
+    <!-- Œuvres Sociales -->
+    <record id="OEUVRES_SOCIALES_CAT" model="hr.salary.rule.category">
+        <field name="name">Œuvres Sociales</field>
+        <field name="code">OEUV_SOC</field>
+        <field name="parent_id" ref="COTIS_PATRONALES"/>
+        <field name="note">الأعمال الاجتماعية - Cotisation œuvres sociales (3%)</field>
+    </record>
+
+    <!-- ============================================ -->
+    <!-- CATÉGORIES COTISATIONS SALARIALES            -->
+    <!-- EMPLOYEE DEDUCTIONS                         -->
+    <!-- ============================================ -->
+
+    <!-- Cotisations Salariales -->
+    <record id="COTIS_SALARIALES" model="hr.salary.rule.category">
+        <field name="name">Cotisations Salariales (CNAS + IRG)</field>
+        <field name="code">COT_SAL</field>
+        <field name="note">اقتطاعات الموظف - Retenues salariales: CNAS + IRG</field>
+    </record>
+
+    <!-- CNAS Salariale -->
+    <record id="CNAS_SALARIALE_CAT" model="hr.salary.rule.category">
+        <field name="name">CNAS Salariale</field>
+        <field name="code">CNAS_SAL</field>
+        <field name="parent_id" ref="COTIS_SALARIALES"/>
+        <field name="note">التأمينات الاجتماعية للموظف - Part salariale CNAS (9%)</field>
+    </record>
+
+    <!-- IRG -->
+    <record id="IRG_RETENU_CAT" model="hr.salary.rule.category">
+        <field name="name">IRG Retenu</field>
+        <field name="code">IRG</field>
+        <field name="parent_id" ref="COTIS_SALARIALES"/>
+        <field name="note">الضريبة على الدخل الإجمالي - Impôt sur Revenu Global retenu à source</field>
+    </record>
+
+    <!-- ============================================ -->
+    <!-- CATÉGORIES NET                               -->
+    <!-- NET PAY                                      -->
+    <!-- ============================================ -->
+
+    <!-- Net Imposable -->
+    <record id="NET_IMPOSABLE" model="hr.salary.rule.category">
+        <field name="name">Net Imposable</field>
+        <field name="code">NET_IMP</field>
+        <field name="note">صافي خاضع للضريبة - Base de calcul IRG après abattement</field>
+    </record>
+
+    <!-- Net à Payer -->
+    <record id="NET_A_PAYER" model="hr.salary.rule.category">
+        <field name="name">Net à Payer</field>
+        <field name="code">NET_PAY</field>
+        <field name="note">صافي الدفع - Salaire net après toutes cotisations</field>
+    </record>
+
+    <!-- Congés Payés -->
+    <record id="CONGES_PAYES" model="hr.salary.rule.category">
+        <field name="name">Congés Payés</field>
+        <field name="code">CONGES</field>
+        <field name="note">إجازة مدفوعة الأجر - Indemnité congés (30 jours/an minimum)</field>
+    </record>
+
+</odoo>

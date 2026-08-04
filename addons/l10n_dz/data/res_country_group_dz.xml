@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Algerian Localization - Country Groups for Trade
+    Module: l10n_dz (Odoo 19.4)
+    
+    This file defines country groups used in fiscal positions:
+    - Maghreb Union (UMA) countries
+    - Arab League countries
+    - European Union (for import/export)
+-->
+<odoo>
+
+    <!-- ============================================================
+         GROUPE MAGHREB - UNION DU MAGHREB ARABE (UMA)
+         Algeria, Tunisia, Morocco, Libya, Mauritania
+         ============================================================ -->
+    <record id="country_group_maghreb" model="res.country.group">
+        <field name="name">Union du Maghreb Arabe (UMA)</field>
+        <field name="note">Pays du Maghreb pour positions fiscales régionales</field>
+    </record>
+
+    <!-- Maghreb Countries -->
+    <record id="country_group_line_maghreb_dz" model="res.country.group.line">
+        <field name="group_id" ref="country_group_maghreb"/>
+        <field name="country_id" ref="base.dz"/>
+        <field name="name">Algérie</field>
+    </record>
+
+    <record id="country_group_line_maghreb_tn" model="res.country.group.line">
+        <field name="group_id" ref="country_group_maghreb"/>
+        <field name="country_id" ref="base.tn"/>
+        <field name="name">Tunisie</field>
+    </record>
+
+    <record id="country_group_line_maghreb_ma" model="res.country.group.line">
+        <field name="group_id" ref="country_group_maghreb"/>
+        <field name="country_id" ref="base.ma"/>
+        <field name="name">Maroc</field>
+    </record>
+
+    <record id="country_group_line_maghreb_ly" model="res.country.group.line">
+        <field name="group_id" ref="country_group_maghreb"/>
+        <field name="country_id" ref="base.ly"/>
+        <field name="name">Libye</field>
+    </record>
+
+    <record id="country_group_line_maghreb_mr" model="res.country.group.line">
+        <field name="group_id" ref="country_group_maghreb"/>
+        <field name="country_id" ref="base.mr"/>
+        <field name="name">Mauritanie</field>
+    </record>
+
+
+    <!-- ============================================================
+         GROUPE LIGUE ARABE - ARAB LEAGUE COUNTRIES
+         For Arab trade agreements and fiscal positions
+         ============================================================ -->
+    <record id="country_group_arab_league" model="res.country.group">
+        <field name="name">Ligue Arabe (Accords commerciaux)</field>
+        <field name="note">Pays de la Ligue Arabe pour accords de libre-échange (ALE)</field>
+    </record>
+
+    <!-- Key Arab League Countries for Algerian Trade -->
+    <record id="country_group_arab_dz" model="res.country.group.line">
+        <field name="group_id" ref="country_group_arab_league"/>
+        <field name="country_id" ref="base.dz"/>
+        <field name="name">Algérie</field>
+    </record>
+
+    <record id="country_group_arab_tn" model="res.country.group.line">
+        <field name="group_id" ref="country_group_arab_league"/>
+        <field name="country_id" ref="base.tn"/>
+        <field name="name">Tunisie</field>
+    </record>
+
+    <record id="country_group_arab_ma" model="res.country.group.line">
+        <field name="group_id" ref="country_group_arab_league"/>
+        <field name="country_id" ref="base.ma"/>
+        <field name="name">Maroc</field>
+    </record>
+
+    <record id="country_group_arab_eg" model="res.country.group.line">
+        <field name="group_id" ref="country_group_arab_league"/>
+        <field name="country_id" ref="base.eg"/>
+        <field name="name">Égypte</field>
+    </record>
+
+    <record id="country_group_arab_iq" model="res.country.group.line">
+        <field name="group_id" ref="country_group_arab_league"/>
+        <field name="country_id" ref="base.iq"/>
+        <field name="name">Irak</field>
+    </record>
+
+    <record id="country_group_arab_jo" model="res.country.group.line">
+        <field name="group_id" ref="country_group_arab_league"/>
+        <field name="country_id" ref="base.jo"/>
+        <field name="name">Jordanie</field>
+    </record>
+
+    <record id="country_group_arab_lb" model="res.country.group.line">
+        <field name="group_id" ref="country_group_arab_league"/>
+        <field name="country_id" ref="base.lb"/>
+        <field name="name">Liban</field>
+    </record>
+
+    <record id="country_group_arab_sa" model="res.country.group.line">
+        <field name="group_id" ref="country_group_arab_league"/>
+        <field name="country_id" ref="base.sa"/>
+        <field name="name">Arabie Saoudite</field>
+    </record>
+
+    <record id="country_group_arab_sy" model="res.country.group.line">
+        <field name="group_id" ref="country_group_arab_league"/>
+        <field name="country_id" ref="base.sy"/>
+        <field name="name">Syrie</field>
+    </record>
+
+    <record id="country_group_arab_ae" model="res.country.group.line">
+        <field name="group_id" ref="country_group_arab_league"/>
+        <field name="country_id" ref="base.ae"/>
+        <field name="name">Émirats Arabes Unis</field>
+    </record>
+
+    <record id="country_group_arab_qa" model="res.country.group.line">
+        <field name="group_id" ref="country_group_arab_league"/>
+        <field name="country_id" ref="base.qa"/>
+        <field name="name">Qatar</field>
+    </record>
+
+    <record id="country_group_arab_kw" model="res.country.group.line">
+        <field name="group_id" ref="country_group_arab_league"/>
+        <field name="country_id" ref="base.kw"/>
+        <field name="name">Koweït</field>
+    </record>
+
+    <record id="country_group_arab_bh" model="res.country.group.line">
+        <field name="group_id" ref="country_group_arab_league"/>
+        <field name="country_id" ref="base.bh"/>
+        <field name="name">Bahreïn</field>
+    </record>
+
+    <record id="country_group_arab_om" model="res.country.group.line">
+        <field name="group_id" ref="country_group_arab_league"/>
+        <field name="country_id" ref="base.om"/>
+        <field name="name">Oman</field>
+    </record>
+
+    <record id="country_group_arab_dz" model="res.country.group.line">
+        <field name="group_id" ref="country_group_arab_league"/>
+        <field name="country_id" ref="base.dz"/>
+        <field name="name">Algérie</field>
+    </record>
+
+
+    <!-- ============================================================
+         GROUPE EUROPEEN - EUROPEAN UNION
+         For EU-Algeria Association Agreement
+         ============================================================ -->
+    <record id="country_group_eu_association" model="res.country.group">
+        <field name="name">Union Européenne (Accord d'Association)</field>
+        <field name="note">Pays de l'UE avec accord d'association Algérie-UE</field>
+    </record>
+
+    <!-- Major EU Trading Partners with Algeria -->
+    <record id="country_group_eu_fr" model="res.country.group.line">
+        <field name="group_id" ref="country_group_eu_association"/>
+        <field name="country_id" ref="base.fr"/>
+        <field name="name">France</field>
+    </record>
+
+    <record id="country_group_eu_it" model="res.country.group.line">
+        <field name="group_id" ref="country_group_eu_association"/>
+        <field name="country_id" ref="base.it"/>
+        <field name="name">Italie</field>
+    </record>
+
+    <record id="country_group_eu_es" model="res.country.group.line">
+        <field name="group_id" ref="country_group_eu_association"/>
+        <field name="country_id" ref="base.es"/>
+        <field name="name">Espagne</field>
+    </record>
+
+    <record id="country_group_eu_de" model="res.country.group.line">
+        <field name="group_id" ref="country_group_eu_association"/>
+        <field name="country_id" ref="base.de"/>
+        <field name="name">Allemagne</field>
+    </record>
+
+    <record id="country_group_eu_gb" model="res.country.group.line">
+        <field name="group_id" ref="country_group_eu_association"/>
+        <field name="country_id" ref="base.gb"/>
+        <field name="name">Royaume-Uni</field>
+    </record>
+
+    <record id="country_group_eu_nl" model="res.country.group.line">
+        <field name="group_id" ref="country_group_eu_association"/>
+        <field name="country_id" ref="base.nl"/>
+        <field name="name">Pays-Bas</field>
+    </record>
+
+    <record id="country_group_eu_be" model="res.country.group.line">
+        <field name="group_id" ref="country_group_eu_association"/>
+        <field name="country_id" ref="base.be"/>
+        <field name="name">Belgique</field>
+    </record>
+
+
+    <!-- ============================================================
+         GROUPE AFRIQUE - AFRICAN CONTINENT
+         For African Continental Free Trade Area (AfCFTA)
+         ============================================================ -->
+    <record id="country_group_africa" model="res.country.group">
+        <field name="name">Zone de Libre-Échange Continentale Africaine (ZLECAF)</field>
+        <field name="note">Pays africains pour accords ZLECAF</field>
+    </record>
+
+    <!-- Key African Trading Partners -->
+    <record id="country_group_africa_dz" model="res.country.group.line">
+        <field name="group_id" ref="country_group_africa"/>
+        <field name="country_id" ref="base.dz"/>
+        <field name="name">Algérie</field>
+    </record>
+
+    <record id="country_group_africa_sn" model="res.country.group.line">
+        <field name="group_id" ref="country_group_africa"/>
+        <field name="country_id" ref="base.sn"/>
+        <field name="name">Sénégal</field>
+    </record>
+
+    <record id="country_group_africa_ci" model="res.country.group.line">
+        <field name="group_id" ref="country_group_africa"/>
+        <field name="country_id" ref="base.ci"/>
+        <field name="name">Côte d'Ivoire</field>
+    </record>
+
+    <record id="country_group_africa_ng" model="res.country.group.line">
+        <field name="group_id" ref="country_group_africa"/>
+        <field name="country_id" ref="base.ng"/>
+        <field name="name">Nigeria</field>
+    </record>
+
+    <record id="country_group_africa_za" model="res.country.group.line">
+        <field name="group_id" ref="country_group_africa"/>
+        <field name="country_id" ref="base.za"/>
+        <field name="name">Afrique du Sud</field>
+    </record>
+
+    <record id="country_group_africa_eg" model="res.country.group.line">
+        <field name="group_id" ref="country_group_africa"/>
+        <field name="country_id" ref="base.eg"/>
+        <field name="name">Égypte</field>
+    </record>
+
+</odoo>

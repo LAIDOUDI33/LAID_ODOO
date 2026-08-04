@@ -1,0 +1,593 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Copyright (C) 2024 HASSIBA Suite / LAID ODOO
+For more information, see LICENSE file
+-->
+<odoo>
+
+    <!-- ============================================ -->
+    <!-- RÈGLES DE SALAIRE - PAIE ALGÉRIENNE          -->
+    <!-- ALGERIAN PAYROLL SALARY RULES                -->
+    <!-- ============================================ -->
+
+    <!-- ====================================================== -->
+    <!-- REVENUS BRUTS / GROSS INCOME                           -->
+    <!-- ====================================================== -->
+
+    <!-- SAL_BASE - Salaire de Base Mensuel -->
+    <record id="hr_rule_sal_base" model="hr.salary.rule">
+        <field name="name">Salaire de Base</field>
+        <field name="code">SAL_BASE</field>
+        <field name="sequence">1</field>
+        <field name="category_id" ref="SALAIRE_BASE"/>
+        <field name="condition_select">none</field>
+        <field name="amount_select">fix</field>
+        <field name="amount_fix">0</field>
+        <field name="quantity">1</field>
+        <field name="register_id" eval="False"/>
+        <field name="note">
+            الراتب الأساسي
+            Salaire de base mensuel selon contrat de travail.
+            SMIG actuel: 20,000 DZD (configurable).
+            Ce montant est défini dans le contrat de travail.
+        </field>
+    </record>
+
+    <!-- PRIME_ANCIENNETE - Prime d'Ancienneté -->
+    <record id="hr_rule_prime_anciennete" model="hr.salary.rule">
+        <field name="name">Prime d'Ancienneté</field>
+        <field name="code">PRIME_ANCIENNETE</field>
+        <field name="sequence">5</field>
+        <field name="category_id" ref="PRIMES_INDEMNITES"/>
+        <field name="condition_select">none</field>
+        <field name="amount_select">code</field>
+        <field name="amount_python_compute">
+# Calcul prime d'ancienneté selon la législation algérienne
+# Barème: 1% par an après 2 ans, max 15-20% selon convention
+
+years = 0
+if employee.date_hire:
+    from datetime import date
+    hire_date = fields.Date.from_string(employee.date_hire)
+    today = date.today()
+    years = (today - hire_date).days / 365.25
+
+rate = 0
+if years >= 2:
+    if years &lt;= 5:
+        rate = (years - 1) * 0.01  # 1% à 4%
+    elif years &lt;= 10:
+        rate = 0.05 + (years - 5) * 0.01  # 5% à 9%
+    elif years &lt;= 15:
+        rate = 0.10 + (years - 10) * 0.01  # 10% à 14%
+    elif years &lt;= 20:
+        rate = 0.15 + (years - 15) * 0.01  # 15% à 19%
+    else:
+        rate = 0.20  # Plafond 20%
+
+result = categories.SALAIRE_BASE * rate
+        </field>
+        <field name="quantity">1</field>
+        <field name="note">
+            مكافأة الأقدمية
+            Prime d'ancienneté calculée automatiquement:
+            - Après 2 ans: 1% par année supplémentaire
+            - Maximum: 20% du salaire de base
+            Base légale: Convention collective
+        </field>
+    </record>
+
+    <!-- PRIME_LOGEMENT - Indemnité Logement -->
+    <record id="hr_prime_logement" model="hr.salary.rule">
+        <field name="name">Indemnité Logement</field>
+        <field name="code">PRIME_LOGEMENT</field>
+        <field name="sequence">10</field>
+        <field name="category_id" ref="PRIMES_INDEMNITES"/>
+        <field name="condition_select">python</field>
+        <field name="condition_python">result = contract.prime_logement &gt; 0</field>
+        <field name="amount_select">code</field>
+        <field name="amount_python_compute"># Indemnité logement (plafonnée ou selon contrat)
+result = contract.prime_logement or 0
+# Plafond optionnel configurable
+plafond = contract.logement_plafond or 20000
+result = min(result, plafond)
+        </field>
+        <field name="quantity">1</field>
+        <field name="note">
+            بدل السكن
+            Indemnité de logement (non imposable jusqu'à un certain seuil).
+            Montant défini dans le contrat, plafonné selon politique entreprise.
+        </field>
+    </record>
+
+    <!-- PRIME_TRANSPORT - Indemnité Transport -->
+    <record id="hr_prime_transport" model="hr.salary.rule">
+        <field name="name">Indemnité Transport</field>
+        <field name="code">PRIME_TRANSPORT</field>
+        <field name="sequence">11</field>
+        <field name="category_id" ref="PRIMES_INDEMNITES"/>
+        <field name="condition_select">none</field>
+        <field name="amount_select">code</field>
+        <field name="amount_python_compute"># Indemnité transport - 10,000 DZD max non imposable
+transport = contract.prime_transport or 10000
+# Non imposable jusqu'à 10,000 DZD/mois
+result = min(transport, 10000)
+        </field>
+        <field name="quantity">1</field>
+        <field name="note">
+            بدل النقل
+            Indemnité de transport.
+            Exonérée d'IRG jusqu'à 10,000 DZD/mois.
+            Base: Article 119 du CIDTA
+        </field>
+    </record>
+
+    <!-- PRIME_RESPONSABILITE - Prime de Responsabilité -->
+    <record id="hr_prime_responsabilite" model="hr.salary.rule">
+        <field name="name">Prime de Responsabilité</field>
+        <field name="code">PRIME_RESPONSABILITE</field>
+        <field name="sequence">12</field>
+        <field name="category_id" ref="PRIMES_INDEMNITES"/>
+        <field name="condition_select">python</field>
+        <field name="condition_python">result = contract.prime_responsabilite &gt; 0</field>
+        <field name="amount_select">code</field>
+        <field name="amount_python_compute">result = contract.prime_responsabilite or 0</field>
+        <field name="quantity">1</field>
+        <field name="note">
+            مكافأة المسؤولية
+            Prime de responsabilité liée au poste occupé.
+            Définie selon grille de classification de l'entreprise.
+        </field>
+    </record>
+
+    <!-- ALLOC_FAMILIALE - Allocations Familiales -->
+    <record id="hr_alloc_familiale" model="hr.salary.rule">
+        <field name="name">Allocations Familiales</field>
+        <field name="code">ALLOC_FAMILIALE</field>
+        <field name="sequence">15</field>
+        <field name="category_id" ref="ALLOC_FAMILIALES"/>
+        <field name="condition_select">none</field>
+        <field name="amount_select">code</field>
+        <field name="amount_python_compute">
+# Allocations familiales Algérie
+# 250 DZD par enfant, maximum 3 enfants (750 DZD max)
+alloc_par_enfant = 250
+max_enfants = 3
+
+# Compter les enfants à charge (optionnel depuis transfert aux caisses)
+enfants = employee.children or 0
+nb_enfants = min(enfants, max_enfants)
+
+result = alloc_par_enfant * nb_enfants
+        </field>
+        <field name="quantity">1</field>
+        <field name="note">
+            المخصصات العائلية
+            Allocations familiales:
+            - 250 DZD par enfant à charge
+            - Maximum 3 enfants (750 DZD/mois)
+            Note: Transférées aux caisses sociales depuis 2021 pour nouveaux embauchés
+        </field>
+    </record>
+
+    <!-- HEURES_SUP - Heures Supplémentaires -->
+    <record id="hr_heures_sup" model="hr.salary.rule">
+        <field name="name">Heures Supplémentaires</field>
+        <field name="code">HEURES_SUP</field>
+        <field name="sequence">18</field>
+        <field name="category_id" ref="HEURES_SUP"/>
+        <field name="condition_select">python</field>
+        <field name="condition_python">result = worked_days.WORK100 and worked_days.WORK100.number_of_hours &gt; 173.33</field>
+        <field name="amount_select">code</field>
+        <field name="amount_python_compute">
+# Heures supplémentaires selon Code du Travail algérien
+# Majoration: 50% les 8 premières heures, 100% au-delà
+
+heures_normales = 173.33  # 40h/semaine
+taux_horaire = categories.SALAIRE_BASE / heures_normales
+
+# Récupérer heures sup depuis le bulletin ou saisie manuelle
+hs_payer = payslip.heures_sup or 0
+hs_majorees = payslip.heures_sup_100 or 0
+
+# Calcul avec majoration
+result = (hs_payer * taux_horaire * 1.50) + (hs_majorees * taux_horaire * 2.00)
+        </field>
+        <field name="quantity">1</field>
+        <field name="note">
+            ساعات إضافية
+            Heures supplémentaires majorées:
+            - 8 premières HS: +50%
+            - Au-delà de 8h: +100%
+            Base: Article 32 de la loi 90-11
+        </field>
+    </record>
+
+    <!-- SALAIRE_BRUT - Total Brut -->
+    <record id="hr_salaire_brut" model="hr.salary.rule">
+        <field name="name">Salaire Brut Global</field>
+        <field name="code">SAL_BRUT</field>
+        <field name="sequence">49</field>
+        <field name="category_id" ref="SALAIRE_BASE"/>
+        <field name="condition_select">none</field>
+        <field name="amount_select">code</field>
+        <field name="amount_python_compute">
+# Total salaire brut (avant cotisations patronales)
+result = (categories.SALAIRE_BASE + 
+          categories.PRIMES + 
+          categories.HEURES_SUP +
+          categories.ALLOC_FAM -
+          categories.AV_NATURE)
+        </field>
+        <field name="quantity">1</field>
+        <field name="register_id" eval="False"/>
+        <field name="appears_on_payslip">True</field>
+        <field name="note">
+            إجمالي الراتب الخام
+            Total revenu brut avant déductions.
+            Inclut: salaire de base, primes, indemnités, heures sup.
+        </field>
+    </record>
+
+    <!-- ====================================================== -->
+    <!-- COTISATIONS PATRONALES / EMPLOYER CONTRIBUTIONS         -->
+    <!-- ====================================================== -->
+
+    <!-- CNAS_PAT_SOCIAL - Sécurité Sociale Patronale (26%) -->
+    <record id="hr_cnas_pat_social" model="hr.salary.rule">
+        <field name="name">CNAS Patronale - Sécurité Sociale (26%)</field>
+        <field name="code">CNAS_PAT_SOCIAL</field>
+        <field name="sequence">101</field>
+        <field name="category_id" ref="COTIS_PATRONALES"/>
+        <field name="parent_rule_id" ref="hr_salaire_brut"/>
+        <field name="condition_select">none</field>
+        <field name="amount_select">percentage</field>
+        <field name="amount_percentage">0.26</field>
+        <field name="quantity">1</field>
+        <field name="register_id" ref="contribution_register_cnas_pat_social"/>
+        <field name="appears_on_payslip">True</field>
+        <field name="note">
+            التأمينات الاجتماعية لصاحب العمل
+            Cotisation patronale CNAS - Sécurité Sociale:
+            Taux: 26% du salaire de base (position brute)
+            Couvre: Retraite, Santé, Maternité, Invalidité
+        </field>
+    </record>
+
+    <!-- CNAS_PAT_ACCIDENT - Accident de Travail (variable) -->
+    <record id="hr_cnas_pat_accident" model="hr.salary.rule">
+        <field name="name">CNAS Patronale - Accident de Travail</field>
+        <field name="code">CNAS_PAT_ACCIDENT</field>
+        <field name="sequence">102</field>
+        <field name="category_id" ref="CNAS_PAT_ACCIDENT_CAT"/>
+        <field name="parent_rule_id" ref="hr_salaire_brut"/>
+        <field name="condition_select">none</field>
+        <field name="amount_select">code</field>
+        <field name="amount_python_compute">
+# Taux accident de travail variable par secteur
+# Par défaut: 3% (peut aller de 0.5% à 5%)
+taux_at = contract.taux_accident_travail or 0.03
+result = categories.SAL_BRUT * taux_at
+        </field>
+        <field name="quantity">1</field>
+        <field name="register_id" ref="contribution_register_cnas_pat_accident"/>
+        <field name="appears_on_payslip">True</field>
+        <field name="note">
+            حادث العمل
+            Cotisation accident de travail:
+            Taux variable selon secteur d'activité:
+            - Bureau: 0.5% à 1%
+            - Commerce: 1.5% à 2%
+            - Industrie: 3% à 5%
+            Configurable dans le contrat/entreprise
+        </field>
+    </record>
+
+    <!-- TAXE_APPRENTISSAGE - Taxe d'Apprentissage (2%) -->
+    <record id="hr_taxe_apprentissage" model="hr.salary.rule">
+        <field name="name">Taxe d'Apprentissage (2%)</field>
+        <field name="code">TAXE_APPRENTISSAGE</field>
+        <field name="sequence">103</field>
+        <field name="category_id" ref="TAXES_PRO_PATRONALES"/>
+        <field name="parent_rule_id" ref="hr_salaire_brut"/>
+        <field name="condition_select">none</field>
+        <field name="amount_select">percentage</field>
+        <field name="amount_percentage">0.02</field>
+        <field name="quantity">1</field>
+        <field name="register_id" ref="contribution_register_taxe_apprentissage"/>
+        <field name="appears_on_payslip">True</field>
+        <field name="note">
+            ضريبة التعلم
+            Taxe d'apprentissage au profit de l'État:
+            Taux: 2% du salaire brut
+            Financement de la formation professionnelle initiale
+        </field>
+    </record>
+
+    <!-- TAXE_FORMATION - Taxe Formation Continue (1.6%) -->
+    <record id="hr_taxe_formation" model="hr.salary.rule">
+        <field name="name">Taxe Formation Professionnelle Continue (1.6%)</field>
+        <field name="code">TAXE_FORMATION</field>
+        <field name="sequence">104</field>
+        <field name="category_id" ref="TAXES_PRO_PATRONALES"/>
+        <field name="parent_rule_id" ref="hr_salaire_brut"/>
+        <field name="condition_select">none</field>
+        <field name="amount_select">percentage</field>
+        <field name="amount_percentage">0.016</field>
+        <field name="quantity">1</field>
+        <field name="register_id" ref="contribution_register_taxe_formation"/>
+        <field name="appears_on_payslip">True</field>
+        <field name="note">
+            ضريب التكوين المهني
+            Taxe de formation professionnelle continue:
+            Taux: 1.6% de la masse salariale brute
+            Financement du perfectionnement des salariés
+        </field>
+    </record>
+
+    <!-- CACOBAT - Caisse Chômage (1%) -->
+    <record id="hr_cacobat" model="hr.salary.rule">
+        <field name="name">CACOBAT - Assurance Chômage (1%)</field>
+        <field name="code">CACOBAT</field>
+        <field name="sequence">105</field>
+        <field name="category_id" ref="TAXES_PRO_PATRONALES"/>
+        <field name="parent_rule_id" ref="hr_salaire_brut"/>
+        <field name="condition_select">none</field>
+        <field name="amount_select">percentage</field>
+        <field name="amount_percentage">0.01</field>
+        <field name="quantity">1</field>
+        <field name="register_id" ref="contribution_register_cacobat"/>
+        <field name="appears_on_payslip">True</field>
+        <field name="note">
+            صندوق البطالة
+            CACOBAT - Caisse d'Assurance Chômage:
+            Taux: 1% du salaire brut
+            Gérée par la CASNOS
+        </field>
+    </record>
+
+    <!-- OEUVRE_SOCIALE - Œuvres Sociales (3%) -->
+    <record id="hr_oeuvre_sociale" model="hr.salary.rule">
+        <field name="name">Œuvres Sociales (3%)</field>
+        <field name="code">OEUVRE_SOCIALE</field>
+        <field name="sequence">106</field>
+        <field name="category_id" ref="OEUVRES_SOCIALES_CAT"/>
+        <field name="parent_rule_id" ref="hr_salaire_brut"/>
+        <field name="condition_select">none</field>
+        <field name="amount_select">code</field>
+        <field name="amount_python_compute">
+# Œuvres sociales - 3% sur salaire brut plafonné
+# Plafond généralement égal à 1x le SMIG
+smig = company.smig_value or 20000
+salaire_plafonne = min(categories.SAL_BRUT, smig)
+result = salaire_plafonne * 0.03
+        </field>
+        <field name="quantity">1</field>
+        <field name="register_id" ref="contribution_register_oeuvres_sociales"/>
+        <field name="appears_on_payslip">True</field>
+        <field name="note">
+            الأعمال الاجتماعية
+            Cotisation œuvres sociales:
+            Taux: 3% sur salaire brut plafonné (généralement 1 SMIG)
+            Utilisée pour les activités sociales des employés
+        </field>
+    </record>
+
+    <!-- TOTAL_COTISATIONS_PATRONALES -->
+    <record id="hr_total_cotisations_patronales" model="hr.salary.rule">
+        <field name="name">Total Charges Patronales</field>
+        <field name="code">TOT_COT_PAT</field>
+        <field name="sequence">149</field>
+        <field name="category_id" ref="COTIS_PATRONALES"/>
+        <field name="condition_select">none</field>
+        <field name="amount_select">code</field>
+        <field name="amount_python_compute">
+result = (categories.COT_PAT + 
+          categories.CNAS_PAT_SOC + 
+          categories.CNAS_PAT_ACC +
+          categories.TAX_PRO_PAT +
+          categories.OEUV_SOC)
+        </field>
+        <field name="quantity">1</field>
+        <field name="appears_on_payslip">True</field>
+        <field name="note">
+            إجمالي اشتراكات صاحب العمل
+            Total des charges patronales supportées par l'employeur.
+            Non déduit du salaire brut (charge employeur).
+        </field>
+    </record>
+
+    <!-- ====================================================== -->
+    <!-- COTISATIONS SALARIALES / EMPLOYEE DEDUCTIONS           -->
+    <!-- ====================================================== -->
+
+    <!-- CNAS_SAL - Part Salariale CNAS (9%) -->
+    <record id="hr_cnas_salarial" model="hr.salary.rule">
+        <field name="name">CNAS Salariale (9%)</field>
+        <field name="code">CNAS_SAL</field>
+        <field name="sequence">201</field>
+        <field name="category_id" ref="CNAS_SALARIALE_CAT"/>
+        <field name="parent_rule_id" ref="hr_salaire_brut"/>
+        <field name="condition_select">none</field>
+        <field name="amount_select">percentage</field>
+        <field name="amount_percentage">0.09</field>
+        <field name="quantity">1</field>
+        <field name="register_id" ref="contribution_register_cnas_salarial"/>
+        <field name="appears_on_payslip">True</field>
+        <field name="note">
+            التأمينات الاجتماعية للموظف
+            Part salariale CNAS:
+            Taux: 9% du salaire de position (brut imposable)
+            Couvre: Retraite, Assurance sociale
+        </field>
+    </record>
+
+    <!-- IRG_RETENU - Impôt sur Revenu Global -->
+    <record id="hr_irg_retenu" model="hr.salary.rule">
+        <field name="name">IRG Retenu à la Source</field>
+        <field name="code">IRG_RETENU</field>
+        <field name="sequence">210</field>
+        <field name="category_id" ref="IRG_RETENU_CAT"/>
+        <field name="parent_rule_id" ref="hr_salaire_brut"/>
+        <field name="condition_select">none</field>
+        <field name="amount_select">code</field>
+        <field name="amount_python_compute">
+# ============================================
+# CALCUL IRG ALGÉRIE - BARÈME PROGRESSIF MENSUEL
+# ============================================
+# Loi de Finances 2024
+
+# 1. Base imposable (Brut - CNAS Salarial)
+base_imposable = categories.SAL_BRUT - categories.CNAS_SAL
+
+# 2. Abattement forfaitaire 40% (max 1500 DZD/mois)
+abattement_pct = 0.40
+abattement_max = 1500
+abattement = min(base_imposable * abattement_pct, abattement_max)
+
+# 3. Net imposable après abattement
+net_imposable = base_imposable - abattement
+
+# 4. Parts fiscales (personnes à charge)
+# 1 part = 5000 DZD d'abattement supplémentaire
+parts = employee.nb_parts_fiscales or 1
+abattement_parts = (parts - 1) * 5000 if parts > 1 else 0
+
+# 5. Base finale IRG
+base_irg = max(0, net_imposable - abattement_parts)
+
+# 6. Application du barème progressif mensuel
+irg = 0
+tranches = [
+    (22500, 0.00),      # Tranche 1: 0 - 22,500 → 0%
+    (75000, 0.10),      # Tranche 2: 22,501 - 75,000 → 10%
+    (120000, 0.20),     # Tranche 3: 75,001 - 120,000 → 20%
+    (200000, 0.30),     # Tranche 4: 120,001 - 200,000 → 30%
+    (float('inf'), 0.35) # Tranche 5: > 200,000 → 35%
+]
+
+seuil_precedent = 0
+for seuil, taux in tranches:
+    if base_irg > seuil_precedent:
+        taxable_dans_tranche = min(base_irg, seuil) - seuil_precedent
+        irg += taxable_dans_tranche * taux
+    seuil_precedent = seuil
+
+# 7. Arrondi au dinar inférieur (règle algérienne)
+result = int(irg)
+
+# Minimum de perception: 500 DZD si résultat positif
+if result > 0 and result < 500:
+    result = 500
+        </field>
+        <field name="quantity">1</field>
+        <field name="register_id" ref="contribution_register_irg"/>
+        <field name="appears_on_payslip">True</field>
+        <field name="note">
+            الضريبة على الدخل الإجمالي
+            IRG - Impôt sur Revenu Global retenu à la source:
+            
+            Barème mensuel 2024:
+            - 0 à 22,500 DZD: 0%
+            - 22,501 à 75,000 DZD: 10%
+            - 75,001 à 120,000 DZD: 20%
+            - 120,001 à 200,000 DZD: 30%
+            - Plus de 200,000 DZD: 35%
+            
+            Abattement: 40% du salaire imposable (max 1,500 DZD)
+            Parts fiscales: 5,000 DZD/part supplémentaire
+            
+            Minimum de perception: 500 DZD
+        </field>
+    </record>
+
+    <!-- TOTAL_COTISATIONS_SALARIALES -->
+    <record id="hr_total_cotisations_salariales" model="hr.salary.rule">
+        <field name="name">Total Retenues Salariales</field>
+        <field name="code">TOT_COT_SAL</field>
+        <field name="sequence">249</field>
+        <field name="category_id" ref="COTIS_SALARIALES"/>
+        <field name="condition_select">none</field>
+        <field name="amount_select">code</field>
+        <field name="amount_python_compute">
+result = categories.CNAS_SAL + categories.IRG
+        </field>
+        <field name="quantity">1</field>
+        <field name="appears_on_payslip">True</field>
+        <field name="note">
+            إجمالي الاقتطاعات
+            Total des retenues à la charge du salarié:
+            CNAS (9%) + IRG (barème progressif)
+        </field>
+    </record>
+
+    <!-- ====================================================== -->
+    <!-- NET À PAYER / NET PAY                                  -->
+    <!-- ====================================================== -->
+
+    <!-- NET_IMPOSABLE - Base Imposable IRG -->
+    <record id="hr_net_imposable" model="hr.salary.rule">
+        <field name="name">Net Imposable IRG</field>
+        <field name="code">NET_IMP_IRG</field>
+        <field name="sequence">295</field>
+        <field name="category_id" ref="NET_IMPOSABLE"/>
+        <field name="condition_select">none</field>
+        <field name="amount_select">code</field>
+        <field name="amount_python_compute">
+# Net imposable avant abattement IRG
+result = categories.SAL_BRUT - categories.CNAS_SAL
+        </field>
+        <field name="quantity">1</field>
+        <field name="appears_on_payslip">True</field>
+        <field name="note">
+            صافي خاضع للضريبة
+            Base imposable IRG avant abattement forfaitaire.
+            = Salaire Brut - CNAS Salariale
+        </field>
+    </record>
+
+    <!-- NET_A_PAYER - Net à Payer -->
+    <record id="hr_net_a_payer" model="hr.salary.rule">
+        <field name="name">Net à Payer</field>
+        <field name="code">NET_A_PAYER</field>
+        <field name="sequence">300</field>
+        <field name="category_id" ref="NET_A_PAYER"/>
+        <field name="condition_select">none</field>
+        <field name="amount_select">code</field>
+        <field name="amount_python_compute">
+# Net à payer = Brut - Retenues salariales
+result = (categories.SAL_BRUT - 
+          categories.CNAS_SAL - 
+          categories.IRG)
+        </field>
+        <field name="quantity">1</field>
+        <field name="appears_on_payslip">True</field>
+        <field name="note">
+            صافي الدفع
+            Salaire Net versé au salarié:
+            = Salaire Brut - CNAS (9%) - IRG
+        </field>
+    </record>
+
+    <!-- SALAIRE_NET_IMPOSABLE (pour attestation fiscale) -->
+    <record id="hr_salaire_net_imposable_annuel" model="hr.salary.rule">
+        <field name="name">Cumul Annuel Net Imposable</field>
+        <field name="code">NET_IMP_ANNUEL</field>
+        <field name="sequence">310</field>
+        <field name="category_id" ref="NET_IMPOSABLE"/>
+        <field name="condition_select">none</field>
+        <field name="amount_select">code</field>
+        <field name="amount_python_compute">
+# Cumul annuel pour attestation fiscale
+result = categories.NET_IMP * 12  # Estimation annuelle
+        </field>
+        <field name="quantity">1</field>
+        <field name="appears_on_payslip">False</field>
+        <field name="note">
+            المجموع السنوي الصافي الخاضع للضريبة
+            Cumul annuel net imposable pour attestation fiscale.
+            Utilisé pour les déclarations G1 (IRG).
+        </field>
+    </record>
+
+</odoo>

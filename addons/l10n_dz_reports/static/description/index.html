@@ -1,0 +1,382 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="generator" content="HASSIBA Suite / LAID ODOO" />
+    <title>Algeria - Tax Declarations (G50/G1/G2/G4)</title>
+    <link rel="stylesheet" type="text/css" href="/web/static/lib/bootstrap/css/bootstrap.css"/>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #006633 0%, #004d26 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        .header .subtitle {
+            font-size: 18px;
+            opacity: 0.9;
+        }
+        .flag-icon {
+            display: inline-block;
+            width: 48px;
+            height: 36px;
+            background: linear-gradient(to bottom, #006633 33%, white 33%, white 66%, #D21034 66%);
+            border-radius: 4px;
+            vertical-align: middle;
+            margin-right: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .content {
+            padding: 40px;
+        }
+        .section {
+            margin-bottom: 35px;
+        }
+        .section-title {
+            color: #006633;
+            font-size: 22px;
+            font-weight: 600;
+            border-bottom: 3px solid #006633;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .feature-card {
+            background: #f8faf9;
+            border-left: 4px solid #006633;
+            padding: 20px;
+            border-radius: 0 8px 8px 0;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .feature-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,102,51,0.15);
+        }
+        .feature-card h4 {
+            color: #006633;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+        .feature-card p {
+            color: #555;
+            font-size: 14px;
+            margin: 0;
+        }
+        .tax-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        .tax-table th {
+            background: #006633;
+            color: white;
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+        .tax-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .tax-table tr:hover {
+            background: #f8faf9;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .badge-monthly { background: #e3f2fd; color: #1565c0; }
+        .badge-quarterly { background: #fff3e0; color: #e65100; }
+        .badge-yearly { background: #f3e5f5; color: #7b1fa2; }
+        .footer {
+            background: #f5f5f5;
+            padding: 25px 40px;
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+        }
+        .footer a {
+            color: #006633;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .compatibility {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        .compat-item {
+            text-align: center;
+        }
+        .compat-item img {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 8px;
+        }
+        ul.feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        ul.feature-list li {
+            padding: 8px 0 8px 30px;
+            position: relative;
+        }
+        ul.feature-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #006633;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <!-- Header -->
+    <div class="header">
+        <span class="flag-icon"></span>
+        <h1>Déclarations Fiscales Algériennes</h1>
+        <div class="subtitle">Module l10n_dz_reports pour Odoo 19.4</div>
+        <div style="margin-top: 15px;">
+            <span class="badge badge-monthly">Mensuel</span>
+            <span class="badge badge-quarterly">Trimestriel</span>
+            <span class="badge badge-yearly">Annuel</span>
+        </div>
+    </div>
+    
+    <!-- Content -->
+    <div class="content">
+        
+        <!-- Overview Section -->
+        <div class="section">
+            <h2 class="section-title">📋 Vue d'ensemble</h2>
+            <p style="font-size: 16px; line-height: 1.7; color: #444;">
+                Ce module fournit un système complet de <strong>déclarations fiscales algériennes</strong> 
+                pour Odoo 19.4, conforme au Code des Impôts Directs et Taxes Assimilées (CIDTA) et au Code de la TVA (CTVA).
+                Il permet de générer les 4 principales déclarations fiscales requises par l'administration fiscale algérienne.
+            </p>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>🧾 G50 - TVA</h4>
+                    <p>Déclaration mensuelle ou trimestrielle de la Taxe sur la Valeur Ajoutée</p>
+                </div>
+                <div class="feature-card">
+                    <h4>💰 G1 - IRG</h4>
+                    <p>Retenue à la source sur salaires avec barème progressif</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🏢 G2 - TAP</h4>
+                    <p>Taxe sur l'Activité Professionnelle trimestrielle</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📊 G4 - IBS</h4>
+                    <p>Impôt sur les Bénéfices des Sociétés annuel</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Features Section -->
+        <div class="section">
+            <h2 class="section-title">⚡ Fonctionnalités Principales</h2>
+            
+            <ul class="feature-list">
+                <li><strong>Calcul automatique</strong> des montants depuis les écritures comptables</li>
+                <li><strong>Gestion multi-périodicité</strong>: Mensuelle, Trimestrielle, Annuelle</li>
+                <li><strong>Workflow complet</strong>: Brouillon → Calculé → Soumis → Payé</li>
+                <li><strong>Rapports PDF</strong> conformes aux formulaires officiels DGI</li>
+                <li><strong>Suivi des acomptes</strong> provisionnels pour IBS et TAP</li>
+                <li><strong>Gestion du crédit de TVA</strong> reportable</li>
+                <li><strong>Intégration CNAS/CASNOS</strong> pour les cotisations sociales</li>
+                <li><strong>Barème IRG intégré</strong> avec abattements automatiques</li>
+                <li><strong>Exonérations sectorielles</strong> (Zone Sud, Agriculture, Start-up)</li>
+                <li><strong>Multi-sociétés</strong> supporté nativement</li>
+            </ul>
+        </div>
+        
+        <!-- Tax Details Section -->
+        <div class="section">
+            <h2 class="section-title">📑 Détails des Déclarations</h2>
+            
+            <table class="tax-table">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Type d'Impôt</th>
+                        <th>Périodicité</th>
+                        <th>Taux Applicables</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>G50</strong></td>
+                        <td>TVA (Taxe sur la Valeur Ajoutée)</td>
+                        <td>Mensuelle / Trimestrielle</td>
+                        <td>19% | 9% | 7% | 0%</td>
+                    </tr>
+                    <tr>
+                        <td><strong>G1</strong></td>
+                        <td>IRG (Impôt sur le Revenu Global)</td>
+                        <td>Mensuelle</td>
+                        <td>Barème progressif (0%-35%)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>G2</strong></td>
+                        <td>TAP (Taxe Activité Professionnelle)</td>
+                        <td>Trimestrielle</td>
+                        <td>2% | 1% | Exonéré</td>
+                    </tr>
+                    <tr>
+                        <td><strong>G4</strong></td>
+                        <td>IBS (Impôt Bénéfices Sociétés)</td>
+                        <td>Annuelle + Acomptes T</td>
+                        <td>19% | 26%</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Workflow Section -->
+        <div class="section">
+            <h2 class="section-title">🔄 Workflow de Déclaration</h2>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 25px; background: #f8faf9; border-radius: 8px; flex-wrap: wrap; gap: 10px;">
+                <div style="text-align: center; flex: 1; min-width: 120px;">
+                    <div style="width: 60px; height: 60px; background: #e0e0e0; border-radius: 50%; line-height: 60px; margin: 0 auto 10px; font-size: 24px;">📝</div>
+                    <strong>Brouillon</strong><br/>
+                    <small style="color: #666;">Création</small>
+                </div>
+                <div style="font-size: 24px; color: #ccc;">→</div>
+                <div style="text-align: center; flex: 1; min-width: 120px;">
+                    <div style="width: 60px; height: 60px; background: #e3f2fd; border-radius: 50%; line-height: 60px; margin: 0 auto 10px; font-size: 24px;">🔢</div>
+                    <strong>Calculé</strong><br/>
+                    <small style="color: #666;">Auto-computé</small>
+                </div>
+                <div style="font-size: 24px; color: #ccc;">→</div>
+                <div style="text-align: center; flex: 1; min-width: 120px;">
+                    <div style="width: 60px; height: 60px; background: #fff3e0; border-radius: 50%; line-height: 60px; margin: 0 auto 10px; font-size: 24px;">✅</div>
+                    <strong>Soumis</strong><br/>
+                    <small style="color: #666;">Validation</small>
+                </div>
+                <div style="font-size: 24px; color: #ccc;">→</div>
+                <div style="text-align: center; flex: 1; min-width: 120px;">
+                    <div style="width: 60px; height: 60px; background: #e8f5e9; border-radius: 50%; line-height: 60px; margin: 0 auto 10px; font-size: 24px;">💵</div>
+                    <strong>Payé</strong><br/>
+                    <small style="color: #666;">Règlement</small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Compliance Section -->
+        <div class="section">
+            <h2 class="section-title">📜 Conformité Réglementaire</h2>
+            
+            <p>Ce module est conçu en stricte conformité avec:</p>
+            
+            <ul class="feature-list">
+                <li><strong>Arrêté du 26 juillet 2008</strong> portant adoption du Système Comptable Financier (SCF)</li>
+                <li><strong>Loi de Finances Complémentaire 2009</strong> - Mise en place SCF</li>
+                <li><strong>Ordonnance 75-35 du 29 avril 1975</strong> - Code des Impôts Directs (TAP)</li>
+                <li><strong>Loi de Finances 2024</strong> - Révision taux IBS à 19%/26%</li>
+                <li><strong>Code de la TVA Algérien (CTVA)</strong> - Dispositions TVA collectée/déductible</li>
+                <li><strong>Convention CNAS</strong> - Cotisations sociales salariales/patronales</li>
+            </ul>
+        </div>
+        
+        <!-- Technical Info -->
+        <div class="section">
+            <h2 class="section-title">🔧 Informations Techniques</h2>
+            
+            <table class="tax-table">
+                <tbody>
+                    <tr>
+                        <td><strong>Version Module</strong></td>
+                        <td>19.4.1.0.0</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Version Odoo</strong></td>
+                        <td>19.4 (Enterprise / Community)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Dépendances</strong></td>
+                        <td>account, l10n_dz</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Auteur</strong></td>
+                        <td>HASSIBA Suite / LAID ODOO</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Licence</strong></td>
+                        <td>LGPL-3</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Site Web</strong></td>
+                        <td><a href="https://www.hassiba-suite.dz">https://www.hassiba-suite.dz</a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+    </div>
+    
+    <!-- Footer -->
+    <div class="footer">
+        <p>
+            <strong>HASSIBA Suite ERP</strong> - Solution de gestion intégrée pour entreprises algériennes
+        </p>
+        <p style="margin-top: 10px;">
+            © 2024 HASSIBA Suite / LAID ODOO. Tous droits réservés.
+        </p>
+        <div class="compatibility">
+            <div class="compat-item">
+                <img src="/base/static/img/default_logo.png" alt="Odoo" style="border-radius: 8px;"/>
+                <small>Odoo 19.4+</small>
+            </div>
+            <div class="compat-item">
+                <span style="font-size: 40px;">🇩🇿</span>
+                <small>Algérie</small>
+            </div>
+            <div class="compat-item">
+                <span style="font-size: 40px;">☁️</span>
+                <small>SaaS Ready</small>
+            </div>
+        </div>
+    </div>
+    
+</div>
+
+</body>
+</html>

@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Copyright (C) 2024 HASSIBA Suite / LAID ODOO
+For more information, see LICENSE file
+-->
+<odoo>
+
+    <!-- ============================================ -->
+    <!-- VUES BULLETIN DE PAIE ALGÉRIEN               -->
+    <!-- ALGERIAN PAYSLIP VIEWS                        -->
+    <!-- ============================================ -->
+
+    <!-- Formulaire Payslip avec champs algériens -->
+    <record id="view_payslip_form_dz_inherit" model="ir.ui.view">
+        <field name="name">hr.payslip.form.dz.inherit</field>
+        <field name="model">hr.payslip</field>
+        <field name="inherit_id" ref="hr_payroll.view_payslip_form"/>
+        <field name="arch" type="xml">
+            
+            <!-- Ajouter les heures supplémentaires dans l'onglet Salaire -->
+            <xpath expr="//group[@name='salary_groupe']" position="inside">
+                <group string="Heures Supplémentaires / ساعات إضافية">
+                    <field name="heures_sup"/>
+                    <field name="heures_sup_100"/>
+                </group>
+            </xpath>
+
+            <!-- Ajouter les détails IRG et CNAS -->
+            <xpath expr="//notebook/page[@name='inputs']/group" position="after">
+                <group string="Détails IRG / تفاصيل الضريبة">
+                    <field name="irg_brut" readonly="1"/>
+                    <field name="irg_abattement" readonly="1"/>
+                    <field name="irg_net" readonly="1"/>
+                </group>
+                <group string="Cotisations CNAS / التأمينات الاجتماعية">
+                    <field name="cnas_salarial_montant" readonly="1"/>
+                    <field name="cnas_patronal_montant" readonly="1"/>
+                </group>
+                <group string="Conformité SMIG / الحد الأدنى للأجور">
+                    <field name="smig_value" readonly="1"/>
+                    <field name="est_conforme_smig" readonly="1"/>
+                </group>
+            </xpath>
+
+            <!-- Bouton de vérification SMIG dans la barre d'action -->
+            <xpath expr="//button[@name='action_payslip_done']" position="before">
+                <button name="action_check_smig_compliance" 
+                        type="object" 
+                        string="Vérifier SMIG / فحص الحد الأدنى"
+                        class="btn-secondary"
+                        attrs="{'invisible': [('state', '!=', 'draft')]}"/>
+            </xpath>
+
+            <!-- Boutons pour attestations -->
+            <xpath expr="//header/button[last()]" position="after">
+                <button name="generate_attestation_cnas" 
+                        type="object" 
+                        string="Attestation CNAS / شهادة التأمينات"
+                        class="btn-primary"
+                        attrs="{'invisible': [('state', '!=', 'done')]}"/>
+                <button name="generate_bulletin_paie_arabe" 
+                        type="object" 
+                        string="Bulletin Arabe / كشف راتب عربي"
+                        class="btn-secondary"
+                        attrs="{'invisible': [('state', '!=', 'done')]}"/>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- Vue Liste Payslip avec colonnes algériennes -->
+    <record id="view_payslip_tree_dz_inherit" model="ir.ui.view">
+        <field name="name">hr.payslip.tree.dz.inherit</field>
+        <field name="model">hr.payslip</field>
+        <field name="inherit_id" ref="hr_payroll.view_payslip_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='number']" position="after">
+                <field name="smig_value"/>
+                <field name="est_conforme_smig"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ============================================ -->
+    <!-- VUE CONTRAT AVEC CHAMPS ALGÉRIENS             -->
+    <!-- CONTRACT VIEW WITH ALGERIAN FIELDS            -->
+    <!-- ============================================ -->
+
+    <record id="view_hr_contract_form_dz_inherit" model="ir.ui.view">
+        <field name="name">hr.contract.form.dz.inherit</field>
+        <field name="model">hr.contract</field>
+        <field name="inherit_id" ref="hr_contract.hr_contract_view_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Onglet Informations Algérie -->
+            <xpath expr="//notebook" position="inside">
+                <page string="Paie Algérienne / الرواتب الجزائرية">
+                    <group string="Primes et Indemnités / المكافآت والتعويضات">
+                        <group>
+                            <field name="prime_logement"/>
+                            <field name="logement_plafond"/>
+                            <field name="prime_transport"/>
+                        </group>
+                        <group>
+                            <field name="prime_responsabilite"/>
+                        </group>
+                    </group>
+                    
+                    <group string="Cotisations / الاشتراكات">
+                        <group>
+                            <field name="taux_accident_travail"/>
+                            <field name="smig_value"/>
+                        </group>
+                        <group>
+                            <field name="nb_parts_fiscales"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- ============================================ -->
+    <!-- VUE EMPLOYÉ AVEC INFORMATIONS FISCALES       -->
+    <!-- EMPLOYEE VIEW WITH TAX INFORMATION           -->
+    <!-- ============================================ -->
+
+    <record id="view_employee_form_dz_inherit" model="ir.ui.view">
+        <field name="name">hr.employee.form.dz.inherit</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Onglet Informations Fiscales Algériennes -->
+            <xpath expr="//notebook/page[@name='public']" position="before">
+                <page string="Fiscal Algérie / الضرائب الجزائرية">
+                    <group string="Situation Familiale / الحالة العائلية">
+                        <group>
+                            <field name="situation_familiale"/>
+                            <field name="conjoint_a_charge"/>
+                            <field name="nb_enfants_a_charge"/>
+                        </group>
+                        <group>
+                            <field name="nb_parts_fiscales"/>
+                        </group>
+                    </group>
+                    
+                    <group string="CNAS / التأمينات الاجتماعية">
+                        <group>
+                            <field name="cnas_numero_affiliation"/>
+                            <field name="cnas_date_affiliation"/>
+                        </group>
+                        <group>
+                            <field name="cnas_categorie"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- ============================================ -->
+    <!-- VUE SOCIÉTÉ CONFIGURATION PAIE               -->
+    <!-- COMPANY PAYROLL CONFIGURATION VIEW           -->
+    <!-- ============================================ -->
+
+    <record id="view_company_form_dz_inherit" model="ir.ui.view">
+        <field name="name">res.company.form.dz.inherit</field>
+        <field name="model">res.company</field>
+        <field name="inherit_id" ref="base.view_company_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Onglet Configuration Paie Algérienne -->
+            <xpath expr="//notebook" position="inside">
+                <page string="Paie Algérienne / الرواتب الجزائرية">
+                    <group string="SMIG / الحد الأدنى للأجور">
+                        <group>
+                            <field name="smig_value"/>
+                            <field name="smag_value"/>
+                        </group>
+                    </group>
+                    
+                    <group string="Affiliations Sociales / الانتمامات الاجتماعية">
+                        <group>
+                            <field name="cnas_numero_employeur"/>
+                            <field name="cnas_etablissement_code"/>
+                            <field name="cacobat_numero"/>
+                        </group>
+                        <group>
+                            <field name="secteur_activite"/>
+                            <field name="taux_at_defaut"/>
+                        </group>
+                    </group>
+                    
+                    <group string="Configuration Bulletin / إعدادات كشف الراتب">
+                        <group>
+                            <field name="bulletin_langue"/>
+                            <field name="afficher_charges_patronales"/>
+                            <field name="generer_attestation_auto"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>

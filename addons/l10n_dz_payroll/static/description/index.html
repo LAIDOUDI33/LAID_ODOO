@@ -1,0 +1,425 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title>Algeria - Payroll &amp; Social Security (CNAS/CASNOS)</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #006633 0%, #004d26 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        .header .subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+            margin-top: 8px;
+        }
+        .flags {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 15px;
+        }
+        .flag-dz {
+            width: 60px;
+            height: 40px;
+            background: linear-gradient(to bottom, #006633 33%, white 33%, white 66%, #d21034 66%);
+            border-radius: 3px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .content {
+            padding: 30px;
+        }
+        .section {
+            margin-bottom: 25px;
+        }
+        .section h2 {
+            color: #006633;
+            border-bottom: 2px solid #006633;
+            padding-bottom: 8px;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .feature-card {
+            background: #f9fdf9;
+            border-left: 4px solid #006633;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .feature-card h3 {
+            margin: 0 0 8px 0;
+            color: #004d26;
+            font-size: 14px;
+        }
+        .feature-card p {
+            margin: 0;
+            font-size: 13px;
+            color: #666;
+        }
+        .table-container {
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        th {
+            background-color: #006633;
+            color: white;
+            font-weight: 600;
+        }
+        tr:hover {
+            background-color: #f5f9f5;
+        }
+        .highlight-box {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .highlight-box h3 {
+            color: #006633;
+            margin-top: 0;
+        }
+        .legal-notice {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 12px;
+            margin-top: 20px;
+        }
+        .footer {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            font-size: 12px;
+        }
+        .footer a {
+            color: #81c784;
+            text-decoration: none;
+        }
+        .badge {
+            display: inline-block;
+            background: #006633;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .version-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .arabic-text {
+            direction: rtl;
+            font-family: 'Traditional Arabic', Arial, sans-serif;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <!-- Header -->
+    <div class="header">
+        <div class="flags">
+            <div class="flag-dz"></div>
+        </div>
+        <h1>🇩🇿 Algeria - Payroll &amp; Social Security</h1>
+        <div class="subtitle">Module de Paie Algérienne pour Odoo 19.4</div>
+        <p style="margin-top: 10px; font-size: 14px;">
+            <span class="badge">Odoo 19.4</span>
+            <span class="badge">CNAS/CASNOS</span>
+            <span class="badge">IRG Barème</span>
+        </p>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+
+        <!-- Version Info -->
+        <div class="version-info">
+            <div>
+                <strong>Version:</strong> 19.4.1.0.0
+            </div>
+            <div>
+                <strong>Auteur:</strong> HASSIBA Suite / LAID ODOO
+            </div>
+        </div>
+
+        <!-- Description Section -->
+        <div class="section">
+            <h2>Description / الوصف</h2>
+            <p>
+                Ce module fournit une solution complète de gestion de la paie algérienne, 
+                conforme à la législation en vigueur, incluant les cotisations CNAS/CASNOS, 
+                le calcul IRG selon le barème progressif, et les bulletins de paie bilingues.
+            </p>
+            <p class="arabic-text">
+                يوفر هذا الوحدة حلاً شاملاً لإدارة الرواتب الجزائرية، متوافقاً مع التشريعات المعمول بها،
+                بما في ذلك اشتراكات الضمان الاجتماعي، وحساب الضرائب على الدخل الإجمالي، وكشوف المرتبات ثنائية اللغة.
+            </p>
+        </div>
+
+        <!-- Features Grid -->
+        <div class="section">
+            <h2>Caractéristiques Principales / الميزات الرئيسية</h2>
+            <div class="features">
+                <div class="feature-card">
+                    <h3>💰 Salaire de Base</h3>
+                    <p>Gestion du SMIG (20,000 DZD) configurable avec validation automatique de conformité.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>📊 Primes &amp; Indemnités</h3>
+                    <p>Premières d'ancienneté, logement, transport, responsabilité et allocations familiales.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>🏢 Cotisations Patronales</h3>
+                    <p>CNAS 26%, Accident travail variable, Taxe apprentissage 2%, Formation 1.6%, CACOBAT 1%.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>👷 Cotisations Salariales</h3>
+                    <p>CNAS salariale 9% + IRG barème progressif (0% à 35%) avec abattement 40%.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>📋 Contrats de Travail</h3>
+                    <p>CDI, CDD, CTT, Journalier avec périodes d'essai et préavis conformes au Code du Travail.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>📄 Bulletin Bilingue</h3>
+                    <p>Bulletin de paie Arabe/Français avec attestation CNAS intégrée.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- IRG Table -->
+        <div class="section">
+            <h2>Barème IRG Mensuel / جدول الضرائب الشهري</h2>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tranche / الفئة</th>
+                            <th>De - À (DZD)</th>
+                            <th>Taux / النسبة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Tranche 1</strong></td>
+                            <td>0 - 22,500</td>
+                            <td><strong>0%</strong></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Tranche 2</strong></td>
+                            <td>22,501 - 75,000</td>
+                            <td><strong>10%</strong></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Tranche 3</strong></td>
+                            <td>75,001 - 120,000</td>
+                            <td><strong>20%</strong></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Tranche 4</strong></td>
+                            <td>120,001 - 200,000</td>
+                            <td><strong>30%</strong></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Tranche 5</strong></td>
+                            <td>&gt; 200,000</td>
+                            <td><strong>35%</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="highlight-box">
+                <h3>📌 Abattements Fiscaux / الخصومات الضريبية</h3>
+                <ul>
+                    <li><strong>Abattement forfaitaire:</strong> 40% du salaire imposable (maximum 1,500 DZD/mois)</li>
+                    <li><strong>Parts fiscales:</strong> 5,000 DZD par part supplémentaire (personne à charge)</li>
+                    <li><strong>Minimum de perception:</strong> 500 DZD si IRG calculé positif</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- CNAS Contributions -->
+        <div class="section">
+            <h2>Cotisations CNAS / اشتراكات الضمان الاجتماعي</h2>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Type / النوع</th>
+                            <th>Part Salariale</th>
+                            <th>Part Patronale</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Sécurité Sociale</td>
+                            <td>-</td>
+                            <td><strong>26%</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Accident de Travail</td>
+                            <td>-</td>
+                            <td><strong>Variable (0.5%-5%)</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Cotisation CNAS</td>
+                            <td><strong>9%</strong></td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td>Taxe d'Apprentissage</td>
+                            <td>-</td>
+                            <td><strong>2%</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Taxe Formation Continue</td>
+                            <td>-</td>
+                            <td><strong>1.6%</strong></td>
+                        </tr>
+                        <tr>
+                            <td>CACOBAT (Chômage)</td>
+                            <td>-</td>
+                            <td><strong>1%</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Œuvres Sociales</td>
+                            <td>-</td>
+                            <td><strong>3%</strong> (sur plafond)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Contract Types -->
+        <div class="section">
+            <h2>Types de Contrats / أنواع العقود</h2>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Code</th>
+                            <th>Période d'Essai Max</th>
+                            <th>Préavis Départ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Contrat à Durée Indéterminée</td>
+                            <td>CDI</td>
+                            <td>Jusqu'à 8 mois (cadres)</td>
+                            <td>1 à 3 mois</td>
+                        </tr>
+                        <tr>
+                            <td>Contrat à Durée Déterminée</td>
+                            <td>CDD</td>
+                            <td>Jusqu'à 3 mois</td>
+                            <td>Prime précarité 7.5%</td>
+                        </tr>
+                        <tr>
+                            <td>Travail Temporaire / Intérim</td>
+                            <td>CTT</td>
+                            <td>Variable</td>
+                            <td>18 mois max</td>
+                        </tr>
+                        <tr>
+                            <td>Journalier</td>
+                            <td>Quotidien</td>
+                            <td>Aucune</td>
+                            <td>6 mois max consécutifs</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Legal Notice -->
+        <div class="legal-notice">
+            <strong>⚖️ Base Légale / الأساس القانوني:</strong>
+            <ul style="margin: 8px 0 0 0; padding-left: 20px;">
+                <li>Loi 90-11 du 21 avril 1990 (Code du Travail Algérien)</li>
+                <li>Ordonnance 95-01 relative aux assurances sociales</li>
+                <li>Loi de Finances 2024 (SMIG: 20,000 DZD)</li>
+                <li>Arrêté ministériel fixant le barème IRG</li>
+            </ul>
+        </div>
+
+        <!-- Dependencies -->
+        <div class="section">
+            <h2>Dépendances / المتطلبات</h2>
+            <p>Ce module nécessite les modules suivants:</p>
+            <ul>
+                <li><strong>hr_payroll</strong> - Module Paie de base Odoo</li>
+                <li><strong>l10n_dz</strong> - Localisation Comptable Algérie</li>
+            </ul>
+        </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>
+            <strong>HASSIBA Suite ERP v19.4</strong> | Module l10n_dz_payroll
+        </p>
+        <p>
+            © 2024 HASSIBA Suite / LAID ODOO | 
+            <a href="https://www.hassiba-suite.dz">www.hassiba-suite.dz</a>
+        </p>
+        <p style="margin-top: 10px; opacity: 0.7;">
+            Conforme à la législation algérienne en vigueur | متوافق مع التشريعات الجزائرية المعمول بها
+        </p>
+    </div>
+
+</div>
+
+</body>
+</html>

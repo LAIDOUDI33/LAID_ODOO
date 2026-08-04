@@ -1,0 +1,383 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Views for Algerian Tax Declarations (l10n_dz_reports)
+    Odoo 19.4 - Form, Tree, and Wizard views
+-->
+<odoo>
+
+    <!-- ============================================ -->
+    <!-- TAX DECLARATION - TREE VIEW                 -->
+    <!-- ============================================ -->
+    
+    <record id="view_l10n_dz_tax_declaration_tree" model="ir.ui.view">
+        <field name="name">l10n.dz.tax.declaration.tree</field>
+        <field name="model">l10n.dz.tax.declaration</field>
+        <field name="arch" type="xml">
+            <tree string="Déclarations Fiscales" decoration-success="state == 'paid'" 
+                  decoration-warning="state == 'submitted'" decoration-danger="state == 'draft'"
+                  default_order="date_from desc">
+                <field name="name"/>
+                <field name="declaration_type"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="period_type"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <field name="amount_total" sum="Total"/>
+                <field name="amount_due" sum="Solde Dû"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'paid'"
+                       decoration-warning="state == 'submitted'"
+                       decoration-info="state == 'computed'"
+                       decoration-muted="state == 'draft'"/>
+                <field name="create_date"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ============================================ -->
+    <!-- TAX DECLARATION - FORM VIEW (HEADER)         -->
+    <!-- ============================================ -->
+    
+    <record id="view_l10n_dz_tax_declaration_form" model="ir.ui.view">
+        <field name="name">l10n.dz.tax.declaration.form</field>
+        <field name="model">l10n.dz.tax.declaration</field>
+        <field name="arch" type="xml">
+            <form string="Déclaration Fiscale Algérienne">
+                <header>
+                    <button name="action_compute" type="object" 
+                            string="Calculer" class="btn-primary" 
+                            attrs="{'invisible': [('state', 'not in', ['draft'])]}"/>
+                    <button name="action_submit" type="object" 
+                            string="Soumettre" class="btn-warning"
+                            attrs="{'invisible': [('state', 'not in', ['draft', 'computed'])]}"/>
+                    <button name="action_confirm_payment" type="object" 
+                            string="Confirmer Paiement" class="btn-success"
+                            attrs="{'invisible': [('state', '!=', 'submitted')]}"/>
+                    <button name="action_set_to_draft" type="object" 
+                            string="Mettre en Brouillon" class="btn-secondary"
+                            attrs="{'invisible': [('state', 'not in', ['draft', 'computed'])]}"/>
+                    <button name="action_print_report" type="object" 
+                            string="Imprimer" class="btn-primary icon fa-print"/>
+                    <field name="state" widget="statusbar" 
+                           statusbar_visible="draft,computed,submitted,paid"
+                           options="{'clickable': '1'}"/>
+                </header>
+                
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                        <h2>
+                            <field name="declaration_type" readonly="1"/> -
+                            <field name="template_id" readonly="1"/>
+                        </h2>
+                    </div>
+                    
+                    <group name="company_info" string="Informations Entreprise">
+                        <group>
+                            <field name="company_id" required="1" 
+                                   groups="base.group_multi_company"/>
+                            <field name="fiscal_position_id"/>
+                            <field name="nif" readonly="1"/>
+                            <field name="nis" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="article_imposition"/>
+                            <field name="regime_fiscal"/>
+                            <field name="tax_office"/>
+                        </group>
+                    </group>
+                    
+                    <group name="period_info" string="Période de Déclaration">
+                        <group>
+                            <field name="period_type" required="1"/>
+                            <field name="date_from" required="1"/>
+                            <field name="date_to" required="1"/>
+                        </group>
+                        <group>
+                            <field name="month"/>
+                            <field name="quarter"/>
+                            <field name="fiscal_year"/>
+                        </group>
+                    </group>
+                    
+                    <notebook>
+                        <!-- Onglet: Lignes de déclaration -->
+                        <page string="Lignes de Déclaration" name="declaration_lines">
+                            <field name="line_ids" nolabel="1">
+                                <tree editable="bottom" create="false" delete="false"
+                                      decoration-bold="is_bold"
+                                      decoration-danger="is_highlighted"
+                                      decoration-muted="category in ['total', 'solde'] and not is_highlighted">
+                                    <field name="sequence" invisible="1"/>
+                                    <field name="code" readonly="1"/>
+                                    <field name="name" readonly="1"/>
+                                    <field name="category" invisible="1"/>
+                                    <field name="sign" invisible="1"/>
+                                    <field name="base_amount" 
+                                           attrs="{'readonly': [('manual_entry', '=', False)]}"
+                                           sum="Base Totale"/>
+                                    <field name="tax_amount"
+                                           attrs="{'readonly': [('manual_entry', '=', False)]}"
+                                           sum="Taxe Totale"/>
+                                    <field name="rate" invisible="1"/>
+                                    <field name="is_bold" invisible="1"/>
+                                    <field name="is_highlighted" invisible="1"/>
+                                    <field name="is_solde" invisible="1"/>
+                                    <field name="is_total" invisible="1"/>
+                                    <field name="manual_entry" invisible="1"/>
+                                </tree>
+                            </field>
+                            
+                            <!-- Résumé des totaux -->
+                            <group string="Résumé de la Déclaration" class="mt-4">
+                                <group>
+                                    <field name="amount_collected" widget="monetary"
+                                           attrs="{'invisible': [('declaration_type', '=', 'G2')]}"/>
+                                    <field name="amount_deductible" widget="monetary"
+                                           attrs="{'invisible': [('declaration_type', '=', 'G2')]}"/>
+                                    <field name="amount_taxable_base" widget="monetary"
+                                           attrs="{'invisible': [('declaration_type', 'in', ['G50', 'G1'])]}"/>
+                                </group>
+                                <group>
+                                    <field name="amount_regularization" widget="monetary"/>
+                                    <field name="amount_total" widget="monetary"/>
+                                    <field name="amount_due" widget="monetary" 
+                                           class="font-weight-bold text-danger"/>
+                                </group>
+                            </group>
+                        </page>
+                        
+                        <!-- Onglet: Informations complémentaires -->
+                        <page string="Informations Complémentaires" name="additional_info">
+                            <group name="payment_info" string="Informations Paiement">
+                                <group>
+                                    <field name="payment_reference"/>
+                                    <field name="payment_date"/>
+                                    <field name="bank_account_id"/>
+                                </group>
+                                <group>
+                                    <field name="currency_id" invisible="1"/>
+                                    <field name="amount_paid" widget="monetary"/>
+                                    <field name="amount_remaining" widget="monetary"/>
+                                </group>
+                            </group>
+                            
+                            <group name="notes" string="Notes et Commentaires">
+                                <field name="notes" nolabel="1" placeholder="Ajouter des notes ou commentaires sur cette déclaration..."/>
+                            </group>
+                        </page>
+                        
+                        <!-- Onglet: Pièces jointes -->
+                        <page string="Pièces Jointes" name="attachments">
+                            <field name="attachment_ids" nolabel="1"/>
+                        </page>
+                    </notebook>
+                    
+                    <div class="oe_chatter">
+                        <div class="oe_chatter_channels">
+                            <field name="message_follower_ids"/>
+                        </div>
+                        <div class="oe_chatter_messages">
+                            <field name="activity_ids"/>
+                            <field name="message_ids"/>
+                        </div>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ============================================ -->
+    <!-- TAX DECLARATION SEARCH VIEW                 -->
+    <!-- ============================================ -->
+    
+    <record id="view_l10n_dz_tax_declaration_search" model="ir.ui.view">
+        <field name="name">l10n.dz.tax.declaration.search</field>
+        <field name="model">l10n.dz.tax.declaration</field>
+        <field name="arch" type="xml">
+            <search string="Rechercher Déclarations Fiscales">
+                <field name="name" string="Déclaration"/>
+                <field name="declaration_type" string="Type"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="state" string="État"/>
+                <field name="date_from" string="Date début"/>
+                <field name="date_to" string="Date fin"/>
+                
+                <separator/>
+                <filter string="Brouillons" name="draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="Calculées" name="computed" domain="[('state', '=', 'computed')]"/>
+                <filter string="Soumises" name="submitted" domain="[('state', '=', 'submitted')]"/>
+                <filter string="Payées" name="paid" domain="[('state', '=', 'paid')]"/>
+                
+                <separator/>
+                <filter string="G50 TVA" name="g50" domain="[('declaration_type', '=', 'G50')]"/>
+                <filter string="G1 IRG" name="g1" domain="[('declaration_type', '=', 'G1')]"/>
+                <filter string="G2 TAP" name="g2" domain="[('declaration_type', '=', 'G2')]"/>
+                <filter string="G4 IBS" name="g4" domain="[('declaration_type', '=', 'G4')]"/>
+                
+                <group expand="0" string="Groupes">
+                    <filter string="Type de Déclaration" name="group_type" context="{'group_by': 'declaration_type'}"/>
+                    <filter string="État" name="group_state" context="{'group_by': 'state'}"/>
+                    <filter string="Entreprise" name="group_company" context="{'group_by': 'company_id'}"/>
+                    <filter string="Période" name="group_period" context="{'group_by': 'date_from'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ============================================ -->
+    <!-- TAX DECLARATION LINE - FORM VIEW             -->
+    <!-- ============================================ -->
+    
+    <record id="view_l10n_dz_tax_declaration_line_form" model="ir.ui.view">
+        <field name="name">l10n.dz.tax.declaration.line.form</field>
+        <field name="model">l10n.dz.tax.declaration.line</field>
+        <field name="arch" type="xml">
+            <form string="Ligne de Déclaration Fiscale">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="code" readonly="1"/>
+                            <field name="name" readonly="1"/>
+                            <field name="category" readonly="1"/>
+                            <field name="sign" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="rate"/>
+                            <field name="base_amount"/>
+                            <field name="tax_amount"/>
+                        </group>
+                    </group>
+                    <group string="Configuration" name="config">
+                        <group>
+                            <field name="is_mandatory" readonly="1"/>
+                            <field name="manual_entry" readonly="1"/>
+                            <field name="is_computed" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="is_total" readonly="1"/>
+                            <field name="is_solde" readonly="1"/>
+                            <field name="is_bold" readonly="1"/>
+                            <field name="is_highlighted" readonly="1"/>
+                        </group>
+                    </group>
+                    <group string="Description" name="description" 
+                           attrs="{'invisible': [('description_text', '=', False)]}">
+                        <field name="description_text" nolabel="1" readonly="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ============================================ -->
+    <!-- TAX DECLARATION WIZARD VIEW                 -->
+    <!-- ============================================ -->
+    
+    <record id="view_l10n_dz_wizard_declaration" model="ir.ui.view">
+        <field name="name">l10n.dz.wizard.declaration</field>
+        <field name="model">l10n.dz.declaration.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Assistant de Déclaration Fiscale">
+                <sheet>
+                    <group name="wizard_config" string="Paramètres de la Déclaration">
+                        <group>
+                            <field name="declaration_type" required="1"/>
+                            <field name="company_id" required="1"/>
+                            <field name="period_type" required="1"/>
+                        </group>
+                        <group>
+                            <field name="date_from" required="1"/>
+                            <field name="date_to" required="1"/>
+                            <field name="auto_compute"/>
+                        </group>
+                    </group>
+                    
+                    <group string="Options Avancées" name="advanced_options">
+                        <group>
+                            <field name="include_draft_moves"/>
+                            <field name="exclude_reconciled"/>
+                        </group>
+                        <group>
+                            <field name="journal_ids" widget="many2many_tags"/>
+                        </group>
+                    </group>
+                    
+                    <footer>
+                        <button name="action_create_declaration" type="object" 
+                                string="Créer la Déclaration" class="btn-primary"/>
+                        <button string="Annuler" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action pour le wizard -->
+    <record id="action_declaration_wizard" model="ir.actions.act_window">
+        <field name="name">Nouvelle Déclaration Fiscale</field>
+        <field name="res_model">l10n.dz.declaration.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{}</field>
+    </record>
+
+    <!-- Menu item for wizard -->
+    <menuitem id="menu_new_declaration_wizard"
+              name="Nouvelle Déclaration..."
+              parent="menu_fiscal_declarations"
+              action="action_declaration_wizard"
+              sequence="99"
+              groups="account.group_account_user"/>
+
+    <!-- ============================================ -->
+    <!-- REPORTS / PRINT ACTIONS                     -->
+    <!-- ============================================ -->
+
+    <!-- Report G50 TVA -->
+    <report
+        id="action_report_g50_tva"
+        model="l10n.dz.tax.declaration"
+        string="Imprimer G50 - TVA"
+        report_type="qweb-pdf"
+        name="l10n_dz_reports.report_g50_tva"
+        file="l10n_dz_reports.report_g50_tva"
+        print_report_name="'G50_TVA_%s_%s' % (object.date_from.strftime('%Y%m'), object.date_to.strftime('%Y%m'))"
+        attachment_use="True"/>
+
+    <!-- Report G1 IRG -->
+    <report
+        id="action_report_g1_irg"
+        model="l10n.dz.tax.declaration"
+        string="Imprimer G1 - IRG"
+        report_type="qweb-pdf"
+        name="l10n_dz_reports.report_g1_irg"
+        file="l10n_dz_reports.report_g1_irg"
+        print_report_name="'G1_IRG_%s_%s' % (object.date_from.strftime('%Y%m'), object.date_to.strftime('%Y%m'))"
+        attachment_use="True"/>
+
+    <!-- Report G2 TAP -->
+    <report
+        id="action_report_g2_tap"
+        model="l10n.dz.tax.declaration"
+        string="Imprimer G2 - TAP"
+        report_type="qweb-pdf"
+        name="l10n_dz_reports.report_g2_tap"
+        file="l10n_dz_reports.report_g2_tap"
+        print_report_name="'G2_TAP_%s_Q%s' % (object.date_from.strftime('%Y'), object.quarter or '')"
+        attachment_use="True"/>
+
+    <!-- Report G4 IBS -->
+    <report
+        id="action_report_g4_ibs"
+        model="l10n.dz.tax.declaration"
+        string="Imprimer G4 - IBS"
+        report_type="qweb-pdf"
+        name="l10n_dz_reports.report_g4_ibs"
+        file="l10n_dz_reports.report_g4_ibs"
+        print_report_name="'G4_IBS_%s' % (object.fiscal_year or '')"
+        attachment_use="True"/>
+
+</odoo>
