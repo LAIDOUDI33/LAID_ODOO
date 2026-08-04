@@ -58,6 +58,10 @@ model User {
   assignedOpportunities Opportunity[] @relation("SalesAssigned")
   activities          Activity[]
   
+  // Relations Sales
+  salesOrders          SalesOrder[]    @relation("SalesPersonOrders")
+  quotations           Quotation[]     @relation("QuotationSalesPersons")
+  
   @@map("users")
 }
 
@@ -126,6 +130,11 @@ model Company {
   budgets           Budget[]
   cashFlows         CashFlowEntry[]
   opportunities      Opportunity[]
+  
+  // Phase 1 Relations (Modules 9-11)
+  purchaseOrders    PurchaseOrder[]
+  salesOrders       SalesOrder[]
+  quotations        Quotation[]
   
   @@map("companies")
 }
@@ -318,6 +327,9 @@ model Partner {
   invoices        Invoice[]
   bills           Bill[]
   opportunities   Opportunity[]
+  purchaseOrders  PurchaseOrder[] @relation("PurchaseOrders")
+  salesOrders     SalesOrder[]    @relation("SalesOrders")
+  quotations      Quotation[]     @relation("Quotations")
   
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
@@ -397,6 +409,9 @@ model Product {
   billLines         BillLine[]
   stockMovements    StockMovement[]
   stockLevels       StockLevel[]
+  purchaseOrderLines PurchaseOrderLine[] @relation("POLines")
+  salesOrderLines   SalesOrderLine[]    @relation("SOLines")
+  quotationLines    QuotationLine[]     @relation("QuoteLines")
   
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
@@ -458,9 +473,11 @@ model Invoice {
   
   // Écriture comptable
   journalEntryId    String?
+  salesOrderId      String?
   
   lines             InvoiceLine[]
   payments          Payment[]
+  salesOrder        SalesOrder? @relation("SalesOrderInvoices", fields: [salesOrderId], references: [id])
   
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
@@ -525,9 +542,11 @@ model Bill {
   
   // Notes
   internalNotes     String?
+  purchaseOrderId   String?
   
   lines             BillLine[]
   payments          Payment[]
+  purchaseOrder     PurchaseOrder? @relation("PurchaseOrderBills", fields: [purchaseOrderId], references: [id])
   
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
@@ -927,6 +946,8 @@ model Warehouse {
   locations     Location[]
   stockLevels   StockLevel[]
   movements     StockMovement[]
+  salesOrders   SalesOrder[]    @relation("SOWarehouse")
+  purchaseOrders PurchaseOrder[]
   
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -1006,6 +1027,12 @@ model StockMovement {
   
   sourceDoc     String?       // Type document source
   sourceId      String?       // ID document source
+  
+  // Order Relations
+  purchaseOrderId String?
+  purchaseOrder   PurchaseOrder? @relation("POReceipts", fields: [purchaseOrderId], references: [id])
+  salesOrderId    String?
+  salesOrder      SalesOrder? @relation("SODeliveries", fields: [salesOrderId], references: [id])
   
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
@@ -1971,6 +1998,10 @@ model Opportunity {
   convertedInvoiceId String?
   lostReason        String?
   
+  // Order Relations
+  quotations        Quotation[]     @relation("QuotationOpportunities")
+  salesOrders       SalesOrder[]    @relation("OpportunityOrders")
+  
   companyId         String
   company           Company        @relation(fields: [companyId], references: [id])
   
@@ -2040,6 +2071,329 @@ model Activity {
 }
 
 // ============================================================
+// MODULE 9: PURCHASE ORDERS (COMMANDES D'ACHAT)
+// ============================================================
+
+enum PurchaseOrderStatus {
+  draft
+  sent           // Envoyée au fournisseur
+  confirmed      // Confirmée par fournisseur
+  received       // Partiellement/totalement reçue
+  billed         // Facturée par fournisseur
+  done           // Terminée
+  cancelled      // Annulée
+}
+
+model PurchaseOrder {
+  id                String             @id @default(cuid())
+  reference         String             @unique // ACH-YYYY-MM-XXX
+  
+  // Fournisseur
+  partnerId         String
+  partner           Partner            @relation("PurchaseOrders", fields: [partnerId], references: [id])
+  
+  // Société
+  companyId         String
+  company           Company            @relation(fields: [companyId], references: [id])
+  
+  // Dates
+  date              DateTime           @default(now())
+  expectedDate      DateTime?          // Date de livraison prévue
+  receiptDate       DateTime?          // Date de réception effective
+  
+  // Statut
+  status            PurchaseOrderStatus @default(draft)
+  
+  // Montants
+  amountUntaxed     Float              @default(0)  // Total HT
+  amountTax         Float              @default(0)  // Total TVA
+  amountTotal       Float              @default(0)  // Total TTC
+  amountReceived    Float              @default(0)  // Montant reçu/facturé
+  amountBilled      Float              @default(0)  // Montant facturé
+  
+  // Conditions
+  paymentTerms      String?            // Délai paiement (jours)
+  paymentMode       String?
+  incoterm          String?            // EXW, FOB, CIF, DDP...
+  
+  // Livraison
+  shippingAddress   String?
+  warehouseId       String?
+  warehouse         Warehouse?         @relation(fields: [warehouseId], references: [id])
+  
+  // Notes
+  internalNotes     String?
+  supplierNotes     String?           // Notes pour le fournisseur
+  
+  // Références liées
+  sourceType        String?           // manual, rfq, replenishment
+  sourceId          String?
+  
+  // Workflow approbation
+  workflowInstanceId String?
+  
+  lines             PurchaseOrderLine[]
+  
+  receiptItems      StockMovement[]   @relation("POReceipts")
+  
+  bills             Bill[]            @relation("PurchaseOrderBills")
+  
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  
+  @@index([status])
+  @@index([partnerId])
+  @@index([companyId])
+  @@index([date])
+  
+  @@map("purchase_orders")
+}
+
+model PurchaseOrderLine {
+  id                String   @id @default(cuid())
+  purchaseOrderId   String
+  purchaseOrder     PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  
+  productId         String
+  product           Product   @relation("POLines", fields: [productId], references: [id])
+  
+  description       String?
+  quantity          Float    @default(1)
+  unitPrice         Float    @default(0)  // Prix achat HT
+  discountRate      Float    @default(0)
+  tvaRate           Float    @default(19)
+  
+  // Montants calculés
+  amountUntaxed     Float    @default(0)
+  amountTax         Float    @default(0)
+  amountTotal       Float    @default(0)
+  
+  // Réception
+  quantityReceived  Float    @default(0)  // Quantité reçue
+  quantityInvoiced  Float    @default(0)  // Quantité facturée
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@map("purchase_order_lines")
+}
+
+// ============================================================
+// MODULE 10: SALES ORDERS (COMMANDES CLIENTS / BONS DE COMMANDE)
+// ============================================================
+
+enum SalesOrderStatus {
+  draft
+  sent            // Envoyée au client
+  confirmed       // Confirmée par client
+  processing      // En cours de traitement
+  delivered       // Livrée partiellement/totalement
+  invoiced        // Facturée
+  done            // Terminée
+  cancelled       // Annulée
+}
+
+model SalesOrder {
+  id                String             @id @default(cuid())
+  reference         String             @unique // CMD-YYYY-MM-XXX
+  
+  // Client
+  partnerId         String
+  partner           Partner            @relation("SalesOrders", fields: [partnerId], references: [id])
+  
+  // Société
+  companyId         String
+  company           Company            @relation(fields: [companyId], references: [id])
+  
+  // Dates
+  date              DateTime           @default(now())
+  expectedDate      DateTime?          // Date de livraison prévue
+  deliveryDate      DateTime?          // Date de livraison effective
+  
+  // Statut
+  status            SalesOrderStatus   @default(draft)
+  
+  // Montants
+  amountUntaxed     Float              @default(0)  // Total HT
+  amountTax         Float              @default(0)  // Total TVA
+  timbreFiscal      Float              @default(1)  // Timbre fiscal
+  amountTotal       Float              @default(0)  // Total TTC
+  amountDelivered   Float              @default(0)  // Montant livré
+  amountInvoiced    Float              @default(0)  // Montant facturé
+  
+  // Conditions
+  paymentTerms      String?            // Délai paiement (jours)
+  paymentMode       String?
+  
+  // Livraison
+  shippingAddress   String?
+  warehouseId       String?
+  warehouse         Warehouse?         @relation("SOWarehouse", fields: [warehouseId], references: [id])
+  
+  // Notes
+  internalNotes     String?
+  customerNotes     String?
+  
+  // Références liées
+  quotationId       String?           @unique  // Devis d'origine
+  quotation         Quotation?        @relation("QuoteToOrder", fields: [quotationId], references: [id])
+  opportunityId     String?
+  opportunity       Opportunity?      @relation("OpportunityOrders", fields: [opportunityId], references: [id])
+  
+  // Utilisateur assigné
+  salesPersonId     String?
+  salesPerson       User?             @relation("SalesPersonOrders", fields: [salesPersonId], references: [id])
+  
+  lines             SalesOrderLine[]
+  
+  deliveryItems     StockMovement[]   @relation("SODeliveries")
+  invoices          Invoice[]         @relation("SalesOrderInvoices")
+  
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  
+  @@index([status])
+  @@index([partnerId])
+  @@index([companyId])
+  @@index([date])
+  @@index([quotationId])
+  
+  @@map("sales_orders")
+}
+
+model SalesOrderLine {
+  id                String   @id @default(cuid())
+  salesOrderId      String
+  salesOrder        SalesOrder @relation(fields: [salesOrderId], references: [id], onDelete: Cascade)
+  
+  productId         String
+  product           Product   @relation("SOLines", fields: [productId], references: [id])
+  
+  description       String?
+  quantity          Float    @default(1)
+  unitPrice         Float    @default(0)  // Prix vente HT
+  discountRate      Float    @default(0)
+  tvaRate           Float    @default(19)
+  
+  // Montants calculés
+  amountUntaxed     Float    @default(0)
+  amountTax         Float    @default(0)
+  amountTotal       Float    @default(0)
+  
+  // Livraison/Facturation
+  quantityDelivered Float    @default(0)
+  quantityInvoiced Float    @default(0)
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@map("sales_order_lines")
+}
+
+// ============================================================
+// MODULE 11: QUOTATIONS/DEVIS (Offres Commerciales)
+// ============================================================
+
+enum QuotationStatus {
+  draft
+  sent            // Envoyé au client
+  viewed          // Vu par le client
+  accepted        // Accepté
+  rejected        // Refusé
+  expired         // Expiré
+  converted       // Converti en commande
+  cancelled       // Annulé
+}
+
+model Quotation {
+  id                String             @id @default(cuid())
+  reference         String             @unique // DEV-YYYY-MM-XXX
+  
+  // Client
+  partnerId         String
+  partner           Partner            @relation("Quotations", fields: [partnerId], references: [id])
+  
+  // Société
+  companyId         String
+  company           Company            @relation(fields: [companyId], references: [id])
+  
+  // Dates
+  date              DateTime           @default(now())
+  validUntil        DateTime?          // Validité du devis
+  
+  // Statut
+  status            QuotationStatus    @default(draft)
+  
+  // Montants
+  amountUntaxed     Float              @default(0)  // Total HT
+  amountTax         Float              @default(0)  // Total TVA
+  timbreFiscal      Float              @default(1)  // Timbre fiscal
+  amountTotal       Float              @default(0)  // Total TTC
+  
+  // Conditions
+  paymentTerms      String?            // Délai paiement
+  paymentMode       String?
+  
+  // Notes
+  internalNotes     String?
+  customerNotes     String?
+  
+  // Référence opportunité
+  opportunityId     String?
+  opportunity       Opportunity?      @relation("QuotationOpportunities", fields: [opportunityId], references: [id])
+  
+  // Commercial
+  salesPersonId     String?
+  salesPerson       User?             @relation("QuotationSalesPersons", fields: [salesPersonId], references: [id])
+  
+  // Conversion
+  convertedToId     String?           @unique
+  convertedTo       SalesOrder?        @relation("QuoteToOrder")
+  
+  // PDF
+  pdfUrl            String?
+  
+  lines             QuotationLine[]
+  
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  
+  @@index([status])
+  @@index([partnerId])
+  @@index([companyId])
+  @@index([validUntil])
+  @@index([opportunityId])
+  
+  @@map("quotations")
+}
+
+model QuotationLine {
+  id                String   @id @default(cuid())
+  quotationId       String
+  quotation         Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  
+  productId         String
+  product           Product   @relation("QuoteLines", fields: [productId], references: [id])
+  
+  description       String?
+  quantity          Float    @default(1)
+  unitPrice         Float    @default(0)  // Prix vente HT
+  discountRate      Float    @default(0)
+  tvaRate           Float    @default(19)
+  
+  // Montants calculés
+  amountUntaxed     Float    @default(0)
+  amountTax         Float    @default(0)
+  amountTotal       Float    @default(0)
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@map("quotation_lines")
+}
+
+// ============================================================
 // END OF SCHEMA - HASSIBA Suite ERP v2.0.0 Enterprise
-// Total: 55+ Models with full Algerian ERP functionality
+// Total: 60+ Models with full Algerian ERP functionality
+// Phase 1 Complete: Added Purchase Orders, Sales Orders, Quotations
 // ============================================================
