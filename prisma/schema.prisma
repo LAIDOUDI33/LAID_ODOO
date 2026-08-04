@@ -46,6 +46,18 @@ model User {
   delegatedApprovals WorkflowApproval[] @relation("DelegatedApproval")
   workflowComments   WorkflowComment[]
   
+  // Relations Notifications
+  notifications       Notification[]
+  notificationPrefs   NotificationPreference?
+  
+  // Relations Reports
+  generatedReports    Report[]
+  reportTemplates     ReportTemplate[]
+  
+  // Relations CRM
+  assignedOpportunities Opportunity[] @relation("SalesAssigned")
+  activities          Activity[]
+  
   @@map("users")
 }
 
@@ -107,6 +119,13 @@ model Company {
   taxDeclarations   TaxDeclaration[]
   fixedAssets        FixedAsset[]
   workflowDefinitions WorkflowDefinition[]
+  
+  // Nouvelles relations (Modules 4-8)
+  reports           Report[]
+  reportTemplates   ReportTemplate[]
+  budgets           Budget[]
+  cashFlows         CashFlowEntry[]
+  opportunities      Opportunity[]
   
   @@map("companies")
 }
@@ -298,6 +317,7 @@ model Partner {
   
   invoices        Invoice[]
   bills           Bill[]
+  opportunities   Opportunity[]
   
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
@@ -597,6 +617,7 @@ model BankAccount {
   company       Company   @relation(fields: [companyId], references: [id])
   
   payments      Payment[]
+  cashFlows     CashFlowEntry[]
   
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -1456,6 +1477,569 @@ model WorkflowComment {
 }
 
 // ============================================================
-// END OF SCHEMA - HASSIBA Suite ERP v2.0.0
-// Total: 29 Core Models + 10 Enums + 13 Auth/Audit/Workflow Models
+// MODULE 4: NOTIFICATIONS SYSTEM (Alertes In-App/Email)
+// ============================================================
+
+enum NotificationType {
+  info
+  success
+  warning
+  error
+  workflow_pending      // Approbation requise
+  workflow_approved     // Approuvé
+  workflow_rejected     // Rejeté
+  invoice_due           // Échéance facture
+  payment_received      // Paiement reçu
+  leave_approved // Congé approuvé
+  leave_rejected // Congé rejeté
+  payroll_ready // Paie disponible
+  low_stock // Stock bas
+  system_alert // Alerte système
+}
+
+enum NotificationChannel {
+  in_app
+  email
+  sms
+  push
+  webhook
+}
+
+model Notification {
+  id              String            @id @default(cuid())
+  title           String
+  message         String
+  type            NotificationType @default(info)
+  
+  // Canal de notification
+  channel         NotificationChannel @default(in_app)
+  
+  // Destinataire
+  userId          String
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Lecture
+  isRead          Boolean           @default(false)
+  readAt          DateTime?
+  
+  // Action associée (lien vers une entité)
+  actionUrl       String?           // Lien vers la page concernée
+  actionLabel     String?           // Texte du bouton d'action
+  entityType      String?           // Type entité liée
+  entityId        String?           // ID entité liée
+  
+  // Données supplémentaires (JSON)
+  metadata        String?           // JSON pour données custom
+  
+  // Email spécifique (si canal email)
+  emailSent       Boolean           @default(false)
+  emailSentAt     DateTime?
+  
+  // Priorité (1-10, 10 = urgent)
+  priority        Int               @default(5)
+  
+  // Expiration
+  expiresAt       DateTime?
+  
+  createdAt       DateTime          @default(now())
+  
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+  @@index([type])
+  
+  @@map("notifications")
+}
+
+model NotificationPreference {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Préférences par type de notification
+  workflowEnabled    Boolean @default(true)
+  invoiceEnabled     Boolean @default(true)
+  paymentEnabled     Boolean @default(true)
+  leaveEnabled       Boolean @default(true)
+  payrollEnabled     Boolean @default(true)
+  stockEnabled       Boolean @default(true)
+  systemEnabled      Boolean @default(true)
+  
+  // Canaux préférés
+  inAppEnabled       Boolean @default(true)
+  emailEnabled       Boolean @default(false)
+  pushEnabled        Boolean @default(false)
+  
+  // Email pour notifications
+  emailNotification  String?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@unique([userId])
+  
+  @@map("notification_preferences")
+}
+
+// ============================================================
+// MODULE 5: REPORTS & DOCUMENTS GENERATION
+// ============================================================
+
+enum ReportType {
+  financial_statement  // États financiers
+  balance_sheet        // Bilan
+  income_result        // Compte résultat
+  cash_flow            // Trésorerie
+  invoice_report       // Rapport factures
+  payroll_report       // Rapport paie
+  tax_declaration     // Déclaration fiscale
+  inventory_report     // Rapport stock
+  sales_report         // Rapport ventes
+  purchase_report      // Rapport achats
+  employee_list        // Liste employés
+  audit_trail          // Journal audit
+  custom               // Personnalisé
+}
+
+enum ReportFormat {
+  pdf
+  excel
+  csv
+  html
+  json
+}
+
+enum ReportStatus {
+  generating
+  completed
+  failed
+  scheduled
+}
+
+model Report {
+  id              String          @id @default(cuid())
+  name            String
+  description     String?
+  type            ReportType
+  format          ReportFormat    @default(pdf)
+  status          ReportStatus    @default(generating)
+  
+  // Paramètres du rapport
+  parameters      String?         // JSON des filtres/paramètres
+  
+  // Fichier généré
+  fileUrl         String?
+  fileName        String?
+  fileSize        Int?            // en bytes
+  
+  // Période couverte
+  dateStart       DateTime?
+  dateEnd         DateTime?
+  
+  // Générateur
+  generatedBy     String
+  generator       User            @relation(fields: [generatedBy], references: [id])
+  
+  // Dates
+  completedAt     DateTime?
+  expiresAt       DateTime?       // Expiration du fichier
+  
+  // Statistiques génération
+  generationTimeMs Int?          // Temps de génération en ms
+  recordCount     Int?            // Nombre d'enregistrements
+  
+  // Erreur si échec
+  errorMessage    String?
+  
+  companyId       String
+  company         Company         @relation(fields: [companyId], references: [id])
+  
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  @@index([type])
+  @@index([status])
+  @@index([generatedBy])
+  @@index([companyId])
+  
+  @@map("reports")
+}
+
+model ReportTemplate {
+  id              String          @id @default(cuid())
+  name            String
+  description     String?
+  type            ReportType
+  isDefault       Boolean         @default(false)
+  
+  // Template configuration
+  templateConfig  String?         // JSON structure du rapport
+  headerTemplate  String?         // En-tête personnalisé
+  footerTemplate  String?         // Pied de page personnalisé
+  logoIncluded    Boolean         @default(true)
+  
+  // Colonnes incluses
+  columns         String?         // JSON array des colonnes
+  
+  // Filtres disponibles
+  availableFilters String?        // JSON des filtres possibles
+  
+  // Tri par défaut
+  defaultSort     String?         // Champ de tri default
+  defaultSortOrder String?        @default("asc")
+  
+  companyId       String?
+  company         Company?        @relation(fields: [companyId], references: [id])
+  
+  createdBy       String?
+  creator         User?           @relation(fields: [createdBy], references: [id])
+  
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt()
+  
+  @@map("report_templates")
+}
+
+// ============================================================
+// END OF SCHEMA - HASSIBA Suite ERP v2.0.0 Enterprise
+// Total: 55+ Models with full Algerian ERP functionality
+// ============================================================
+
+// ============================================================
+// MODULE 6: BUDGETING & TRÉSORERIE
+// ============================================================
+
+enum BudgetStatus {
+  draft
+  submitted
+  under_review
+  approved
+  rejected
+  active
+  closed
+  archived
+}
+
+enum BudgetType {
+  operational        // Budget opérationnel
+  investment         // Budget investissement
+  revenue            // Budget revenus
+  expense            // Budget dépenses
+  cash_flow          // Budget trésorerie
+  departmental       // Budget départemental
+  project            // Budget projet
+}
+
+model Budget {
+  id                String        @id @default(cuid())
+  name              String
+  description       String?
+  code              String        @unique // BUD-YYYY-XXX
+  type              BudgetType
+  status            BudgetStatus  @default(draft)
+  
+  // Période budgétaire
+  year              Int
+  startMonth        Int           @default(1) // 1-12
+  endMonth          Int           @default(12) // 1-12
+  
+  // Montants
+  totalBudgeted     Float         @default(0)  // Total budgété
+  totalActual       Float         @default(0)  // Total réel
+  variance          Float         @default(0)  // Écart
+  variancePercent   Float         @default(0)  // Écart %
+  
+  // Devise
+  currency          String        @default("DZD")
+  
+  // Approbation
+  approvedBy        String?
+  approvedAt        DateTime?
+  rejectionReason   String?
+  
+  // Département/Responsable
+  departmentId      String?
+  departmentName    String?
+  managerId         String?
+  managerName       String?
+  
+  // Notes
+  notes             String?
+  
+  companyId         String
+  company           Company        @relation(fields: [companyId], references: [id])
+  
+  lines             BudgetLine[]
+  
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  
+  @@index([status])
+  @@index([year])
+  @@index([type])
+  @@index([companyId])
+  
+  @@map("budgets")
+}
+
+model BudgetLine {
+  id                String   @id @default(cuid())
+  accountCode       String?  // Code compte SCF
+  accountName       String?  // Nom du compte
+  category          String?  // Catégorie (personnel, matière première, etc.)
+  
+  // Montants mensuels (12 colonnes)
+  m1Budgeted        Float    @default(0)
+  m1Actual          Float    @default(0)
+  m2Budgeted        Float    @default(0)
+  m2Actual          Float    @default(0)
+  m3Budgeted        Float    @default(0)
+  m3Actual          Float    @default(0)
+  m4Budgeted        Float    @default(0)
+  m4Actual          Float    @default(0)
+  m5Budgeted        Float    @default(0)
+  m5Actual          Float    @default(0)
+  m6Budgeted        Float    @default(0)
+  m6Actual          Float    @default(0)
+  m7Budgeted        Float    @default(0)
+  m7Actual          Float    @default(0)
+  m8Budgeted        Float    @default(0)
+  m8Actual          Float    @default(0)
+  m9Budgeted        Float    @default(0)
+  m9Actual          Float    @default(0)
+  m10Budgeted       Float    @default(0)
+  m10Actual         Float    @default(0)
+  m11Budgeted       Float    @default(0)
+  m11Actual         Float    @default(0)
+  m12Budgeted       Float    @default(0)
+  m12Actual         Float    @default(0)
+  
+  // Totaux
+  totalBudgeted     Float    @default(0)
+  totalActual       Float    @default(0)
+  variance          Float    @default(0)
+  
+  budgetId          String
+  budget            Budget   @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@map("budget_lines")
+}
+
+// ============================================================
+// CASH FLOW / TRÉSORERIE
+// ============================================================
+
+enum CashFlowType {
+  inflow            // Entrée (encaissement)
+  outflow           // Sortie (décaissement)
+}
+
+enum CashFlowCategory {
+  operating          // Exploitation
+  investing          // Investissement
+  financing          // Financement
+}
+
+model CashFlowEntry {
+  id                String            @id @default(cuid())
+  reference         String            @unique // TRS-YYYYMM-XXX
+  date              DateTime
+  type              CashFlowType
+  category          CashFlowCategory  @default(operating)
+  
+  // Description
+  label             String
+  description       String?
+  
+  // Montants
+  amount            Float              @default(0)
+  currency          String             @default("DZD")
+  
+  // Comptabilité
+  bankAccountId     String?
+  bankAccount       BankAccount?       @relation(fields: [bankAccountId], references: [id])
+  counterpartName   String?           // Nom contrepartie
+  
+  // Rapprochement
+  reconciled        Boolean            @default(false)
+  reconciledAt      DateTime?
+  reconciledBy      String?
+  
+  // Pièce justificative
+  documentRef       String?           // Référence facture, paiement...
+  documentType      String?           // Type document
+  
+  // Prévisionnel vs Réel
+  isForecast        Boolean            @default(false)
+  forecastDate      DateTime?         // Date prévue si différente
+  
+  companyId         String
+  company           Company            @relation(fields: [companyId], references: [id])
+  
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  
+  @@index([date])
+  @@index([type])
+  @@index([category])
+  @@index([companyId])
+  
+  @@map("cash_flow_entries")
+}
+
+// ============================================================
+// MODULE 8: CRM PIPELINE VENTES AVANCÉ
+// ============================================================
+
+enum LeadStatus {
+  new               // Nouveau
+  contacted         // Contacté
+  qualified         // Qualifié
+  proposal_sent     // Proposition envoyée
+  negotiation       // Négociation
+  won_won           // Gagné
+  lost_lost         // Perdu
+}
+
+enum LeadSource {
+  website
+  referral
+  linkedin
+  facebook
+  cold_call
+  exhibition
+  partner
+  advertising
+  other
+}
+
+enum LeadRating {
+  hot               // Chaud (probabilité >70%)
+  warm              // Tiède (30-70%)
+  cold              // Froid (<30%)
+}
+
+model Opportunity {
+  id                String        @id @default(cuid())
+  name              String        // Nom de l'opportunité
+  reference         String        @unique // OPP-YYYY-XXX
+  
+  // Client potentiel ou existant
+  partnerId         String?
+  partner           Partner?      @relation(fields: [partnerId], references: [id])
+  contactName       String?       // Nom du contact
+  contactEmail      String?
+  contactPhone      String?
+  
+  // Statut & Étape
+  status            LeadStatus    @default(new)
+  stage             Int           @default(1) // Étape actuelle dans le pipeline (1-5)
+  
+  // Source & Rating
+  source            LeadSource    @default(other)
+  rating            LeadRating    @default(cold)
+  
+  // Montants (DZD)
+  expectedRevenue   Float         @default(0)  // CA espéré
+  probability       Int           @default(10)  // Probabilité (%)
+  weightedValue     Float         @default(0)  // Valeur pondérée = expected * proba/100
+  
+  // Produit/Service
+  productName       String?
+  productDescription String?
+  quantity          Int           @default(1)
+  unitPrice         Float         @default(0)
+  
+  // Dates importantes
+  expectedCloseDate DateTime?     // Date de clôture prévue
+  actualCloseDate   DateTime?
+  
+  // Suivi
+  lastActivityAt    DateTime      @default(now())
+  nextActionDate    DateTime?
+  nextAction        String?       // Prochaine action
+  notes             String?
+  
+  // Assignation
+  assignedToId      String?
+  assignedTo        User?         @relation("SalesAssigned", fields: [assignedToId], references: [id])
+  
+  // Conversion
+  convertedInvoiceId String?
+  lostReason        String?
+  
+  companyId         String
+  company           Company        @relation(fields: [companyId], references: [id])
+  
+  activities        Activity[]
+  
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  
+  @@index([status])
+  @@index([stage])
+  @@index([assignedToId])
+  @@index([expectedCloseDate])
+  @@index([partnerId])
+  @@index([companyId])
+  
+  @@map("opportunities")
+}
+
+enum ActivityType {
+  call
+  meeting
+  email
+  note
+  task
+  demo
+  proposal
+  follow_up
+  other
+}
+
+model Activity {
+  id                String        @id @default(cuid())
+  type              ActivityType
+  subject           String
+  description       String?
+  
+  // Date/Heure
+  dueDate           DateTime?
+  completedAt       DateTime?
+  isCompleted       Boolean       @default(false)
+  
+  // Durée (minutes)
+  durationMinutes   Int?
+  
+  // Participants
+  userId            String
+  user              User          @relation(fields: [userId], references: [id])
+  
+  // Entité liée
+  opportunityId     String?
+  opportunity       Opportunity?  @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  partnerId         String?
+  
+  // Résultat
+  result            String?
+  nextStep          String?
+  
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt()
+  
+  @@index([userId])
+  @@index([opportunityId])
+  @@index([dueDate])
+  @@index([type])
+  
+  @@map("activities")
+}
+
+// ============================================================
+// END OF SCHEMA - HASSIBA Suite ERP v2.0.0 Enterprise
+// Total: 55+ Models with full Algerian ERP functionality
 // ============================================================
