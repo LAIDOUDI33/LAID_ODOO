@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import {
   ShoppingCart,
   Truck,
@@ -25,6 +25,19 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Minus,
+  // Workflow icons
+  ClipboardList,
+  ArrowRight,
+  Receipt,
+  CreditCard,
+  CircleDot,
+  CircleCheckBig,
+  PackageOpen,
+  Banknote,
+  Workflow,
+  ChevronDown,
+  Play,
+  HandCoins,
 } from 'lucide-react'
 import {
   Card,
@@ -66,6 +79,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { KpiCard } from '@/components/dashboard/kpi-card'
 import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
+import { Progress } from '@/components/ui/progress'
+import { Separator } from '@/components/ui/separator'
 
 // ============================================================
 // Types & Interfaces
@@ -197,6 +212,133 @@ const STATUS_TABS = [
   { value: 'confirmed', label: 'Confirmées' },
   { value: 'received', label: 'Reçues' },
   { value: 'done', label: 'Terminées' },
+]
+
+// ============================================================
+// Workflow Pipeline Configuration (French Labels)
+// ============================================================
+
+interface WorkflowStage {
+  id: string
+  label: string
+  description: string
+  icon: React.ElementType
+  color: string
+  bgColor: string
+  borderColor: string
+  statuses: string[]
+}
+
+const WORKFLOW_STAGES: WorkflowStage[] = [
+  {
+    id: 'request',
+    label: 'Demande d\'Achat',
+    description: 'Demandes en attente de validation',
+    icon: ClipboardList,
+    color: 'text-amber-700',
+    bgColor: 'bg-amber-50 dark:bg-amber-950/30',
+    borderColor: 'border-amber-300 dark:border-amber-700',
+    statuses: ['draft'],
+  },
+  {
+    id: 'order',
+    label: 'Commande Fournisseur',
+    description: 'Commandes envoyées/confirmées',
+    icon: ShoppingCart,
+    color: 'text-blue-700',
+    bgColor: 'bg-blue-50 dark:bg-blue-950/30',
+    borderColor: 'border-blue-300 dark:border-blue-700',
+    statuses: ['sent', 'confirmed'],
+  },
+  {
+    id: 'receipt',
+    label: 'Réception Marchandise',
+    description: 'Marchandises à réceptionner',
+    icon: PackageOpen,
+    color: 'text-cyan-700',
+    bgColor: 'bg-cyan-50 dark:bg-cyan-950/30',
+    borderColor: 'border-cyan-300 dark:border-cyan-700',
+    statuses: ['received'],
+  },
+  {
+    id: 'bill',
+    label: 'Facture Fournisseur',
+    description: 'Factures en attente de paiement',
+    icon: Receipt,
+    color: 'text-purple-700',
+    bgColor: 'bg-purple-50 dark:bg-purple-950/30',
+    borderColor: 'border-purple-300 dark:border-purple-700',
+    statuses: ['billed'],
+  },
+  {
+    id: 'payment',
+    label: 'Paiement Effectué',
+    description: 'Cycle d\'achat terminé',
+    icon: CreditCard,
+    color: 'text-emerald-700',
+    bgColor: 'bg-emerald-50 dark:bg-emerald-950/30',
+    borderColor: 'border-emerald-300 dark:border-emerald-700',
+    statuses: ['done'],
+  },
+]
+
+// Workflow Actions Configuration
+interface WorkflowActionConfig {
+  id: string
+  label: string
+  icon: React.ElementType
+  variant: 'default' | 'outline' | 'destructive' | 'secondary'
+  className: string
+  fromStatuses: string[]
+  action: string
+}
+
+const WORKFLOW_ACTIONS: WorkflowActionConfig[] = [
+  {
+    id: 'send',
+    label: 'Envoyer',
+    icon: Send,
+    variant: 'default',
+    className: 'bg-blue-600 hover:bg-blue-700',
+    fromStatuses: ['draft'],
+    action: 'send',
+  },
+  {
+    id: 'confirm',
+    label: 'Confirmer',
+    icon: CheckCircle,
+    variant: 'default',
+    className: 'bg-indigo-600 hover:bg-indigo-700',
+    fromStatuses: ['sent'],
+    action: 'confirm',
+  },
+  {
+    id: 'receive',
+    label: 'Réceptionner',
+    icon: PackageCheck,
+    variant: 'secondary',
+    className: 'bg-cyan-100 text-cyan-800 hover:bg-cyan-200',
+    fromStatuses: ['confirmed'],
+    action: 'receive',
+  },
+  {
+    id: 'bill',
+    label: 'Facturer',
+    icon: FileText,
+    variant: 'default',
+    className: 'bg-purple-600 hover:bg-purple-700',
+    fromStatuses: ['received', 'confirmed'],
+    action: 'bill',
+  },
+  {
+    id: 'pay',
+    label: 'Payer',
+    icon: HandCoins,
+    variant: 'default',
+    className: 'bg-emerald-600 hover:bg-emerald-700',
+    fromStatuses: ['billed'],
+    action: 'pay',
+  },
 ]
 
 // ============================================================
@@ -359,6 +501,328 @@ function EmptyState({ onCreateNew }: { onCreateNew: () => void }) {
         </div>
       </CardContent>
     </Card>
+  )
+}
+
+// ============================================================
+// Workflow Pipeline Component
+// ============================================================
+
+interface WorkflowPipelineProps {
+  orders: PurchaseOrder[]
+  onStageClick: (stageId: string) => void
+  activeStage: string | null
+}
+
+function WorkflowPipeline({ orders, onStageClick, activeStage }: WorkflowPipelineProps) {
+  // Calculate counts for each stage
+  const stageCounts = useMemo(() => {
+    const counts: Record<string, number> = {}
+    
+    WORKFLOW_STAGES.forEach((stage) => {
+      counts[stage.id] = orders.filter((order) =>
+        stage.statuses.includes(order.status)
+      ).length
+    })
+    
+    return counts
+  }, [orders])
+
+  // Calculate overall progress (percentage of done orders)
+  const totalOrders = orders.filter((o) => o.status !== 'cancelled').length
+  const completedOrders = stageCounts['payment'] || 0
+  const progressPercent = totalOrders > 0 ? Math.round((completedOrders / totalOrders) * 100) : 0
+
+  return (
+    <div className="space-y-6">
+      {/* Progress Overview */}
+      <Card className="bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
+        <CardContent className="p-4 md:p-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-primary/10">
+                <Workflow className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-primary">Flux de Travail Achats</h3>
+                <p className="text-sm text-muted-foreground">
+                  {completedOrders} sur {totalOrders || 0} commandes complétées
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4 w-full md:w-auto">
+              <Progress value={progressPercent} className="flex-1 md:w-40 h-2" />
+              <span className="text-sm font-medium text-primary min-w-[45px]">{progressPercent}%</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Pipeline Stages */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
+        {WORKFLOW_STAGES.map((stage, index) => {
+          const Icon = stage.icon
+          const count = stageCounts[stage.id] || 0
+          const isActive = activeStage === stage.id
+
+          return (
+            <motion.div
+              key={stage.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+            >
+              <Card
+                className={`cursor-pointer transition-all duration-200 hover:shadow-md hover:scale-[1.02] ${
+                  isActive
+                    ? `${stage.bgColor} ${stage.borderColor} border-2 ring-2 ring-primary/20`
+                    : 'border-transparent hover:border-muted-foreground/20'
+                }`}
+                onClick={() => onStageClick(isActive ? null : stage.id)}
+              >
+                <CardContent className="p-3 md:p-4">
+                  <div className="flex flex-col items-center text-center gap-2">
+                    {/* Icon */}
+                    <div
+                      className={`p-2 rounded-xl ${stage.bgColor} ${
+                        isActive ? 'ring-2 ring-current opacity-100' : 'opacity-80'
+                      }`}
+                    >
+                      <Icon className={`w-5 h-5 md:w-6 md:h-6 ${stage.color}`} />
+                    </div>
+
+                    {/* Label */}
+                    <p className="font-medium text-xs md:text-sm leading-tight">{stage.label}</p>
+
+                    {/* Count Badge */}
+                    <Badge
+                      variant={count > 0 ? 'default' : 'secondary'}
+                      className={`text-xs font-bold px-2 py-0.5 ${
+                        count > 0
+                          ? `${stage.bgColor} ${stage.color} border-0`
+                          : ''
+                      }`}
+                    >
+                      {count}
+                    </Badge>
+
+                    {/* Arrow (except last) */}
+                    {index < WORKFLOW_STAGES.length - 1 && (
+                      <ArrowRight className="w-4 h-4 text-muted-foreground hidden lg:block absolute -right-2 top-1/2 -translate-y-1/2" />
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Mobile arrow between cards */}
+              {index < WORKFLOW_STAGES.length - 1 && (
+                <div className="flex justify-center lg:hidden -my-1">
+                  <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                </div>
+              )}
+            </motion.div>
+          )
+        })}
+      </div>
+
+      {/* Stage Description */}
+      {activeStage && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          exit={{ opacity: 0, height: 0 }}
+        >
+          <Card className="border-dashed">
+            <CardContent className="p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                {(() => {
+                  const stage = WORKFLOW_STAGES.find((s) => s.id === activeStage)
+                  if (!stage) return null
+                  const Icon = stage.icon
+                  return (
+                    <>
+                      <Icon className={`w-5 h-5 ${stage.color}`} />
+                      <div>
+                        <p className="font-medium">{stage.label}</p>
+                        <p className="text-sm text-muted-foreground">{stage.description}</p>
+                      </div>
+                    </>
+                  )
+                })()}
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onStageClick(null)}
+              >
+                Effacer le filtre
+              </Button>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
+    </div>
+  )
+}
+
+// ============================================================
+// Goods Receipt Modal Component
+// ============================================================
+
+interface GoodsReceiptModalProps {
+  open: boolean
+  onClose: () => void
+  order: PurchaseOrder | null
+  onSubmit: (data: { lines: Array<{ lineId: string; quantity: number }>; notes?: string }) => Promise<void>
+  loading: boolean
+}
+
+export function GoodsReceiptModal({
+  open,
+  onClose,
+  order,
+  onSubmit,
+  loading,
+}: GoodsReceiptModalProps) {
+  // Initialize state from order - using lazy initializer
+  // Note: Parent component uses `key={order?.id}` to force remount on order change
+  const [receiptLines, setReceiptLines] = useState<Array<{ lineId: string; quantity: number; maxQty: number }>>(() => {
+    if (!order) return []
+    return order.lines.map((line) => ({
+      lineId: line.id!,
+      quantity: Math.max(0, line.quantity - (line as any).quantityReceived || 0),
+      maxQty: line.quantity - ((line as any).quantityReceived || 0),
+    }))
+  })
+  
+  const [notes, setNotes] = useState('')
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    
+    // Validate at least one line has quantity > 0
+    const validLines = receiptLines.filter((l) => l.quantity > 0)
+    if (validLines.length === 0) {
+      toast.error('Veuillez spécifier au moins une quantité à recevoir')
+      return
+    }
+
+    await onSubmit({
+      lines: validLines.map((l) => ({ lineId: l.lineId, quantity: l.quantity })),
+      notes,
+    })
+  }
+
+  function updateLineQuantity(lineId: string, quantity: number) {
+    setReceiptLines((prev) =>
+      prev.map((l) =>
+        l.lineId === lineId
+          ? { ...l, quantity: Math.min(Math.max(0, quantity), l.maxQty) }
+          : l
+      )
+    )
+  }
+
+  if (!order) return null
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <PackageCheck className="w-5 h-5 text-cyan-600" />
+            Réception Marchandise - {order.reference}
+          </DialogTitle>
+          <DialogDescription>
+            Enregistrez la réception des marchandises pour cette commande
+          </DialogDescription>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Order Info */}
+          <Card className="bg-muted/50">
+            <CardContent className="pt-4">
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-muted-foreground">Fournisseur:</span>
+                  <p className="font-medium">{order.partner?.displayName || order.partner?.name}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Total TTC:</span>
+                  <p className="font-medium">{formatCurrency(order.amountTotal)}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Receipt Lines */}
+          <div className="space-y-4">
+            <Label className="text-base font-semibold">Quantités à Recevoir</Label>
+            
+            <div className="space-y-3">
+              {receiptLines.map((line, index) => {
+                const poLine = order.lines.find((l) => l.id === line.lineId)
+                
+                return (
+                  <Card key={line.lineId} className="p-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm truncate">
+                          {poLine?.description || poLine?.product?.name}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Commandé: {poLine?.quantity} | 
+                          Déjà reçu: {(poLine as any)?.quantityReceived || 0} | 
+                          Restant: {line.maxQty}
+                        </p>
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="number"
+                          min="0"
+                          max={line.maxQty}
+                          value={line.quantity}
+                          onChange={(e) => updateLineQuantity(line.lineId, parseFloat(e.target.value) || 0)}
+                          className="w-24 text-right"
+                        />
+                        <span className="text-sm text-muted-foreground whitespace-nowrap">
+                          / {line.maxQty}
+                        </span>
+                      </div>
+                    </div>
+                  </Card>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Notes */}
+          <div className="space-y-2">
+            <Label htmlFor="receiptNotes">Notes de réception</Label>
+            <Textarea
+              id="receiptNotes"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={3}
+              placeholder="Observations sur la réception..."
+            />
+          </div>
+
+          {/* Actions */}
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose}>
+              Annuler
+            </Button>
+            <Button type="submit" disabled={loading} className="gap-2 bg-cyan-600 hover:bg-cyan-700">
+              {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+              <PackageCheck className="w-4 h-4" />
+              Valider la Réception
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   )
 }
 
@@ -1071,10 +1535,14 @@ export default function PurchasesPage() {
   const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [activeTab, setActiveTab] = useState('all')
+  
+  // Workflow state
+  const [activeWorkflowStage, setActiveWorkflowStage] = useState<string | null>(null)
 
   // Modals state
   const [createModalOpen, setCreateModalOpen] = useState(false)
   const [detailModalOpen, setDetailModalOpen] = useState(false)
+  const [receiptModalOpen, setReceiptModalOpen] = useState(false)
   const [selectedOrder, setSelectedOrder] = useState<PurchaseOrder | null>(null)
   const [actionLoading, setActionLoading] = useState(false)
 
@@ -1308,6 +1776,81 @@ export default function PurchasesPage() {
     setCreateModalOpen(true)
   }
 
+  // Open receipt modal
+  function openReceiptModal(order: PurchaseOrder) {
+    setSelectedOrder(order)
+    setReceiptModalOpen(true)
+  }
+
+  // Handle workflow stage click
+  function handleWorkflowStageClick(stageId: string | null) {
+    setActiveWorkflowStage(stageId)
+    // When a stage is selected, we filter the orders locally
+    if (stageId) {
+      const stage = WORKFLOW_STAGES.find((s) => s.id === stageId)
+      if (stage) {
+        // Set active tab to show all, then we'll filter by workflow stage
+        setActiveTab('all')
+      }
+    }
+  }
+
+  // Get filtered orders based on workflow stage
+  const filteredOrders = useMemo(() => {
+    if (!activeWorkflowStage) return orders
+    const stage = WORKFLOW_STAGES.find((s) => s.id === activeWorkflowStage)
+    if (!stage) return orders
+    return orders.filter((order) => stage.statuses.includes(order.status))
+  }, [orders, activeWorkflowStage])
+
+  // Goods receipt handler
+  async function handleGoodsReceipt(data: { lines: Array<{ lineId: string; quantity: number }>; notes?: string }) {
+    if (!selectedOrder) return
+    
+    setActionLoading(true)
+    try {
+      const response = await fetch(`/api/purchases/${selectedOrder.id}/receive`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        toast.success(result.message || 'Marchandises réceptionnées avec succès')
+        setReceiptModalOpen(false)
+        setSelectedOrder(null)
+        fetchOrders()
+      } else {
+        toast.error(result.error || 'Erreur lors de la réception')
+      }
+    } catch (err) {
+      toast.error('Erreur réseau')
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  // Quick action handler for table row buttons
+  async function handleQuickAction(order: PurchaseOrder, action: string) {
+    if (action === 'receive') {
+      openReceiptModal(order)
+      return
+    }
+    
+    // For other actions, use existing status change handler
+    setSelectedOrder(order)
+    await handleStatusChange(order.id, action)
+  }
+
+  // Get available actions for an order
+  function getOrderActions(order: PurchaseOrder): WorkflowActionConfig[] {
+    return WORKFLOW_ACTIONS.filter((action) =>
+      action.fromStatuses.includes(order.status)
+    )
+  }
+
   // KPI cards configuration
   const kpiCards = useMemo(() => {
     if (!kpiData) return []
@@ -1425,12 +1968,26 @@ export default function PurchasesPage() {
       {/* Main Content */}
       <Tabs defaultValue="commandes" className="space-y-4">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <TabsList className="grid w-full grid-cols-6 lg:w-auto lg:inline-grid">
+          <TabsList className="grid w-full grid-cols-7 lg:w-auto lg:inline-grid">
+            <TabsTrigger
+              value="workflow"
+              onClick={() => {
+                setActiveTab('all')
+                setActiveWorkflowStage(null)
+              }}
+              className="text-xs sm:text-sm gap-1.5"
+            >
+              <Workflow className="w-4 h-4" />
+              <span className="hidden sm:inline">Workflow</span>
+            </TabsTrigger>
             {STATUS_TABS.map((tab) => (
               <TabsTrigger
                 key={tab.value}
                 value={tab.value}
-                onClick={() => handleTabChange(tab.value)}
+                onClick={() => {
+                  handleTabChange(tab.value)
+                  setActiveWorkflowStage(null)
+                }}
                 className="text-xs sm:text-sm"
               >
                 {tab.label}
@@ -1449,6 +2006,146 @@ export default function PurchasesPage() {
             />
           </form>
         </div>
+
+        {/* Workflow Tab Content */}
+        <TabsContent value="workflow" className="space-y-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            {/* Workflow Pipeline */}
+            <WorkflowPipeline
+              orders={orders}
+              onStageClick={handleWorkflowStageClick}
+              activeStage={activeWorkflowStage}
+            />
+
+            {/* Filtered Orders Table (when a stage is selected) */}
+            {activeWorkflowStage && (
+              <Card>
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center gap-2">
+                      {(() => {
+                        const stage = WORKFLOW_STAGES.find((s) => s.id === activeWorkflowStage)
+                        return stage ? stage.label : 'Documents'
+                      })()}
+                      <Badge variant="secondary" className="ml-2">
+                        {filteredOrders.length}
+                      </Badge>
+                    </CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Référence</TableHead>
+                          <TableHead>Fournisseur</TableHead>
+                          <TableHead className="text-right">Total TTC</TableHead>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Statut</TableHead>
+                          <TableHead className="text-right">Actions Workflow</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredOrders.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                              Aucun document dans cette étape du workflow
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          filteredOrders.map((order) => (
+                            <TableRow key={order.id}>
+                              <TableCell className="font-medium">{order.reference}</TableCell>
+                              <TableCell>{order.partner?.displayName || order.partner?.name}</TableCell>
+                              <TableCell className="text-right font-semibold">{formatCurrency(order.amountTotal)}</TableCell>
+                              <TableCell>{formatDate(order.date)}</TableCell>
+                              <TableCell><StatusBadge status={order.status} /></TableCell>
+                              <TableCell className="text-right">
+                                <div className="flex items-center justify-end gap-1">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => openDetailModal(order)}
+                                    className="gap-1"
+                                  >
+                                    <Eye className="w-4 h-4" />
+                                  </Button>
+                                  {getOrderActions(order).map((action) => {
+                                    const ActionIcon = action.icon
+                                    return (
+                                      <Button
+                                        key={action.id}
+                                        variant={action.variant as 'default' | 'outline' | 'destructive' | 'secondary'}
+                                        size="sm"
+                                        onClick={() => handleQuickAction(order, action.action)}
+                                        className={`gap-1 h-8 px-2 text-xs ${action.className}`}
+                                        title={action.label}
+                                      >
+                                        <ActionIcon className="w-3.5 h-3.5" />
+                                        <span className="hidden md:inline">{action.label}</span>
+                                      </Button>
+                                    )
+                                  })}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Quick Actions Panel when no stage selected */}
+            {!activeWorkflowStage && (
+              <Card className="border-dashed">
+                <CardContent className="py-12">
+                  <div className="text-center space-y-4">
+                    <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Workflow className="w-8 h-8 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold">Flux de Travail des Achats</h3>
+                      <p className="text-muted-foreground mt-1 max-w-md mx-auto">
+                        Sélectionnez une étape du pipeline ci-dessus pour voir les documents correspondants 
+                        et effectuer les actions de workflow.
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap justify-center gap-2 pt-2">
+                      {WORKFLOW_STAGES.map((stage) => {
+                        const Icon = stage.icon
+                        const count = orders.filter((o) => stage.statuses.includes(o.status)).length
+                        return (
+                          <Button
+                            key={stage.id}
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleWorkflowStageClick(stage.id)}
+                            disabled={count === 0}
+                            className="gap-2"
+                          >
+                            <Icon className={`w-4 h-4 ${stage.color}`} />
+                            {stage.label}
+                            {count > 0 && (
+                              <Badge variant="secondary" className="ml-1">{count}</Badge>
+                            )}
+                          </Button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </motion.div>
+        </TabsContent>
 
         {/* Commandes Tab */}
         <TabsContent value="commandes" className="space-y-4">
@@ -1516,10 +2213,40 @@ export default function PurchasesPage() {
                                 <TableCell>{order.expectedDate ? formatDate(order.expectedDate) : '-'}</TableCell>
                                 <TableCell><StatusBadge status={order.status} /></TableCell>
                                 <TableCell className="text-right">
-                                  <Button variant="ghost" size="sm" onClick={() => openDetailModal(order)} className="gap-1">
-                                    <Eye className="w-4 h-4" />
-                                    <span className="hidden sm:inline">Voir</span>
-                                  </Button>
+                                  <div className="flex items-center justify-end gap-1">
+                                    <Button variant="ghost" size="sm" onClick={() => openDetailModal(order)} className="gap-1">
+                                      <Eye className="w-4 h-4" />
+                                      <span className="hidden sm:inline">Voir</span>
+                                    </Button>
+                                    {/* Quick workflow actions */}
+                                    {getOrderActions(order).slice(0, 2).map((action) => {
+                                      const ActionIcon = action.icon
+                                      return (
+                                        <Button
+                                          key={action.id}
+                                          variant={action.variant as 'default' | 'outline' | 'destructive' | 'secondary'}
+                                          size="sm"
+                                          onClick={() => handleQuickAction(order, action.action)}
+                                          className={`gap-1 h-8 px-2 text-xs ${action.className}`}
+                                          title={action.label}
+                                        >
+                                          <ActionIcon className="w-3.5 h-3.5" />
+                                          <span className="hidden lg:inline">{action.label}</span>
+                                        </Button>
+                                      )
+                                    })}
+                                    {getOrderActions(order).length > 2 && (
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => openDetailModal(order)}
+                                        className="gap-1 h-8 px-2"
+                                        title="Plus d'actions"
+                                      >
+                                        <MoreVertical className="w-3.5 h-3.5" />
+                                      </Button>
+                                    )}
+                                  </div>
                                 </TableCell>
                               </TableRow>
                             ))
@@ -1619,6 +2346,19 @@ export default function PurchasesPage() {
         }}
         onStatusChange={handleStatusChange}
         onEdit={openEditModal}
+        loading={actionLoading}
+      />
+
+      {/* Goods Receipt Modal */}
+      <GoodsReceiptModal
+        key={selectedOrder?.id || 'receipt-modal'}
+        open={receiptModalOpen}
+        onClose={() => {
+          setReceiptModalOpen(false)
+          setSelectedOrder(null)
+        }}
+        order={selectedOrder}
+        onSubmit={handleGoodsReceipt}
         loading={actionLoading}
       />
     </div>

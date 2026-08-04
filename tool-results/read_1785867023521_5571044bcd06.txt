@@ -1,0 +1,1627 @@
+     1→'use client'
+     2→
+     3→import React, { useState, useEffect, useCallback, useMemo } from 'react'
+     4→import {
+     5→  ShoppingCart,
+     6→  Truck,
+     7→  FileText,
+     8→  Plus,
+     9→  Search,
+    10→  Clock,
+    11→  CheckCircle,
+    12→  AlertTriangle,
+    13→  Eye,
+    14→  Edit3,
+    15→  PackageCheck,
+    16→  Send,
+    17→  XCircle,
+    18→  ChevronLeft,
+    19→  ChevronRight,
+    20→  Loader2,
+    21→  RefreshCw,
+    22→  Filter,
+    23→  MoreVertical,
+    24→  Trash2,
+    25→  ArrowUpRight,
+    26→  ArrowDownRight,
+    27→  Minus,
+    28→} from 'lucide-react'
+    29→import {
+    30→  Card,
+    31→  CardContent,
+    32→  CardHeader,
+    33→  CardTitle,
+    34→  CardDescription,
+    35→} from '@/components/ui/card'
+    36→import { Button } from '@/components/ui/button'
+    37→import { Badge } from '@/components/ui/badge'
+    38→import { Input } from '@/components/ui/input'
+    39→import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+    40→import {
+    41→  Table,
+    42→  TableBody,
+    43→  TableCell,
+    44→  TableHead,
+    45→  TableHeader,
+    46→  TableRow,
+    47→} from '@/components/ui/table'
+    48→import {
+    49→  Dialog,
+    50→  DialogContent,
+    51→  DialogDescription,
+    52→  DialogFooter,
+    53→  DialogHeader,
+    54→  DialogTitle,
+    55→} from '@/components/ui/dialog'
+    56→import {
+    57→  Select,
+    58→  SelectContent,
+    59→  SelectItem,
+    60→  SelectTrigger,
+    61→  SelectValue,
+    62→} from '@/components/ui/select'
+    63→import { Label } from '@/components/ui/label'
+    64→import { Textarea } from '@/components/ui/textarea'
+    65→import { Skeleton } from '@/components/ui/skeleton'
+    66→import { KpiCard } from '@/components/dashboard/kpi-card'
+    67→import { motion, AnimatePresence } from 'framer-motion'
+    68→import { toast } from 'sonner'
+    69→
+    70→// ============================================================
+    71→// Types & Interfaces
+    72→// ============================================================
+    73→
+    74→interface PurchaseOrderLine {
+    75→  id?: string
+    76→  productId: string
+    77→  description?: string
+    78→  quantity: number
+    79→  unitPrice: number
+    80→  discountRate?: number
+    81→  tvaRate?: number
+    82→  product?: {
+    83→    id: string
+    84→    code: string
+    85→    name: string
+    86→  }
+    87→}
+    88→
+    89→interface Partner {
+    90→  id: string
+    91→  name: string
+    92→  displayName?: string
+    93→  type: string
+    94→}
+    95→
+    96→interface Product {
+    97→  id: string
+    98→  code: string
+    99→  name: string
+   100→  purchasePrice: number
+   101→  tvaRate: number
+   102→}
+   103→
+   104→interface PurchaseOrder {
+   105→  id: string
+   106→  reference: string
+   107→  partnerId: string
+   108→  partner?: Partner
+   109→  date: string
+   110→  expectedDate?: string | null
+   111→  receiptDate?: string | null
+   112→  status: string
+   113→  amountUntaxed: number
+   114→  amountTax: number
+   115→  amountTotal: number
+   116→  amountReceived: number
+   117→  amountBilled: number
+   118→  paymentTerms?: string | null
+   119→  paymentMode?: string | null
+   120→  incoterm?: string | null
+   121→  internalNotes?: string | null
+   122→  supplierNotes?: string | null
+   123→  lines: PurchaseOrderLine[]
+   124→  bills?: Array<{ id: string; reference: string; status: string; amountTotal: number }>
+   125→}
+   126→
+   127→interface PurchasesApiResponse {
+   128→  success: boolean
+   129→  data: PurchaseOrder[]
+   130→  pagination: {
+   131→    page: number
+   132→    limit: number
+   133→    total: number
+   134→    totalPages: number
+   135→    hasNext: boolean
+   136→    hasPrev: boolean
+   137→  }
+   138→}
+   139→
+   140→interface KpiData {
+   141→  totalOrders: number
+   142→  monthlyPurchases: number
+   143→  activeSuppliers: number
+   144→  pendingOrders: number
+   145→  monthlyChange: number
+   146→}
+   147→
+   148→// ============================================================
+   149→// Status Configuration (French Labels)
+   150→// ============================================================
+   151→
+   152→const STATUS_CONFIG: Record<
+   153→  string,
+   154→  { label: string; color: string; icon: React.ElementType }
+   155→> = {
+   156→  draft: {
+   157→    label: 'Brouillon',
+   158→    color: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
+   159→    icon: FileText,
+   160→  },
+   161→  sent: {
+   162→    label: 'Envoyée',
+   163→    color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+   164→    icon: Send,
+   165→  },
+   166→  confirmed: {
+   167→    label: 'Confirmée',
+   168→    color: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400',
+   169→    icon: CheckCircle,
+   170→  },
+   171→  received: {
+   172→    label: 'Reçue',
+   173→    color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+   174→    icon: PackageCheck,
+   175→  },
+   176→  billed: {
+   177→    label: 'Facturée',
+   178→    color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
+   179→    icon: FileText,
+   180→  },
+   181→  done: {
+   182→    label: 'Terminée',
+   183→    color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+   184→    icon: CheckCircle,
+   185→  },
+   186→  cancelled: {
+   187→    label: 'Annulée',
+   188→    color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+   189→    icon: XCircle,
+   190→  },
+   191→}
+   192→
+   193→const STATUS_TABS = [
+   194→  { value: 'all', label: 'Toutes' },
+   195→  { value: 'draft', label: 'Brouillons' },
+   196→  { value: 'sent', label: 'Envoyées' },
+   197→  { value: 'confirmed', label: 'Confirmées' },
+   198→  { value: 'received', label: 'Reçues' },
+   199→  { value: 'done', label: 'Terminées' },
+   200→]
+   201→
+   202→// ============================================================
+   203→// Utility Functions
+   204→// ============================================================
+   205→
+   206→function formatCurrency(amount: number): string {
+   207→  return new Intl.NumberFormat('fr-DZ', {
+   208→    style: 'currency',
+   209→    currency: 'DZD',
+   210→    minimumFractionDigits: 0,
+   211→    maximumFractionDigits: 0,
+   212→  }).format(amount)
+   213→}
+   214→
+   215→function formatDate(dateString: string): string {
+   216→  const date = new Date(dateString)
+   217→  return new Intl.DateTimeFormat('fr-FR', {
+   218→    day: '2-digit',
+   219→    month: '2-digit',
+   220→    year: 'numeric',
+   221→  }).format(date)
+   222→}
+   223→
+   224→// ============================================================
+   225→// Status Badge Component
+   226→// ============================================================
+   227→
+   228→function StatusBadge({ status }: { status: string }) {
+   229→  const config = STATUS_CONFIG[status] || {
+   230→    label: status,
+   231→    color: 'bg-gray-100 text-gray-700',
+   232→    icon: FileText,
+   233→  }
+   234→  const Icon = config.icon
+   235→
+   236→  return (
+   237→    <Badge variant="outline" className={`${config.color} gap-1.5 font-medium`}>
+   238→      <Icon className="w-3 h-3" />
+   239→      {config.label}
+   240→    </Badge>
+   241→  )
+   242→}
+   243→
+   244→// ============================================================
+   245→// Loading Skeleton Component
+   246→// ============================================================
+   247→
+   248→function LoadingSkeleton() {
+   249→  return (
+   250→    <div className="space-y-6">
+   251→      {/* Header Skeleton */}
+   252→      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+   253→        <div>
+   254→          <Skeleton className="h-8 w-48 mb-2" />
+   255→          <Skeleton className="h-5 w-64" />
+   256→        </div>
+   257→        <div className="flex gap-2">
+   258→          <Skeleton className="h-10 w-40" />
+   259→          <Skeleton className="h-10 w-44" />
+   260→        </div>
+   261→      </div>
+   262→
+   263→      {/* KPI Cards Skeleton */}
+   264→      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+   265→        {[...Array(4)].map((_, i) => (
+   266→          <Card key={i}>
+   267→            <CardHeader className="pb-2">
+   268→              <div className="flex justify-between">
+   269→                <Skeleton className="h-4 w-32" />
+   270→                <Skeleton className="h-10 w-10 rounded-lg" />
+   271→              </div>
+   272→            </CardHeader>
+   273→            <CardContent>
+   274→              <Skeleton className="h-8 w-24 mb-2" />
+   275→              <Skeleton className="h-4 w-20" />
+   276→            </CardContent>
+   277→          </Card>
+   278→        ))}
+   279→      </div>
+   280→
+   281→      {/* Table Skeleton */}
+   282→      <Card>
+   283→        <CardHeader>
+   284→          <div className="flex justify-between">
+   285→            <Skeleton className="h-6 w-40" />
+   286→            <Skeleton className="h-10 w-64" />
+   287→          </div>
+   288→        </CardHeader>
+   289→        <CardContent>
+   290→          <div className="space-y-3">
+   291→            {[...Array(5)].map((_, i) => (
+   292→              <div key={i} className="flex items-center space-x-4 py-3">
+   293→                <Skeleton className="h-5 w-28" />
+   294→                <Skeleton className="h-5 w-36" />
+   295→                <Skeleton className="h-5 w-24" />
+   296→                <Skeleton className="h-5 w-24" />
+   297→                <Skeleton className="h-5 w-20" />
+   298→                <Skeleton className="h-6 w-24 rounded-full" />
+   299→                <Skeleton className="h-8 w-16" />
+   300→              </div>
+   301→            ))}
+   302→          </div>
+   303→        </CardContent>
+   304→      </Card>
+   305→    </div>
+   306→  )
+   307→}
+   308→
+   309→// ============================================================
+   310→// Error View Component
+   311→// ============================================================
+   312→
+   313→function ErrorView({ onRetry }: { onRetry: () => void }) {
+   314→  return (
+   315→    <Card className="border-destructive/50">
+   316→      <CardContent className="py-12">
+   317→        <div className="text-center space-y-4">
+   318→          <div className="mx-auto w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center">
+   319→            <AlertTriangle className="w-8 h-8 text-destructive" />
+   320→          </div>
+   321→          <div>
+   322→            <h3 className="text-lg font-semibold">Erreur de chargement</h3>
+   323→            <p className="text-muted-foreground mt-1">
+   324→              Impossible de charger les commandes d&apos;achat. Veuillez réessayer.
+   325→            </p>
+   326→          </div>
+   327→          <Button onClick={OnRetry} variant="outline" className="gap-2">
+   328→            <RefreshCw className="w-4 h-4" />
+   329→            Réessayer
+   330→          </Button>
+   331→        </div>
+   332→      </CardContent>
+   333→    </Card>
+   334→  )
+   335→}
+   336→
+   337→// ============================================================
+   338→// Empty State Component
+   339→// ============================================================
+   340→
+   341→function EmptyState({ onCreateNew }: { onCreateNew: () => void }) {
+   342→  return (
+   343→    <Card>
+   344→      <CardContent className="py-16">
+   345→        <div className="text-center space-y-4">
+   346→          <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+   347→            <ShoppingCart className="w-8 h-8 text-primary" />
+   348→          </div>
+   349→          <div>
+   350→            <h3 className="text-lg font-semibold">Aucune commande d&apos;achat</h3>
+   351→            <p className="text-muted-foreground mt-1">
+   352→              Commencez par créer votre première commande d&apos;achat.
+   353→            </p>
+   354→          </div>
+   355→          <Button onClick={onCreateNew} className="gap-2">
+   356→            <Plus className="w-4 h-4" />
+   357→            Nouvelle Commande
+   358→          </Button>
+   359→        </div>
+   360→      </CardContent>
+   361→    </Card>
+   362→  )
+   363→}
+   364→
+   365→// ============================================================
+   366→// Create/Edit PO Modal Component
+   367→// ============================================================
+   368→
+   369→interface PurchaseOrderModalProps {
+   370→  open: boolean
+   371→  onClose: () => void
+   372→  onSubmit: (data: CreatePOFormData) => Promise<void>
+   373→  editingOrder?: PurchaseOrder | null
+   374→  loading: boolean
+   375→}
+   376→
+   377→interface CreatePOFormData {
+   378→  partnerId: string
+   379→  expectedDate?: string
+   380→  paymentTerms?: string
+   381→  incoterm?: string
+   382→  internalNotes?: string
+   383→  supplierNotes?: string
+   384→  lines: PurchaseOrderLine[]
+   385→}
+   386→
+   387→export function PurchaseOrderModal({
+   388→  open,
+   389→  onClose,
+   390→  onSubmit,
+   391→  editingOrder,
+   392→  loading,
+   393→}: PurchaseOrderModalProps) {
+   394→  const [partners, setPartners] = useState<Partner[]>([])
+   395→  const [products, setProducts] = useState<Product[]>([])
+   396→  const [loadingPartners, setLoadingPartners] = useState(false)
+   397→  const [loadingProducts, setLoadingProducts] = useState(false)
+   398→
+   399→  // Form state
+   400→  const [formData, setFormData] = useState<CreatePOFormData>({
+   401→    partnerId: '',
+   402→    expectedDate: '',
+   403→    paymentTerms: '30',
+   404→    incoterm: '',
+   405→    internalNotes: '',
+   406→    supplierNotes: '',
+   407→    lines: [{ productId: '', quantity: 1, unitPrice: 0, tvaRate: 19 }],
+   408→  })
+   409→
+   410→  // Load partners and products on mount
+   411→  useEffect(() => {
+   412→    if (open) {
+   413→      loadPartners()
+   414→      loadProducts()
+   415→      
+   416→      if (editingOrder) {
+   417→        setFormData({
+   418→          partnerId: editingOrder.partnerId,
+   419→          expectedDate: editingOrder.expectedDate
+   420→            ? new Date(editingOrder.expectedDate).toISOString().split('T')[0]
+   421→            : '',
+   422→          paymentTerms: editingOrder.paymentTerms || '30',
+   423→          incoterm: editingOrder.incoterm || '',
+   424→          internalNotes: editingOrder.internalNotes || '',
+   425→          supplierNotes: editingOrder.supplierNotes || '',
+   426→          lines:
+   427→            editingOrder.lines.length > 0
+   428→              ? editingOrder.lines.map((l) => ({
+   429→                  id: l.id,
+   430→                  productId: l.productId,
+   431→                  description: l.description,
+   432→                  quantity: l.quantity,
+   433→                  unitPrice: l.unitPrice,
+   434→                  discountRate: l.discountRate,
+   435→                  tvaRate: l.tvaRate,
+   436→                }))
+   437→              : [{ productId: '', quantity: 1, unitPrice: 0, tvaRate: 19 }],
+   438→        })
+   439→      } else {
+   440→        setFormData({
+   441→          partnerId: '',
+   442→          expectedDate: '',
+   443→          paymentTerms: '30',
+   444→          incoterm: '',
+   445→          internalNotes: '',
+   446→          supplierNotes: '',
+   447→          lines: [{ productId: '', quantity: 1, unitPrice: 0, tvaRate: 19 }],
+   448→        })
+   449→      }
+   450→    }
+   451→  }, [open, editingOrder])
+   452→
+   453→  async function loadPartners() {
+   454→    setLoadingPartners(true)
+   455→    try {
+   456→      const res = await fetch('/api/partners?type=supplier')
+   457→      const json = await res.json()
+   458→      if (json.success) setPartners(json.data)
+   459→    } catch (error) {
+   460→      console.error('Error loading partners:', error)
+   461→    } finally {
+   462→      setLoadingPartners(false)
+   463→    }
+   464→  }
+   465→
+   466→  async function loadProducts() {
+   467→    setLoadingProducts(true)
+   468→    try {
+   469→      const res = await fetch('/api/products?limit=100')
+   470→      const json = await res.json()
+   471→      if (json.success) setProducts(json.data)
+   472→    } catch (error) {
+   473→      console.error('Error loading products:', error)
+   474→    } finally {
+   475→      setLoadingProducts(false)
+   476→    }
+   477→  }
+   478→
+   479→  function updateField(field: keyof CreatePOFormData, value: string) {
+   480→    setFormData((prev) => ({ ...prev, [field]: value }))
+   481→  }
+   482→
+   483→  function updateLine(index: number, field: keyof PurchaseOrderLine, value: any) {
+   484→    setFormData((prev) => ({
+   485→      ...prev,
+   486→      lines: prev.lines.map((line, i) =>
+   487→        i === index ? { ...line, [field]: value } : line
+   488→      ),
+   489→    }))
+   490→  }
+   491→
+   492→  function addLine() {
+   493→    setFormData((prev) => ({
+   494→      ...prev,
+   495→      lines: [
+   496→        ...prev.lines,
+   497→        { productId: '', quantity: 1, unitPrice: 0, tvaRate: 19 },
+   498→      ],
+   499→    }))
+   500→  }
+   501→
+   502→  function removeLine(index: number) {
+   503→    setFormData((prev) => ({
+   504→      ...prev,
+   505→      lines: prev.lines.filter((_, i) => i !== index),
+   506→    }))
+   507→  }
+   508→
+   509→  // Calculate totals
+   510→  const totals = useMemo(() => {
+   511→    let amountUntaxed = 0
+   512→    let amountTax = 0
+   513→
+   514→    for (const line of formData.lines) {
+   515→      const qty = line.quantity || 0
+   516→      const price = line.unitPrice || 0
+   517→      const discount = line.discountRate || 0
+   518→      const tvaRate = line.tvaRate ?? 19
+   519→
+   520→      const lineTotal = qty * price * (1 - discount / 100)
+   521→      amountUntaxed += lineTotal
+   522→      amountTax += lineTotal * (tvaRate / 100)
+   523→    }
+   524→
+   525→    return {
+   526→      amountUntaxed: Math.round(amountUntaxed * 100) / 100,
+   527→      amountTax: Math.round(amountTax * 100) / 100,
+   528→      amountTotal: Math.round((amountUntaxed + amountTax) * 100) / 100,
+   529→    }
+   530→  }, [formData.lines])
+   531→
+   532→  async function handleSubmit(e: React.FormEvent) {
+   533→    e.preventDefault()
+   534→
+   535→    // Validate
+   536→    if (!formData.partnerId) {
+   537→      toast.error('Veuillez sélectionner un fournisseur')
+   538→      return
+   539→    }
+   540→
+   541→    const validLines = formData.lines.filter(
+   542→      (l) => l.productId && l.quantity > 0 && l.unitPrice >= 0
+   543→    )
+   544→    if (validLines.length === 0) {
+   545→      toast.error('Veuillez ajouter au moins une ligne de commande valide')
+   546→      return
+   547→    }
+   548→
+   549→    await onSubmit({
+   550→      ...formData,
+   551→      lines: validLines.map((l) => ({
+   552→        ...l,
+   553→        product: undefined,
+   554→      })),
+   555→    })
+   556→  }
+   557→
+   558→  return (
+   559→    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+   560→      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+   561→        <DialogHeader>
+   562→          <DialogTitle>
+   563→            {editingOrder ? `Modifier ${editingOrder.reference}` : 'Nouvelle Commande d\'Achat'}
+   564→          </DialogTitle>
+   565→          <DialogDescription>
+   566→            {editingOrder
+   567→              ? 'Modifiez les informations de la commande d\'achat'
+   568→              : 'Créez une nouvelle commande d\'achat auprès d\'un fournisseur'}
+   569→          </DialogDescription>
+   570→        </DialogHeader>
+   571→
+   572→        <form onSubmit={handleSubmit} className="space-y-6">
+   573→          {/* Supplier Selection */}
+   574→          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+   575→            <div className="space-y-2">
+   576→              <Label htmlFor="partner">Fournisseur *</Label>
+   577→              <Select
+   578→                value={formData.partnerId}
+   579→                onValueChange={(v) => updateField('partnerId', v)}
+   580→                disabled={loadingPartners}
+   581→              >
+   582→                <SelectTrigger>
+   583→                  <SelectValue placeholder="Sélectionner un fournisseur" />
+   584→                </SelectTrigger>
+   585→                <SelectContent>
+   586→                  {partners.map((p) => (
+   587→                    <SelectItem key={p.id} value={p.id}>
+   588→                      {p.displayName || p.name}
+   589→                    </SelectItem>
+   590→                  ))}
+   591→                </SelectContent>
+   592→              </Select>
+   593→            </div>
+   594→
+   595→            <div className="space-y-2">
+   596→              <Label htmlFor="expectedDate">Date de livraison prévue</Label>
+   597→              <Input
+   598→                id="expectedDate"
+   599→                type="date"
+   600→                value={formData.expectedDate}
+   601→                onChange={(e) => updateField('expectedDate', e.target.value)}
+   602→              />
+   603→            </div>
+   604→
+   605→            <div className="space-y-2">
+   606→              <Label htmlFor="paymentTerms">Conditions de paiement</Label>
+   607→              <Select
+   608→                value={formData.paymentTerms}
+   609→                onValueChange={(v) => updateField('paymentTerms', v)}
+   610→              >
+   611→                <SelectTrigger>
+   612→                  <SelectValue placeholder="Sélectionner" />
+   613→                </SelectTrigger>
+   614→                <SelectContent>
+   615→                  <SelectItem value="15">15 jours</SelectItem>
+   616→                  <SelectItem value="30">30 jours</SelectItem>
+   617→                  <SelectItem value="45">45 jours</SelectItem>
+   618→                  <SelectItem value="60">60 jours</SelectItem>
+   619→                  <SelectItem value="90">90 jours</SelectItem>
+   620→                </SelectContent>
+   621→              </Select>
+   622→            </div>
+   623→
+   624→            <div className="space-y-2">
+   625→              <Label htmlFor="incoterm">Incoterm</Label>
+   626→              <Select
+   627→                value={formData.incoterm}
+   628→                onValueChange={(v) => updateField('incoterm', v)}
+   629→              >
+   630→                <SelectTrigger>
+   631→                  <SelectValue placeholder="Sélectionner" />
+   632→                </SelectTrigger>
+   633→                <SelectContent>
+   634→                  <SelectItem value="">Aucun</SelectItem>
+   635→                  <SelectItem value="EXW">EXW (Départ usine)</SelectItem>
+   636→                  <SelectItem value="FCA">FCA</SelectItem>
+   637→                  <SelectItem value="FOB">FOB</SelectItem>
+   638→                  <SelectItem value="CIF">CIF</SelectItem>
+   639→                  <SelectItem value="DDP">DDP (Rendu destination)</SelectItem>
+   640→                </SelectContent>
+   641→              </Select>
+   642→            </div>
+   643→          </div>
+   644→
+   645→          {/* Order Lines */}
+   646→          <div className="space-y-4">
+   647→            <div className="flex items-center justify-between">
+   648→              <Label className="text-base font-semibold">Lignes de commande</Label>
+   649→              <Button type="button" variant="outline" size="sm" onClick={addLine}>
+   650→                <Plus className="w-4 h-4 mr-1" />
+   651→                Ajouter ligne
+   652→              </Button>
+   653→            </div>
+   654→
+   655→            <div className="space-y-3">
+   656→              {formData.lines.map((line, index) => (
+   657→                <Card key={index} className="p-4">
+   658→                  <div className="grid grid-cols-12 gap-3 items-end">
+   659→                    <div className="col-span-12 md:col-span-4 space-y-1">
+   660→                      <Label className="text-xs">Produit *</Label>
+   661→                      <Select
+   662→                        value={line.productId}
+   663→                        onValueChange={(v) => {
+   664→                          updateLine(index, 'productId', v)
+   665→                          // Auto-fill price and TVA from product
+   666→                          const product = products.find((p) => p.id === v)
+   667→                          if (product) {
+   668→                            updateLine(index, 'unitPrice', product.purchasePrice)
+   669→                            updateLine(index, 'tvaRate', product.tvaRate)
+   670→                          }
+   671→                        }}
+   672→                      >
+   673→                        <SelectTrigger>
+   674→                          <SelectValue placeholder="Produit" />
+   675→                        </SelectTrigger>
+   676→                        <SelectContent>
+   677→                          {products.map((p) => (
+   678→                            <SelectItem key={p.id} value={p.id}>
+   679→                              {p.code} - {p.name}
+   680→                            </SelectItem>
+   681→                          ))}
+   682→                        </SelectContent>
+   683→                      </Select>
+   684→                    </div>
+   685→
+   686→                    <div className="col-span-4 md:col-span-2 space-y-1">
+   687→                      <Label className="text-xs">Quantité *</Label>
+   688→                      <Input
+   689→                        type="number"
+   690→                        min="0"
+   691→                        step="0.01"
+   692→                        value={line.quantity}
+   693→                        onChange={(e) =>
+   694→                          updateLine(index, 'quantity', parseFloat(e.target.value) || 0)
+   695→                        }
+   696→                      />
+   697→                    </div>
+   698→
+   699→                    <div className="col-span-4 md:col-span-2 space-y-1">
+   700→                      <Label className="text-xs">Prix unitaire (HT)</Label>
+   701→                      <Input
+   702→                        type="number"
+   703→                        min="0"
+   704→                        step="0.01"
+   705→                        value={line.unitPrice}
+   706→                        onChange={(e) =>
+   707→                          updateLine(index, 'unitPrice', parseFloat(e.target.value) || 0)
+   708→                        }
+   709→                      />
+   710→                    </div>
+   711→
+   712→                    <div className="col-span-2 md:col-span-2 space-y-1">
+   713→                      <Label className="text-xs">TVA %</Label>
+   714→                      <Select
+   715→                        value={String(line.tvaRate ?? 19)}
+   716→                        onValueChange={(v) =>
+   717→                          updateLine(index, 'tvaRate', parseInt(v))
+   718→                        }
+   719→                      >
+   720→                        <SelectTrigger>
+   721→                          <SelectValue />
+   722→                        </SelectTrigger>
+   723→                        <SelectContent>
+   724→                          <SelectItem value="0">0%</SelectItem>
+   725→                          <SelectItem value="9">9%</SelectItem>
+   726→                          <SelectItem value="19">19%</SelectItem>
+   727→                        </SelectContent>
+   728→                      </Select>
+   729→                    </div>
+   730→
+   731→                    <div className="col-span-2 flex justify-end">
+   732→                      {formData.lines.length > 1 && (
+   733→                        <Button
+   734→                          type="button"
+   735→                          variant="ghost"
+   736→                          size="icon"
+   737→                          onClick={() => removeLine(index)}
+   738→                        >
+   739→                          <XCircle className="w-4 h-4 text-destructive" />
+   740→                        </Button>
+   741→                      )}
+   742→                    </div>
+   743→                  </div>
+   744→                </Card>
+   745→              ))}
+   746→            </div>
+   747→          </div>
+   748→
+   749→          {/* Totals */}
+   750→          <Card className="bg-muted/50">
+   751→            <CardContent className="pt-4">
+   752→              <div className="flex justify-end">
+   753→                <div className="space-y-2 w-64">
+   754→                  <div className="flex justify-between text-sm">
+   755→                    <span>Total HT:</span>
+   756→                    <span className="font-medium">{formatCurrency(totals.amountUntaxed)}</span>
+   757→                  </div>
+   758→                  <div className="flex justify-between text-sm">
+   759→                    <span>TVA:</span>
+   760→                    <span className="font-medium">{formatCurrency(totals.amountTax)}</span>
+   761→                  </div>
+   762→                  <hr />
+   763→                  <div className="flex justify-between font-bold text-base">
+   764→                    <span>Total TTC:</span>
+   765→                    <span>{formatCurrency(totals.amountTotal)}</span>
+   766→                  </div>
+   767→                </div>
+   768→              </div>
+   769→            </CardContent>
+   770→          </Card>
+   771→
+   772→          {/* Notes */}
+   773→          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+   774→            <div className="space-y-2">
+   775→              <Label htmlFor="internalNotes">Notes internes</Label>
+   776→              <Textarea
+   777→                id="internalNotes"
+   778→                value={formData.internalNotes}
+   779→                onChange={(e) => updateField('internalNotes', e.target.value)}
+   780→                rows={3}
+   781→                placeholder="Notes visibles uniquement en interne..."
+   782→              />
+   783→            </div>
+   784→            <div className="space-y-2">
+   785→              <Label htmlFor="supplierNotes">Notes fournisseur</Label>
+   786→              <Textarea
+   787→                id="supplierNotes"
+   788→                value={formData.supplierNotes}
+   789→                onChange={(e) => updateField('supplierNotes', e.target.value)}
+   790→                rows={3}
+   791→                placeholder="Notes qui apparaîtront sur le document..."
+   792→              />
+   793→            </div>
+   794→          </div>
+   795→
+   796→          {/* Actions */}
+   797→          <DialogFooter>
+   798→            <Button type="button" variant="outline" onClick={onClose}>
+   799→              Annuler
+   800→            </Button>
+   801→            <Button type="submit" disabled={loading}>
+   802→              {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+   803→              {editingOrder ? 'Modifier' : 'Créer'} la commande
+   804→            </Button>
+   805→          </DialogFooter>
+   806→        </form>
+   807→      </DialogContent>
+   808→    </Dialog>
+   809→  )
+   810→}
+   811→
+   812→// ============================================================
+   813→// PO Detail Modal Component
+   814→// ============================================================
+   815→
+   816→interface PODetailModalProps {
+   817→  order: PurchaseOrder | null
+   818→  open: boolean
+   819→  onClose: () => void
+   820→  onStatusChange: (id: string, action: string) => Promise<void>
+   821→  onEdit: () => void
+   822→  loading: boolean
+   823→}
+   824→
+   825→export function PODetailModal({
+   826→  order,
+   827→  open,
+   828→  onClose,
+   829→  onStatusChange,
+   830→  onEdit,
+   831→  loading,
+   832→}: PODetailModalProps) {
+   833→  if (!order) return null
+   834→
+   835→  return (
+   836→    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+   837→      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+   838→        <DialogHeader>
+   839→          <div className="flex items-center justify-between">
+   840→            <div>
+   841→              <DialogTitle className="text-xl">{order.reference}</DialogTitle>
+   842→              <DialogDescription className="mt-1">
+   843→                Commande du {formatDate(order.date)}
+   844→              </DialogDescription>
+   845→            </div>
+   846→            <StatusBadge status={order.status} />
+   847→          </div>
+   848→        </DialogHeader>
+   849→
+   850→        <div className="space-y-6">
+   851→          {/* Supplier Info */}
+   852→          <Card>
+   853→            <CardHeader className="pb-3">
+   854→              <CardTitle className="text-base">Informations Fournisseur</CardTitle>
+   855→            </CardHeader>
+   856→            <CardContent>
+   857→              <div className="grid grid-cols-2 gap-4 text-sm">
+   858→                <div>
+   859→                  <span className="text-muted-foreground">Fournisseur:</span>
+   860→                  <p className="font-medium">{order.partner?.displayName || order.partner?.name}</p>
+   861→                </div>
+   862→                <div>
+   863→                  <span className="text-muted-foreground">Conditions paiement:</span>
+   864→                  <p className="font-medium">{order.paymentTerms ? `${order.paymentTerms} jours` : '-'}</p>
+   865→                </div>
+   866→                <div>
+   867→                  <span className="text-muted-foreground">Mode de paiement:</span>
+   868→                  <p className="font-medium">{order.paymentMode || '-'}</p>
+   869→                </div>
+   870→                <div>
+   871→                  <span className="text-muted-foreground">Incoterm:</span>
+   872→                  <p className="font-medium">{order.incoterm || '-'}</p>
+   873→                </div>
+   874→                {order.expectedDate && (
+   875→                  <div>
+   876→                    <span className="text-muted-foreground">Livraison prévue:</span>
+   877→                    <p className="font-medium">{formatDate(order.expectedDate)}</p>
+   878→                  </div>
+   879→                )}
+   880→                {order.receiptDate && (
+   881→                  <div>
+   882→                    <span className="text-muted-foreground">Date de réception:</span>
+   883→                    <p className="font-medium">{formatDate(order.receiptDate)}</p>
+   884→                  </div>
+   885→                )}
+   886→              </div>
+   887→            </CardContent>
+   888→          </Card>
+   889→
+   890→          {/* Lines Table */}
+   891→          <Card>
+   892→            <CardHeader className="pb-3">
+   893→              <CardTitle className="text-base">Articles commandés</CardTitle>
+   894→            </CardHeader>
+   895→            <CardContent>
+   896→              <Table>
+   897→                <TableHeader>
+   898→                  <TableRow>
+   899→                    <TableHead>Produit</TableHead>
+   900→                    <TableHead className="text-right">Qté</TableHead>
+   901→                    <TableHead className="text-right">Prix HT</TableHead>
+   902→                    <TableHead className="text-right">TVA</TableHead>
+   903→                    <TableHead className="text-right">Total TTC</TableHead>
+   904→                  </TableRow>
+   905→                </TableHeader>
+   906→                <TableBody>
+   907→                  {order.lines.map((line, idx) => (
+   908→                    <TableRow key={line.id || idx}>
+   909→                      <TableCell>
+   910→                        <div>
+   911→                          <p className="font-medium">{line.description || line.product?.name}</p>
+   912→                          <p className="text-xs text-muted-foreground">{line.product?.code}</p>
+   913→                        </div>
+   914→                      </TableCell>
+   915→                      <TableCell className="text-right">{line.quantity}</TableCell>
+   916→                      <TableCell className="text-right">{formatCurrency(line.unitPrice)}</TableCell>
+   917→                      <TableCell className="text-right">{line.tvaRate}%</TableCell>
+   918→                      <TableCell className="text-right font-medium">
+   919→                        {formatCurrency(line.amountTotal)}
+   920→                      </TableCell>
+   921→                    </TableRow>
+   922→                  ))}
+   923→                </TableBody>
+   924→              </Table>
+   925→            </CardContent>
+   926→          </Card>
+   927→
+   928→          {/* Totals */}
+   929→          <Card className="bg-primary/5 border-primary/20">
+   930→            <CardContent className="pt-4">
+   931→              <div className="flex justify-end">
+   932→                <div className="space-y-2 w-72">
+   933→                  <div className="flex justify-between text-sm">
+   934→                    <span>Total HT:</span>
+   935→                    <span className="font-medium">{formatCurrency(order.amountUntaxed)}</span>
+   936→                  </div>
+   937→                  <div className="flex justify-between text-sm">
+   938→                    <span>Total TVA:</span>
+   939→                    <span className="font-medium">{formatCurrency(order.amountTax)}</span>
+   940→                  </div>
+   941→                  <div className="flex justify-between text-sm">
+   942→                    <span>Montant reçu:</span>
+   943→                    <span className="font-medium">{formatCurrency(order.amountReceived)}</span>
+   944→                  </div>
+   945→                  <div className="flex justify-between text-sm">
+   946→                    <span>Montant facturé:</span>
+   947→                    <span className="font-medium">{formatCurrency(order.amountBilled)}</span>
+   948→                  </div>
+   949→                  <hr />
+   950→                  <div className="flex justify-between font-bold text-lg">
+   951→                    <span>Total TTC:</span>
+   952→                    <span className="text-primary">{formatCurrency(order.amountTotal)}</span>
+   953→                  </div>
+   954→                </div>
+   955→              </div>
+   956→            </CardContent>
+   957→          </Card>
+   958→
+   959→          {/* Notes */}
+   960→          {(order.internalNotes || order.supplierNotes) && (
+   961→            <Card>
+   962→              <CardHeader className="pb-3">
+   963→                <CardTitle className="text-base">Notes</CardTitle>
+   964→              </CardHeader>
+   965→              <CardContent className="space-y-3">
+   966→                {order.internalNotes && (
+   967→                  <div>
+   968→                    <p className="text-xs text-muted-foreground mb-1">Notes internes:</p>
+   969→                    <p className="text-sm bg-muted p-3 rounded-md">{order.internalNotes}</p>
+   970→                  </div>
+   971→                )}
+   972→                {order.supplierNotes && (
+   973→                  <div>
+   974→                    <p className="text-xs text-muted-foreground mb-1">Notes fournisseur:</p>
+   975→                    <p className="text-sm bg-muted p-3 rounded-md">{order.supplierNotes}</p>
+   976→                  </div>
+   977→                )}
+   978→              </CardContent>
+   979→            </Card>
+   980→          )}
+   981→
+   982→          {/* Action Buttons */}
+   983→          <div className="flex flex-wrap gap-2 justify-end">
+   984→            {order.status === 'draft' && (
+   985→              <>
+   986→                <Button variant="outline" size="sm" onClick={onEdit} className="gap-2">
+   987→                  <Edit3 className="w-4 h-4" />
+   988→                  Modifier
+   989→                </Button>
+   990→                <Button
+   991→                  size="sm"
+   992→                  onClick={() => onStatusChange(order.id, 'send')}
+   993→                  disabled={loading}
+   994→                  className="gap-2"
+   995→                >
+   996→                  <Send className="w-4 h-4" />
+   997→                  Envoyer
+   998→                </Button>
+   999→              </>
+  1000→            )}
+  1001→            {order.status === 'sent' && (
+  1002→              <Button
+  1003→                size="sm"
+  1004→                onClick={() => onStatusChange(order.id, 'confirm')}
+  1005→                disabled={loading}
+  1006→                className="gap-2"
+  1007→              >
+  1008→                <CheckCircle className="w-4 h-4" />
+  1009→                Confirmer
+  1010→              </Button>
+  1011→            )}
+  1012→            {order.status === 'confirmed' && (
+  1013→              <Button
+  1014→                size="sm"
+  1015→                onClick={() => onStatusChange(order.id, 'receive')}
+  1016→                disabled={loading}
+  1017→                className="gap-2"
+  1018→              >
+  1019→                <PackageCheck className="w-4 h-4" />
+  1020→                Réceptionner
+  1021→              </Button>
+  1022→            )}
+  1023→            {(order.status === 'received' || order.status === 'confirmed') && (
+  1024→              <Button
+  1025→                size="sm"
+  1026→                variant="default"
+  1027→                onClick={() => onStatusChange(order.id, 'bill')}
+  1028→                disabled={loading}
+  1029→                className="gap-2 bg-purple-600 hover:bg-purple-700"
+  1030→              >
+  1031→                <FileText className="w-4 h-4" />
+  1032→                Facturer
+  1033→              </Button>
+  1034→            )}
+  1035→            {!['done', 'cancelled'].includes(order.status) && (
+  1036→              <Button
+  1037→                variant="destructive"
+  1038→                size="sm"
+  1039→                onClick={() => onStatusChange(order.id, 'cancel')}
+  1040→                disabled={loading}
+  1041→                className="gap-2"
+  1042→              >
+  1043→                <XCircle className="w-4 h-4" />
+  1044→                Annuler
+  1045→              </Button>
+  1046→            )}
+  1047→          </div>
+  1048→        </div>
+  1049→      </DialogContent>
+  1050→    </Dialog>
+  1051→  )
+  1052→}
+  1053→
+  1054→// ============================================================
+  1055→// Main Purchases Page Component
+  1056→// ============================================================
+  1057→
+  1058→export default function PurchasesPage() {
+  1059→  // Data state
+  1060→  const [orders, setOrders] = useState<PurchaseOrder[]>([])
+  1061→  const [kpiData, setKpiData] = useState<KpiData | null>(null)
+  1062→  const [pagination, setPagination] = useState<{
+  1063→    page: number
+  1064→    limit: number
+  1065→    total: number
+  1066→    totalPages: number
+  1067→  }>({ page: 1, limit: 20, total: 0, totalPages: 0 })
+  1068→
+  1069→  // UI state
+  1070→  const [loading, setLoading] = useState(true)
+  1071→  const [error, setError] = useState<string | null>(null)
+  1072→  const [searchQuery, setSearchQuery] = useState('')
+  1073→  const [activeTab, setActiveTab] = useState('all')
+  1074→
+  1075→  // Modals state
+  1076→  const [createModalOpen, setCreateModalOpen] = useState(false)
+  1077→  const [detailModalOpen, setDetailModalOpen] = useState(false)
+  1078→  const [selectedOrder, setSelectedOrder] = useState<PurchaseOrder | null>(null)
+  1079→  const [actionLoading, setActionLoading] = useState(false)
+  1080→
+  1081→  // Debounced search
+  1082→  const debouncedSearch = useMemo(() => searchQuery, [searchQuery])
+  1083→
+  1084→  // Fetch purchase orders
+  1085→  const fetchOrders = useCallback(async () => {
+  1086→    setLoading(true)
+  1087→    setError(null)
+  1088→
+  1089→    try {
+  1090→      const params = new URLSearchParams()
+  1091→      params.set('page', String(pagination.page))
+  1092→      params.set('limit', String(pagination.limit))
+  1093→
+  1094→      if (activeTab !== 'all') {
+  1095→        params.set('status', activeTab)
+  1096→      }
+  1097→
+  1098→      if (debouncedSearch) {
+  1099→        params.set('search', debouncedSearch)
+  1100→      }
+  1101→
+  1102→      const response = await fetch(`/api/purchases?${params.toString()}`)
+  1103→      const data: PurchasesApiResponse = await response.json()
+  1104→
+  1105→      if (data.success) {
+  1106→        setOrders(data.data)
+  1107→        setPagination((prev) => ({
+  1108→          ...prev,
+  1109→          ...data.pagination,
+  1110→        }))
+  1111→
+  1112→        // Calculate KPIs from fetched data
+  1113→        calculateKPIs(data.data)
+  1114→      } else {
+  1115→        setError(data.error || 'Erreur lors du chargement des données')
+  1116→      }
+  1117→    } catch (err) {
+  1118→      console.error('Error fetching orders:', err)
+  1119→      setError('Erreur réseau. Veuillez vérifier votre connexion.')
+  1120→    } finally {
+  1121→      setLoading(false)
+  1122→    }
+  1123→  }, [pagination.page, pagination.limit, activeTab, debouncedSearch])
+  1124→
+  1125→  // Calculate KPIs from orders
+  1126→  const calculateKPIs = useCallback((ordersList: PurchaseOrder[]) => {
+  1127→    const now = new Date()
+  1128→    const currentMonth = now.getMonth()
+  1129→    const currentYear = now.getFullYear()
+  1130→
+  1131→    const monthlyOrders = ordersList.filter((o) => {
+  1132→      const orderDate = new Date(o.date)
+  1133→      return (
+  1134→        orderDate.getMonth() === currentMonth &&
+  1135→        orderDate.getFullYear() === currentYear
+  1136→      )
+  1137→    })
+  1138→
+  1139→    const monthlyPurchases = monthlyOrders.reduce(
+  1140→      (sum, o) => sum + o.amountTotal,
+  1141→      0
+  1142→    )
+  1143→
+  1144→    const uniqueSuppliers = new Set(ordersList.map((o) => o.partnerId)).size
+  1145→    const pendingOrders = ordersList.filter(
+  1146→      (o) => ['draft', 'sent', 'confirmed'].includes(o.status)
+  1147→    ).length
+  1148→
+  1149→    setKpiData({
+  1150→      totalOrders: ordersList.length,
+  1151→      monthlyPurchases,
+  1152→      activeSuppliers: uniqueSuppliers,
+  1153→      pendingOrders,
+  1154→      monthlyChange: 5.2, // Would need historical data for real calculation
+  1155→    })
+  1156→  }, [])
+  1157→
+  1158→  // Initial fetch
+  1159→  useEffect(() => {
+  1160→    fetchOrders()
+  1161→  }, [fetchOrders])
+  1162→
+  1163→  // Handle page change
+  1164→  function handlePageChange(newPage: number) {
+  1165→    setPagination((prev) => ({ ...prev, page: newPage }))
+  1166→  }
+  1167→
+  1168→  // Handle tab change
+  1169→  function handleTabChange(value: string) {
+  1170→    setActiveTab(value)
+  1171→    setPagination((prev) => ({ ...prev, page: 1 }))
+  1172→  }
+  1173→
+  1174→  // Handle search
+  1175→  function handleSearch(e: React.FormEvent) {
+  1176→    e.preventDefault()
+  1177→    setPagination((prev) => ({ ...prev, page: 1 }))
+  1178→  }
+  1179→
+  1180→  // Create PO handler
+  1181→  async function handleCreatePO(data: CreatePOFormData) {
+  1182→    setActionLoading(true)
+  1183→    try {
+  1184→      const response = await fetch('/api/purchases', {
+  1185→        method: 'POST',
+  1186→        headers: { 'Content-Type': 'application/json' },
+  1187→        body: JSON.stringify(data),
+  1188→      })
+  1189→
+  1190→      const result = await response.json()
+  1191→
+  1192→      if (result.success) {
+  1193→        toast.success(result.message || 'Commande créée avec succès')
+  1194→        setCreateModalOpen(false)
+  1195→        fetchOrders()
+  1196→      } else {
+  1197→        toast.error(result.error || 'Erreur lors de la création')
+  1198→      }
+  1199→    } catch (err) {
+  1200→      toast.error('Erreur réseau')
+  1201→    } finally {
+  1202→      setActionLoading(false)
+  1203→    }
+  1204→  }
+  1205→
+  1206→  // Update PO handler
+  1207→  async function handleUpdatePO(data: CreatePOFormData) {
+  1208→    if (!selectedOrder) return
+  1209→
+  1210→    setActionLoading(true)
+  1211→    try {
+  1212→      const response = fetch(`/api/purchases/${selectedOrder.id}`, {
+  1213→        method: 'PUT',
+  1214→        headers: { 'Content-Type': 'application/json' },
+  1215→        body: JSON.stringify(data),
+  1216→      }).then((res) => res.json())
+  1217→
+  1218→      const result = await response
+  1219→
+  1220→      if (result.success) {
+  1221→        toast.success('Commande modifiée avec succès')
+  1222→        setCreateModalOpen(false)
+  1223→        setSelectedOrder(null)
+  1224→        fetchOrders()
+  1225→      } else {
+  1226→        toast.error(result.error || 'Erreur lors de la modification')
+  1227→      }
+  1228→    } catch (err) {
+  1229→      toast.error('Erreur réseau')
+  1230→    } finally {
+  1231→      setActionLoading(false)
+  1232→    }
+  1233→  }
+  1234→
+  1235→  // Status change handler
+  1236→  async function handleStatusChange(id: string, action: string) {
+  1237→    setActionLoading(true)
+  1238→    try {
+  1239→      let url = `/api/purchases/${id}`
+  1240→      let options: RequestInit = {}
+  1241→
+  1242→      switch (action) {
+  1243→        case 'send':
+  1244→          url += '?action=send'
+  1245→          options.method = 'POST'
+  1246→          break
+  1247→        case 'confirm':
+  1248→          url += '?action=confirm'
+  1249→          options.method = 'POST'
+  1250→          break
+  1251→        case 'receive':
+  1252→          // For receive, we need to send the lines data
+  1253→          options.method = 'POST'
+  1254→          options.headers = { 'Content-Type': 'application/json' }
+  1255→          options.body = JSON.stringify({ 
+  1256→            action: 'receive',
+  1257→            lines: (order?.lines || []).map((l: PurchaseOrderLine) => ({
+  1258→              lineId: l.id,
+  1259→              quantity: l.quantity - (l as any).quantityReceived
+  1260→            })).filter((l: any) => l.quantity > 0)
+  1261→          })
+  1262→          break
+  1263→        case 'bill':
+  1264→          url += '?action=bill'
+  1265→          options.method = 'POST'
+  1266→          options.headers = { 'Content-Type': 'application/json' }
+  1267→          options.body = JSON.stringify({})
+  1268→          break
+  1269→        case 'cancel':
+  1270→          options.method = 'DELETE'
+  1271→          break
+  1272→        default:
+  1273→          throw new Error(`Action inconnue: ${action}`)
+  1274→      }
+  1275→
+  1276→      const response = await fetch(url, options)
+  1277→      const result = await response.json()
+  1278→
+  1279→      if (result.success) {
+  1280→        // Show SCF journal entry info if bill created
+  1281→        if (action === 'bill' && result.workflowInfo?.journalEntryGenerated) {
+  1282→          toast.success(result.message || 'Facture fournisseur créée ✓ Écriture comptable SCF générée', { duration: 5000 })
+  1283→        } else {
+  1284→          toast.success(result.message || 'Statut mis à jour')
+  1285→        }
+  1286→        setDetailModalOpen(false)
+  1287→        setSelectedOrder(null)
+  1288→        fetchOrders()
+  1289→      } else {
+  1290→        toast.error(result.error || 'Erreur lors de la mise à jour')
+  1291→      }
+  1292→    } catch (err) {
+  1293→      toast.error('Erreur réseau')
+  1294→    } finally {
+  1295→      setActionLoading(false)
+  1296→    }
+  1297→  }
+  1298→
+  1299→  // Open detail modal
+  1300→  function openDetailModal(order: PurchaseOrder) {
+  1301→    setSelectedOrder(order)
+  1302→    setDetailModalOpen(true)
+  1303→  }
+  1304→
+  1305→  // Open edit modal
+  1306→  function openEditModal() {
+  1307→    setDetailModalOpen(false)
+  1308→    setCreateModalOpen(true)
+  1309→  }
+  1310→
+  1311→  // KPI cards configuration
+  1312→  const kpiCards = useMemo(() => {
+  1313→    if (!kpiData) return []
+  1314→
+  1315→    return [
+  1316→      {
+  1317→        title: 'Commandes Fournisseurs',
+  1318→        value: kpiData.totalOrders,
+  1319→        change: -8.5,
+  1320→        icon: ShoppingCart,
+  1321→        iconColor: 'text-dz-green',
+  1322→        iconBg: 'bg-dz-green/10',
+  1323→        format: 'number' as const,
+  1324→      },
+  1325→      {
+  1326→        title: "Achats du Mois (DZD)",
+  1327→        value: kpiData.monthlyPurchases,
+  1328→        change: kpiData.monthlyChange,
+  1329→        icon: FileText,
+  1330→        iconColor: 'text-blue-600',
+  1331→        iconBg: 'bg-blue-100 dark:bg-blue-900/30',
+  1332→        format: 'currency' as const,
+  1333→      },
+  1334→      {
+  1335→        title: 'Fournisseurs Actifs',
+  1336→        value: kpiData.activeSuppliers,
+  1337→        change: 2,
+  1338→        icon: Truck,
+  1339→        iconColor: 'text-purple-600',
+  1340→        iconBg: 'bg-purple-100 dark:bg-purple-900/30',
+  1341→        format: 'number' as const,
+  1342→      },
+  1343→      {
+  1344→        title: 'Commandes en Attente',
+  1345→        value: kpiData.pendingOrders,
+  1346→        change: null,
+  1347→        icon: Clock,
+  1348→        iconColor: 'text-orange-600',
+  1349→        iconBg: 'bg-orange-100 dark:bg-orange-900/30',
+  1350→        format: 'number' as const,
+  1351→      },
+  1352→    ]
+  1353→  }, [kpiData])
+  1354→
+  1355→  // Loading state
+  1356→  if (loading && orders.length === 0) {
+  1357→    return <LoadingSkeleton />
+  1358→  }
+  1359→
+  1360→  // Error state
+  1361→  if (error && orders.length === 0) {
+  1362→    return (
+  1363→      <div className="space-y-6">
+  1364→        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+  1365→          <div>
+  1366→            <h1 className="text-2xl md:text-3xl font-bold tracking-tight flex items-center gap-3">
+  1367→              <ShoppingCart className="w-8 h-8 text-primary" />
+  1368→              Achats
+  1369→            </h1>
+  1370→            <p className="text-muted-foreground mt-1">
+  1371→              Gestion des achats et relations fournisseurs
+  1372→            </p>
+  1373→          </div>
+  1374→        </div>
+  1375→        <ErrorView onRetry={() => { setError(null); fetchOrders(); }} />
+  1376→      </div>
+  1377→    )
+  1378→  }
+  1379→
+  1380→  return (
+  1381→    <div className="space-y-6">
+  1382→      {/* Page Header */}
+  1383→      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+  1384→        <div>
+  1385→          <h1 className="text-2xl md:text-3xl font-bold tracking-tight flex items-center gap-3">
+  1386→            <ShoppingCart className="w-8 h-8 text-primary" />
+  1387→            Achats
+  1388→          </h1>
+  1389→          <p className="text-muted-foreground mt-1">
+  1390→            Gestion des achats et relations fournisseurs
+  1391→          </p>
+  1392→        </div>
+  1393→        <div className="flex items-center gap-2">
+  1394→          <Button
+  1395→            variant="outline"
+  1396→            size="sm"
+  1397→            className="gap-2"
+  1398→            onClick={() => fetchOrders()}
+  1399→            disabled={loading}
+  1400→          >
+  1401→            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+  1402→            Actualiser
+  1403→          </Button>
+  1404→          <Button
+  1405→            size="sm"
+  1406→            className="gap-2 bg-primary hover:bg-primary/90"
+  1407→            onClick={() => {
+  1408→              setSelectedOrder(null)
+  1409→              setCreateModalOpen(true)
+  1410→            }}
+  1411→          >
+  1412→            <Plus className="w-4 h-4" />
+  1413→            Nouvelle Commande
+  1414→          </Button>
+  1415→        </div>
+  1416→      </div>
+  1417→
+  1418→      {/* KPI Cards */}
+  1419→      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+  1420→        {kpiCards.map((kpi, index) => (
+  1421→          <KpiCard key={kpi.title} {...kpi} delay={index * 0.05} />
+  1422→        ))}
+  1423→      </div>
+  1424→
+  1425→      {/* Main Content */}
+  1426→      <Tabs defaultValue="commandes" className="space-y-4">
+  1427→        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+  1428→          <TabsList className="grid w-full grid-cols-6 lg:w-auto lg:inline-grid">
+  1429→            {STATUS_TABS.map((tab) => (
+  1430→              <TabsTrigger
+  1431→                key={tab.value}
+  1432→                value={tab.value}
+  1433→                onClick={() => handleTabChange(tab.value)}
+  1434→                className="text-xs sm:text-sm"
+  1435→              >
+  1436→                {tab.label}
+  1437→              </TabsTrigger>
+  1438→            ))}
+  1439→          </TabsList>
+  1440→
+  1441→          {/* Search Form */}
+  1442→          <form onSubmit={handleSearch} className="relative w-full lg:w-80">
+  1443→            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+  1444→            <Input
+  1445→              placeholder="Rechercher par réf ou fournisseur..."
+  1446→              className="pl-10"
+  1447→              value={searchQuery}
+  1448→              onChange={(e) => setSearchQuery(e.target.value)}
+  1449→            />
+  1450→          </form>
+  1451→        </div>
+  1452→
+  1453→        {/* Commandes Tab */}
+  1454→        <TabsContent value="commandes" className="space-y-4">
+  1455→          <motion.div
+  1456→            initial={{ opacity: 0, y: 20 }}
+  1457→            animate={{ opacity: 1, y: 0 }}
+  1458→            transition={{ duration: 0.3 }}
+  1459→          >
+  1460→            <Card>
+  1461→              <CardHeader className="pb-3">
+  1462→                <div className="flex items-center justify-between">
+  1463→                  <CardTitle className="flex items-center gap-2">
+  1464→                    Commandes d&apos;Achat
+  1465→                    <Badge variant="secondary" className="ml-2">
+  1466→                      {pagination.total}
+  1467→                    </Badge>
+  1468→                  </CardTitle>
+  1469→                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+  1470→                    <span>
+  1471→                      Page {pagination.page} sur {pagination.totalPages || 1}
+  1472→                    </span>
+  1473→                  </div>
+  1474→                </div>
+  1475→              </CardHeader>
+  1476→              <CardContent>
+  1477→                {orders.length === 0 && !loading ? (
+  1478→                  <EmptyState onCreateNew={() => setCreateModalOpen(true)} />
+  1479→                ) : (
+  1480→                  <>
+  1481→                    <div className="overflow-x-auto">
+  1482→                      <Table>
+  1483→                        <TableHeader>
+  1484→                          <TableRow>
+  1485→                            <TableHead>Référence</TableHead>
+  1486→                            <TableHead>Fournisseur</TableHead>
+  1487→                            <TableHead className="text-right">Montant HT</TableHead>
+  1488→                            <TableHead className="text-right">TVA</TableHead>
+  1489→                            <TableHead className="text-right">Total TTC</TableHead>
+  1490→                            <TableHead>Date</TableHead>
+  1491→                            <TableHead>Livraison</TableHead>
+  1492→                            <TableHead>Statut</TableHead>
+  1493→                            <TableHead className="text-right">Actions</TableHead>
+  1494→                          </TableRow>
+  1495→                        </TableHeader>
+  1496→                        <TableBody>
+  1497→                          {loading ? (
+  1498→                            [...Array(5)].map((_, i) => (
+  1499→                              <TableRow key={i}>
+  1500→                                {[...Array(9)].map((_, j) => (
+  1501→                                  <TableCell key={j}>
+  1502→                                    <Skeleton className="h-5 w-full" />
+  1503→                                  </TableCell>
+  1504→                                ))}
+  1505→                              </TableRow>
+  1506→                            ))
+  1507→                          ) : (
+  1508→                            orders.map((order) => (
+  1509→                              <TableRow key={order.id}>
+  1510→                                <TableCell className="font-medium">{order.reference}</TableCell>
+  1511→                                <TableCell>{order.partner?.displayName || order.partner?.name}</TableCell>
+  1512→                                <TableCell className="text-right">{formatCurrency(order.amountUntaxed)}</TableCell>
+  1513→                                <TableCell className="text-right">{formatCurrency(order.amountTax)}</TableCell>
+  1514→                                <TableCell className="text-right font-semibold">{formatCurrency(order.amountTotal)}</TableCell>
+  1515→                                <TableCell>{formatDate(order.date)}</TableCell>
+  1516→                                <TableCell>{order.expectedDate ? formatDate(order.expectedDate) : '-'}</TableCell>
+  1517→                                <TableCell><StatusBadge status={order.status} /></TableCell>
+  1518→                                <TableCell className="text-right">
+  1519→                                  <Button variant="ghost" size="sm" onClick={() => openDetailModal(order)} className="gap-1">
+  1520→                                    <Eye className="w-4 h-4" />
+  1521→                                    <span className="hidden sm:inline">Voir</span>
+  1522→                                  </Button>
+  1523→                                </TableCell>
+  1524→                              </TableRow>
+  1525→                            ))
+  1526→                          )}
+  1527→                        </TableBody>
+  1528→                      </Table>
+  1529→                    </div>
+  1530→
+  1531→                    {/* Pagination */}
+  1532→                    {pagination.totalPages > 1 && (
+  1533→                      <div className="flex items-center justify-between pt-4 border-t mt-4">
+  1534→                        <p className="text-sm text-muted-foreground">
+  1535→                          Affichage de{' '}
+  1536→                          {(pagination.page - 1) * pagination.limit + 1} à{' '}
+  1537→                          {Math.min(
+  1538→                            pagination.page * pagination.limit,
+  1539→                            pagination.total
+  1540→                          )}{' '}
+  1541→                          sur {pagination.total} commandes
+  1542→                        </p>
+  1543→                        <div className="flex items-center gap-2">
+  1544→                          <Button
+  1545→                            variant="outline"
+  1546→                            size="sm"
+  1547→                            onClick={() => handlePageChange(pagination.page - 1)}
+  1548→                            disabled={!pagination.hasPrev || loading}
+  1549→                          >
+  1550→                            <ChevronLeft className="w-4 h-4" />
+  1551→                            Précédent
+  1552→                          </Button>
+  1553→                          {[...Array(pagination.totalPages)]
+  1554→                            .map((_, i) => i + 1)
+  1555→                            .filter(
+  1556→                              (page) =>
+  1557→                                page === 1 ||
+  1558→                                page === pagination.totalPages ||
+  1559→                                Math.abs(page - pagination.page) <= 1
+  1560→                            )
+  1561→                            .map((page, idx, arr) => (
+  1562→                              <React.Fragment key={page}>
+  1563→                                {idx > 0 &&
+  1564→                                  arr[idx - 1] !== page - 1 && (
+  1565→                                    <span className="px-1">...</span>
+  1566→                                  )}
+  1567→                                <Button
+  1568→                                  variant={
+  1569→                                    page === pagination.page ? 'default' : 'outline'
+  1570→                                  }
+  1571→                                  size="sm"
+  1572→                                  onClick={() => handlePageChange(page)}
+  1573→                                  disabled={loading}
+  1574→                                  className="w-9"
+  1575→                                >
+  1576→                                  {page}
+  1577→                                </Button>
+  1578→                              </React.Fragment>
+  1579→                            ))}
+  1580→                          <Button
+  1581→                            variant="outline"
+  1582→                            size="sm"
+  1583→                            onClick={() => handlePageChange(pagination.page + 1)}
+  1584→                            disabled={!pagination.hasNext || loading}
+  1585→                          >
+  1586→                            Suivant
+  1587→                            <ChevronRight className="w-4 h-4" />
+  1588→                          </Button>
+  1589→                        </div>
+  1590→                      </div>
+  1591→                    )}
+  1592→                  </>
+  1593→                )}
+  1594→              </CardContent>
+  1595→            </Card>
+  1596→          </motion.div>
+  1597→        </TabsContent>
+  1598→      </Tabs>
+  1599→
+  1600→      {/* Create/Edit Modal */}
+  1601→      <PurchaseOrderModal
+  1602→        open={createModalOpen}
+  1603→        onClose={() => {
+  1604→          setCreateModalOpen(false)
+  1605→          setSelectedOrder(null)
+  1606→        }}
+  1607→        onSubmit={selectedOrder ? handleUpdatePO : handleCreatePO}
+  1608→        editingOrder={selectedOrder}
+  1609→        loading={actionLoading}
+  1610→      />
+  1611→
+  1612→      {/* Detail Modal */}
+  1613→      <PODetailModal
+  1614→        order={selectedOrder}
+  1615→        open={detailModalOpen}
+  1616→        onClose={() => {
+  1617→          setDetailModalOpen(false)
+  1618→          setSelectedOrder(null)
+  1619→        }}
+  1620→        onStatusChange={handleStatusChange}
+  1621→        onEdit={openEditModal}
+  1622→        loading={actionLoading}
+  1623→      />
+  1624→    </div>
+  1625→  )
+  1626→}
+  1627→

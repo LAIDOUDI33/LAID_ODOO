@@ -762,3 +762,392 @@ Stage Summary:
 | Audit Trail | ✅ Complete | Conformité DZ |
 | Workflows | ✅ Complete | 6 templates, Delegation |
 | Notifications | ✅ Complete | 16 types, 5 channels |
+
+---
+Task ID: 2-a-1
+Agent: Workflow API Developer
+Task: Create workflow API routes for sales, purchase, and delivery workflows
+
+Work Log:
+- Created `/api/workflows/sales/route.ts` for full sales cycle execution
+  - POST endpoint accepting `{ quotationId, paymentData? }`
+  - Integrates with `executeFullSalesCycle` from workflow orchestrator
+  - Returns workflow trace with ISO timestamp formatting
+  - Proper error handling (400, 422, 500 status codes)
+  
+- Created `/api/workflows/purchase/route.ts` for full purchase cycle execution
+  - POST endpoint accepting `{ purchaseOrderId, receiveData?, paymentData? }`
+  - Integrates with `executeFullPurchaseCycle` from workflow orchestrator
+  - Supports optional receipt data and payment data
+  - Full validation and error handling
+  
+- Created `/api/workflows/delivery/route.ts` for sales order delivery recording
+  - POST endpoint accepting `{ salesOrderId, deliveryLines, warehouseId? }`
+  - Integrates with `deliverSalesOrder` from workflow orchestrator
+  - Validates each delivery line (lineId required, quantity > 0)
+  - Detailed error messages for invalid input
+
+Stage Summary:
+- Workflow API routes created and ready for frontend integration
+- All 3 core workflows exposed via REST API:
+  * `/api/workflows/sales` - Full sales cycle (Quote → SO → Invoice → Payment)
+  * `/api/workflows/purchase` - Full purchase cycle (PO → Receipt → Bill → Payment)
+  * `/api/workflows/delivery` - Sales order delivery recording
+- Consistent response format across all endpoints
+- Workflow trace included for debugging and audit purposes
+
+---
+Task ID: 2-b-1
+Agent: Purchasing Workflow Specialist
+Task: Enhanced purchases page with workflow actions panel
+
+Work Log:
+- Added Workflow tab to purchases page (`/src/app/(dashboard)/purchases/page.tsx`)
+- Created visual workflow pipeline component (PR → PO → Receipt → Bill → Payment)
+  - 5 workflow stages with French labels (Demande d'Achat, Commande Fournisseur, Réception Marchandise, Facture Fournisseur, Paiement Effectué)
+  - Each stage shows document count badge
+  - Click-to-filter functionality for each stage
+  - Progress bar showing completion percentage
+  - Responsive grid layout (2 cols mobile → 5 cols desktop)
+  
+- Added GoodsReceiptModal component for recording goods receipt
+  - Line-by-line quantity entry with validation
+  - Shows ordered/received/remaining quantities per line
+  - Notes field for reception observations
+  - Calls new `/api/purchases/[id]/receive` endpoint
+  
+- Created `/api/purchases/[id]/receive/route.ts` endpoint
+  - POST endpoint for receiving goods against a PO
+  - Validates PO status (must be confirmed/sent/partial)
+  - Validates receipt lines (lineId required, quantity > 0, doesn't exceed remaining)
+  - Integrates with `receivePurchaseOrder` from workflow orchestrator
+  - Returns workflow trace for audit trail
+  
+- Enhanced table rows with workflow action buttons
+  - Dynamic action buttons based on order status:
+    * Draft → Envoyer (Send)
+    * Sent → Confirmer (Confirm)
+    * Confirmed → Réceptionner (Receive) / Facturer (Bill)
+    * Received → Facturer (Bill)
+    * Billed → Payer (Pay)
+  - Quick actions visible in main table (max 2 + overflow menu)
+  - Full action set available in detail modal and workflow tab
+  
+- Added workflow state management
+  - `activeWorkflowStage` for pipeline filtering
+  - `receiptModalOpen` for goods receipt modal
+  - `filteredOrders` computed based on selected stage
+  - Stage click handlers with filter reset
+  
+- Used existing shadcn/ui components (Card, Button, Badge, Dialog, Progress, Separator)
+- Used Lucide icons for workflow visualization
+- All UI text in French (Algerian context)
+- Professional styling with dz-green primary color scheme
+- Mobile-first responsive design
+- ESLint compliant code (no errors/warnings)
+
+Stage Summary:
+- Purchases page now has full workflow management UI
+- Users can execute complete purchase cycle from single interface
+- Visual pipeline shows document distribution across workflow stages
+- One-click actions for all workflow transitions
+- Goods receipt modal with line-level quantity control
+- Integrated with existing workflow orchestrator for SCF compliance
+
+---
+Task ID: 2-a-2
+Agent: Frontend Workflow Specialist
+Task: Enhanced sales page with workflow actions panel
+
+Work Log:
+- Added Workflow tab to sales page Tabs component (4 tabs now: Commandes, Devis, Workflow, Pipeline CRM)
+- Created visual workflow pipeline with 5 stages:
+  - **Devis** (Quotation) - Documents ready for conversion
+  - **Commande** (Order) - Confirmed/processing orders
+  - **Livraison** (Delivery) - Delivered orders awaiting invoicing
+  - **Facture** (Invoice) - Invoices pending payment
+  - **Paiement** (Payment) - Completed payments
+- Each pipeline stage shows:
+  - Stage icon and label in French
+  - Document count badge
+  - Total amount value (DZD)
+  - Click-to-filter functionality
+- Added workflow progress bar showing document distribution across stages
+- Created unified workflow documents table with:
+  - Document type badge (color-coded by stage)
+  - Reference number, client name, date, amount columns
+  - Current stage indicator with icon
+  - Context-aware action buttons per stage
+- Implemented workflow action handlers:
+  - `handleConvertToSO()` - Convert quotation to sales order via POST /api/quotations/[id]/convert
+  - `handleRecordDelivery()` - Record delivery via POST /api/workflows/delivery
+  - `handleConvertOrderToInvoice()` - Convert SO to invoice via POST /api/sales-orders/[id] with action=invoice
+  - `handleRecordPayment()` - Record payment via POST /api/invoices/[id]/payments
+- Added Delivery Recording Modal:
+  - Shows order details (reference, client, total amount)
+  - Optional quantity field (empty = full delivery)
+  - Notes field for delivery information
+  - Purple-themed UI matching delivery stage color
+- Added Payment Recording Modal:
+  - Shows invoice details (reference, client, total, remaining balance)
+  - Amount input (pre-filled with remaining balance)
+  - Payment mode selector (Virement/Espèces/Chèque/Carte)
+  - Reference field for bank transfer/cheque numbers
+  - Green-themed UI matching payment stage color
+- Added new interfaces:
+  - `Invoice` - Invoice data structure
+  - `PaymentRecord` - Payment record structure
+- Added workflow state variables:
+  - `invoices`, `loadingInvoices` - Invoice data management
+  - `workflowStageFilter` - Active stage filter selection
+  - `selectedWorkflowDoc` - Currently selected document for action
+  - `deliveryModalOpen`, `paymentModalOpen` - Modal visibility states
+  - `deliveryForm`, `paymentForm` - Form state for modals
+- Added `fetchInvoices()` function with fallback to extract invoices from sales orders
+- Computed `workflowStats` memo for efficient stage counting
+- Computed `getWorkflowDocuments()` callback for filtered document list
+- Desktop: Horizontal pipeline cards with arrow connectors
+- Mobile: Responsive grid layout (2 cols on mobile, 3 cols on sm+)
+- All text in French (Algerian context):
+  - "Pipeline de Workflow Commercial"
+  - "Suivez le cycle de vie complet : Devis → Commande → Livraison → Facture → Paiement"
+  - "Progression globale du workflow"
+  - "Actions Workflow", "Encaisser", "Complété"
+- Used existing shadcn/ui components (Card, Button, Badge, Dialog, Table, etc.)
+- Used Lucide icons (Workflow, CreditCard, ClipboardCheck, Truck, Receipt, Banknote, ArrowRight)
+- Used sonner for toast notifications on all actions
+- Framer Motion animations for pipeline card interactions
+
+Stage Summary:
+- Sales page now has full workflow management UI
+- Users can execute complete sales cycle from single interface
+- Visual pipeline shows document distribution across 5 workflow stages
+- One-click actions for all workflow transitions (Convert/Deliver/Invoice/Pay)
+- Dedicated modals for delivery recording and payment entry
+- Integrated with workflow API endpoints for SCF compliance
+- Mobile-first responsive design maintained
+
+---
+Task ID: 2-c-1
+Agent: Accounting Specialist
+Task: Enhanced finance page with double-entry accounting dashboard
+
+Work Log:
+- Created `/api/accounting/route.ts` - Journal entries API endpoint
+  - GET method with filters (date range, type, status, journal code, search)
+  - POST method for creating new journal entries with balance validation
+  - Automatic calculation of accounting statistics (TVA, class totals)
+  - Pagination support for large datasets
+- Created `/api/accounting/balance/route.ts` - Trial Balance API
+  - SCF compliant trial balance generation
+  - Account balances grouped by class (Classe 1-7)
+  - Debit/Credit balance verification
+  - Class summaries with solde débiteur/créditeur
+- Enhanced Finance page (`/src/app/(dashboard)/finance/page.tsx`):
+  - **Journal Entry Viewer Tab**: 
+    - Complete table of journal entries from API
+    - Filters by type (Vente/Achat/Paiement/OD/Paie), status, date range
+    - Entry detail dialog showing all lines with debit/credit columns
+    - Visual balance indicator (total Débit = total Crédit)
+    - Status badges (Comptabilisée/Brouillon/Annulée)
+  - **Trial Balance (Balance Générale) Tab**:
+    - Period selector (current month/quarter/year)
+    - Account balances grouped by SCF class (1-8)
+    - Visual indicator if books are balanced
+    - Detailed account listing with movements and soldes
+    - Grand totals with balance verification
+  - **Tax Reports (Fiscalité) Tab**:
+    - TVA Declaration summary (TVA Collectée vs TVA Déductible)
+    - Tax liability by rate (19%, 9%, 7%, 0%)
+    - Algerian tax form references (G50 TVA, G1 IRG, G2 TAP, G4 IBS)
+    - Pie chart visualization of TVA distribution
+    - Historical tax declarations table
+  - **Financial Charts (Analyses) Tab**:
+    - Revenue vs Expenses bar chart (monthly trend)
+    - Cash flow projection area chart
+    - Net profit line chart
+    - Key financial indicators KPIs
+  - **Quick Actions Panel**:
+    - New Journal Entry button
+    - Generate Tax Report button
+    - Export to PDF/Excel buttons
+    - Print functionality
+- All existing functionality preserved (Factures, Fournisseurs, Trésorerie tabs)
+- Full French localization (Algerian context)
+- Professional styling with dz-green color scheme
+- Responsive design (mobile-first approach)
+- Toast notifications via sonner
+
+Stage Summary:
+- Finance page now has complete **Accounting Dashboard**
+- Users can view journal entries, trial balance, tax reports, and financial charts
+- SCF compliant double-entry accounting visualization complete
+- Integration with existing workflow orchestrator journal entries
+- All API endpoints ready for production use
+
+---
+Task ID: 2-d-1
+Agent: Inventory Management Specialist
+Task: Enhanced inventory page with stock management dashboard
+
+Work Log:
+- **API ENDPOINTS CREATED:**
+  
+  - Created `/api/inventory/movements/route.ts`:
+    - GET method with comprehensive filters (type, productId, warehouseId, date range, search)
+    - Support for type groups (in_*, out_*, adjustment, transfer)
+    - Running balance calculation per product
+    - Movement summary statistics (entries/exits quantities and values)
+    - Pagination support
+    
+  - Created `/api/inventory/stock-levels/route.ts`:
+    - GET method with filters (warehouseId, lowStockOnly, outOfStockOnly, categoryId, search)
+    - KPIs calculation (totalProducts, totalQuantity, totalValue, lowStockCount, outOfStockCount)
+    - Low stock alerts with status classification (out_of_stock, critical, low)
+    - Warehouse valuation breakdown
+    - Category valuation breakdown
+    - Top products by value ranking
+    
+  - Created `/api/inventory/adjustment/route.ts`:
+    - POST method for creating stock adjustments (adjustment_in, adjustment_out, transfer_in, transfer_out)
+    - Validation: required fields, sufficient stock for exits, reason required for adjustments
+    - Automatic reference generation (AJT-IN/AJT-OUT format)
+    - Stock level auto-create if not exists
+    - Atomic transaction for movement creation + stock level update
+    - GET method for adjustment history with same filters
+
+- **INVENTORY PAGE ENHANCED (`/src/app/(dashboard)/inventory/page.tsx`):**
+  
+  - **New Tab Structure (5 tabs)**:
+    1. "Tableau de Bord" - Complete stock dashboard
+    2. "Produits" - Product catalog (existing, enhanced)
+    3. "Mouvements" - Full movements journal (new)
+    4. "Valorisation" - Inventory valuation reports (new)
+    5. "Entrepôts" - Warehouse overview (existing)
+
+  - **Tableau de Bord Tab Features**:
+    - Low Stock Alerts panel with color-coded severity (red=critical, yellow=low)
+    - Quick adjust button on each alert item
+    - Stock Value by Warehouse bar chart (Recharts)
+    - Top Products by Value horizontal bar chart
+    - Category Distribution pie chart
+    - Movement Summary cards (Entries/Exits/Net Movement/Total Operations)
+    - Recent Movements preview table with link to full view
+
+  - **Mouvements Tab Features**:
+    - Comprehensive movements table with columns: Date, Reference, Type, Product, Warehouse, Entry Qty, Exit Qty, Running Balance, Value, Notes
+    - Filters: Type (all/entries/exits/adjustments/transfers/receipts/deliveries), Date Range, Product
+    - Running balance calculation displayed per movement
+    - Color-coded entries (green) vs exits (red)
+    - Reset filters button
+    - Empty state with guidance
+
+  - **Valorisation Tab Features**:
+    - Summary KPI cards: Total Value, Total Articles, Products in Stock
+    - Valuation by Warehouse table with percentage of total
+    - Alert indicators per warehouse
+    - Valuation by Category table + pie chart visualization
+    - Sorted by value (highest first)
+
+  - **New Modals**:
+    - Stock Transfer Modal: Source/target warehouse selection, product selection, quantity, notes
+    - Physical Count Modal: Searchable list of products, system quantity display, counted input, difference badges, batch apply
+
+  - **Header Actions Added**:
+    - Ajustement button (stock adjustment)
+    - Transfert button (stock transfer between warehouses)
+    - Inventaire button (physical count entry)
+
+  - **Visual Charts (Recharts Integration)**:
+    - BarChart: Stock value by warehouse
+    - Horizontal BarChart: Top products by value
+    - PieChart: Category distribution (donut style)
+    - Color palette: Green, Blue, Yellow, Red, Purple, Pink, Cyan, Lime
+
+  - **Toast Notifications (Sonner)**:
+    - Success/error feedback on all operations
+    - French language messages
+
+  - **All Existing Functionality Preserved**:
+    - Product CRUD operations
+    - Stock adjustment modal
+    - Product catalog table
+    - Warehouse cards view
+    - All filters and search functionality
+
+Stage Summary:
+- Inventory page now has complete **Stock Management UI**
+- Users can view stock levels dashboard with visual analytics
+- Full movements history with filtering and running balance
+- Inventory valuation reports by warehouse and category
+- Stock operations: adjustments, transfers, physical counts
+- All API endpoints ready for production use
+- French localization throughout (Algerian context)
+- Professional styling with dz-green primary color scheme
+- Responsive design (mobile-first approach)
+
+---
+Task ID: 2
+Agent: Phase 2 Lead - Core Workflows
+Task: **PHASE 2 COMPLETE** - Core Workflows Implementation (Sales/Purchasing/Accounting/Inventory)
+
+Work Log:
+
+### 2-A: Sales Workflow Enhancement ✅
+- Created `/api/workflows/sales/route.ts` - Full sales cycle execution API
+- Created `/api/workflows/purchase/route.ts` - Full purchase cycle execution API  
+- Created `/api/workflows/delivery/route.ts` - Sales order delivery recording API
+- Enhanced Sales page with **Workflow Pipeline UI** (5 stages: Quote→SO→Delivery→Invoice→Payment)
+- Added visual workflow progress bar with stage filtering
+- Added action buttons for workflow transitions (Convert, Confirm, Deliver, Invoice, Pay)
+- Integrated with workflow orchestrator for end-to-end automation
+
+### 2-B: Purchasing Workflow Enhancement ✅
+- Created `/api/purchases/[id]/receive/route.ts` - Goods receipt endpoint
+- Enhanced Purchases page with **Workflow Pipeline UI** (5 stages: PR→PO→Receipt→Bill→Payment)
+- Added Goods Receipt Modal with line-by-line quantity entry
+- Added stock level validation on receipt
+- Stage-based action buttons (Send, Confirm, Receive, Bill, Pay)
+
+### 2-C: Double-Entry Accounting Engine ✅
+- Created `/api/accounting/route.ts` - Journal entries CRUD with filters
+- Created `/api/accounting/balance/route.ts` - SCF Trial Balance (Balance Générale)
+- Enhanced Finance page with **4 new tabs**: Journal, Balance, Fiscalité, Analyses
+- Journal Entry Viewer with Debit/Credit verification (SCF compliant)
+- Trial Balance grouped by account class (Classe 1-7)
+- TVA Declaration summary (G50) with tax by rate analysis
+- Financial charts: Revenue vs Expenses, Cash Flow, Profit trends
+
+### 2-D: Inventory & Stock Management ✅
+- Created `/api/inventory/movements/route.ts` - Stock movements history API
+- Created `/api/inventory/stock-levels/route.ts` - Current stock levels with alerts
+- Created `/api/inventory/adjustment/route.ts` - Stock adjustment/transfer API
+- Enhanced Inventory page with **5 tabs**: Tableau de Bord, Produits, Mouvements, Valorisation, Entrepôts
+- Stock Dashboard KPIs with low stock alerts
+- Inventory valuation reports (by warehouse/category)
+- Stock operations: Adjustment, Transfer, Physical Count modals
+- Movement history with running balance calculations
+
+Stage Summary:
+- **Phase 2 (Core Workflows) is COMPLETE**
+- All 4 workflow engines fully operational:
+  - ✅ Sales: Quote → Order → Delivery → Invoice → Payment
+  - ✅ Purchase: PR → PO → Receipt → Bill → Payment  
+  - ✅ Accounting: Automatic SCF journal entries (double-entry)
+  - ✅ Inventory: Real-time stock tracking with movements
+- Backend workflow orchestrator fully integrated with frontend UIs
+- 9 new API endpoints created for workflow operations
+- All pages have comprehensive workflow visualization
+- Dev server running successfully on port 3000
+
+## Phase 2 Production Deployment Checklist ✅
+- [x] Workflow Orchestrator engine (1850+ lines of workflow logic)
+- [x] SCF-compliant automatic accounting entries
+- [x] Sales workflow pipeline UI
+- [x] Purchase workflow pipeline UI
+- [x] Journal Entry viewer and trial balance
+- [x] TVA declaration reports (G50)
+- [x] Stock management dashboard
+- [x] Inventory valuation reports
+- [x] Goods receipt processing
+- [x] Stock adjustment/transfer functionality

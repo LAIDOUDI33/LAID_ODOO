@@ -23,7 +23,21 @@ import {
   Loader2,
   Inbox,
   AlertOctagon,
-  ArrowUpDown
+  ArrowUpDown,
+  BarChart3,
+  PieChart,
+  Activity,
+  ClipboardList,
+  ArrowRightLeft,
+  Scale,
+  TrendingUp,
+  Download,
+  Calendar,
+  Layers,
+  DollarSign,
+  Boxes,
+  Zap,
+  Clock
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -59,6 +73,26 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Skeleton } from '@/components/ui/skeleton'
 import { motion, AnimatePresence } from 'framer-motion'
+import { toast } from 'sonner'
+
+// Charts imports
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart as RechartsPie,
+  Pie,
+  Cell,
+  LineChart,
+  Line,
+  Legend,
+  AreaChart,
+  Area
+} from 'recharts'
 
 // Types
 interface Product {
@@ -113,12 +147,57 @@ interface StockMovement {
   locationId?: string | null
   product?: Product
   warehouse?: { id: string; name: string; code: string }
+  location?: { id: string; name: string; code: string }
+  runningBalance?: number
+  isEntry?: boolean
 }
 
 interface Warehouse {
   id: string
   name: string
   code: string
+}
+
+interface LowStockAlert {
+  id: string
+  productId: string
+  productName: string
+  productCode: string
+  currentQuantity: number
+  minQuantity: number
+  unitOfMeasure: string
+  warehouseName: string
+  deficit: number
+  status: 'out_of_stock' | 'critical' | 'low'
+  valueAtRisk: number
+}
+
+interface WarehouseValuation {
+  warehouseId: string
+  warehouseName: string
+  warehouseCode: string
+  totalQuantity: number
+  totalValue: number
+  productCount: number
+  lowStockCount: number
+}
+
+interface CategoryValuation {
+  categoryId: string
+  categoryName: string
+  totalQuantity: number
+  totalValue: number
+  productCount: number
+}
+
+interface MovementSummary {
+  totalEntries: number
+  totalEntriesQuantity: number
+  totalEntriesValue: number
+  totalExits: number
+  totalExitsQuantity: number
+  totalExitsValue: number
+  netMovement: number
 }
 
 interface InventoryData {
@@ -144,7 +223,11 @@ const movementTypeLabels: Record<string, { label: string; color: string }> = {
   out_purchase_return: { label: 'Retour Fourn.', color: 'bg-red-100 text-red-700' },
   out_adjustment: { label: 'Ajustement (-)', color: 'bg-rose-100 text-rose-700' },
   out_transfer: { label: 'Transfert Sortant', color: 'bg-amber-100 text-amber-700' },
+  out_consumption: { label: 'Consommation', color: 'bg-purple-100 text-purple-700' },
 }
+
+// Chart colors
+const CHART_COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16']
 
 // Format currency in DZD
 function formatDZD(amount: number): string {
@@ -561,6 +644,7 @@ function StockAdjustModal({
   onAdjust,
   stockItem,
   warehouses,
+  products,
   loading
 }: {
   open: boolean
@@ -568,10 +652,12 @@ function StockAdjustModal({
   onAdjust: (data: any) => void
   stockItem?: StockLevel | null
   warehouses: Warehouse[]
+  products: Product[]
   loading: boolean
 }) {
   const [form, setForm] = useState({
     warehouseId: '',
+    productId: '',
     quantity: '0',
     type: 'in' as 'in' | 'out',
     notes: ''
@@ -581,31 +667,34 @@ function StockAdjustModal({
     if (stockItem) {
       setForm({
         warehouseId: stockItem.warehouseId,
+        productId: stockItem.productId,
         quantity: '0',
         type: 'in',
         notes: ''
       })
-    } else if (warehouses.length > 0) {
+    } else if (warehouses.length > 0 && products.length > 0) {
       setForm({
         warehouseId: warehouses[0]?.id || '',
+        productId: products[0]?.id || '',
         quantity: '0',
         type: 'in',
         notes: ''
       })
     }
-  }, [stockItem, open, warehouses])
+  }, [stockItem, open, warehouses, products])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     onAdjust({
-      productId: stockItem?.productId || '',
+      productId: form.productId,
       warehouseId: form.warehouseId,
-      locationId: stockItem?.locationId || null,
       quantity: parseFloat(form.quantity) || 0,
       type: form.type === 'in' ? 'adjustment_in' : 'adjustment_out',
       notes: form.notes
     })
   }
+
+  const selectedProduct = products.find(p => p.id === form.productId)
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -624,6 +713,33 @@ function StockAdjustModal({
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
+            {!stockItem && (
+              <>
+                <div className="space-y-2">
+                  <Label>Produit</Label>
+                  <Select value={form.productId} onValueChange={(v) => setForm({ ...form, productId: v })}>
+                    <SelectTrigger><SelectValue placeholder="Sélectionner le produit" /></SelectTrigger>
+                    <SelectContent>
+                      {products.map((p) => (
+                        <SelectItem key={p.id} value={p.id}>{p.code} - {p.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Entrepôt</Label>
+                  <Select value={form.warehouseId} onValueChange={(v) => setForm({ ...form, warehouseId: v })}>
+                    <SelectTrigger><SelectValue placeholder="Sélectionner l'entrepôt" /></SelectTrigger>
+                    <SelectContent>
+                      {warehouses.map((wh) => (
+                        <SelectItem key={wh.id} value={wh.id}>{wh.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
+            )}
+
             {stockItem && (
               <div className="p-3 bg-muted rounded-lg">
                 <div className="flex justify-between text-sm">
@@ -638,20 +754,6 @@ function StockAdjustModal({
                   <span>Stock min:</span>
                   <span className="font-medium">{formatNumber(stockItem.minQty)} {stockItem.product.unitOfMeasure}</span>
                 </div>
-              </div>
-            )}
-
-            {!stockItem && (
-              <div className="space-y-2">
-                <Label>Entrepôt</Label>
-                <Select value={form.warehouseId} onValueChange={(v) => setForm({ ...form, warehouseId: v })}>
-                  <SelectTrigger><SelectValue placeholder="Sélectionner l'entrepôt" /></SelectTrigger>
-                  <SelectContent>
-                    {warehouses.map((wh) => (
-                      <SelectItem key={wh.id} value={wh.id}>{wh.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
               </div>
             )}
 
@@ -690,16 +792,22 @@ function StockAdjustModal({
                 onChange={(e) => setForm({ ...form, quantity: e.target.value })}
                 placeholder="0"
               />
+              {selectedProduct && (
+                <p className="text-xs text-muted-foreground">
+                  Valeur: {formatDZD((parseFloat(form.quantity) || 0) * selectedProduct.costPrice)}
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="notes">Notes / Motif</Label>
+              <Label htmlFor="notes">Notes / Motif *</Label>
               <Textarea
                 id="notes"
                 value={form.notes}
                 onChange={(e) => setForm({ ...form, notes: e.target.value })}
                 placeholder="Motif de l'ajustement..."
                 rows={3}
+                required
               />
             </div>
           </div>
@@ -710,7 +818,7 @@ function StockAdjustModal({
             </Button>
             <Button 
               type="submit" 
-              disabled={loading || !form.warehouseId || parseFloat(form.quantity) <= 0}
+              disabled={loading || !form.warehouseId || !form.productId || parseFloat(form.quantity) <= 0 || !form.notes.trim()}
               className="gap-2"
             >
               {loading ? (
@@ -732,6 +840,320 @@ function StockAdjustModal({
   )
 }
 
+// Stock Transfer Modal
+function StockTransferModal({
+  open,
+  onClose,
+  onTransfer,
+  warehouses,
+  products,
+  loading
+}: {
+  open: boolean
+  onClose: () => void
+  onTransfer: (data: any) => void
+  warehouses: Warehouse[]
+  products: Product[]
+  loading: boolean
+}) {
+  const [form, setForm] = useState({
+    productId: '',
+    sourceWarehouseId: '',
+    targetWarehouseId: '',
+    quantity: '0',
+    notes: ''
+  })
+
+  useEffect(() => {
+    if (open && warehouses.length >= 2 && products.length > 0) {
+      setForm({
+        productId: products[0]?.id || '',
+        sourceWarehouseId: warehouses[0]?.id || '',
+        targetWarehouseId: warehouses[1]?.id || '',
+        quantity: '0',
+        notes: ''
+      })
+    }
+  }, [open, warehouses, products])
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    onTransfer({
+      productId: form.productId,
+      sourceWarehouseId: form.sourceWarehouseId,
+      targetWarehouseId: form.targetWarehouseId,
+      quantity: parseFloat(form.quantity) || 0,
+      notes: form.notes
+    })
+  }
+
+  const selectedProduct = products.find(p => p.id === form.productId)
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <ArrowRightLeft className="w-5 h-5" />
+            Transfert de Stock
+          </DialogTitle>
+          <DialogDescription>
+            Transférer des produits entre entrepôts
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit}>
+          <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <Label>Produit</Label>
+              <Select value={form.productId} onValueChange={(v) => setForm({ ...form, productId: v })}>
+                <SelectTrigger><SelectValue placeholder="Sélectionner le produit" /></SelectTrigger>
+                <SelectContent>
+                  {products.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>{p.code} - {p.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Entrepôt Source</Label>
+                <Select value={form.sourceWarehouseId} onValueChange={(v) => setForm({ ...form, sourceWarehouseId: v })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {warehouses.filter(w => w.id !== form.targetWarehouseId).map((wh) => (
+                      <SelectItem key={wh.id} value={wh.id}>{wh.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Entrepôt Cible</Label>
+                <Select value={form.targetWarehouseId} onValueChange={(v) => setForm({ ...form, targetWarehouseId: v })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {warehouses.filter(w => w.id !== form.sourceWarehouseId).map((wh) => (
+                      <SelectItem key={wh.id} value={wh.id}>{wh.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="transferQty">Quantité à transférer</Label>
+              <Input
+                id="transferQty"
+                type="number"
+                min="0"
+                step="any"
+                value={form.quantity}
+                onChange={(e) => setForm({ ...form, quantity: e.target.value })}
+                placeholder="0"
+              />
+              {selectedProduct && (
+                <p className="text-xs text-muted-foreground">
+                  Valeur: {formatDZD((parseFloat(form.quantity) || 0) * selectedProduct.costPrice)}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="transferNotes">Notes / Motif</Label>
+              <Textarea
+                id="transferNotes"
+                value={form.notes}
+                onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                placeholder="Motif du transfert..."
+                rows={3}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose}>
+              Annuler
+            </Button>
+            <Button 
+              type="submit" 
+              disabled={loading || !form.sourceWarehouseId || !form.targetWarehouseId || 
+                       form.sourceWarehouseId === form.targetWarehouseId ||
+                       !form.productId || parseFloat(form.quantity) <= 0}
+              className="gap-2"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Traitement...
+                </>
+              ) : (
+                <>
+                  <ArrowRightLeft className="w-4 h-4" />
+                  Effectuer le transfert
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+// Physical Count Modal
+function PhysicalCountModal({
+  open,
+  onClose,
+  onSave,
+  stockItems,
+  loading
+}: {
+  open: boolean
+  onClose: () => void
+  onSave: (data: any[]) => void
+  stockItems: StockLevel[]
+  loading: boolean
+}) {
+  const [counts, setCounts] = useState<Record<string, string>>({})
+  const [searchQuery, setSearchQuery] = useState('')
+
+  useEffect(() => {
+    if (open && stockItems.length > 0) {
+      const initialCounts: Record<string, string> = {}
+      stockItems.forEach(item => {
+        initialCounts[item.id] = item.quantity.toString()
+      })
+      setCounts(initialCounts)
+      setSearchQuery('')
+    }
+  }, [open, stockItems])
+
+  const filteredItems = searchQuery 
+    ? stockItems.filter(item => 
+        item.product.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.product.name.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : stockItems
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    const adjustments = Object.entries(counts)
+      .filter(([id]) => {
+        const item = stockItems.find(i => i.id === id)
+        return item && parseFloat(counts[id]) !== item.quantity
+      })
+      .map(([id, countedQty]) => {
+        const item = stockItems.find(i => i.id === id)!
+        const diff = parseFloat(countedQty) - item.quantity
+        return {
+          productId: item.productId,
+          warehouseId: item.warehouseId,
+          quantity: Math.abs(diff),
+          type: diff > 0 ? 'adjustment_in' : 'adjustment_out',
+          notes: `Inventaire physique - Comptage: ${countedQty}, Système: ${item.quantity}`
+        }
+      })
+    
+    onSave(adjustments)
+  }
+
+  const hasChanges = Object.entries(counts).some(([id]) => {
+    const item = stockItems.find(i => i.id === id)
+    return item && parseFloat(counts[id]) !== item.quantity
+  })
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[700px] max-h-[85vh] overflow-hidden flex flex-col">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Scale className="w-5 h-5" />
+            Inventaire Physique
+          </DialogTitle>
+          <DialogDescription>
+            Saisir les quantités comptées pour chaque produit
+          </DialogDescription>
+        </DialogHeader>
+        
+        <div className="mb-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Rechercher un produit..."
+              className="pl-10"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+          <div className="flex-1 overflow-y-auto space-y-2 pr-1 -mr-1">
+            {filteredItems.slice(0, 20).map((item) => (
+              <div key={item.id} className="flex items-center gap-4 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium truncate">{item.product.name}</p>
+                  <p className="text-xs text-muted-foreground">{item.product.code} • {item.warehouse.name}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground whitespace-nowrap">
+                    Système: {formatNumber(item.quantity)}
+                  </span>
+                  <ArrowRightLeft className="w-4 h-4 text-muted-foreground" />
+                  <Input
+                    type="number"
+                    step="any"
+                    className="w-24 text-right"
+                    value={counts[item.id] || '0'}
+                    onChange={(e) => setCounts(prev => ({ ...prev, [item.id]: e.target.value }))}
+                  />
+                  {parseFloat(counts[item.id] || '0') !== item.quantity && (
+                    <Badge variant={parseFloat(counts[item.id] || '0') > item.quantity ? "default" : "destructive"} className="text-xs">
+                      {parseFloat(counts[item.id] || '0') > item.quantity ? '+' : ''}{formatNumber(parseFloat(counts[item.id] || '0') - item.quantity)}
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            ))}
+            
+            {filteredItems.length === 0 && (
+              <div className="text-center py-8 text-muted-foreground">
+                Aucun produit trouvé
+              </div>
+            )}
+          </div>
+
+          <DialogFooter className="pt-4 mt-4 border-t">
+            <Button type="button" variant="outline" onClick={onClose}>
+              Annuler
+            </Button>
+            <Button 
+              type="submit" 
+              disabled={loading || !hasChanges}
+              className="gap-2"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Traitement...
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4" />
+                  Appliquer les écarts ({Object.entries(counts).filter(([id]) => {
+                    const item = stockItems.find(i => i.id === id)
+                    return item && parseFloat(counts[id]) !== item.quantity
+                  }).length})
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 // Main Page Component
 export default function InventoryPage() {
   // State
@@ -740,19 +1162,31 @@ export default function InventoryPage() {
   const [inventoryData, setInventoryData] = useState<InventoryData | null>(null)
   const [products, setProducts] = useState<Product[]>([])
   const [movements, setMovements] = useState<StockMovement[]>([])
+  const [movementSummary, setMovementSummary] = useState<MovementSummary | null>(null)
+  const [lowStockAlerts, setLowStockAlerts] = useState<LowStockAlert[]>([])
+  const [warehouseValuation, setWarehouseValuation] = useState<WarehouseValuation[]>([])
+  const [categoryValuation, setCategoryValuation] = useState<CategoryValuation[]>([])
   
   // UI State
-  const [activeTab, setActiveTab] = useState('produits')
+  const [activeTab, setActiveTab] = useState('tableau-bord')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [selectedWarehouse, setSelectedWarehouse] = useState<string>('all')
   const [showLowStockOnly, setShowLowStockOnly] = useState(false)
+  
+  // Movement filters
+  const [movementTypeFilter, setMovementTypeFilter] = useState<string>('all')
+  const [movementDateFrom, setMovementDateFrom] = useState('')
+  const [movementDateTo, setMovementDateTo] = useState('')
+  const [movementProductFilter, setMovementProductFilter] = useState<string>('all')
   
   // Modal States
   const [productModalOpen, setProductModalOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [stockModalOpen, setStockModalOpen] = useState(false)
   const [adjustingStock, setAdjustingStock] = useState<StockLevel | null>(null)
+  const [transferModalOpen, setTransferModalOpen] = useState(false)
+  const [physicalCountOpen, setPhysicalCountOpen] = useState(false)
   const [actionLoading, setActionLoading] = useState(false)
 
   // Fetch inventory data
@@ -767,9 +1201,10 @@ export default function InventoryPage() {
       if (selectedWarehouse !== 'all') params.set('warehouse', selectedWarehouse)
       if (showLowStockOnly) params.set('lowStock', 'true')
 
-      const [inventoryRes, productsRes] = await Promise.all([
+      const [inventoryRes, productsRes, stockLevelsRes] = await Promise.all([
         fetch(`/api/inventory?${params.toString()}`),
-        fetch(`/api/products?limit=500`)
+        fetch(`/api/products?limit=500`),
+        fetch(`/api/inventory/stock-levels?${params.toString()}`)
       ])
 
       if (!inventoryRes.ok || !productsRes.ok) {
@@ -778,12 +1213,18 @@ export default function InventoryPage() {
 
       const inventoryJson = await inventoryRes.json()
       const productsJson = await productsRes.json()
+      const stockLevelsJson = await stockLevelsRes.ok ? await stockLevelsRes.json() : null
 
       if (inventoryJson.success) {
         setInventoryData(inventoryJson.data)
       }
       if (productsJson.success) {
         setProducts(productsJson.data)
+      }
+      if (stockLevelsJson?.success) {
+        setLowStockAlerts(stockLevelsJson.data.lowStockAlerts || [])
+        setWarehouseValuation(stockLevelsJson.data.warehouseValuation || [])
+        setCategoryValuation(stockLevelsJson.data.categoryValuation || [])
       }
     } catch (err) {
       console.error('Error fetching inventory:', err)
@@ -793,29 +1234,48 @@ export default function InventoryPage() {
     }
   }, [searchQuery, selectedCategory, selectedWarehouse, showLowStockOnly])
 
-  // Fetch movements for a specific product
-  const fetchProductMovements = async (productId: string) => {
+  // Fetch movements data
+  const fetchMovementsData = useCallback(async () => {
     try {
-      // We'll use the stock levels which include recent movements info
-      // For now, we'll show mock movement data based on actual stock changes
-      const res = await fetch(`/api/inventory?${new URLSearchParams({ search: productId })}`)
+      const params = new URLSearchParams()
+      params.set('limit', '100')
+      
+      if (movementTypeFilter !== 'all') {
+        params.set('type', movementTypeFilter)
+      }
+      if (movementDateFrom) {
+        params.set('dateFrom', movementDateFrom)
+      }
+      if (movementDateTo) {
+        params.set('dateTo', movementDateTo)
+      }
+      if (movementProductFilter !== 'all') {
+        params.set('productId', movementProductFilter)
+      }
+      if (selectedWarehouse !== 'all') {
+        params.set('warehouseId', selectedWarehouse)
+      }
+
+      const res = await fetch(`/api/inventory/movements?${params.toString()}`)
       if (res.ok) {
         const json = await res.json()
-        if (json.success && json.data.stockLevels?.[0]?.movements) {
-          setMovements(json.data.stockLevels[0].movements)
+        if (json.success) {
+          setMovements(json.data.movements || [])
+          setMovementSummary(json.data.summary)
         }
       }
     } catch (err) {
       console.error('Error fetching movements:', err)
     }
-  }
+  }, [movementTypeFilter, movementDateFrom, movementDateTo, movementProductFilter, selectedWarehouse])
 
   // Initial load
   useEffect(() => {
     fetchInventoryData()
+    fetchMovementsData()
   }, [])
 
-  // Debounced search
+  // Debounced search for inventory
   useEffect(() => {
     const timer = setTimeout(() => {
       if (!loading) {
@@ -824,6 +1284,13 @@ export default function InventoryPage() {
     }, 300)
     return () => clearTimeout(timer)
   }, [searchQuery, selectedCategory, selectedWarehouse, showLowStockOnly])
+
+  // Fetch movements when filters change
+  useEffect(() => {
+    if (activeTab === 'mouvements') {
+      fetchMovementsData()
+    }
+  }, [activeTab, movementTypeFilter, movementDateFrom, movementDateTo, movementProductFilter, selectedWarehouse])
 
   // Handlers
   const handleCreateProduct = async (data: any) => {
@@ -836,14 +1303,15 @@ export default function InventoryPage() {
       })
       
       if (res.ok) {
+        toast.success('Produit créé avec succès')
         setProductModalOpen(false)
         fetchInventoryData()
       } else {
         const json = await res.json()
-        alert(json.error || 'Erreur lors de la création')
+        toast.error(json.error || 'Erreur lors de la création')
       }
     } catch (err) {
-      alert('Erreur réseau')
+      toast.error('Erreur réseau')
     } finally {
       setActionLoading(false)
     }
@@ -861,15 +1329,16 @@ export default function InventoryPage() {
       })
       
       if (res.ok) {
+        toast.success('Produit modifié avec succès')
         setProductModalOpen(false)
         setEditingProduct(null)
         fetchInventoryData()
       } else {
         const json = await res.json()
-        alert(json.error || 'Erreur lors de la modification')
+        toast.error(json.error || 'Erreur lors de la modification')
       }
     } catch (err) {
-      alert('Erreur réseau')
+      toast.error('Erreur réseau')
     } finally {
       setActionLoading(false)
     }
@@ -878,22 +1347,111 @@ export default function InventoryPage() {
   const handleStockAdjustment = async (data: any) => {
     setActionLoading(true)
     try {
-      const res = await fetch('/api/inventory', {
+      const res = await fetch('/api/inventory/adjustment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       })
       
       if (res.ok) {
+        const json = await res.json()
+        toast.success(json.message || 'Ajustement effectué avec succès')
         setStockModalOpen(false)
         setAdjustingStock(null)
         fetchInventoryData()
+        fetchMovementsData()
       } else {
         const json = await res.json()
-        alert(json.error || 'Erreur lors de l\'ajustement')
+        toast.error(json.error || 'Erreur lors de l\'ajustement')
       }
     } catch (err) {
-      alert('Erreur réseau')
+      toast.error('Erreur réseau')
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  const handleStockTransfer = async (data: any) => {
+    setActionLoading(true)
+    try {
+      // Create exit from source
+      const exitRes = await fetch('/api/inventory/adjustment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...data,
+          warehouseId: data.sourceWarehouseId,
+          type: 'transfer_out',
+          notes: `${data.notes} (Transfert vers entrepôt cible)`
+        })
+      })
+
+      if (!exitRes.ok) {
+        const json = await exitRes.json()
+        toast.error(json.error || 'Erreur lors du transfert (sortie)')
+        return
+      }
+
+      // Create entry to target
+      const entryRes = await fetch('/api/inventory/adjustment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...data,
+          warehouseId: data.targetWarehouseId,
+          type: 'transfer_in',
+          notes: `${data.notes} (Transfert depuis entrepôt source)`
+        })
+      })
+
+      if (entryRes.ok) {
+        toast.success('Transfert effectué avec succès')
+        setTransferModalOpen(false)
+        fetchInventoryData()
+        fetchMovementsData()
+      } else {
+        const json = await entryRes.json()
+        toast.error(json.error || 'Erreur lors du transfert (entrée)')
+      }
+    } catch (err) {
+      toast.error('Erreur réseau')
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  const handlePhysicalCount = async (adjustments: any[]) => {
+    setActionLoading(true)
+    try {
+      let successCount = 0
+      let errorCount = 0
+
+      for (const adj of adjustments) {
+        try {
+          const res = await fetch('/api/inventory/adjustment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(adj)
+          })
+          
+          if (res.ok) successCount++
+          else errorCount++
+        } catch {
+          errorCount++
+        }
+      }
+
+      if (successCount > 0) {
+        toast.success(`${successCount} ajustement(s) appliqué(s) avec succès`)
+        setPhysicalCountOpen(false)
+        fetchInventoryData()
+        fetchMovementsData()
+      }
+      if (errorCount > 0) {
+        toast.error(`${errorCount} erreur(s) lors de l'application`)
+      }
+    } catch (err) {
+      toast.error('Erreur réseau')
     } finally {
       setActionLoading(false)
     }
@@ -957,6 +1515,39 @@ export default function InventoryPage() {
       .slice(0, 10)
   }, [inventoryData])
 
+  // Chart data
+  const warehouseChartData = useMemo(() => {
+    return warehouseValuation.map(wh => ({
+      name: wh.warehouseName,
+      valeur: Math.round(wh.totalValue / 1000),
+      quantite: wh.totalQuantity,
+      produits: wh.productCount
+    }))
+  }, [warehouseValuation])
+
+  const categoryChartData = useMemo(() => {
+    return categoryValuation.map(cat => ({
+      name: cat.categoryName.length > 15 ? cat.categoryName.substring(0, 15) + '...' : cat.categoryName,
+      fullName: cat.categoryName,
+      valeur: Math.round(cat.totalValue / 1000),
+      produits: cat.productCount
+    }))
+  }, [categoryValuation])
+
+  const topProductsChartData = useMemo(() => {
+    if (!inventoryData?.stockLevels) return []
+    
+    return [...inventoryData.stockLevels]
+      .sort((a, b) => (b.quantity * b.product.costPrice) - (a.quantity * a.product.costPrice))
+      .slice(0, 8)
+      .map(sl => ({
+        name: sl.product.name.length > 18 ? sl.product.name.substring(0, 18) + '...' : sl.product.name,
+        fullName: sl.product.name,
+        valeur: Math.round((sl.quantity * sl.product.costPrice) / 1000),
+        quantite: sl.quantity
+      }))
+  }, [inventoryData])
+
   // KPI Data
   const kpiData = useMemo(() => {
     if (!inventoryData?.kpis) return []
@@ -965,7 +1556,7 @@ export default function InventoryPage() {
 
     return [
       {
-        title: "Produits en Stock",
+        title: "Articles en Stock",
         value: totalQuantity,
         change: 3.2,
         icon: Package,
@@ -977,13 +1568,13 @@ export default function InventoryPage() {
         title: "Valeur du Stock (DZD)",
         value: totalValue,
         change: -2.1,
-        icon: TrendingDown,
+        icon: DollarSign,
         iconColor: "text-blue-600",
         iconBg: "bg-blue-100 dark:bg-blue-900/30",
         format: "currency" as const
       },
       {
-        title: "Stocks Bas",
+        title: "Alertes Stock",
         value: lowStockCount + outOfStockCount,
         change: null,
         icon: AlertTriangle,
@@ -995,7 +1586,7 @@ export default function InventoryPage() {
         title: "Total Produits",
         value: totalProducts,
         change: 1.5,
-        icon: Package,
+        icon: Boxes,
         iconColor: "text-purple-600",
         iconBg: "bg-purple-100 dark:bg-purple-900/30",
         format: "number" as const
@@ -1020,20 +1611,24 @@ export default function InventoryPage() {
         <div>
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight flex items-center gap-3">
             <Package className="w-8 h-8 text-primary" />
-            Stocks & Inventaire
+            Gestion des Stocks
           </h1>
           <p className="text-muted-foreground mt-1">
-            Gestion des stocks et inventaire des produits
+            Suivi complet des stocks, mouvements et valorisation
           </p>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="items-center gap-2 flex-wrap flex">
           <Button size="sm" variant="outline" className="gap-2" onClick={() => openStockModal()}>
             <ArrowUpDown className="w-4 h-4" />
             Ajustement
           </Button>
-          <Button size="sm" variant="outline" className="gap-2">
-            <Barcode className="w-4 h-4" />
-            Scanner
+          <Button size="sm" variant="outline" className="gap-2" onClick={() => setTransferModalOpen(true)}>
+            <ArrowRightLeft className="w-4 h-4" />
+            Transfert
+          </Button>
+          <Button size="sm" variant="outline" className="gap-2" onClick={() => setPhysicalCountOpen(true)}>
+            <Scale className="w-4 h-4" />
+            Inventaire
           </Button>
           <Button 
             size="sm" 
@@ -1058,12 +1653,313 @@ export default function InventoryPage() {
 
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
+        <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-grid">
+          <TabsTrigger value="tableau-bord">Tableau de Bord</TabsTrigger>
           <TabsTrigger value="produits">Produits</TabsTrigger>
-          <TabsTrigger value="stock">Stock</TabsTrigger>
           <TabsTrigger value="mouvements">Mouvements</TabsTrigger>
+          <TabsTrigger value="valorisation">Valorisation</TabsTrigger>
           <TabsTrigger value="entrepots">Entrepôts</TabsTrigger>
         </TabsList>
+
+        {/* ==================== TABLEAU DE BORD TAB ==================== */}
+        <TabsContent value="tableau-bord" className="space-y-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="space-y-6"
+          >
+            {/* Low Stock Alerts */}
+            {lowStockAlerts.length > 0 && (
+              <Card className="border-yellow-200 dark:border-yellow-800/50">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-yellow-700 dark:text-yellow-400">
+                    <AlertTriangle className="w-5 h-5" />
+                    Alertes de Stock Faible
+                    <Badge variant="secondary" className="ml-2">{lowStockAlerts.length}</Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-72 overflow-y-auto">
+                    {lowStockAlerts.slice(0, 12).map((alert, index) => (
+                      <motion.div
+                        key={alert.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.03 }}
+                        className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
+                            alert.status === 'out_of_stock' ? 'bg-red-500 animate-pulse' :
+                            alert.status === 'critical' ? 'bg-red-500' : 'bg-yellow-500'
+                          }`} />
+                          <div className="min-w-0">
+                            <span className="font-medium truncate block text-sm">{alert.productName}</span>
+                            <span className="text-xs text-muted-foreground">{alert.productCode} • {alert.warehouseName}</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+                          <span className={`text-sm font-semibold ${
+                            alert.status === 'out_of_stock' ? 'text-red-600' :
+                            alert.status === 'critical' ? 'text-red-600' : 'text-yellow-600'
+                          }`}>
+                            {formatNumber(alert.currentQuantity)}
+                          </span>
+                          <Button 
+                            size="sm" 
+                            variant="ghost"
+                            className="h-7 w-7 p-0"
+                            onClick={() => {
+                              const stockItem = inventoryData?.stockLevels.find(s => s.id === alert.id)
+                              openStockModal(stockItem)
+                            }}
+                          >
+                            <Plus className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Charts Row */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Stock Value by Warehouse Chart */}
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <BarChart3 className="w-4 h-4" />
+                    Valeur par Entrepôt
+                  </CardTitle>
+                  <CardDescription>Valeur totale du stock (milliers DZD)</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {warehouseChartData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height={250}>
+                      <BarChart data={warehouseChartData}>
+                        <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                        <XAxis dataKey="name" tick={{ fontSize: 11 }} angle={-20} textAnchor="end" height={60} />
+                        <YAxis tick={{ fontSize: 11 }} />
+                        <Tooltip 
+                          formatter={(value: number) => [`${formatNumber(value * 1000)} DZD`, 'Valeur']}
+                          contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb' }}
+                        />
+                        <Bar dataKey="valeur" fill="#10b981" radius={[4, 4, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="h-64 flex items-center justify-center text-muted-foreground">
+                      Aucune donnée disponible
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Top Products by Value Chart */}
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <TrendingUp className="w-4 h-4" />
+                    Top Produits par Valeur
+                  </CardTitle>
+                  <CardDescription>Les produits les plus valorisés</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {topProductsChartData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height={250}>
+                      <BarChart data={topProductsChartData} layout="vertical">
+                        <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                        <XAxis type="number" tick={{ fontSize: 11 }} />
+                        <YAxis dataKey="name" type="category" tick={{ fontSize: 10 }} width={120} />
+                        <Tooltip 
+                          formatter={(value: number) => [`${formatNumber(value * 1000)} DZD`, 'Valeur']}
+                          contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb' }}
+                        />
+                        <Bar dataKey="valeur" fill="#3b82f6" radius={[0, 4, 4, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="h-64 flex items-center justify-center text-muted-foreground">
+                      Aucune donnée disponible
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Category Distribution & Quick Stats */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Category Distribution Pie */}
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <PieChart className="w-4 h-4" />
+                    Répartition par Catégorie
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {categoryChartData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height={220}>
+                      <RechartsPie>
+                        <Pie
+                          data={categoryChartData}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={50}
+                          outerRadius={80}
+                          paddingAngle={3}
+                          dataKey="valeur"
+                          nameKey="fullName"
+                        >
+                          {categoryChartData.map((_, index) => (
+                            <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip 
+                          formatter={(value: number) => [`${formatNumber(value * 1000)} DZD`, 'Valeur']}
+                          contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb' }}
+                        />
+                      </RechartsPie>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="h-56 flex items-center justify-center text-muted-foreground">
+                      Aucune donnée disponible
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Movement Summary */}
+              <Card className="lg:col-span-2">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Activity className="w-4 h-4" />
+                    Résumé des Mouvements
+                  </CardTitle>
+                  <CardDescription>Bilan des entrées et sorties récentes</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {movementSummary ? (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg text-center">
+                        <div className="flex items-center justify-center gap-2 mb-1">
+                          <PlusCircle className="w-4 h-4 text-green-600" />
+                          <span className="text-xs text-green-600 font-medium">ENTRÉES</span>
+                        </div>
+                        <p className="text-xl font-bold text-green-700">{formatNumber(movementSummary.totalEntriesQuantity)}</p>
+                        <p className="text-xs text-muted-foreground">{formatDZD(movementSummary.totalEntriesValue)}</p>
+                      </div>
+                      <div className="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg text-center">
+                        <div className="flex items-center justify-center gap-2 mb-1">
+                          <MinusCircle className="w-4 h-4 text-orange-600" />
+                          <span className="text-xs text-orange-600 font-medium">SORTIES</span>
+                        </div>
+                        <p className="text-xl font-bold text-orange-700">{formatNumber(movementSummary.totalExitsQuantity)}</p>
+                        <p className="text-xs text-muted-foreground">{formatDZD(movementSummary.totalExitsValue)}</p>
+                      </div>
+                      <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-center">
+                        <div className="flex items-center justify-center gap-2 mb-1">
+                          <ArrowUpDown className="w-4 h-4 text-blue-600" />
+                          <span className="text-xs text-blue-600 font-medium">MOUVEMENT NET</span>
+                        </div>
+                        <p className={`text-xl font-bold ${movementSummary.netMovement >= 0 ? 'text-green-700' : 'text-red-700'}`}>
+                          {movementSummary.netMovement >= 0 ? '+' : ''}{formatNumber(movementSummary.netMovement)}
+                        </p>
+                        <p className="text-xs text-muted-foreground">Unités</p>
+                      </div>
+                      <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg text-center">
+                        <div className="flex items-center justify-center gap-2 mb-1">
+                          <ClipboardList className="w-4 h-4 text-purple-600" />
+                          <span className="text-xs text-purple-600 font-medium">TOTAL OPÉRATIONS</span>
+                        </div>
+                        <p className="text-xl font-bold text-purple-700">{movementSummary.totalEntries + movementSummary.totalExits}</p>
+                        <p className="text-xs text-muted-foreground">Mouvements</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="h-full flex items-center justify-center text-muted-foreground">
+                      Chargement des statistiques...
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Recent Movements Preview */}
+            <Card>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Clock className="w-4 h-4" />
+                    Mouvements Récents
+                  </CardTitle>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="gap-1"
+                    onClick={() => setActiveTab('mouvements')}
+                  >
+                    Voir tout
+                    <ChevronRight className="w-3 h-3" />
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Référence</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Type</TableHead>
+                        <TableHead>Produit</TableHead>
+                        <TableHead className="text-right">Qté</TableHead>
+                        <TableHead className="text-right">Valeur</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {movements.slice(0, 8).map((mov) => (
+                        <TableRow key={mov.id}>
+                          <TableCell className="font-mono text-xs">{mov.reference}</TableCell>
+                          <TableCell className="text-sm">
+                            {new Date(mov.date).toLocaleDateString('fr-DZ')}
+                          </TableCell>
+                          <TableCell>
+                            <Badge 
+                              variant="secondary" 
+                              className={movementTypeLabels[mov.type]?.color || ''}
+                            >
+                              {movementTypeLabels[mov.type]?.label || mov.type}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="max-w-[150px] truncate">
+                            {mov.product?.name || mov.productId}
+                          </TableCell>
+                          <TableCell className={`text-right font-mono ${mov.isEntry ? 'text-green-600' : 'text-red-600'}`}>
+                            {mov.isEntry ? '+' : '-'}{formatNumber(mov.quantity)}
+                          </TableCell>
+                          <TableCell className="text-right font-mono">
+                            {formatDZD(mov.totalCost)}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      {movements.length === 0 && (
+                        <TableRow>
+                          <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                            Aucun mouvement récent
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </TabsContent>
 
         {/* ==================== PRODUITS TAB ==================== */}
         <TabsContent value="produits" className="space-y-4">
@@ -1224,232 +2120,22 @@ export default function InventoryPage() {
                 )}
               </CardContent>
             </Card>
-
-            {/* Low Stock Alert Section */}
-            {lowStockItems.length > 0 && (
-              <Card className="border-yellow-200 dark:border-yellow-800/50">
-                <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center gap-2 text-yellow-700 dark:text-yellow-400">
-                    <AlertTriangle className="w-5 h-5" />
-                    Alertes de Stock
-                    <Badge variant="secondary" className="ml-2">{lowStockItems.length}</Badge>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3 max-h-80 overflow-y-auto">
-                    {lowStockItems.map((item, index) => {
-                      const percentage = item.minQty > 0 ? (item.quantity / item.minQty) * 100 : 100
-                      const isCritical = item.quantity <= item.minQty * 0.5
-                      
-                      return (
-                        <motion.div
-                          key={item.id}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.05 }}
-                          className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
-                        >
-                          <div className="flex items-center gap-3 min-w-0">
-                            <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${isCritical ? 'bg-red-500 animate-pulse' : 'bg-yellow-500'}`} />
-                            <div className="min-w-0">
-                              <span className="font-medium truncate block">{item.product.name}</span>
-                              <span className="text-xs text-muted-foreground">{item.product.code} • {item.warehouse.name}</span>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-4 flex-shrink-0">
-                            <div className="text-right">
-                              <span className={`text-sm font-semibold ${isCritical ? 'text-red-600' : 'text-yellow-600'}`}>
-                                {formatNumber(item.quantity)}
-                              </span>
-                              <span className="text-muted-foreground text-xs ml-1">
-                                / {formatNumber(item.minQty)} {item.product.unitOfMeasure}
-                              </span>
-                            </div>
-                            <Progress 
-                              value={Math.min(percentage, 100)} 
-                              className={`w-24 h-2 ${isCritical ? '[&>div]:bg-red-500' : '[&>div]:bg-yellow-500'}`}
-                            />
-                            <Button 
-                              size="sm" 
-                              variant="outline"
-                              onClick={() => openStockModal(item)}
-                            >
-                              Ajuster
-                            </Button>
-                          </div>
-                        </motion.div>
-                      )
-                    })}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-          </motion.div>
-        </TabsContent>
-
-        {/* ==================== STOCK TAB ==================== */}
-        <TabsContent value="stock" className="space-y-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Stock Summary */}
-              <Card className="lg:col-span-2">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle>Résumé du Stock</CardTitle>
-                    <Select value={selectedWarehouse} onValueChange={setSelectedWarehouse}>
-                      <SelectTrigger className="w-[180px]">
-                        <Warehouse className="w-4 h-4 mr-2" />
-                        <SelectValue placeholder="Entrepôt" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Tous les entrepôts</SelectItem>
-                        {inventoryData?.warehouses.map(wh => (
-                          <SelectItem key={wh.id} value={wh.id}>{wh.name}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {inventoryData?.kpis ? (
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div className="p-4 bg-muted/50 rounded-lg text-center">
-                        <p className="text-2xl font-bold text-primary">{formatNumber(inventoryData.kpis.totalQuantity)}</p>
-                        <p className="text-sm text-muted-foreground">Quantité Totale</p>
-                      </div>
-                      <div className="p-4 bg-muted/50 rounded-lg text-center">
-                        <p className="text-2xl font-bold text-emerald-600">{formatDZD(inventoryData.kpis.totalValue)}</p>
-                        <p className="text-sm text-muted-foreground">Valeur Stock</p>
-                      </div>
-                      <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg text-center">
-                        <p className="text-2xl font-bold text-yellow-600">{inventoryData.kpis.lowStockCount}</p>
-                        <p className="text-sm text-muted-foreground">Stock Bas</p>
-                      </div>
-                      <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg text-center">
-                        <p className="text-2xl font-bold text-red-600">{inventoryData.kpis.outOfStockCount}</p>
-                        <p className="text-sm text-muted-foreground">Rupture</p>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <Loader2 className="w-8 h-8 mx-auto mb-2 animate-spin" />
-                      <p>Chargement...</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Quick Actions */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Actions Rapides</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <Button 
-                    className="w-full justify-start gap-2" 
-                    variant="outline"
-                    onClick={() => openStockModal()}
-                  >
-                    <PlusCircle className="w-4 h-4 text-green-600" />
-                    Entrée de stock
-                  </Button>
-                  <Button 
-                    className="w-full justify-start gap-2" 
-                    variant="outline"
-                    onClick={() => {
-                      setAdjustingStock(null)
-                      setStockModalOpen(true)
-                      // Will be handled in modal
-                    }}
-                  >
-                    <MinusCircle className="w-4 h-4 text-red-600" />
-                    Sortie de stock
-                  </Button>
-                  <Button 
-                    className="w-full justify-start gap-2" 
-                    variant="outline"
-                    onClick={() => setShowLowStockOnly(!showLowStockOnly)}
-                  >
-                    <AlertTriangle className="w-4 h-4 text-yellow-600" />
-                    Voir stocks bas
-                  </Button>
-                  <Button 
-                    className="w-full justify-start gap-2" 
-                    variant="outline"
-                    onClick={fetchInventoryData}
-                  >
-                    <RefreshCw className="w-4 h-4" />
-                    Actualiser
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Stock by Warehouse Table */}
-            <Card className="mt-6">
-              <CardHeader>
-                <CardTitle>Stock par Entrepôt</CardTitle>
-                <CardDescription>Détail des niveaux de stock par emplacement</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Entrepôt</TableHead>
-                        <TableHead>Emplacement</TableHead>
-                        <TableHead>Produit</TableHead>
-                        <TableHead className="text-right">Disponible</TableHead>
-                        <TableHead className="text-right">Réservé</TableHead>
-                        <TableHead className="text-right">Total</TableHead>
-                        <TableHead>Statut</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredStockLevels.slice(0, 15).map((item) => (
-                        <TableRow key={item.id}>
-                          <TableCell className="font-medium">{item.warehouse.name}</TableCell>
-                          <TableCell>
-                            {item.location ? (
-                              <Badge variant="outline">{item.location.name}</Badge>
-                            ) : (
-                              <span className="text-muted-foreground">-</span>
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            <div className="max-w-[200px] truncate">{item.product.name}</div>
-                          </TableCell>
-                          <TableCell className="text-right font-mono">{formatNumber(item.availableQty)}</TableCell>
-                          <TableCell className="text-right font-mono text-orange-600">{formatNumber(item.reservedQty)}</TableCell>
-                          <TableCell className="text-right font-mono font-semibold">{formatNumber(item.quantity)}</TableCell>
-                          <TableCell>{getStockStatus(item.availableQty, item.minQty)}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
           </motion.div>
         </TabsContent>
 
         {/* ==================== MOUVEMENTS TAB ==================== */}
-        <TabsContent value="mouvements">
+        <TabsContent value="mouvements" className="space-y-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
           >
             <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
+              <CardHeader className="pb-3">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div>
-                    <CardTitle>Mouvements de Stock</CardTitle>
-                    <CardDescription>Historique des entrées et sorties de stock</CardDescription>
+                    <CardTitle>Journal des Mouvements</CardTitle>
+                    <CardDescription>Historique complet des entrées et sorties de stock</CardDescription>
                   </div>
                   <Button 
                     size="sm" 
@@ -1461,18 +2147,370 @@ export default function InventoryPage() {
                     Nouveau mouvement
                   </Button>
                 </div>
+                
+                {/* Filters */}
+                <div className="flex flex-wrap gap-3 mt-4 pt-4 border-t">
+                  <Select value={movementTypeFilter} onValueChange={setMovementTypeFilter}>
+                    <SelectTrigger className="w-[160px]">
+                      <Filter className="w-4 h-4 mr-2" />
+                      <SelectValue placeholder="Type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Tous les types</SelectItem>
+                      <SelectItem value="in">Entrées</SelectItem>
+                      <SelectItem value="out">Sorties</SelectItem>
+                      <SelectItem value="adjustment">Ajustements</SelectItem>
+                      <SelectItem value="transfer">Transferts</SelectItem>
+                      <SelectItem value="in_receipt">Réceptions</SelectItem>
+                      <SelectItem value="out_delivery">Livraisons</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <div className="flex items-center gap-2">
+                    <Label className="text-sm whitespace-nowrap">Du:</Label>
+                    <Input
+                      type="date"
+                      className="w-[150px]"
+                      value={movementDateFrom}
+                      onChange={(e) => setMovementDateFrom(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Label className="text-sm whitespace-nowrap">Au:</Label>
+                    <Input
+                      type="date"
+                      className="w-[150px]"
+                      value={movementDateTo}
+                      onChange={(e) => setMovementDateTo(e.target.value)}
+                    />
+                  </div>
+
+                  <Select value={movementProductFilter} onValueChange={setMovementProductFilter}>
+                    <SelectTrigger className="w-[180px]">
+                      <Package className="w-4 h-4 mr-2" />
+                      <SelectValue placeholder="Produit" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Tous les produits</SelectItem>
+                      {products.slice(0, 50).map(p => (
+                        <SelectItem key={p.id} value={p.id}>{p.code} - {p.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  {(movementTypeFilter !== 'all' || movementDateFrom || movementDateTo || movementProductFilter !== 'all') && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setMovementTypeFilter('all')
+                        setMovementDateFrom('')
+                        setMovementDateTo('')
+                        setMovementProductFilter('all')
+                      }}
+                      className="gap-1"
+                    >
+                      <X className="w-3 h-3" />
+                      Réinitialiser
+                    </Button>
+                  )}
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-12 text-muted-foreground">
-                  <Truck className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <p className="font-medium">Journal des mouvements</p>
-                  <p className="text-sm mt-1">
-                    Les mouvements de stock sont enregistrés lors des ajustements manuels, 
-                    des réceptions et des livraisons.
-                  </p>
-                  <p className="text-sm mt-2">
-                    Utilisez le bouton &quot;Ajustement&quot; pour créer un mouvement manuel.
-                  </p>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Référence</TableHead>
+                        <TableHead>Type</TableHead>
+                        <TableHead>Produit</TableHead>
+                        <TableHead>Entrepôt</TableHead>
+                        <TableHead className="text-right">Entrée</TableHead>
+                        <TableHead className="text-right">Sortie</TableHead>
+                        <TableHead className="text-right">Solde</TableHead>
+                        <TableHead className="text-right">Valeur</TableHead>
+                        <TableHead>Notes</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {movements.map((mov) => (
+                        <TableRow key={mov.id} className="hover:bg-muted/50">
+                          <TableCell className="text-sm whitespace-nowrap">
+                            {new Date(mov.date).toLocaleDateString('fr-DZ')}
+                          </TableCell>
+                          <TableCell className="font-mono text-xs">
+                            {mov.reference}
+                          </TableCell>
+                          <TableCell>
+                            <Badge 
+                              variant="secondary" 
+                              className={movementTypeLabels[mov.type]?.color || ''}
+                            >
+                              {movementTypeLabels[mov.type]?.label || mov.type}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="max-w-[180px]">
+                            <div className="truncate" title={mov.product?.name}>
+                              {mov.product?.code && (
+                                <span className="text-xs text-muted-foreground">{mov.product.code} - </span>
+                              )}
+                              {mov.product?.name || mov.productId}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-sm">
+                            {mov.warehouse?.name || mov.warehouseId}
+                          </TableCell>
+                          <TableCell className="text-right font-mono text-green-600">
+                            {mov.isEntry ? formatNumber(mov.quantity) : '-'}
+                          </TableCell>
+                          <TableCell className="text-right font-mono text-red-600">
+                            {!mov.isEntry ? formatNumber(mov.quantity) : '-'}
+                          </TableCell>
+                          <TableCell className={`text-right font-mono font-medium ${
+                            (mov.runningBalance || 0) < 0 ? 'text-red-600' : ''
+                          }`}>
+                            {formatNumber(mov.runningBalance || 0)}
+                          </TableCell>
+                          <TableCell className="text-right font-mono text-sm">
+                            {formatDZD(mov.totalCost)}
+                          </TableCell>
+                          <TableCell className="max-w-[150px] truncate text-xs text-muted-foreground">
+                            {mov.notes || '-'}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      
+                      {movements.length === 0 && (
+                        <TableRow>
+                          <TableCell colSpan={10} className="text-center py-12">
+                            <Truck className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                            <p className="text-muted-foreground">Aucun mouvement trouvé</p>
+                            <p className="text-sm text-muted-foreground mt-1">
+                              Essayez de modifier les filtres ou créez un nouveau mouvement
+                            </p>
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </TabsContent>
+
+        {/* ==================== VALORISATION TAB ==================== */}
+        <TabsContent value="valorisation" className="space-y-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="space-y-6"
+          >
+            {/* Valuation Summary Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                      <DollarSign className="w-6 h-6 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Valeur Totale</p>
+                      <p className="text-2xl font-bold text-green-600">
+                        {formatDZD(inventoryData?.kpis?.totalValue || 0)}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                      <Layers className="w-6 h-6 text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Total Articles</p>
+                      <p className="text-2xl font-bold text-blue-600">
+                        {formatNumber(inventoryData?.kpis?.totalQuantity || 0)}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                      <Boxes className="w-6 h-6 text-purple-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Produits en Stock</p>
+                      <p className="text-2xl font-bold text-purple-600">
+                        {inventoryData?.kpis?.totalProducts || 0}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Valuation by Warehouse Table */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Warehouse className="w-5 h-5" />
+                  Valorisation par Entrepôt
+                </CardTitle>
+                <CardDescription>Détail de la valeur du stock par emplacement</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Entrepôt</TableHead>
+                        <TableHead>Code</TableHead>
+                        <TableHead className="text-right">Nb Produits</TableHead>
+                        <TableHead className="text-right">Quantité Totale</TableHead>
+                        <TableHead className="text-right">Valeur Stock</TableHead>
+                        <TableHead className="text-right">% du Total</TableHead>
+                        <TableHead>Alertes</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {warehouseValuation.map((wh) => {
+                        const totalValue = inventoryData?.kpis?.totalValue || 1
+                        const percentage = (wh.totalValue / totalValue) * 100
+                        
+                        return (
+                          <TableRow key={wh.warehouseId}>
+                            <TableCell className="font-medium">{wh.warehouseName}</TableCell>
+                            <TableCell className="font-mono text-sm">{wh.warehouseCode}</TableCell>
+                            <TableCell className="text-right">{wh.productCount}</TableCell>
+                            <TableCell className="text-right font-mono">{formatNumber(wh.totalQuantity)}</TableCell>
+                            <TableCell className="text-right font-mono font-semibold text-green-600">
+                              {formatDZD(wh.totalValue)}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex items-center gap-2 justify-end">
+                                <Progress value={percentage} className="w-16 h-2" />
+                                <span className="text-sm w-12 text-right">{percentage.toFixed(1)}%</span>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              {wh.lowStockCount > 0 ? (
+                                <Badge variant="outline" className="bg-yellow-100 text-yellow-700 border-yellow-200">
+                                  {wh.lowStockCount} alerte(s)
+                                </Badge>
+                              ) : (
+                                <Badge variant="outline" className="bg-green-100 text-green-700 border-green-200">
+                                  OK
+                                </Badge>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        )
+                      })}
+                      
+                      {warehouseValuation.length === 0 && (
+                        <TableRow>
+                          <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                            Aucune donnée de valorisation disponible
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Valuation by Category */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Layers className="w-5 h-5" />
+                  Valorisation par Catégorie
+                </CardTitle>
+                <CardDescription>Répartition de la valeur du stock par catégorie de produits</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Table */}
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Catégorie</TableHead>
+                          <TableHead className="text-right">Produits</TableHead>
+                          <TableHead className="text-right">Quantité</TableHead>
+                          <TableHead className="text-right">Valeur</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {categoryValuation
+                          .sort((a, b) => b.totalValue - a.totalValue)
+                          .map((cat) => (
+                          <TableRow key={cat.categoryId}>
+                            <TableCell className="font-medium">{cat.categoryName}</TableCell>
+                            <TableCell className="text-right">{cat.productCount}</TableCell>
+                            <TableCell className="text-right font-mono">{formatNumber(cat.totalQuantity)}</TableCell>
+                            <TableCell className="text-right font-mono font-semibold">
+                              {formatDZD(cat.totalValue)}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                        
+                        {categoryValuation.length === 0 && (
+                          <TableRow>
+                            <TableCell colSpan={4} className="text-center py-4 text-muted-foreground">
+                              Aucune donnée
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+                  
+                  {/* Chart */}
+                  <div>
+                    {categoryChartData.length > 0 ? (
+                      <ResponsiveContainer width="100%" height={280}>
+                        <RechartsPie>
+                          <Pie
+                            data={categoryChartData}
+                            cx="50%"
+                            cy="50%"
+                            outerRadius={90}
+                            paddingAngle={3}
+                            dataKey="valeur"
+                            nameKey="fullName"
+                            label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                            labelLine={true}
+                          >
+                            {categoryChartData.map((_, index) => (
+                              <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Tooltip 
+                            formatter={(value: number, name: string) => [formatDZD(value * 1000), name]}
+                            contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb' }}
+                          />
+                          <Legend />
+                        </RechartsPie>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="h-64 flex items-center justify-center text-muted-foreground">
+                        Aucune donnée disponible
+                      </div>
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -1493,6 +2531,7 @@ export default function InventoryPage() {
                 const totalItems = whStockLevels.reduce((acc, sl) => acc + sl.quantity, 0)
                 const uniqueProducts = whStockLevels.length
                 const lowStockInWh = whStockLevels.filter(sl => sl.quantity <= sl.minQty && sl.minQty > 0).length
+                const totalValue = whStockLevels.reduce((acc, sl) => acc + (sl.quantity * sl.product.costPrice), 0)
                 
                 // Calculate capacity percentage (mock calculation based on items count)
                 const capacityPercent = Math.min(95, Math.round((uniqueProducts / Math.max(uniqueProducts * 1.5, 1)) * 100))
@@ -1523,6 +2562,11 @@ export default function InventoryPage() {
                           <div className="flex justify-between text-sm">
                             <span className="text-muted-foreground">Articles totaux</span>
                             <span className="font-medium">{formatNumber(totalItems)}</span>
+                          </div>
+                          
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">Valeur stock</span>
+                            <span className="font-medium text-green-600">{formatDZD(totalValue)}</span>
                           </div>
                           
                           <div className="flex justify-between text-sm">
@@ -1599,6 +2643,24 @@ export default function InventoryPage() {
         onAdjust={handleStockAdjustment}
         stockItem={adjustingStock}
         warehouses={inventoryData?.warehouses || []}
+        products={products}
+        loading={actionLoading}
+      />
+
+      <StockTransferModal
+        open={transferModalOpen}
+        onClose={() => setTransferModalOpen(false)}
+        onTransfer={handleStockTransfer}
+        warehouses={inventoryData?.warehouses || []}
+        products={products}
+        loading={actionLoading}
+      />
+
+      <PhysicalCountModal
+        open={physicalCountOpen}
+        onClose={() => setPhysicalCountOpen(false)}
+        onSave={handlePhysicalCount}
+        stockItems={filteredStockLevels}
         loading={actionLoading}
       />
     </div>

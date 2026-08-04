@@ -1,0 +1,1681 @@
+     1→'use client'
+     2→
+     3→import React, { useState, useEffect, useCallback, useMemo } from 'react'
+     4→import { 
+     5→  ShoppingCart, 
+     6→  Users, 
+     7→  TrendingUp,
+     8→  Plus,
+     9→  Search,
+    10→  Phone,
+    11→  Mail,
+    12→  MapPin,
+    13→  Target,
+    14→  DollarSign,
+    15→  FileText,
+    16→  Eye,
+    17→  CheckCircle,
+    18→  XCircle,
+    19→  ArrowRight,
+    20→  Filter,
+    21→  RefreshCw,
+    22→  Loader2,
+    23→  ChevronLeft,
+    24→  ChevronRight,
+    25→  Package,
+    26→  Truck,
+    27→  Receipt,
+    28→  Send,
+    29→  Calendar,
+    30→  Clock,
+    31→  AlertTriangle,
+    32→  Building2
+    33→} from 'lucide-react'
+    34→import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+    35→import { Button } from '@/components/ui/button'
+    36→import { Badge } from '@/components/ui/badge'
+    37→import { Input } from '@/components/ui/input'
+    38→import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+    39→import {
+    40→  Table,
+    41→  TableBody,
+    42→  TableCell,
+    43→  TableHead,
+    44→  TableHeader,
+    45→  TableRow,
+    46→} from '@/components/ui/table'
+    47→import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+    48→import { KpiCard } from '@/components/dashboard/kpi-card'
+    49→import {
+    50→  Dialog,
+    51→  DialogContent,
+    52→  DialogDescription,
+    53→  DialogFooter,
+    54→  DialogHeader,
+    55→  DialogTitle,
+    56→  DialogTrigger,
+    57→} from '@/components/ui/dialog'
+    58→import {
+    59→  Select,
+    60→  SelectContent,
+    61→  SelectItem,
+    62→  SelectTrigger,
+    63→  SelectValue,
+    64→} from '@/components/ui/select'
+    65→import { Label } from '@/components/ui/label'
+    66→import { Textarea } from '@/components/ui/textarea'
+    67→import { motion, AnimatePresence } from 'framer-motion'
+    68→import { toast } from 'sonner'
+    69→
+    70→// ============================================================
+    71→// Types
+    72→// ============================================================
+    73→interface SalesOrder {
+    74→  id: string
+    75→  reference: string
+    76→  date: string
+    77→  expectedDate?: string | null
+    78→  status: string
+    79→  amountUntaxed: number
+    80→  amountTax: number
+    81→  timbreFiscal: number
+    82→  amountTotal: number
+    83→  amountDelivered: number
+    84→  amountInvoiced: number
+    85→  paymentTerms: string
+    86→  paymentMode?: string | null
+    87→  customerNotes?: string | null
+    88→  internalNotes?: string | null
+    89→  partner: {
+    90→    id: string
+    91→    name: string
+    92→    nif?: string | null
+    93→    city?: string | null
+    94→    phone?: string | null
+    95→  }
+    96→  company?: {
+    97→    id: string
+    98→    name: string
+    99→    logo?: string | null
+   100→  }
+   101→  warehouse?: {
+   102→    id: string
+   103→    name: string
+   104→  } | null
+   105→  salesPerson?: {
+   106→    id: string
+   107→    name: string
+   108→  } | null
+   109→  quotation?: {
+   110→    id: string
+   111→    reference: string
+   112→  } | null
+   113→  lines: SalesOrderLine[]
+   114→  _count?: {
+   115→    deliveryItems: number
+   116→    invoices: number
+   117→  }
+   118→}
+   119→
+   120→interface SalesOrderLine {
+   121→  id: string
+   122→  productId: string
+   123→  description?: string | null
+   124→  quantity: number
+   125→  unitPrice: number
+   126→  discountRate: number
+   127→  tvaRate: number
+   128→  amountUntaxed: number
+   129→  amountTax: number
+   130→  amountTotal: number
+   131→  quantityDelivered: number
+   132→  quantityInvoiced: number
+   133→  product?: {
+   134→    id: string
+   135→    name: string
+   136→    reference?: string | null
+   137→    unit?: string | null
+   138→  }
+   139→}
+   140→
+   141→interface Quotation {
+   142→  id: string
+   143→  reference: string
+   144→  date: string
+   145→  validUntil: string
+   146→  status: string
+   147→  amountUntaxed: number
+   148→  amountTax: number
+   149→  timbreFiscal: number
+   150→  amountTotal: number
+   151→  paymentTerms: string
+   152→  paymentMode?: string | null
+   153→  customerNotes?: string | null
+   154→  internalNotes?: string | null
+   155→  partner: {
+   156→    id: string
+   157→    name: string
+   158→    nif?: string | null
+   159→    city?: string | null
+   160→    email?: string | null
+   161→    phone?: string | null
+   162→  }
+   163→  company?: {
+   164→    id: string
+   165→    name: string
+   166→    logo?: string | null
+   167→  }
+   168→  salesPerson?: {
+   169→    id: string
+   170→    name: string
+   171→    email?: string | null
+   172→  } | null
+   173→  opportunity?: {
+   174→    id: string
+   175→    title?: string | null
+   176→    status?: string | null
+   177→  } | null
+   178→  convertedTo?: {
+   179→    id: string
+   180→    reference: string
+   181→    status: string
+   182→  } | null
+   183→  lines: QuotationLine[]
+   184→}
+   185→
+   186→interface QuotationLine {
+   187→  id: string
+   188→  productId: string
+   189→  description?: string | null
+   190→  quantity: number
+   191→  unitPrice: number
+   192→  discountRate: number
+   193→  tvaRate: number
+   194→  amountUntaxed: number
+   195→  amountTax: number
+   196→  amountTotal: number
+   197→  product?: {
+   198→    id: string
+   199→    name: string
+   200→    reference?: string | null
+   201→    unit?: string | null
+   202→  }
+   203→}
+   204→
+   205→interface Opportunity {
+   206→  id: string
+   207→  reference: string
+   208→  name: string
+   209→  status: string
+   210→  stage: number
+   211→  probability: number
+   212→  expectedRevenue: number
+   213→  weightedValue: number
+   214→  expectedCloseDate?: string | null
+   215→  contactName?: string | null
+   216→  contactEmail?: string | null
+   217→  nextAction?: string | null
+   218→  nextActionDate?: string | null
+   219→  partner?: {
+   220→    id: string
+   221→    name: string
+   222→  } | null
+   223→  assignedTo?: {
+   224→    id: string
+   225→    name: string
+   226→    email?: string | null
+   227→  } | null
+   228→  _count?: {
+   229→    activities: number
+   230→  }
+   231→}
+   232→
+   233→interface Partner {
+   234→  id: string
+   235→  name: string
+   236→  displayName?: string | null
+   237→  type: string
+   238→  city?: string | null
+   239→  wilayaCode?: string | null
+   240→  email?: string | null
+   241→  phone?: string | null
+   242→  nif?: string | null
+   243→}
+   244→
+   245→interface PaginationInfo {
+   246→  page: number
+   247→  limit: number
+   248→  total: number
+   249→  pages: number
+   250→}
+   251→
+   252→// ============================================================
+   253→// Status configurations
+   254→// ============================================================
+   255→const SALES_ORDER_STATUSES = {
+   256→  draft: { label: 'Brouillon', color: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300', icon: FileText },
+   257→  sent: { label: 'Envoyée', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400', icon: Send },
+   258→  confirmed: { label: 'Confirmée', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400', icon: CheckCircle },
+   259→  processing: { label: 'En traitement', color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400', icon: Package },
+   260→  delivered: { label: 'Livrée', color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400', icon: Truck },
+   261→  invoiced: { label: 'Facturée', color: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400', icon: Receipt },
+   262→  done: { label: 'Terminée', color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400', icon: CheckCircle },
+   263→  cancelled: { label: 'Annulée', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400', icon: XCircle },
+   264→}
+   265→
+   266→const QUOTATION_STATUSES = {
+   267→  draft: { label: 'Brouillon', color: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300', icon: FileText },
+   268→  sent: { label: 'Envoyé', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400', icon: Send },
+   269→  viewed: { label: 'Vu', color: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400', icon: Eye },
+   270→  accepted: { label: 'Accepté', color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400', icon: CheckCircle },
+   271→  rejected: { label: 'Rejeté', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400', icon: XCircle },
+   272→  expired: { label: 'Expiré', color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400', icon: Clock },
+   273→  converted: { label: 'Converti', color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400', icon: ArrowRight },
+   274→  cancelled: { label: 'Annulé', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400', icon: XCircle },
+   275→}
+   276→
+   277→const CRM_STAGES = [
+   278→  { stage: 1, label: 'Qualification', color: 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800', textColor: 'text-blue-600 dark:text-blue-400' },
+   279→  { stage: 2, label: 'Proposition', color: 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800', textColor: 'text-yellow-600 dark:text-yellow-400' },
+   280→  { stage: 3, label: 'Négociation', color: 'bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800', textColor: 'text-purple-600 dark:text-purple-400' },
+   281→  { stage: 4, label: 'Signature', color: 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800', textColor: 'text-green-600 dark:text-green-400' },
+   282→]
+   283→
+   284→const OPPORTUNITY_STATUS_COLORS: Record<string, string> = {
+   285→  new: 'bg-blue-100 text-blue-700',
+   286→  contacted: 'bg-cyan-100 text-cyan-700',
+   287→  qualified: 'bg-emerald-100 text-emerald-700',
+   288→  proposal_sent: 'bg-yellow-100 text-yellow-700',
+   289→  negotiation: 'bg-purple-100 text-purple-700',
+   290→  won_won: 'bg-green-100 text-green-700',
+   291→  lost_lost: 'bg-red-100 text-red-700',
+   292→  cancelled: 'bg-gray-100 text-gray-700',
+   293→}
+   294→
+   295→// ============================================================
+   296→// Utility functions
+   297→// ============================================================
+   298→function formatDZD(amount: number): string {
+   299→  return new Intl.NumberFormat('fr-DZ', {
+   300→    minimumFractionDigits: 0,
+   301→    maximumFractionDigits: 2,
+   302→  }).format(amount)
+   303→}
+   304→
+   305→function formatDate(dateString: string): string {
+   306→  return new Date(dateString).toLocaleDateString('fr-DZ', {
+   307→    day: '2-digit',
+   308→    month: '2-digit',
+   309→    year: 'numeric',
+   310→  })
+   311→}
+   312→
+   313→function formatDateTime(dateString: string): string {
+   314→  return new Date(dateString).toLocaleDateString('fr-DZ', {
+   315→    day: '2-digit',
+   316→    month: '2-digit',
+   317→    year: 'numeric',
+   318→    hour: '2-digit',
+   319→    minute: '2-digit',
+   320→  })
+   321→}
+   322→
+   323→function getDaysUntil(dateString: string): number {
+   324→  const target = new Date(dateString)
+   325→  const now = new Date()
+   326→  const diffTime = target.getTime() - now.getTime()
+   327→  return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+   328→}
+   329→
+   330→function isExpired(dateString: string): boolean {
+   331→  return getDaysUntil(dateString) < 0
+   332→}
+   333→
+   334→// ============================================================
+   335→// Status Badge Components
+   336→// ============================================================
+   337→function SalesOrderStatusBadge({ status }: { status: string }) {
+   338→  const config = SALES_ORDER_STATUSES[status as keyof typeof SALES_ORDER_STATUSES] || SALES_ORDER_STATUSES.draft
+   339→  const Icon = config.icon
+   340→  
+   341→  return (
+   342→    <Badge variant="outline" className={`${config.color} gap-1.5`}>
+   343→      <Icon className="w-3 h-3" />
+   344→      {config.label}
+   345→    </Badge>
+   346→  )
+   347→}
+   348→
+   349→function QuotationStatusBadge({ status, validUntil }: { status: string; validUntil?: string }) {
+   350→  let config = QUOTATION_STATUSES[status as keyof typeof QUOTATION_STATUSES]
+   351→  
+   352→  // Auto-detect expired status
+   353→  if (status === 'sent' && validUntil && isExpired(validUntil)) {
+   354→    config = QUOTATION_STATUSES.expired
+   355→  }
+   356→  
+   357→  if (!config) config = QUOTATION_STATUSES.draft
+   358→  const Icon = config.icon
+   359→  
+   360→  return (
+   361→    <Badge variant="outline" className={`${config.color} gap-1.5`}>
+   362→      <Icon className="w-3 h-3" />
+   363→      {config.label}
+   364→    </Badge>
+   365→  )
+   366→}
+   367→
+   368→function OpportunityStatusBadge({ status }: { status: string }) {
+   369→  return (
+   370→    <Badge variant="outline" className={OPPORTUNITY_STATUS_COLORS[status] || 'bg-gray-100 text-gray-700'}>
+   371→      {status.replace(/_/g, ' ').charAt(0).toUpperCase() + status.replace(/_/g, ' ').slice(1)}
+   372→    </Badge>
+   373→  )
+   374→}
+   375→
+   376→// ============================================================
+   377→// Main Component
+   378→// ============================================================
+   379→export default function SalesPage() {
+   380→  // Data states
+   381→  const [salesOrders, setSalesOrders] = useState<SalesOrder[]>([])
+   382→  const [quotations, setQuotations] = useState<Quotation[]>([])
+   383→  const [opportunities, setOpportunities] = useState<Opportunity[]>([])
+   384→  const [customers, setCustomers] = useState<Partner[]>([])
+   385→  
+   386→  // Pagination states
+   387→  const [soPagination, setSoPagination] = useState<PaginationInfo>({ page: 1, limit: 10, total: 0, pages: 1 })
+   388→  const [quotePagination, setQuotePagination] = useState<PaginationInfo>({ page: 1, limit: 10, total: 0, pages: 1 })
+   389→  
+   390→  // Loading states
+   391→  const [loadingSO, setLoadingSO] = useState(true)
+   392→  const [loadingQuotes, setLoadingQuotes] = useState(true)
+   393→  const [loadingCRM, setLoadingCRM] = useState(true)
+   394→  const [loadingCustomers, setLoadingCustomers] = useState(true)
+   395→  
+   396→  // Filter states
+   397→  const [soSearch, setSoSearch] = useState('')
+   398→  const [soStatusFilter, setSoStatusFilter] = useState('all')
+   399→  const [quoteSearch, setQuoteSearch] = useState('')
+   400→  const [quoteStatusFilter, setQuoteStatusFilter] = useState('all')
+   401→  
+   402→  // Modal states
+   403→  const [createSOModalOpen, setCreateSOModalOpen] = useState(false)
+   404→  const [createQuoteModalOpen, setCreateQuoteModalOpen] = useState(false)
+   405→  const [selectedQuotation, setSelectedQuotation] = useState<Quotation | null>(null)
+   406→  const [convertModalOpen, setConvertModalOpen] = useState(false)
+   407→  const [actionLoading, setActionLoading] = useState(false)
+   408→  
+   409→  // Form states
+   410→  const [newSOForm, setNewSOForm] = useState({
+   411→    partnerId: '',
+   412→    customerNotes: '',
+   413→    internalNotes: '',
+   414→    paymentTerms: '30',
+   415→  })
+   416→
+   417→  // ============================================================
+   418→  // API Fetch Functions
+   419→  // ============================================================
+   420→  const fetchSalesOrders = useCallback(async (page = 1, status = 'all', search = '') => {
+   421→    setLoadingSO(true)
+   422→    try {
+   423→      const params = new URLSearchParams({
+   424→        page: String(page),
+   425→        limit: '10',
+   426→      })
+   427→      if (status !== 'all') params.set('status', status)
+   428→      if (search) params.set('search', search)
+   429→      
+   430→      const response = await fetch(`/api/sales-orders?${params}`)
+   431→      const result = await response.json()
+   432→      
+   433→      if (result.success) {
+   434→        setSalesOrders(result.data)
+   435→        setSoPagination(result.pagination)
+   436→      } else {
+   437→        toast.error('Erreur lors du chargement des commandes')
+   438→      }
+   439→    } catch (error) {
+   440→      console.error('Error fetching sales orders:', error)
+   441→      toast.error('Erreur de connexion')
+   442→    } finally {
+   443→      setLoadingSO(false)
+   444→    }
+   445→  }, [])
+   446→
+   447→  const fetchQuotations = useCallback(async (page = 1, status = 'all', search = '') => {
+   448→    setLoadingQuotes(true)
+   449→    try {
+   450→      const params = new URLSearchParams({
+   451→        page: String(page),
+   452→        limit: '10',
+   453→      })
+   454→      if (status !== 'all') params.set('status', status)
+   455→      if (search) params.set('search', search)
+   456→      
+   457→      const response = await fetch(`/api/quotations?${params}`)
+   458→      const result = await response.json()
+   459→      
+   460→      if (result.success) {
+   461→        setQuotations(result.data)
+   462→        setQuotePagination(result.pagination)
+   463→      } else {
+   464→        toast.error('Erreur lors du chargement des devis')
+   465→      }
+   466→    } catch (error) {
+   467→      console.error('Error fetching quotations:', error)
+   468→      toast.error('Erreur de connexion')
+   469→    } finally {
+   470→      setLoadingQuotes(false)
+   471→    }
+   472→  }, [])
+   473→
+   474→  const fetchOpportunities = useCallback(async () => {
+   475→    setLoadingCRM(true)
+   476→    try {
+   477→      const response = await fetch('/api/crm?type=opportunities&limit=50')
+   478→      const result = await response.json()
+   479→      
+   480→      if (result.success) {
+   481→        setOpportunities(result.data)
+   482→      } else {
+   483→        toast.error('Erreur lors du chargement des opportunités')
+   484→      }
+   485→    } catch (error) {
+   486→      console.error('Error fetching opportunities:', error)
+   487→      toast.error('Erreur de connexion')
+   488→    } finally {
+   489→      setLoadingCRM(false)
+   490→    }
+   491→  }, [])
+   492→
+   493→  const fetchCustomers = useCallback(async () => {
+   494→    setLoadingCustomers(true)
+   495→    try {
+   496→      const response = await fetch('/api/partners?type=customer')
+   497→      const result = await response.json()
+   498→      
+   499→      if (result.success) {
+   500→        setCustomers(result.data)
+   501→      }
+   502→    } catch (error) {
+   503→      console.error('Error fetching customers:', error)
+   504→    } finally {
+   505→      setLoadingCustomers(false)
+   506→    }
+   507→  }, [])
+   508→
+   509→  // Initial data load
+   510→  useEffect(() => {
+   511→    fetchSalesOrders()
+   512→    fetchQuotations()
+   513→    fetchOpportunities()
+   514→    fetchCustomers()
+   515→  }, [fetchSalesOrders, fetchQuotations, fetchOpportunities, fetchCustomers])
+   516→
+   517→  // ============================================================
+   518→  // Action Handlers (with Workflow Integration)
+   519→  // ============================================================
+   520→  const handleUpdateSalesOrderStatus = async (orderId: string, newStatus: string) => {
+   521→    setActionLoading(true)
+   522→    try {
+   523→      // Use workflow API for actions that trigger business processes
+   524→      if (['confirmed', 'delivered', 'invoiced'].includes(newStatus)) {
+   525→        const actionMap: Record<string, string> = {
+   526→          'confirmed': 'confirm',
+   527→          'delivered': 'deliver',
+   528→          'invoiced': 'invoice'
+   529→        }
+   530→        
+   531→        const response = await fetch(`/api/sales-orders/${orderId}`, {
+   532→          method: 'POST',
+   533→          headers: { 'Content-Type': 'application/json' },
+   534→          body: JSON.stringify({ action: actionMap[newStatus] }),
+   535→        })
+   536→        const result = await response.json()
+   537→        
+   538→        if (result.success) {
+   539→          const msg = result.message || `Commande ${SALES_ORDER_STATUSES[newStatus as keyof typeof SALES_ORDER_STATUSES]?.label || newStatus}`
+   540→          // Show SCF journal entry info if invoice created
+   541→          if (result.workflowInfo?.journalEntryGenerated) {
+   542→            toast.success(`${msg} ✓ Écriture comptable SCF générée`, { duration: 5000 })
+   543→          } else {
+   544→            toast.success(msg)
+   545→          }
+   546→          fetchSalesOrders(soPagination.page, soStatusFilter, soSearch)
+   547→        } else {
+   548→          toast.error(result.error || 'Erreur lors de l\'action')
+   549→        }
+   550→      } else {
+   551→        // Simple status update for other cases
+   552→        const response = await fetch(`/api/sales-orders/${orderId}`, {
+   553→          method: 'PUT',
+   554→          headers: { 'Content-Type': 'application/json' },
+   555→          body: JSON.stringify({ status: newStatus }),
+   556→        })
+   557→        const result = await response.json()
+   558→        
+   559→        if (result.success) {
+   560→          toast.success(`Commande ${SALES_ORDER_STATUSES[newStatus as keyof typeof SALES_ORDER_STATUSES]?.label || newStatus}`)
+   561→          fetchSalesOrders(soPagination.page, soStatusFilter, soSearch)
+   562→        } else {
+   563→          toast.error(result.error || 'Erreur lors de la mise à jour')
+   564→        }
+   565→      }
+   566→    } catch (error) {
+   567→      console.error('Error updating order:', error)
+   568→      toast.error('Erreur de connexion')
+   569→    } finally {
+   570→      setActionLoading(false)
+   571→    }
+   572→  }
+   573→
+   574→  const handleAcceptQuotation = async (quotationId: string) => {
+   575→    setActionLoading(true)
+   576→    try {
+   577→      const response = await fetch(`/api/quotations/${quotationId}/accept`, { method: 'POST' })
+   578→      const result = await response.json()
+   579→      
+   580→      if (result.success) {
+   581→        toast.success('Devis accepté avec succès')
+   582→        fetchQuotations(quotePagination.page, quoteStatusFilter, quoteSearch)
+   583→      } else {
+   584→        toast.error(result.error || 'Erreur lors de l\'acceptation')
+   585→      }
+   586→    } catch (error) {
+   587→      console.error('Error accepting quotation:', error)
+   588→      toast.error('Erreur de connexion')
+   589→    } finally {
+   590→      setActionLoading(false)
+   591→    }
+   592→  }
+   593→
+   594→  const handleRejectQuotation = async (quotationId: string) => {
+   595→    setActionLoading(true)
+   596→    try {
+   597→      const response = await fetch(`/api/quotations/${quotationId}/reject`, { method: 'POST' })
+   598→      const result = await response.json()
+   599→      
+   600→      if (result.success) {
+   601→        toast.success('Devis rejeté')
+   602→        fetchQuotations(quotePagination.page, quoteStatusFilter, quoteSearch)
+   603→      } else {
+   604→        toast.error(result.error || 'Erreur lors du rejet')
+   605→      }
+   606→    } catch (error) {
+   607→      console.error('Error rejecting quotation:', error)
+   608→      toast.error('Erreur de connexion')
+   609→    } finally {
+   610→      setActionLoading(false)
+   611→    }
+   612→  }
+   613→
+   614→  const handleSendQuotation = async (quotationId: string) => {
+   615→    setActionLoading(true)
+   616→    try {
+   617→      const response = await fetch(`/api/quotations/${quotationId}/send`, { method: 'POST' })
+   618→      const result = await response.json()
+   619→      
+   620→      if (result.success) {
+   621→        toast.success('Devis envoyé au client')
+   622→        fetchQuotations(quotePagination.page, quoteStatusFilter, quoteSearch)
+   623→      } else {
+   624→        toast.error(result.error || 'Erreur lors de l\'envoi')
+   625→      }
+   626→    } catch (error) {
+   627→      console.error('Error sending quotation:', error)
+   628→      toast.error('Erreur de connexion')
+   629→    } finally {
+   630→      setActionLoading(false)
+   631→    }
+   632→  }
+   633→
+   634→  const handleConvertToSO = async () => {
+   635→    if (!selectedQuotation) return
+   636→    
+   637→    setActionLoading(true)
+   638→    try {
+   639→      const response = await fetch(`/api/quotations/${selectedQuotation.id}/convert`, { method: 'POST' })
+   640→      const result = await response.json()
+   641→      
+   642→      if (result.success) {
+   643→        toast.success(`Commande ${result.data?.reference} créée depuis le devis`)
+   644→        setConvertModalOpen(false)
+   645→        setSelectedQuotation(null)
+   646→        fetchQuotations(quotePagination.page, quoteStatusFilter, quoteSearch)
+   647→        fetchSalesOrders(soPagination.page, soStatusFilter, soSearch)
+   648→      } else {
+   649→        toast.error(result.error || 'Erreur lors de la conversion')
+   650→      }
+   651→    } catch (error) {
+   652→      console.error('Error converting quotation:', error)
+   653→      toast.error('Erreur de connexion')
+   654→    } finally {
+   655→      setActionLoading(false)
+   656→    }
+   657→  }
+   658→
+   659→  const handleCreateSalesOrder = async () => {
+   660→    if (!newSOForm.partnerId) {
+   661→      toast.error('Veuillez sélectionner un client')
+   662→      return
+   663→    }
+   664→    
+   665→    setActionLoading(true)
+   666→    try {
+   667→      const response = await fetch('/api/sales-orders', {
+   668→        method: 'POST',
+   669→        headers: { 'Content-Type': 'application/json' },
+   670→        body: JSON.stringify(newSOForm),
+   671→      })
+   672→      const result = await response.json()
+   673→      
+   674→      if (result.success) {
+   675→        toast.success(`Commande ${result.data?.reference} créée`)
+   676→        setCreateSOModalOpen(false)
+   677→        setNewSOForm({ partnerId: '', customerNotes: '', internalNotes: '', paymentTerms: '30' })
+   678→        fetchSalesOrders()
+   679→      } else {
+   680→        toast.error(result.error || 'Erreur lors de la création')
+   681→      }
+   682→    } catch (error) {
+   683→      console.error('Error creating SO:', error)
+   684→      toast.error('Erreur de connexion')
+   685→    } finally {
+   686→      setActionLoading(false)
+   687→    }
+   688→  }
+   689→
+   690→  // ============================================================
+   691→  // Computed KPIs
+   692→  // ============================================================
+   693→  const kpis = useMemo(() => {
+   694→    const thisMonth = new Date()
+   695→    thisMonth.setDate(1)
+   696→    
+   697→    const monthlyOrders = salesOrders.filter(o => new Date(o.date) >= thisMonth)
+   698→    const monthlyRevenue = monthlyOrders.reduce((sum, o) => sum + o.amountTotal, 0)
+   699→    const activeClients = new Set(salesOrders.map(o => o.partner.id)).size
+   700→    const avgCart = monthlyOrders.length > 0 ? monthlyRevenue / monthlyOrders.length : 0
+   701→    
+   702→    return [
+   703→      {
+   704→        title: "Commandes du Mois",
+   705→        value: monthlyOrders.length,
+   706→        change: 12.3,
+   707→        icon: ShoppingCart,
+   708→        iconColor: "text-emerald-600",
+   709→        iconBg: "bg-emerald-100 dark:bg-emerald-900/30",
+   710→        format: "number" as const
+   711→      },
+   712→      {
+   713→        title: "CA Ventes (DZD)",
+   714→        value: monthlyRevenue,
+   715→        change: 8.5,
+   716→        icon: TrendingUp,
+   717→        iconColor: "text-blue-600",
+   718→        iconBg: "bg-blue-100 dark:bg-blue-900/30",
+   719→        format: "currency" as const
+   720→      },
+   721→      {
+   722→        title: "Clients Actifs",
+   723→        value: customers.length || activeClients,
+   724→        change: 4.2,
+   725→        icon: Users,
+   726→        iconColor: "text-purple-600",
+   727→        iconBg: "bg-purple-100 dark:bg-purple-900/30",
+   728→        format: "number" as const
+   729→      },
+   730→      {
+   731→        title: "Panier Moyen",
+   732→        value: avgCart,
+   733→        change: -2.1,
+   734→        icon: ShoppingCart,
+   735→        iconColor: "text-orange-600",
+   736→        iconBg: "bg-orange-100 dark:bg-orange-900/30",
+   737→        format: "currency" as const
+   738→      },
+   739→    ]
+   740→  }, [salesOrders, customers])
+   741→
+   742→  // CRM Pipeline stats by stage
+   743→  const pipelineByStage = useMemo(() => {
+   744→    const stages = CRM_STAGES.map(s => ({
+   745→      ...s,
+   746→      count: 0,
+   747→      value: 0,
+   748→      opportunities: [] as Opportunity[],
+   749→    }))
+   750→    
+   751→    opportunities.forEach(opp => {
+   752→      const stageIndex = Math.min(Math.max(opp.stage - 1, 0), stages.length - 1)
+   753→      stages[stageIndex].count++
+   754→      stages[stageIndex].value += opp.expectedRevenue
+   755→      stages[stageIndex].opportunities.push(opp)
+   756→    })
+   757→    
+   758→    return stages
+   759→  }, [opportunities])
+   760→
+   761→  const totalPipelineValue = useMemo(() => 
+   762→    opportunities.reduce((sum, o) => sum + o.expectedRevenue, 0), 
+   763→    [opportunities]
+   764→  )
+   765→
+   766→  // ============================================================
+   767→  // Render Helpers
+   768→  // ============================================================
+   769→  const renderSalesOrderActions = (order: SalesOrder) => {
+   770→    const canConfirm = ['draft', 'sent'].includes(order.status)
+   771→    const canProcess = order.status === 'confirmed'
+   772→    const canDeliver = ['confirmed', 'processing'].includes(order.status)
+   773→    const canInvoice = ['delivered', 'processing'].includes(order.status) && order.amountDelivered > 0
+   774→    
+   775→    return (
+   776→      <div className="flex items-center gap-1">
+   777→        {canConfirm && (
+   778→          <Button 
+   779→            size="sm" 
+   780→            variant="outline" 
+   781→            className="h-7 text-xs"
+   782→            onClick={() => handleUpdateSalesOrderStatus(order.id, 'confirmed')}
+   783→            disabled={actionLoading}
+   784→          >
+   785→            <CheckCircle className="w-3 h-3 mr-1" />
+   786→            Confirmer
+   787→          </Button>
+   788→        )}
+   789→        {canProcess && (
+   790→          <Button 
+   791→            size="sm" 
+   792→            variant="outline" 
+   793→            className="h-7 text-xs"
+   794→            onClick={() => handleUpdateSalesOrderStatus(order.id, 'processing')}
+   795→            disabled={actionLoading}
+   796→          >
+   797→            <Package className="w-3 h-3 mr-1" />
+   798→            Traiter
+   799→          </Button>
+   800→        )}
+   801→        {canDeliver && (
+   802→          <Button 
+   803→            size="sm" 
+   804→            variant="outline" 
+   805→            className="h-7 text-xs"
+   806→            onClick={() => handleUpdateSalesOrderStatus(order.id, 'delivered')}
+   807→            disabled={actionLoading}
+   808→          >
+   809→            <Truck className="w-3 h-3 mr-1" />
+   810→            Livrer
+   811→          </Button>
+   812→        )}
+   813→        {canInvoice && (
+   814→          <Button 
+   815→            size="sm" 
+   816→            variant="default" 
+   817→            className="h-7 text-xs bg-primary"
+   818→            onClick={() => handleUpdateSalesOrderStatus(order.id, 'invoiced')}
+   819→            disabled={actionLoading}
+   820→          >
+   821→            <Receipt className="w-3 h-3 mr-1" />
+   822→            Facturer
+   823→          </Button>
+   824→        )}
+   825→      </div>
+   826→    )
+   827→  }
+   828→
+   829→  const renderQuotationActions = (quotation: Quotation) => {
+   830→    const daysUntilExpiry = getDaysUntil(quotation.validUntil)
+   831→    const isQuotationExpired = isExpired(quotation.validUntil)
+   832→    
+   833→    return (
+   834→      <div className="flex items-center gap-1">
+   835→        {quotation.status === 'draft' && (
+   836→          <Button 
+   837→            size="sm" 
+   838→            variant="outline" 
+   839→            className="h-7 text-xs"
+   840→            onClick={() => handleSendQuotation(quotation.id)}
+   841→            disabled={actionLoading}
+   842→          >
+   843→            <Send className="w-3 h-3 mr-1" />
+   844→            Envoyer
+   845→          </Button>
+   846→        )}
+   847→        {(quotation.status === 'sent' || (quotation.status === 'viewed' && !isQuotationExpired)) && (
+   848→          <>
+   849→            <Button 
+   850→              size="sm" 
+   851→              variant="default" 
+   852→              className="h-7 text-xs bg-emerald-600 hover:bg-emerald-700"
+   853→              onClick={() => handleAcceptQuotation(quotation.id)}
+   854→              disabled={actionLoading}
+   855→            >
+   856→              <CheckCircle className="w-3 h-3 mr-1" />
+   857→              Accepter
+   858→            </Button>
+   859→            <Button 
+   860→              size="sm" 
+   861→              variant="outline" 
+   862→              className="h-7 text-xs text-red-600 border-red-200 hover:bg-red-50"
+   863→              onClick={() => handleRejectQuotation(quotation.id)}
+   864→              disabled={actionLoading}
+   865→            >
+   866→              <XCircle className="w-3 h-3 mr-1" />
+   867→              Rejeter
+   868→            </Button>
+   869→          </>
+   870→        )}
+   871→        {(quotation.status === 'accepted' || quotation.status === 'sent') && !quotation.convertedTo && (
+   872→          <Button 
+   873→            size="sm" 
+   874→            variant="default" 
+   875→            className="h-7 text-xs bg-purple-600 hover:bg-purple-700"
+   876→            onClick={() => {
+   877→              setSelectedQuotation(quotation)
+   878→              setConvertModalOpen(true)
+   879→            }}
+   880→            disabled={actionLoading}
+   881→          >
+   882→            <ArrowRight className="w-3 h-3 mr-1" />
+   883→            Convertir en CO
+   884→          </Button>
+   885→        )}
+   886→        {daysUntilExpiry <= 5 && daysUntilExpiry >= 0 && (
+   887→          <Badge variant="outline" className="h-7 text-xs text-orange-600 border-orange-200">
+   888→            <AlertTriangle className="w-3 h-3 mr-1" />
+   889→            {daysUntilExpiry}j restants
+   890→          </Badge>
+   891→        )}
+   892→      </div>
+   893→    )
+   894→  }
+   895→
+   896→  // ============================================================
+   897→  // Loading Skeleton
+   898→  // ============================================================
+   899→  const SkeletonRow = ({ cols = 6 }: { cols?: number }) => (
+   900→    <TableRow>
+   901→      {Array.from({ length: cols }).map((_, i) => (
+   902→        <TableCell key={i}>
+   903→          <div className="flex items-center space-x-2">
+   904→            <div className="h-4 w-20 bg-muted rounded animate-pulse" />
+   905→          </div>
+   906→        </TableCell>
+   907→      ))}
+   908→    </TableRow>
+   909→  )
+   910→
+   911→  // ============================================================
+   912→  // Main Render
+   913→  // ============================================================
+   914→  return (
+   915→    <div className="space-y-6">
+   916→      {/* Page Header */}
+   917→      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+   918→        <div>
+   919→          <h1 className="text-2xl md:text-3xl font-bold tracking-tight flex items-center gap-3">
+   920→            <ShoppingCart className="w-8 h-8 text-primary" />
+   921→            Ventes & Commandes
+   922→          </h1>
+   923→          <p className="text-muted-foreground mt-1">
+   924→            Gestion commerciale • {customers.length} clients • Pipeline commercial actif
+   925→          </p>
+   926→        </div>
+   927→        <div className="flex items-center gap-2">
+   928→          <Dialog open={createQuoteModalOpen} onOpenChange={setCreateQuoteModalOpen}>
+   929→            <DialogTrigger asChild>
+   930→              <Button size="sm" variant="outline" className="gap-2">
+   931→                <FileText className="w-4 h-4" />
+   932→                Nouveau Devis
+   933→              </Button>
+   934→            </DialogTrigger>
+   935→            <DialogContent className="max-w-lg">
+   936→              <DialogHeader>
+   937→                <DialogTitle>Créer un Nouveau Devis</DialogTitle>
+   938→                <DialogDescription>Générez un devis pour un client</DialogDescription>
+   939→              </DialogHeader>
+   940→              <div className="space-y-4 py-4">
+   941→                <div className="space-y-2">
+   942→                  <Label>Client</Label>
+   943→                  <Select onValueChange={(v) => {/* Handle selection */}}>
+   944→                    <SelectTrigger>
+   945→                      <SelectValue placeholder="Sélectionner un client" />
+   946→                    </SelectTrigger>
+   947→                    <SelectContent>
+   948→                      {customers.map(c => (
+   949→                        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+   950→                      ))}
+   951→                    </SelectContent>
+   952→                  </Select>
+   953→                </div>
+   954→                <p className="text-sm text-muted-foreground">
+   955→                  La création complète des devis sera disponible prochainement avec sélection de produits.
+   956→                </p>
+   957→              </div>
+   958→              <DialogFooter>
+   959→                <Button variant="outline" onClick={() => setCreateQuoteModalOpen(false)}>Annuler</Button>
+   960→                <Button onClick={() => {
+   961→                  toast.info('Fonctionnalité en développement')
+   962→                  setCreateQuoteModalOpen(false)
+   963→                }}>Créer</Button>
+   964→              </DialogFooter>
+   965→            </DialogContent>
+   966→          </Dialog>
+   967→          
+   968→          <Dialog open={createSOModalOpen} onOpenChange={setCreateSOModalOpen}>
+   969→            <DialogTrigger asChild>
+   970→              <Button size="sm" className="gap-2 bg-primary hover:bg-primary/90">
+   971→                <Plus className="w-4 h-4" />
+   972→                Nouvelle Commande
+   973→              </Button>
+   974→            </DialogTrigger>
+   975→            <DialogContent className="max-w-lg">
+   976→              <DialogHeader>
+   977→                <DialogTitle>Créer une Nouvelle Commande</DialogTitle>
+   978→                <DialogDescription>Créez une commande de vente pour un client</DialogDescription>
+   979→              </DialogHeader>
+   980→              <div className="space-y-4 py-4">
+   981→                <div className="space-y-2">
+   982→                  <Label htmlFor="partner">Client *</Label>
+   983→                  <Select 
+   984→                    value={newSOForm.partnerId} 
+   985→                    onValueChange={(v) => setNewSOForm(prev => ({ ...prev, partnerId: v }))}
+   986→                  >
+   987→                    <SelectTrigger id="partner">
+   988→                      <SelectValue placeholder="Sélectionner un client" />
+   989→                    </SelectTrigger>
+   990→                    <SelectContent>
+   991→                      {customers.map(c => (
+   992→                        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+   993→                      ))}
+   994→                    </SelectContent>
+   995→                  </Select>
+   996→                </div>
+   997→                <div className="space-y-2">
+   998→                  <Label htmlFor="paymentTerms">Conditions de paiement</Label>
+   999→                  <Select 
+  1000→                    value={newSOForm.paymentTerms} 
+  1001→                    onValueChange={(v) => setNewSOForm(prev => ({ ...prev, paymentTerms: v }))}
+  1002→                  >
+  1003→                    <SelectTrigger id="paymentTerms">
+  1004→                      <SelectValue />
+  1005→                    </SelectTrigger>
+  1006→                    <SelectContent>
+  1007→                      <SelectItem value="15">15 jours</SelectItem>
+  1008→                      <SelectItem value="30">30 jours</SelectItem>
+  1009→                      <SelectItem value="45">45 jours</SelectItem>
+  1010→                      <SelectItem value="60">60 jours</SelectItem>
+  1011→                      <SelectItem value="cash">Comptant</SelectItem>
+  1012→                    </SelectContent>
+  1013→                  </Select>
+  1014→                </div>
+  1015→                <div className="space-y-2">
+  1016→                  <Label htmlFor="customerNotes">Notes client</Label>
+  1017→                  <Textarea 
+  1018→                    id="customerNotes"
+  1019→                    placeholder="Notes visibles par le client..."
+  1020→                    value={newSOForm.customerNotes}
+  1021→                    onChange={(e) => setNewSOForm(prev => ({ ...prev, customerNotes: e.target.value }))}
+  1022→                  />
+  1023→                </div>
+  1024→                <div className="space-y-2">
+  1025→                  <Label htmlFor="internalNotes">Notes internes</Label>
+  1026→                  <Textarea 
+  1027→                    id="internalNotes"
+  1028→                    placeholder="Notes internes uniquement..."
+  1029→                    value={newSOForm.internalNotes}
+  1030→                    onChange={(e) => setNewSOForm(prev => ({ ...prev, internalNotes: e.target.value }))}
+  1031→                  />
+  1032→                </div>
+  1033→              </div>
+  1034→              <DialogFooter>
+  1035→                <Button variant="outline" onClick={() => setCreateSOModalOpen(false)}>Annuler</Button>
+  1036→                <Button onClick={handleCreateSalesOrder} disabled={actionLoading || !newSOForm.partnerId}>
+  1037→                  {actionLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+  1038→                  Créer la commande
+  1039→                </Button>
+  1040→              </DialogFooter>
+  1041→            </DialogContent>
+  1042→          </Dialog>
+  1043→        </div>
+  1044→      </div>
+  1045→
+  1046→      {/* KPI Cards */}
+  1047→      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+  1048→        {kpis.map((kpi, index) => (
+  1049→          <KpiCard key={kpi.title} {...kpi} delay={index * 0.05} />
+  1050→        ))}
+  1051→      </div>
+  1052→
+  1053→      {/* Main Content - Tabs */}
+  1054→      <Tabs defaultValue="commandes" className="space-y-4">
+  1055→        <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:inline-grid">
+  1056→          <TabsTrigger value="commandes" className="gap-2">
+  1057→            <ShoppingCart className="w-4 h-4" />
+  1058→            Commandes
+  1059→          </TabsTrigger>
+  1060→          <TabsTrigger value="devis" className="gap-2">
+  1061→            <FileText className="w-4 h-4" />
+  1062→            Devis
+  1063→          </TabsTrigger>
+  1064→          <TabsTrigger value="pipeline" className="gap-2">
+  1065→            <Target className="w-4 h-4" />
+  1066→            Pipeline CRM
+  1067→          </TabsTrigger>
+  1068→        </TabsList>
+  1069→
+  1070→        {/* ============================================================ */}
+  1071→        {/* COMMANDES TAB */}
+  1072→        {/* ============================================================ */}
+  1073→        <TabsContent value="commandes" className="space-y-4">
+  1074→          <motion.div
+  1075→            initial={{ opacity: 0, y: 20 }}
+  1076→            animate={{ opacity: 1, y: 0 }}
+  1077→            transition={{ duration: 0.3 }}
+  1078→          >
+  1079→            <Card>
+  1080→              <CardHeader className="pb-3">
+  1081→                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+  1082→                  <div className="flex items-center gap-3">
+  1083→                    <CardTitle>Commandes de Vente</CardTitle>
+  1084→                    <Badge variant="secondary">{soPagination.total} commandes</Badge>
+  1085→                  </div>
+  1086→                  <div className="flex items-center gap-2">
+  1087→                    <div className="relative w-full sm:w-64">
+  1088→                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+  1089→                      <Input 
+  1090→                        placeholder="Rechercher..." 
+  1091→                        className="pl-10"
+  1092→                        value={soSearch}
+  1093→                        onChange={(e) => {
+  1094→                          setSoSearch(e.target.value)
+  1095→                          fetchSalesOrders(1, soStatusFilter, e.target.value)
+  1096→                        }}
+  1097→                      />
+  1098→                    </div>
+  1099→                    <Select value={soStatusFilter} onValueChange={(v) => {
+  1100→                      setSoStatusFilter(v)
+  1101→                      fetchSalesOrders(1, v, soSearch)
+  1102→                    }}>
+  1103→                      <SelectTrigger className="w-[140px]">
+  1104→                        <Filter className="w-4 h-4 mr-2" />
+  1105→                        <SelectValue />
+  1106→                      </SelectTrigger>
+  1107→                      <SelectContent>
+  1108→                        <SelectItem value="all">Tous statuts</SelectItem>
+  1109→                        {Object.entries(SALES_ORDER_STATUSES).map(([key, val]) => (
+  1110→                          <SelectItem key={key} value={key}>{val.label}</SelectItem>
+  1111→                        ))}
+  1112→                      </SelectContent>
+  1113→                    </Select>
+  1114→                    <Button 
+  1115→                      size="icon" 
+  1116→                      variant="ghost" 
+  1117→                      onClick={() => fetchSalesOrders(soPagination.page, soStatusFilter, soSearch)}
+  1118→                    >
+  1119→                      <RefreshCw className={`w-4 h-4 ${loadingSO ? 'animate-spin' : ''}`} />
+  1120→                    </Button>
+  1121→                  </div>
+  1122→                </div>
+  1123→              </CardHeader>
+  1124→              <CardContent>
+  1125→                <div className="rounded-md border overflow-hidden">
+  1126→                  <Table>
+  1127→                    <TableHeader>
+  1128→                      <TableRow>
+  1129→                        <TableHead>N° Commande</TableHead>
+  1130→                        <TableHead>Client</TableHead>
+  1131→                        <TableHead>Date</TableHead>
+  1132→                        <TableHead className="text-right">Montant HT</TableHead>
+  1133→                        <TableHead className="text-right">Montant TTC</TableHead>
+  1134→                        <TableHead>Statut</TableHead>
+  1135→                        <TableHead className="text-right">Actions</TableHead>
+  1136→                      </TableRow>
+  1137→                    </TableHeader>
+  1138→                    <TableBody>
+  1139→                      {loadingSO ? (
+  1140→                        Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
+  1141→                      ) : salesOrders.length === 0 ? (
+  1142→                        <TableRow>
+  1143→                          <TableCell colSpan={7} className="text-center py-12">
+  1144→                            <ShoppingCart className="w-12 h-12 mx-auto text-muted-foreground mb-4 opacity-50" />
+  1145→                            <p className="text-muted-foreground">Aucune commande trouvée</p>
+  1146→                            <Button 
+  1147→                              variant="outline" 
+  1148→                              size="sm" 
+  1149→                              className="mt-4"
+  1150→                              onClick={() => setCreateSOModalOpen(true)}
+  1151→                            >
+  1152→                              <Plus className="w-4 h-4 mr-2" />
+  1153→                              Créer une commande
+  1154→                            </Button>
+  1155→                          </TableCell>
+  1156→                        </TableRow>
+  1157→                      ) : (
+  1158→                        salesOrders.map((order) => (
+  1159→                          <TableRow key={order.id} className="group">
+  1160→                            <TableCell className="font-medium font-mono text-sm">
+  1161→                              {order.reference}
+  1162→                            </TableCell>
+  1163→                            <TableCell>
+  1164→                              <div className="flex items-center gap-2">
+  1165→                                <Avatar className="h-7 w-7">
+  1166→                                  <AvatarFallback className="bg-primary/10 text-primary text-xs">
+  1167→                                    {order.partner.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+  1168→                                  </AvatarFallback>
+  1169→                                </Avatar>
+  1170→                                <span className="font-medium">{order.partner.name}</span>
+  1171→                              </div>
+  1172→                            </TableCell>
+  1173→                            <TableCell className="text-sm text-muted-foreground">
+  1174→                              {formatDate(order.date)}
+  1175→                            </TableCell>
+  1176→                            <TableCell className="text-right font-mono text-sm">
+  1177→                              {formatDZD(order.amountUntaxed)} DZD
+  1178→                            </TableCell>
+  1179→                            <TableCell className="text-right font-mono font-semibold text-sm">
+  1180→                              {formatDZD(order.amountTotal)} DZD
+  1181→                            </TableCell>
+  1182→                            <TableCell>
+  1183→                              <SalesOrderStatusBadge status={order.status} />
+  1184→                            </TableCell>
+  1185→                            <TableCell className="text-right">
+  1186→                              {renderSalesOrderActions(order)}
+  1187→                            </TableCell>
+  1188→                          </TableRow>
+  1189→                        ))
+  1190→                      )}
+  1191→                    </TableBody>
+  1192→                  </Table>
+  1193→                </div>
+  1194→
+  1195→                {/* Pagination */}
+  1196→                {!loadingSO && soPagination.pages > 1 && (
+  1197→                  <div className="flex items-center justify-between mt-4 pt-4 border-t">
+  1198→                    <p className="text-sm text-muted-foreground">
+  1199→                      Affichage {(soPagination.page - 1) * soPagination.limit + 1}-{Math.min(soPagination.page * soPagination.limit, soPagination.total)} sur {soPagination.total}
+  1200→                    </p>
+  1201→                    <div className="flex items-center gap-2">
+  1202→                      <Button
+  1203→                        size="sm"
+  1204→                        variant="outline"
+  1205→                        onClick={() => fetchSalesOrders(soPagination.page - 1, soStatusFilter, soSearch)}
+  1206→                        disabled={soPagination.page <= 1}
+  1207→                      >
+  1208→                        <ChevronLeft className="w-4 h-4" />
+  1209→                        Précédent
+  1210→                      </Button>
+  1211→                      <div className="flex items-center gap-1">
+  1212→                        {Array.from({ length: Math.min(soPagination.pages, 5) }).map((_, i) => {
+  1213→                          const pageNum = i + 1
+  1214→                          return (
+  1215→                            <Button
+  1216→                              key={pageNum}
+  1217→                              size="sm"
+  1218→                              variant={pageNum === soPagination.page ? 'default' : 'outline'}
+  1219→                              className="w-8 h-8 p-0"
+  1220→                              onClick={() => fetchSalesOrders(pageNum, soStatusFilter, soSearch)}
+  1221→                            >
+  1222→                              {pageNum}
+  1223→                            </Button>
+  1224→                          )
+  1225→                        })}
+  1226→                      </div>
+  1227→                      <Button
+  1228→                        size="sm"
+  1229→                        variant="outline"
+  1230→                        onClick={() => fetchSalesOrders(soPagination.page + 1, soStatusFilter, soSearch)}
+  1231→                        disabled={soPagination.page >= soPagination.pages}
+  1232→                      >
+  1233→                        Suivant
+  1234→                        <ChevronRight className="w-4 h-4" />
+  1235→                      </Button>
+  1236→                    </div>
+  1237→                  </div>
+  1238→                )}
+  1239→              </CardContent>
+  1240→            </Card>
+  1241→          </motion.div>
+  1242→        </TabsContent>
+  1243→
+  1244→        {/* ============================================================ */}
+  1245→        {/* DEVIS TAB */}
+  1246→        {/* ============================================================ */}
+  1247→        <TabsContent value="devis" className="space-y-4">
+  1248→          <motion.div
+  1249→            initial={{ opacity: 0, y: 20 }}
+  1250→            animate={{ opacity: 1, y: 0 }}
+  1251→            transition={{ duration: 0.3 }}
+  1252→          >
+  1253→            <Card>
+  1254→              <CardHeader className="pb-3">
+  1255→                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+  1256→                  <div className="flex items-center gap-3">
+  1257→                    <CardTitle>Devis Clients</CardTitle>
+  1258→                    <Badge variant="secondary">{quotePagination.total} devis</Badge>
+  1259→                  </div>
+  1260→                  <div className="flex items-center gap-2">
+  1261→                    <div className="relative w-full sm:w-64">
+  1262→                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+  1263→                      <Input 
+  1264→                        placeholder="Rechercher..." 
+  1265→                        className="pl-10"
+  1266→                        value={quoteSearch}
+  1267→                        onChange={(e) => {
+  1268→                          setQuoteSearch(e.target.value)
+  1269→                          fetchQuotations(1, quoteStatusFilter, e.target.value)
+  1270→                        }}
+  1271→                      />
+  1272→                    </div>
+  1273→                    <Select value={quoteStatusFilter} onValueChange={(v) => {
+  1274→                      setQuoteStatusFilter(v)
+  1275→                      fetchQuotations(1, v, quoteSearch)
+  1276→                    }}>
+  1277→                      <SelectTrigger className="w-[140px]">
+  1278→                        <Filter className="w-4 h-4 mr-2" />
+  1279→                        <SelectValue />
+  1280→                      </SelectTrigger>
+  1281→                      <SelectContent>
+  1282→                        <SelectItem value="all">Tous statuts</SelectItem>
+  1283→                        {Object.entries(QUOTATION_STATUSES).map(([key, val]) => (
+  1284→                          <SelectItem key={key} value={key}>{val.label}</SelectItem>
+  1285→                        ))}
+  1286→                      </SelectContent>
+  1287→                    </Select>
+  1288→                    <Button 
+  1289→                      size="icon" 
+  1290→                      variant="ghost" 
+  1291→                      onClick={() => fetchQuotations(quotePagination.page, quoteStatusFilter, quoteSearch)}
+  1292→                    >
+  1293→                      <RefreshCw className={`w-4 h-4 ${loadingQuotes ? 'animate-spin' : ''}`} />
+  1294→                    </Button>
+  1295→                  </div>
+  1296→                </div>
+  1297→              </CardHeader>
+  1298→              <CardContent>
+  1299→                <div className="rounded-md border overflow-hidden">
+  1300→                  <Table>
+  1301→                    <TableHeader>
+  1302→                      <TableRow>
+  1303→                        <TableHead>N° Devis</TableHead>
+  1304→                        <TableHead>Client</TableHead>
+  1305→                        <TableHead>Date</TableHead>
+  1306→                        <TableHead>Validité</TableHead>
+  1307→                        <TableHead className="text-right">Montant TTC</TableHead>
+  1308→                        <TableHead>Statut</TableHead>
+  1309→                        <TableHead className="text-right">Actions</TableHead>
+  1310→                      </TableRow>
+  1311→                    </TableHeader>
+  1312→                    <TableBody>
+  1313→                      {loadingQuotes ? (
+  1314→                        Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
+  1315→                      ) : quotations.length === 0 ? (
+  1316→                        <TableRow>
+  1317→                          <TableCell colSpan={7} className="text-center py-12">
+  1318→                            <FileText className="w-12 h-12 mx-auto text-muted-foreground mb-4 opacity-50" />
+  1319→                            <p className="text-muted-foreground">Aucun devis trouvé</p>
+  1320→                            <Button 
+  1321→                              variant="outline" 
+  1322→                              size="sm" 
+  1323→                              className="mt-4"
+  1324→                              onClick={() => setCreateQuoteModalOpen(true)}
+  1325→                            >
+  1326→                              <Plus className="w-4 h-4 mr-2" />
+  1327→                              Créer un devis
+  1328→                            </Button>
+  1329→                          </TableCell>
+  1330→                        </TableRow>
+  1331→                      ) : (
+  1332→                        quotations.map((quotation) => {
+  1333→                          const daysUntil = getDaysUntil(quotation.validUntil)
+  1334→                          const expired = isExpired(quotation.validUntil)
+  1335→                          
+  1336→                          return (
+  1337→                            <TableRow key={quotation.id} className="group">
+  1338→                              <TableCell className="font-medium font-mono text-sm">
+  1339→                                {quotation.reference}
+  1340→                              </TableCell>
+  1341→                              <TableCell>
+  1342→                                <div className="flex items-center gap-2">
+  1343→                                  <Avatar className="h-7 w-7">
+  1344→                                    <AvatarFallback className="bg-primary/10 text-primary text-xs">
+  1345→                                      {quotation.partner.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+  1346→                                    </AvatarFallback>
+  1347→                                  </Avatar>
+  1348→                                  <span className="font-medium">{quotation.partner.name}</span>
+  1349→                                </div>
+  1350→                              </TableCell>
+  1351→                              <TableCell className="text-sm text-muted-foreground">
+  1352→                                {formatDate(quotation.date)}
+  1353→                              </TableCell>
+  1354→                              <TableCell>
+  1355→                                <div className="flex items-center gap-1.5">
+  1356→                                  <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
+  1357→                                  <span className="text-sm">{formatDate(quotation.validUntil)}</span>
+  1358→                                  <Badge 
+  1359→                                    variant="outline" 
+  1360→                                    className={`text-xs ${
+  1361→                                      expired 
+  1362→                                        ? 'text-red-600 border-red-200 bg-red-50' 
+  1363→                                        : daysUntil <= 5 
+  1364→                                          ? 'text-orange-600 border-orange-200 bg-orange-50'
+  1365→                                          : 'text-muted-foreground'
+  1366→                                    }`}
+  1367→                                  >
+  1368→                                    {expired ? 'Expiré' : `${daysUntil}j`}
+  1369→                                  </Badge>
+  1370→                                </div>
+  1371→                              </TableCell>
+  1372→                              <TableCell className="text-right font-mono font-semibold text-sm">
+  1373→                                {formatDZD(quotation.amountTotal)} DZD
+  1374→                              </TableCell>
+  1375→                              <TableCell>
+  1376→                                <QuotationStatusBadge 
+  1377→                                  status={quotation.status} 
+  1378→                                  validUntil={quotation.validUntil}
+  1379→                                />
+  1380→                              </TableCell>
+  1381→                              <TableCell className="text-right">
+  1382→                                {renderQuotationActions(quotation)}
+  1383→                              </TableCell>
+  1384→                            </TableRow>
+  1385→                          )
+  1386→                        })
+  1387→                      )}
+  1388→                    </TableBody>
+  1389→                  </Table>
+  1390→                </div>
+  1391→
+  1392→                {/* Pagination */}
+  1393→                {!loadingQuotes && quotePagination.pages > 1 && (
+  1394→                  <div className="flex items-center justify-between mt-4 pt-4 border-t">
+  1395→                    <p className="text-sm text-muted-foreground">
+  1396→                      Affichage {(quotePagination.page - 1) * quotePagination.limit + 1}-{Math.min(quotePagination.page * quotePagination.limit, quotePagination.total)} sur {quotePagination.total}
+  1397→                    </p>
+  1398→                    <div className="flex items-center gap-2">
+  1399→                      <Button
+  1400→                        size="sm"
+  1401→                        variant="outline"
+  1402→                        onClick={() => fetchQuotations(quotePagination.page - 1, quoteStatusFilter, quoteSearch)}
+  1403→                        disabled={quotePagination.page <= 1}
+  1404→                      >
+  1405→                        <ChevronLeft className="w-4 h-4" />
+  1406→                        Précédent
+  1407→                      </Button>
+  1408→                      <div className="flex items-center gap-1">
+  1409→                        {Array.from({ length: Math.min(quotePagination.pages, 5) }).map((_, i) => {
+  1410→                          const pageNum = i + 1
+  1411→                          return (
+  1412→                            <Button
+  1413→                              key={pageNum}
+  1414→                              size="sm"
+  1415→                              variant={pageNum === quotePagination.page ? 'default' : 'outline'}
+  1416→                              className="w-8 h-8 p-0"
+  1417→                              onClick={() => fetchQuotations(pageNum, quoteStatusFilter, quoteSearch)}
+  1418→                            >
+  1419→                              {pageNum}
+  1420→                            </Button>
+  1421→                          )
+  1422→                        })}
+  1423→                      </div>
+  1424→                      <Button
+  1425→                        size="sm"
+  1426→                        variant="outline"
+  1427→                        onClick={() => fetchQuotations(quotePagination.page + 1, quoteStatusFilter, quoteSearch)}
+  1428→                        disabled={quotePagination.page >= quotePagination.pages}
+  1429→                      >
+  1430→                        Suivant
+  1431→                        <ChevronRight className="w-4 h-4" />
+  1432→                      </Button>
+  1433→                    </div>
+  1434→                  </div>
+  1435→                )}
+  1436→              </CardContent>
+  1437→            </Card>
+  1438→          </motion.div>
+  1439→        </TabsContent>
+  1440→
+  1441→        {/* ============================================================ */}
+  1442→        {/* PIPELINE CRM TAB */}
+  1443→        {/* ============================================================ */}
+  1444→        <TabsContent value="pipeline" className="space-y-4">
+  1445→          <motion.div
+  1446→            initial={{ opacity: 0, y: 20 }}
+  1447→            animate={{ opacity: 1, y: 0 }}
+  1448→            transition={{ duration: 0.3 }}
+  1449→          >
+  1450→            {/* Pipeline Overview Cards */}
+  1451→            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+  1452→              {pipelineByStage.map((stage) => (
+  1453→                <Card 
+  1454→                  key={stage.stage} 
+  1455→                  className={`border-2 ${stage.color} transition-all hover:shadow-md`}
+  1456→                >
+  1457→                  <CardContent className="pt-6 pb-4">
+  1458→                    <div className="flex items-center justify-between mb-2">
+  1459→                      <span className="text-sm font-medium text-muted-foreground">
+  1460→                        {stage.label}
+  1461→                      </span>
+  1462→                      <Badge variant="secondary" className={stage.textColor}>
+  1463→                        {stage.count}
+  1464→                      </Badge>
+  1465→                    </div>
+  1466→                    <p className={`text-2xl font-bold ${stage.textColor}`}>
+  1467→                      {formatDZD(stage.value)} DZD
+  1468→                    </p>
+  1469→                    <div className="mt-3 space-y-1 max-h-24 overflow-y-auto">
+  1470→                      {stage.opportunities.slice(0, 3).map(opp => (
+  1471→                        <div key={opp.id} className="text-xs truncate text-muted-foreground">
+  1472→                          • {opp.name}
+  1473→                        </div>
+  1474→                      ))}
+  1475→                      {stage.count > 3 && (
+  1476→                        <div className="text-xs text-muted-foreground">
+  1477→                          +{stage.count - 3} autre(s)...
+  1478→                        </div>
+  1479→                      )}
+  1480→                    </div>
+  1481→                  </CardContent>
+  1482→                </Card>
+  1483→              ))}
+  1484→            </div>
+  1485→
+  1486→            {/* Total Pipeline Value */}
+  1487→            <Card className="mb-6">
+  1488→              <CardContent className="pt-6">
+  1489→                <div className="flex items-center justify-between">
+  1490→                  <div>
+  1491→                    <p className="text-sm text-muted-foreground">Valeur totale du pipeline</p>
+  1492→                    <p className="text-3xl font-bold text-primary">
+  1493→                      {formatDZD(totalPipelineValue)} DZD
+  1494→                    </p>
+  1495→                  </div>
+  1496→                  <Target className="w-12 h-12 text-primary/20" />
+  1497→                </div>
+  1498→              </CardContent>
+  1499→            </Card>
+  1500→
+  1501→            {/* Opportunities List */}
+  1502→            <Card>
+  1503→              <CardHeader>
+  1504→                <div className="flex items-center justify-between">
+  1505→                  <div>
+  1506→                    <CardTitle>Opportunités en Cours</CardTitle>
+  1507→                    <CardDescription>{opportunities.length} opportunités dans le pipeline</CardDescription>
+  1508→                  </div>
+  1509→                  <Button 
+  1510→                    size="sm" 
+  1511→                    variant="outline" 
+  1512→                    onClick={() => fetchOpportunities()}
+  1513→                  >
+  1514→                    <RefreshCw className={`w-4 h-4 mr-2 ${loadingCRM ? 'animate-spin' : ''}`} />
+  1515→                    Actualiser
+  1516→                  </Button>
+  1517→                </div>
+  1518→              </CardHeader>
+  1519→              <CardContent>
+  1520→                <div className="rounded-md border overflow-hidden">
+  1521→                  <Table>
+  1522→                    <TableHeader>
+  1523→                      <TableRow>
+  1524→                        <TableHead>Référence</TableHead>
+  1525→                        <TableHead>Opportunité</TableHead>
+  1526→                        <TableHead>Client</TableHead>
+  1527→                        <TableHead>Étape</TableHead>
+  1528→                        <TableHead>Statut</TableHead>
+  1529→                        <TableHead className="text-right">Revenu Estimé</TableHead>
+  1530→                        <TableHead>Probabilité</TableHead>
+  1531→                        <TableHead>Clôture Prévue</TableHead>
+  1532→                        <TableHead>Responsable</TableHead>
+  1533→                      </TableRow>
+  1534→                    </TableHeader>
+  1535→                    <TableBody>
+  1536→                      {loadingCRM ? (
+  1537→                        Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} cols={9} />)
+  1538→                      ) : opportunities.length === 0 ? (
+  1539→                        <TableRow>
+  1540→                          <TableCell colSpan={9} className="text-center py-12">
+  1541→                            <Target className="w-12 h-12 mx-auto text-muted-foreground mb-4 opacity-50" />
+  1542→                            <p className="text-muted-foreground">Aucune opportunité trouvée</p>
+  1543→                          </TableCell>
+  1544→                        </TableRow>
+  1545→                      ) : (
+  1546→                        opportunities.map((opp) => {
+  1547→                          const stageConfig = CRM_STAGES.find(s => s.stage === opp.stage) || CRM_STAGES[0]
+  1548→                          
+  1549→                          return (
+  1550→                            <TableRow key={opp.id}>
+  1551→                              <TableCell className="font-mono text-xs text-muted-foreground">
+  1552→                                {opp.reference}
+  1553→                              </TableCell>
+  1554→                              <TableCell>
+  1555→                                <div>
+  1556→                                  <p className="font-medium">{opp.name}</p>
+  1557→                                  {opp.contactName && (
+  1558→                                    <p className="text-xs text-muted-foreground">{opp.contactName}</p>
+  1559→                                  )}
+  1560→                                </div>
+  1561→                              </TableCell>
+  1562→                              <TableCell>
+  1563→                                {opp.partner ? (
+  1564→                                  <div className="flex items-center gap-2">
+  1565→                                    <Building2 className="w-4 h-4 text-muted-foreground" />
+  1566→                                    <span>{opp.partner.name}</span>
+  1567→                                  </div>
+  1568→                                ) : (
+  1569→                                  <span className="text-muted-foreground">-</span>
+  1570→                                )}
+  1571→                              </TableCell>
+  1572→                              <TableCell>
+  1573→                                <Badge variant="outline" className={`${stageConfig.color}`}>
+  1574→                                  Étape {opp.stage}: {stageConfig.label}
+  1575→                                </Badge>
+  1576→                              </TableCell>
+  1577→                              <TableCell>
+  1578→                                <OpportunityStatusBadge status={opp.status} />
+  1579→                              </TableCell>
+  1580→                              <TableCell className="text-right font-mono font-semibold">
+  1581→                                {formatDZD(opp.expectedRevenue)} DZD
+  1582→                              </TableCell>
+  1583→                              <TableCell>
+  1584→                                <div className="flex items-center gap-2">
+  1585→                                  <div className="w-16 h-2 bg-muted rounded-full overflow-hidden">
+  1586→                                    <div 
+  1587→                                      className="h-full bg-primary rounded-full"
+  1588→                                      style={{ width: `${opp.probability}%` }}
+  1589→                                    />
+  1590→                                  </div>
+  1591→                                  <span className="text-sm font-medium">{opp.probability}%</span>
+  1592→                                </div>
+  1593→                              </TableCell>
+  1594→                              <TableCell className="text-sm text-muted-foreground">
+  1595→                                {opp.expectedCloseDate ? formatDate(opp.expectedCloseDate) : '-'}
+  1596→                              </TableCell>
+  1597→                              <TableCell>
+  1598→                                {opp.assignedTo ? (
+  1599→                                  <div className="flex items-center gap-2">
+  1600→                                    <Avatar className="h-6 w-6">
+  1601→                                      <AvatarFallback className="text-xs bg-primary/10 text-primary">
+  1602→                                        {opp.assignedTo.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+  1603→                                      </AvatarFallback>
+  1604→                                    </Avatar>
+  1605→                                    <span className="text-sm">{opp.assignedTo.name}</span>
+  1606→                                  </div>
+  1607→                                ) : (
+  1608→                                  <span className="text-muted-foreground text-sm">Non assigné</span>
+  1609→                                )}
+  1610→                              </TableCell>
+  1611→                            </TableRow>
+  1612→                          )
+  1613→                        })
+  1614→                      )}
+  1615→                    </TableBody>
+  1616→                  </Table>
+  1617→                </div>
+  1618→              </CardContent>
+  1619→            </Card>
+  1620→          </motion.div>
+  1621→        </TabsContent>
+  1622→      </Tabs>
+  1623→
+  1624→      {/* Convert Quotation to SO Modal */}
+  1625→      <Dialog open={convertModalOpen} onOpenChange={setConvertModalOpen}>
+  1626→        <DialogContent className="max-w-md">
+  1627→          <DialogHeader>
+  1628→            <DialogTitle>Convertir le Devis en Commande</DialogTitle>
+  1629→            <DialogDescription>
+  1630→              Transformer ce devis en commande de vente confirmée
+  1631→            </DialogDescription>
+  1632→          </DialogHeader>
+  1633→          {selectedQuotation && (
+  1634→            <div className="space-y-4 py-4">
+  1635→              <div className="p-4 rounded-lg bg-muted/50 space-y-2">
+  1636→                <div className="flex justify-between">
+  1637→                  <span className="text-sm text-muted-foreground">N° Devis:</span>
+  1638→                  <span className="font-mono font-medium">{selectedQuotation.reference}</span>
+  1639→                </div>
+  1640→                <div className="flex justify-between">
+  1641→                  <span className="text-sm text-muted-foreground">Client:</span>
+  1642→                  <span className="font-medium">{selectedQuotation.partner.name}</span>
+  1643→                </div>
+  1644→                <div className="flex justify-between">
+  1645→                  <span className="text-sm text-muted-foreground">Montant TTC:</span>
+  1646→                  <span className="font-semibold">{formatDZD(selectedQuotation.amountTotal)} DZD</span>
+  1647→                </div>
+  1648→                <div className="flex justify-between">
+  1649→                  <span className="text-sm text-muted-foreground">Articles:</span>
+  1650→                  <span>{selectedQuotation.lines.length} ligne(s)</span>
+  1651→                </div>
+  1652→              </div>
+  1653→              <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-900/20">
+  1654→                <AlertTriangle className="w-4 h-4 text-blue-600" />
+  1655→                <AlertDescription className="text-blue-700 dark:text-blue-300">
+  1656→                  Le devis sera marqué comme &quot;Converti&quot; et une nouvelle commande sera créée.
+  1657→                </AlertDescription>
+  1658→              </Alert>
+  1659→            </div>
+  1660→          )}
+  1661→          <DialogFooter>
+  1662→            <Button variant="outline" onClick={() => {
+  1663→              setConvertModalOpen(false)
+  1664→              setSelectedQuotation(null)
+  1665→            }}>
+  1666→              Annuler
+  1667→            </Button>
+  1668→            <Button onClick={handleConvertToSO} disabled={actionLoading}>
+  1669→              {actionLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+  1670→              Convertir en Commande
+  1671→            </Button>
+  1672→          </DialogFooter>
+  1673→        </DialogContent>
+  1674→      </Dialog>
+  1675→    </div>
+  1676→  )
+  1677→}
+  1678→
+  1679→// Import Alert component for the convert modal
+  1680→import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+  1681→

@@ -1,0 +1,1607 @@
+     1→'use client'
+     2→
+     3→import React, { useState, useEffect, useCallback, useMemo } from 'react'
+     4→import { 
+     5→  Package, 
+     6→  AlertTriangle, 
+     7→  TrendingDown,
+     8→  Plus,
+     9→  Search,
+    10→  Barcode,
+    11→  Truck,
+    12→  Warehouse,
+    13→  Edit3,
+    14→  Eye,
+    15→  RefreshCw,
+    16→  Filter,
+    17→  X,
+    18→  ChevronDown,
+    19→  ChevronUp,
+    20→  MinusCircle,
+    21→  PlusCircle,
+    22→  Save,
+    23→  Loader2,
+    24→  Inbox,
+    25→  AlertOctagon,
+    26→  ArrowUpDown
+    27→} from 'lucide-react'
+    28→import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+    29→import { Button } from '@/components/ui/button'
+    30→import { Badge } from '@/components/ui/badge'
+    31→import { Input } from '@/components/ui/input'
+    32→import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+    33→import {
+    34→  Table,
+    35→  TableBody,
+    36→  TableCell,
+    37→  TableHead,
+    38→  TableHeader,
+    39→  TableRow,
+    40→} from '@/components/ui/table'
+    41→import { Progress } from '@/components/ui/progress'
+    42→import { KpiCard } from '@/components/dashboard/kpi-card'
+    43→import {
+    44→  Dialog,
+    45→  DialogContent,
+    46→  DialogDescription,
+    47→  DialogFooter,
+    48→  DialogHeader,
+    49→  DialogTitle,
+    50→} from '@/components/ui/dialog'
+    51→import {
+    52→  Select,
+    53→  SelectContent,
+    54→  SelectItem,
+    55→  SelectTrigger,
+    56→  SelectValue,
+    57→} from '@/components/ui/select'
+    58→import { Label } from '@/components/ui/label'
+    59→import { Textarea } from '@/components/ui/textarea'
+    60→import { Skeleton } from '@/components/ui/skeleton'
+    61→import { motion, AnimatePresence } from 'framer-motion'
+    62→
+    63→// Types
+    64→interface Product {
+    65→  id: string
+    66→  code: string
+    67→  name: string
+    68→  nameAr?: string | null
+    69→  description?: string | null
+    70→  type: string
+    71→  salePrice: number
+    72→  purchasePrice: number
+    73→  costPrice: number
+    74→  tvaRate: number
+    75→  trackStock: boolean
+    76→  unitOfMeasure: string
+    77→  categoryId?: string | null
+    78→  category?: { id: string; name: string } | null
+    79→  image?: string | null
+    80→  isActive: boolean
+    81→  canBeSold: boolean
+    82→  canBePurchased: boolean
+    83→  createdAt: string
+    84→}
+    85→
+    86→interface StockLevel {
+    87→  id: string
+    88→  quantity: number
+    89→  reservedQty: number
+    90→  availableQty: number
+    91→  minQty: number
+    92→  maxQty: number
+    93→  productId: string
+    94→  warehouseId: string
+    95→  locationId?: string | null
+    96→  product: Product & { category?: { id: string; name: string } | null }
+    97→  warehouse: { id: string; name: string; code: string }
+    98→  location?: { id: string; name: string; code: string } | null
+    99→  movements?: StockMovement[]
+   100→}
+   101→
+   102→interface StockMovement {
+   103→  id: string
+   104→  reference: string
+   105→  date: string
+   106→  type: string
+   107→  quantity: number
+   108→  unitCost: number
+   109→  totalCost: number
+   110→  notes?: string | null
+   111→  productId: string
+   112→  warehouseId: string
+   113→  locationId?: string | null
+   114→  product?: Product
+   115→  warehouse?: { id: string; name: string; code: string }
+   116→}
+   117→
+   118→interface Warehouse {
+   119→  id: string
+   120→  name: string
+   121→  code: string
+   122→}
+   123→
+   124→interface InventoryData {
+   125→  stockLevels: StockLevel[]
+   126→  warehouses: Warehouse[]
+   127→  pagination: { page: number; limit: number; total: number; pages: number }
+   128→  kpis: {
+   129→    totalProducts: number
+   130→    totalQuantity: number
+   131→    totalValue: number
+   132→    lowStockCount: number
+   133→    outOfStockCount: number
+   134→  }
+   135→}
+   136→
+   137→// Movement type labels
+   138→const movementTypeLabels: Record<string, { label: string; color: string }> = {
+   139→  in_receipt: { label: 'Réception', color: 'bg-green-100 text-green-700' },
+   140→  in_return: { label: 'Retour Client', color: 'bg-blue-100 text-blue-700' },
+   141→  in_adjustment: { label: 'Ajustement (+)', color: 'bg-emerald-100 text-emerald-700' },
+   142→  in_transfer: { label: 'Transfert Entrant', color: 'bg-teal-100 text-teal-700' },
+   143→  out_delivery: { label: 'Livraison', color: 'bg-orange-100 text-orange-700' },
+   144→  out_purchase_return: { label: 'Retour Fourn.', color: 'bg-red-100 text-red-700' },
+   145→  out_adjustment: { label: 'Ajustement (-)', color: 'bg-rose-100 text-rose-700' },
+   146→  out_transfer: { label: 'Transfert Sortant', color: 'bg-amber-100 text-amber-700' },
+   147→}
+   148→
+   149→// Format currency in DZD
+   150→function formatDZD(amount: number): string {
+   151→  return new Intl.NumberFormat('fr-DZ', {
+   152→    style: 'currency',
+   153→    currency: 'DZD',
+   154→    minimumFractionDigits: 0,
+   155→    maximumFractionDigits: 2,
+   156→  }).format(amount)
+   157→}
+   158→
+   159→// Format number
+   160→function formatNumber(num: number): string {
+   161→  return new Intl.NumberFormat('fr-DZ').format(num)
+   162→}
+   163→
+   164→// Get stock status badge
+   165→function getStockStatus(quantity: number, minQty: number) {
+   166→  if (quantity === 0) {
+   167→    return <Badge variant="outline" className="bg-gray-100 text-gray-700 border-gray-200">Rupture</Badge>
+   168→  }
+   169→  if (quantity <= minQty * 0.5 && minQty > 0) {
+   170→    return <Badge variant="destructive">Critique</Badge>
+   171→  }
+   172→  if (quantity <= minQty && minQty > 0) {
+   173→    return <Badge variant="outline" className="bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400">Bas</Badge>
+   174→  }
+   175→  return <Badge variant="outline" className="bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400">En stock</Badge>
+   176→}
+   177→
+   178→// Loading Skeleton Component
+   179→function InventorySkeleton() {
+   180→  return (
+   181→    <div className="space-y-6">
+   182→      {/* Header */}
+   183→      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+   184→        <div>
+   185→          <Skeleton className="h-9 w-64 mb-2" />
+   186→          <Skeleton className="h-5 w-48" />
+   187→        </div>
+   188→        <div className="flex gap-2">
+   189→          <Skeleton className="h-10 w-28" />
+   190→          <Skeleton className="h-10 w-36" />
+   191→        </div>
+   192→      </div>
+   193→
+   194→      {/* KPI Cards */}
+   195→      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+   196→        {[...Array(4)].map((_, i) => (
+   197→          <Card key={i}>
+   198→            <CardHeader className="flex flex-row items-center justify-between pb-2">
+   199→              <Skeleton className="h-4 w-24" />
+   200→              <Skeleton className="h-10 w-10 rounded-lg" />
+   201→            </CardHeader>
+   202→            <CardContent>
+   203→              <Skeleton className="h-8 w-32 mb-2" />
+   204→              <Skeleton className="h-4 w-20" />
+   205→            </CardContent>
+   206→          </Card>
+   207→        ))}
+   208→      </div>
+   209→
+   210→      {/* Table */}
+   211→      <Card>
+   212→        <CardHeader>
+   213→          <div className="flex justify-between">
+   214→            <Skeleton className="h-6 w-40" />
+   215→            <Skeleton className="h-10 w-64" />
+   216→          </div>
+   217→        </CardHeader>
+   218→        <CardContent>
+   219→          <div className="space-y-3">
+   220→            {[...Array(6)].map((_, i) => (
+   221→              <div key={i} className="flex items-center space-x-4 py-3">
+   222→                <Skeleton className="h-4 w-20" />
+   223→                <Skeleton className="h-4 w-40 flex-1" />
+   224→                <Skeleton className="h-6 w-20" />
+   225→                <Skeleton className="h-4 w-12" />
+   226→                <Skeleton className="h-4 w-16" />
+   227→                <Skeleton className="h-6 w-16" />
+   228→              </div>
+   229→            ))}
+   230→          </div>
+   231→        </CardContent>
+   232→      </Card>
+   233→    </div>
+   234→  )
+   235→}
+   236→
+   237→// Error State Component
+   238→function ErrorState({ onRetry }: { onRetry: () => void }) {
+   239→  return (
+   240→    <div className="flex flex-col items-center justify-center py-16 px-4">
+   241→      <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-4">
+   242→        <AlertOctagon className="w-8 h-8 text-red-600" />
+   243→      </div>
+   244→      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+   245→        Erreur de chargement
+   246→      </h3>
+   247→      <p className="text-muted-foreground text-center max-w-md mb-6">
+   248→        Impossible de charger les données d'inventaire. Veuillez vérifier votre connexion et réessayer.
+   249→      </p>
+   250→      <Button onClick={onRetry} variant="outline" className="gap-2">
+   251→        <RefreshCw className="w-4 h-4" />
+   252→        Réessayer
+   253→      </Button>
+   254→    </div>
+   255→  )
+   256→}
+   257→
+   258→// Empty State Component
+   259→function EmptyState() {
+   260→  return (
+   261→    <div className="flex flex-col items-center justify-center py-16 px-4">
+   262→      <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
+   263→        <Inbox className="w-8 h-8 text-muted-foreground" />
+   264→      </div>
+   265→      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+   266→        Aucun produit en stock
+   267→      </h3>
+   268→      <p className="text-muted-foreground text-center max-w-md mb-6">
+   269→        Commencez par ajouter des produits à votre inventaire ou effectuez des ajustements de stock.
+   270→      </p>
+   271→      <Button className="gap-2">
+   272→        <Plus className="w-4 h-4" />
+   273→        Ajouter un produit
+   274→      </Button>
+   275→    </div>
+   276→  )
+   277→}
+   278→
+   279→// Create/Edit Product Modal
+   280→function ProductModal({
+   281→  open,
+   282→  onClose,
+   283→  onSave,
+   284→  product,
+   285→  categories,
+   286→  loading
+   287→}: {
+   288→  open: boolean
+   289→  onClose: () => void
+   290→  onSave: (data: any) => void
+   291→  product?: Product | null
+   292→  categories: { id: string; name: string }[]
+   293→  loading: boolean
+   294→}) {
+   295→  const isEdit = !!product
+   296→  const [form, setForm] = useState({
+   297→    code: '',
+   298→    name: '',
+   299→    nameAr: '',
+   300→    description: '',
+   301→    type: 'stockable',
+   302→    salePrice: '',
+   303→    purchasePrice: '',
+   304→    costPrice: '',
+   305→    tvaRate: '19',
+   306→    trackStock: true,
+   307→    unitOfMeasure: 'U',
+   308→    categoryId: '',
+   309→    canBeSold: true,
+   310→    canBePurchased: true
+   311→  })
+   312→
+   313→  useEffect(() => {
+   314→    if (product) {
+   315→      setForm({
+   316→        code: product.code || '',
+   317→        name: product.name || '',
+   318→        nameAr: product.nameAr || '',
+   319→        description: product.description || '',
+   320→        type: product.type || 'stockable',
+   321→        salePrice: product.salePrice?.toString() || '',
+   322→        purchasePrice: product.purchasePrice?.toString() || '',
+   323→        costPrice: product.costPrice?.toString() || '',
+   324→        tvaRate: product.tvaRate?.toString() || '19',
+   325→        trackStock: product.trackStock ?? true,
+   326→        unitOfMeasure: product.unitOfMeasure || 'U',
+   327→        categoryId: product.categoryId || '',
+   328→        canBeSold: product.canBeSold ?? true,
+   329→        canBePurchased: product.canBePurchased ?? true
+   330→      })
+   331→    } else {
+   332→      setForm({
+   333→        code: '',
+   334→        name: '',
+   335→        nameAr: '',
+   336→        description: '',
+   337→        type: 'stockable',
+   338→        salePrice: '',
+   339→        purchasePrice: '',
+   340→        costPrice: '',
+   341→        tvaRate: '19',
+   342→        trackStock: true,
+   343→        unitOfMeasure: 'U',
+   344→        categoryId: '',
+   345→        canBeSold: true,
+   346→        canBePurchased: true
+   347→      })
+   348→    }
+   349→  }, [product, open])
+   350→
+   351→  const handleSubmit = (e: React.FormEvent) => {
+   352→    e.preventDefault()
+   353→    onSave({
+   354→      ...form,
+   355→      salePrice: parseFloat(form.salePrice) || 0,
+   356→      purchasePrice: parseFloat(form.purchasePrice) || 0,
+   357→      costPrice: parseFloat(form.costPrice) || 0,
+   358→      tvaRate: parseFloat(form.tvaRate) || 19,
+   359→      categoryId: form.categoryId || null
+   360→    })
+   361→  }
+   362→
+   363→  return (
+   364→    <Dialog open={open} onOpenChange={onClose}>
+   365→      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+   366→        <DialogHeader>
+   367→          <DialogTitle>{isEdit ? 'Modifier le Produit' : 'Nouveau Produit'}</DialogTitle>
+   368→          <DialogDescription>
+   369→            {isEdit ? 'Modifiez les informations du produit' : 'Remplissez les informations pour créer un nouveau produit'}
+   370→          </DialogDescription>
+   371→        </DialogHeader>
+   372→        <form onSubmit={handleSubmit}>
+   373→          <div className="grid gap-4 py-4">
+   374→            <div className="grid grid-cols-2 gap-4">
+   375→              <div className="space-y-2">
+   376→                <Label htmlFor="code">Code *</Label>
+   377→                <Input
+   378→                  id="code"
+   379→                  value={form.code}
+   380→                  onChange={(e) => setForm({ ...form, code: e.target.value })}
+   381→                  placeholder="PRD-001"
+   382→                  required
+   383→                  disabled={isEdit}
+   384→                />
+   385→              </div>
+   386→              <div className="space-y-2">
+   387→                <Label htmlFor="unitOfMeasure">Unité</Label>
+   388→                <Select value={form.unitOfMeasure} onValueChange={(v) => setForm({ ...form, unitOfMeasure: v })}>
+   389→                  <SelectTrigger><SelectValue /></SelectTrigger>
+   390→                  <SelectContent>
+   391→                    <SelectItem value="U">Unité (U)</SelectItem>
+   392→                    <SelectItem value="KG">Kilogramme (KG)</SelectItem>
+   393→                    <SelectItem value="L">Litre (L)</SelectItem>
+   394→                    <SelectItem value="ML">Mètre Linéaire (ML)</SelectItem>
+   395→                    <SelectItem value="M2">Mètre Carré (m²)</SelectItem>
+   396→                    <SelectItem value="M3">Mètre Cube (m³)</SelectItem>
+   397→                  </SelectContent>
+   398→                </Select>
+   399→              </div>
+   400→            </div>
+   401→
+   402→            <div className="space-y-2">
+   403→              <Label htmlFor="name">Nom du Produit *</Label>
+   404→              <Input
+   405→                id="name"
+   406→                value={form.name}
+   407→                onChange={(e) => setForm({ ...form, name: e.target.value })}
+   408→                placeholder="Nom du produit"
+   409→                required
+   410→              />
+   411→            </div>
+   412→
+   413→            <div className="space-y-2">
+   414→              <Label htmlFor="nameAr">Nom en Arabe</Label>
+   415→              <Input
+   416→                id="nameAr"
+   417→                value={form.nameAr}
+   418→                onChange={(e) => setForm({ ...form, nameAr: e.target.value })}
+   419→                placeholder="اسم المنتج"
+   420→                dir="rtl"
+   421→              />
+   422→            </div>
+   423→
+   424→            <div className="space-y-2">
+   425→              <Label htmlFor="description">Description</Label>
+   426→              <Textarea
+   427→                id="description"
+   428→                value={form.description}
+   429→                onChange={(e) => setForm({ ...form, description: e.target.value })}
+   430→                placeholder="Description du produit..."
+   431→                rows={3}
+   432→              />
+   433→            </div>
+   434→
+   435→            <div className="grid grid-cols-2 gap-4">
+   436→              <div className="space-y-2">
+   437→                <Label htmlFor="category">Catégorie</Label>
+   438→                <Select value={form.categoryId} onValueChange={(v) => setForm({ ...form, categoryId: v })}>
+   439→                  <SelectTrigger>
+   440→                    <SelectValue placeholder="Sélectionner une catégorie" />
+   441→                  </SelectTrigger>
+   442→                  <SelectContent>
+   443→                    {categories.map((cat) => (
+   444→                      <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+   445→                    ))}
+   446→                  </SelectContent>
+   447→                </Select>
+   448→              </div>
+   449→              <div className="space-y-2">
+   450→                <Label htmlFor="type">Type</Label>
+   451→                <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v })}>
+   452→                  <SelectTrigger><SelectValue /></SelectTrigger>
+   453→                  <SelectContent>
+   454→                    <SelectItem value="stockable">Stockable</SelectItem>
+   455→                    <SelectItem value="consumable">Consommable</SelectItem>
+   456→                    <SelectItem value="service">Service</SelectItem>
+   457→                    <SelectItem value="digital">Digital</SelectItem>
+   458→                    <SelectItem value="kit">Kit</SelectItem>
+   459→                  </SelectContent>
+   460→                </Select>
+   461→              </div>
+   462→            </div>
+   463→
+   464→            <div className="border-t pt-4">
+   465→              <h4 className="font-medium mb-3 flex items-center gap-2">
+   466→                <Package className="w-4 h-4" />
+   467→                Tarification
+   468→              </h4>
+   469→              <div className="grid grid-cols-3 gap-4">
+   470→                <div className="space-y-2">
+   471→                  <Label htmlFor="purchasePrice">Prix Achat HT</Label>
+   472→                  <Input
+   473→                    id="purchasePrice"
+   474→                    type="number"
+   475→                    step="0.01"
+   476→                    value={form.purchasePrice}
+   477→                    onChange={(e) => setForm({ ...form, purchasePrice: e.target.value })}
+   478→                    placeholder="0.00"
+   479→                  />
+   480→                </div>
+   481→                <div className="space-y-2">
+   482→                  <Label htmlFor="costPrice">Coût de Revient</Label>
+   483→                  <Input
+   484→                    id="costPrice"
+   485→                    type="number"
+   486→                    step="0.01"
+   487→                    value={form.costPrice}
+   488→                    onChange={(e) => setForm({ ...form, costPrice: e.target.value })}
+   489→                    placeholder="0.00"
+   490→                  />
+   491→                </div>
+   492→                <div className="space-y-2">
+   493→                  <Label htmlFor="salePrice">Prix Vente HT *</Label>
+   494→                  <Input
+   495→                    id="salePrice"
+   496→                    type="number"
+   497→                    step="0.01"
+   498→                    value={form.salePrice}
+   499→                    onChange={(e) => setForm({ ...form, salePrice: e.target.value })}
+   500→                    placeholder="0.00"
+   501→                    required
+   502→                  />
+   503→                </div>
+   504→              </div>
+   505→            </div>
+   506→
+   507→            <div className="grid grid-cols-2 gap-4">
+   508→              <div className="space-y-2">
+   509→                <Label htmlFor="tvaRate">Taux TVA (%)</Label>
+   510→                <Select value={form.tvaRate} onValueChange={(v) => setForm({ ...form, tvaRate: v })}>
+   511→                  <SelectTrigger><SelectValue /></SelectTrigger>
+   512→                  <SelectContent>
+   513→                    <SelectItem value="0">0% - Exonéré</SelectItem>
+   514→                    <SelectItem value="9">9% - Réduit</SelectItem>
+   515→                    <SelectItem value="19">19% - Normal</SelectItem>
+   516→                  </SelectContent>
+   517→                </Select>
+   518→              </div>
+   519→              <div className="space-y-2 flex items-end pb-1">
+   520→                <label className="flex items-center gap-2 cursor-pointer">
+   521→                  <input
+   522→                    type="checkbox"
+   523→                    checked={form.trackStock}
+   524→                    onChange={(e) => setForm({ ...form, trackStock: e.target.checked })}
+   525→                    className="rounded"
+   526→                  />
+   527→                  <span className="text-sm">Suivre le stock</span>
+   528→                </label>
+   529→              </div>
+   530→            </div>
+   531→          </div>
+   532→
+   533→          <DialogFooter>
+   534→            <Button type="button" variant="outline" onClick={onClose}>
+   535→              Annuler
+   536→            </Button>
+   537→            <Button type="submit" disabled={loading} className="gap-2">
+   538→              {loading ? (
+   539→                <>
+   540→                  <Loader2 className="w-4 h-4 animate-spin" />
+   541→                  Enregistrement...
+   542→                </>
+   543→              ) : (
+   544→                <>
+   545→                  <Save className="w-4 h-4" />
+   546→                  {isEdit ? 'Modifier' : 'Créer'}
+   547→                </>
+   548→              )}
+   549→            </Button>
+   550→          </DialogFooter>
+   551→        </form>
+   552→      </DialogContent>
+   553→    </Dialog>
+   554→  )
+   555→}
+   556→
+   557→// Stock Adjustment Modal
+   558→function StockAdjustModal({
+   559→  open,
+   560→  onClose,
+   561→  onAdjust,
+   562→  stockItem,
+   563→  warehouses,
+   564→  loading
+   565→}: {
+   566→  open: boolean
+   567→  onClose: () => void
+   568→  onAdjust: (data: any) => void
+   569→  stockItem?: StockLevel | null
+   570→  warehouses: Warehouse[]
+   571→  loading: boolean
+   572→}) {
+   573→  const [form, setForm] = useState({
+   574→    warehouseId: '',
+   575→    quantity: '0',
+   576→    type: 'in' as 'in' | 'out',
+   577→    notes: ''
+   578→  })
+   579→
+   580→  useEffect(() => {
+   581→    if (stockItem) {
+   582→      setForm({
+   583→        warehouseId: stockItem.warehouseId,
+   584→        quantity: '0',
+   585→        type: 'in',
+   586→        notes: ''
+   587→      })
+   588→    } else if (warehouses.length > 0) {
+   589→      setForm({
+   590→        warehouseId: warehouses[0]?.id || '',
+   591→        quantity: '0',
+   592→        type: 'in',
+   593→        notes: ''
+   594→      })
+   595→    }
+   596→  }, [stockItem, open, warehouses])
+   597→
+   598→  const handleSubmit = (e: React.FormEvent) => {
+   599→    e.preventDefault()
+   600→    onAdjust({
+   601→      productId: stockItem?.productId || '',
+   602→      warehouseId: form.warehouseId,
+   603→      locationId: stockItem?.locationId || null,
+   604→      quantity: parseFloat(form.quantity) || 0,
+   605→      type: form.type === 'in' ? 'adjustment_in' : 'adjustment_out',
+   606→      notes: form.notes
+   607→    })
+   608→  }
+   609→
+   610→  return (
+   611→    <Dialog open={open} onOpenChange={onClose}>
+   612→      <DialogContent className="sm:max-w-[500px]">
+   613→        <DialogHeader>
+   614→          <DialogTitle className="flex items-center gap-2">
+   615→            <ArrowUpDown className="w-5 h-5" />
+   616→            Ajustement de Stock
+   617→          </DialogTitle>
+   618→          <DialogDescription>
+   619→            {stockItem 
+   620→              ? `Ajuster le stock de ${stockItem.product.name} (Actuel: ${formatNumber(stockItem.quantity)} ${stockItem.product.unitOfMeasure})`
+   621→              : 'Effectuer un ajustement de stock manuel'
+   622→            }
+   623→          </DialogDescription>
+   624→        </DialogHeader>
+   625→        <form onSubmit={handleSubmit}>
+   626→          <div className="grid gap-4 py-4">
+   627→            {stockItem && (
+   628→              <div className="p-3 bg-muted rounded-lg">
+   629→                <div className="flex justify-between text-sm">
+   630→                  <span>Produit:</span>
+   631→                  <span className="font-medium">{stockItem.product.code} - {stockItem.product.name}</span>
+   632→                </div>
+   633→                <div className="flex justify-between text-sm mt-1">
+   634→                  <span>Stock actuel:</span>
+   635→                  <span className="font-medium">{formatNumber(stockItem.quantity)} {stockItem.product.unitOfMeasure}</span>
+   636→                </div>
+   637→                <div className="flex justify-between text-sm mt-1">
+   638→                  <span>Stock min:</span>
+   639→                  <span className="font-medium">{formatNumber(stockItem.minQty)} {stockItem.product.unitOfMeasure}</span>
+   640→                </div>
+   641→              </div>
+   642→            )}
+   643→
+   644→            {!stockItem && (
+   645→              <div className="space-y-2">
+   646→                <Label>Entrepôt</Label>
+   647→                <Select value={form.warehouseId} onValueChange={(v) => setForm({ ...form, warehouseId: v })}>
+   648→                  <SelectTrigger><SelectValue placeholder="Sélectionner l'entrepôt" /></SelectTrigger>
+   649→                  <SelectContent>
+   650→                    {warehouses.map((wh) => (
+   651→                      <SelectItem key={wh.id} value={wh.id}>{wh.name}</SelectItem>
+   652→                    ))}
+   653→                  </SelectContent>
+   654→                </Select>
+   655→              </div>
+   656→            )}
+   657→
+   658→            <div className="space-y-2">
+   659→              <Label>Type d'ajustement</Label>
+   660→              <div className="flex gap-2">
+   661→                <Button
+   662→                  type="button"
+   663→                  variant={form.type === 'in' ? 'default' : 'outline'}
+   664→                  className="flex-1 gap-2"
+   665→                  onClick={() => setForm({ ...form, type: 'in' })}
+   666→                >
+   667→                  <PlusCircle className="w-4 h-4" />
+   668→                  Entrée
+   669→                </Button>
+   670→                <Button
+   671→                  type="button"
+   672→                  variant={form.type === 'out' ? 'destructive' : 'outline'}
+   673→                  className="flex-1 gap-2"
+   674→                  onClick={() => setForm({ ...form, type: 'out' })}
+   675→                >
+   676→                  <MinusCircle className="w-4 h-4" />
+   677→                  Sortie
+   678→                </Button>
+   679→              </div>
+   680→            </div>
+   681→
+   682→            <div className="space-y-2">
+   683→              <Label htmlFor="qty">Quantité</Label>
+   684→              <Input
+   685→                id="qty"
+   686→                type="number"
+   687→                min="0"
+   688→                step="any"
+   689→                value={form.quantity}
+   690→                onChange={(e) => setForm({ ...form, quantity: e.target.value })}
+   691→                placeholder="0"
+   692→              />
+   693→            </div>
+   694→
+   695→            <div className="space-y-2">
+   696→              <Label htmlFor="notes">Notes / Motif</Label>
+   697→              <Textarea
+   698→                id="notes"
+   699→                value={form.notes}
+   700→                onChange={(e) => setForm({ ...form, notes: e.target.value })}
+   701→                placeholder="Motif de l'ajustement..."
+   702→                rows={3}
+   703→              />
+   704→            </div>
+   705→          </div>
+   706→
+   707→          <DialogFooter>
+   708→            <Button type="button" variant="outline" onClick={onClose}>
+   709→              Annuler
+   710→            </Button>
+   711→            <Button 
+   712→              type="submit" 
+   713→              disabled={loading || !form.warehouseId || parseFloat(form.quantity) <= 0}
+   714→              className="gap-2"
+   715→            >
+   716→              {loading ? (
+   717→                <>
+   718→                  <Loader2 className="w-4 h-4 animate-spin" />
+   719→                  Traitement...
+   720→                </>
+   721→              ) : (
+   722→                <>
+   723→                  <Save className="w-4 h-4" />
+   724→                  Confirmer l&apos;ajustement
+   725→                </>
+   726→              )}
+   727→            </Button>
+   728→          </DialogFooter>
+   729→        </form>
+   730→      </DialogContent>
+   731→    </Dialog>
+   732→  )
+   733→}
+   734→
+   735→// Main Page Component
+   736→export default function InventoryPage() {
+   737→  // State
+   738→  const [loading, setLoading] = useState(true)
+   739→  const [error, setError] = useState<string | null>(null)
+   740→  const [inventoryData, setInventoryData] = useState<InventoryData | null>(null)
+   741→  const [products, setProducts] = useState<Product[]>([])
+   742→  const [movements, setMovements] = useState<StockMovement[]>([])
+   743→  
+   744→  // UI State
+   745→  const [activeTab, setActiveTab] = useState('produits')
+   746→  const [searchQuery, setSearchQuery] = useState('')
+   747→  const [selectedCategory, setSelectedCategory] = useState<string>('all')
+   748→  const [selectedWarehouse, setSelectedWarehouse] = useState<string>('all')
+   749→  const [showLowStockOnly, setShowLowStockOnly] = useState(false)
+   750→  
+   751→  // Modal States
+   752→  const [productModalOpen, setProductModalOpen] = useState(false)
+   753→  const [editingProduct, setEditingProduct] = useState<Product | null>(null)
+   754→  const [stockModalOpen, setStockModalOpen] = useState(false)
+   755→  const [adjustingStock, setAdjustingStock] = useState<StockLevel | null>(null)
+   756→  const [actionLoading, setActionLoading] = useState(false)
+   757→
+   758→  // Fetch inventory data
+   759→  const fetchInventoryData = useCallback(async () => {
+   760→    setLoading(true)
+   761→    setError(null)
+   762→    
+   763→    try {
+   764→      const params = new URLSearchParams()
+   765→      if (searchQuery) params.set('search', searchQuery)
+   766→      if (selectedCategory !== 'all') params.set('category', selectedCategory)
+   767→      if (selectedWarehouse !== 'all') params.set('warehouse', selectedWarehouse)
+   768→      if (showLowStockOnly) params.set('lowStock', 'true')
+   769→
+   770→      const [inventoryRes, productsRes] = await Promise.all([
+   771→        fetch(`/api/inventory?${params.toString()}`),
+   772→        fetch(`/api/products?limit=500`)
+   773→      ])
+   774→
+   775→      if (!inventoryRes.ok || !productsRes.ok) {
+   776→        throw new Error('Failed to fetch data')
+   777→      }
+   778→
+   779→      const inventoryJson = await inventoryRes.json()
+   780→      const productsJson = await productsRes.json()
+   781→
+   782→      if (inventoryJson.success) {
+   783→        setInventoryData(inventoryJson.data)
+   784→      }
+   785→      if (productsJson.success) {
+   786→        setProducts(productsJson.data)
+   787→      }
+   788→    } catch (err) {
+   789→      console.error('Error fetching inventory:', err)
+   790→      setError(err instanceof Error ? err.message : 'Unknown error')
+   791→    } finally {
+   792→      setLoading(false)
+   793→    }
+   794→  }, [searchQuery, selectedCategory, selectedWarehouse, showLowStockOnly])
+   795→
+   796→  // Fetch movements for a specific product
+   797→  const fetchProductMovements = async (productId: string) => {
+   798→    try {
+   799→      // We'll use the stock levels which include recent movements info
+   800→      // For now, we'll show mock movement data based on actual stock changes
+   801→      const res = await fetch(`/api/inventory?${new URLSearchParams({ search: productId })}`)
+   802→      if (res.ok) {
+   803→        const json = await res.json()
+   804→        if (json.success && json.data.stockLevels?.[0]?.movements) {
+   805→          setMovements(json.data.stockLevels[0].movements)
+   806→        }
+   807→      }
+   808→    } catch (err) {
+   809→      console.error('Error fetching movements:', err)
+   810→    }
+   811→  }
+   812→
+   813→  // Initial load
+   814→  useEffect(() => {
+   815→    fetchInventoryData()
+   816→  }, [])
+   817→
+   818→  // Debounced search
+   819→  useEffect(() => {
+   820→    const timer = setTimeout(() => {
+   821→      if (!loading) {
+   822→        fetchInventoryData()
+   823→      }
+   824→    }, 300)
+   825→    return () => clearTimeout(timer)
+   826→  }, [searchQuery, selectedCategory, selectedWarehouse, showLowStockOnly])
+   827→
+   828→  // Handlers
+   829→  const handleCreateProduct = async (data: any) => {
+   830→    setActionLoading(true)
+   831→    try {
+   832→      const res = await fetch('/api/products', {
+   833→        method: 'POST',
+   834→        headers: { 'Content-Type': 'application/json' },
+   835→        body: JSON.stringify(data)
+   836→      })
+   837→      
+   838→      if (res.ok) {
+   839→        setProductModalOpen(false)
+   840→        fetchInventoryData()
+   841→      } else {
+   842→        const json = await res.json()
+   843→        alert(json.error || 'Erreur lors de la création')
+   844→      }
+   845→    } catch (err) {
+   846→      alert('Erreur réseau')
+   847→    } finally {
+   848→      setActionLoading(false)
+   849→    }
+   850→  }
+   851→
+   852→  const handleUpdateProduct = async (data: any) => {
+   853→    if (!editingProduct) return
+   854→    
+   855→    setActionLoading(true)
+   856→    try {
+   857→      const res = await fetch(`/api/products/${editingProduct.id}`, {
+   858→        method: 'PUT',
+   859→        headers: { 'Content-Type': 'application/json' },
+   860→        body: JSON.stringify(data)
+   861→      })
+   862→      
+   863→      if (res.ok) {
+   864→        setProductModalOpen(false)
+   865→        setEditingProduct(null)
+   866→        fetchInventoryData()
+   867→      } else {
+   868→        const json = await res.json()
+   869→        alert(json.error || 'Erreur lors de la modification')
+   870→      }
+   871→    } catch (err) {
+   872→      alert('Erreur réseau')
+   873→    } finally {
+   874→      setActionLoading(false)
+   875→    }
+   876→  }
+   877→
+   878→  const handleStockAdjustment = async (data: any) => {
+   879→    setActionLoading(true)
+   880→    try {
+   881→      const res = await fetch('/api/inventory', {
+   882→        method: 'POST',
+   883→        headers: { 'Content-Type': 'application/json' },
+   884→        body: JSON.stringify(data)
+   885→      })
+   886→      
+   887→      if (res.ok) {
+   888→        setStockModalOpen(false)
+   889→        setAdjustingStock(null)
+   890→        fetchInventoryData()
+   891→      } else {
+   892→        const json = await res.json()
+   893→        alert(json.error || 'Erreur lors de l\'ajustement')
+   894→      }
+   895→    } catch (err) {
+   896→      alert('Erreur réseau')
+   897→    } finally {
+   898→      setActionLoading(false)
+   899→    }
+   900→  }
+   901→
+   902→  const openEditModal = (product: Product) => {
+   903→    setEditingProduct(product)
+   904→    setProductModalOpen(true)
+   905→  }
+   906→
+   907→  const openStockModal = (stockItem?: StockLevel) => {
+   908→    setAdjustingStock(stockItem || null)
+   909→    setStockModalOpen(true)
+   910→  }
+   911→
+   912→  // Computed values
+   913→  const categories = useMemo(() => {
+   914→    const catMap = new Map<string, string>()
+   915→    products.forEach(p => {
+   916→      if (p.category?.id && p.category?.name) {
+   917→        catMap.set(p.category.id, p.category.name)
+   918→      }
+   919→    })
+   920→    return Array.from(catMap.entries()).map(([id, name]) => ({ id, name }))
+   921→  }, [products])
+   922→
+   923→  const filteredStockLevels = useMemo(() => {
+   924→    if (!inventoryData?.stockLevels) return []
+   925→    
+   926→    let filtered = [...inventoryData.stockLevels]
+   927→
+   928→    // Apply client-side search filter as backup
+   929→    if (searchQuery) {
+   930→      const q = searchQuery.toLowerCase()
+   931→      filtered = filtered.filter(item =>
+   932→        item.product.code.toLowerCase().includes(q) ||
+   933→        item.product.name.toLowerCase().includes(q) ||
+   934→        item.product.nameAr?.toLowerCase().includes(q)
+   935→      )
+   936→    }
+   937→
+   938→    // Apply category filter
+   939→    if (selectedCategory !== 'all') {
+   940→      filtered = filtered.filter(item => item.product.categoryId === selectedCategory)
+   941→    }
+   942→
+   943→    // Apply low stock filter
+   944→    if (showLowStockOnly) {
+   945→      filtered = filtered.filter(item => item.quantity <= item.minQty && item.minQty > 0)
+   946→    }
+   947→
+   948→    return filtered
+   949→  }, [inventoryData, searchQuery, selectedCategory, showLowStockOnly])
+   950→
+   951→  const lowStockItems = useMemo(() => {
+   952→    if (!inventoryData?.stockLevels) return []
+   953→    
+   954→    return inventoryData.stockLevels
+   955→      .filter(item => item.quantity <= item.minQty && item.minQty > 0)
+   956→      .sort((a, b) => (a.quantity / Math.max(a.minQty, 1)) - (b.quantity / Math.max(b.minQty, 1)))
+   957→      .slice(0, 10)
+   958→  }, [inventoryData])
+   959→
+   960→  // KPI Data
+   961→  const kpiData = useMemo(() => {
+   962→    if (!inventoryData?.kpis) return []
+   963→
+   964→    const { totalProducts, totalQuantity, totalValue, lowStockCount, outOfStockCount } = inventoryData.kpis
+   965→
+   966→    return [
+   967→      {
+   968→        title: "Produits en Stock",
+   969→        value: totalQuantity,
+   970→        change: 3.2,
+   971→        icon: Package,
+   972→        iconColor: "text-emerald-600",
+   973→        iconBg: "bg-emerald-100 dark:bg-emerald-900/30",
+   974→        format: "number" as const
+   975→      },
+   976→      {
+   977→        title: "Valeur du Stock (DZD)",
+   978→        value: totalValue,
+   979→        change: -2.1,
+   980→        icon: TrendingDown,
+   981→        iconColor: "text-blue-600",
+   982→        iconBg: "bg-blue-100 dark:bg-blue-900/30",
+   983→        format: "currency" as const
+   984→      },
+   985→      {
+   986→        title: "Stocks Bas",
+   987→        value: lowStockCount + outOfStockCount,
+   988→        change: null,
+   989→        icon: AlertTriangle,
+   990→        iconColor: "text-red-600",
+   991→        iconBg: "bg-red-100 dark:bg-red-900/30",
+   992→        format: "number" as const
+   993→      },
+   994→      {
+   995→        title: "Total Produits",
+   996→        value: totalProducts,
+   997→        change: 1.5,
+   998→        icon: Package,
+   999→        iconColor: "text-purple-600",
+  1000→        iconBg: "bg-purple-100 dark:bg-purple-900/30",
+  1001→        format: "number" as const
+  1002→      }
+  1003→    ]
+  1004→  }, [inventoryData])
+  1005→
+  1006→  // Render loading state
+  1007→  if (loading && !inventoryData) {
+  1008→    return <InventorySkeleton />
+  1009→  }
+  1010→
+  1011→  // Render error state
+  1012→  if (error && !inventoryData) {
+  1013→    return <ErrorState onRetry={fetchInventoryData} />
+  1014→  }
+  1015→
+  1016→  return (
+  1017→    <div className="space-y-6">
+  1018→      {/* Page Header */}
+  1019→      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+  1020→        <div>
+  1021→          <h1 className="text-2xl md:text-3xl font-bold tracking-tight flex items-center gap-3">
+  1022→            <Package className="w-8 h-8 text-primary" />
+  1023→            Stocks & Inventaire
+  1024→          </h1>
+  1025→          <p className="text-muted-foreground mt-1">
+  1026→            Gestion des stocks et inventaire des produits
+  1027→          </p>
+  1028→        </div>
+  1029→        <div className="flex items-center gap-2 flex-wrap">
+  1030→          <Button size="sm" variant="outline" className="gap-2" onClick={() => openStockModal()}>
+  1031→            <ArrowUpDown className="w-4 h-4" />
+  1032→            Ajustement
+  1033→          </Button>
+  1034→          <Button size="sm" variant="outline" className="gap-2">
+  1035→            <Barcode className="w-4 h-4" />
+  1036→            Scanner
+  1037→          </Button>
+  1038→          <Button 
+  1039→            size="sm" 
+  1040→            className="gap-2 bg-primary hover:bg-primary/90"
+  1041→            onClick={() => {
+  1042→              setEditingProduct(null)
+  1043→              setProductModalOpen(true)
+  1044→            }}
+  1045→          >
+  1046→            <Plus className="w-4 h-4" />
+  1047→            Nouveau Produit
+  1048→          </Button>
+  1049→        </div>
+  1050→      </div>
+  1051→
+  1052→      {/* KPI Cards */}
+  1053→      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+  1054→        {kpiData.map((kpi, index) => (
+  1055→          <KpiCard key={kpi.title} {...kpi} delay={index * 0.05} />
+  1056→        ))}
+  1057→      </div>
+  1058→
+  1059→      {/* Main Content */}
+  1060→      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+  1061→        <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
+  1062→          <TabsTrigger value="produits">Produits</TabsTrigger>
+  1063→          <TabsTrigger value="stock">Stock</TabsTrigger>
+  1064→          <TabsTrigger value="mouvements">Mouvements</TabsTrigger>
+  1065→          <TabsTrigger value="entrepots">Entrepôts</TabsTrigger>
+  1066→        </TabsList>
+  1067→
+  1068→        {/* ==================== PRODUITS TAB ==================== */}
+  1069→        <TabsContent value="produits" className="space-y-4">
+  1070→          <motion.div
+  1071→            initial={{ opacity: 0, y: 20 }}
+  1072→            animate={{ opacity: 1, y: 0 }}
+  1073→            transition={{ duration: 0.3 }}
+  1074→          >
+  1075→            <Card>
+  1076→              <CardHeader className="pb-3">
+  1077→                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+  1078→                  <CardTitle>Catalogue des Produits</CardTitle>
+  1079→                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+  1080→                    {/* Category Filter */}
+  1081→                    <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+  1082→                      <SelectTrigger className="w-full sm:w-[160px]">
+  1083→                        <Filter className="w-4 h-4 mr-2" />
+  1084→                        <SelectValue placeholder="Catégorie" />
+  1085→                      </SelectTrigger>
+  1086→                      <SelectContent>
+  1087→                        <SelectItem value="all">Toutes catégories</SelectItem>
+  1088→                        {categories.map(cat => (
+  1089→                          <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+  1090→                        ))}
+  1091→                      </SelectContent>
+  1092→                    </Select>
+  1093→
+  1094→                    {/* Search */}
+  1095→                    <div className="relative w-full sm:w-64">
+  1096→                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+  1097→                      <Input 
+  1098→                        placeholder="Rechercher..." 
+  1099→                        className="pl-10" 
+  1100→                        value={searchQuery}
+  1101→                        onChange={(e) => setSearchQuery(e.target.value)}
+  1102→                      />
+  1103→                    </div>
+  1104→
+  1105→                    {/* Low Stock Toggle */}
+  1106→                    <Button
+  1107→                      variant={showLowStockOnly ? "default" : "outline"}
+  1108→                      size="sm"
+  1109→                      onClick={() => setShowLowStockOnly(!showLowStockOnly)}
+  1110→                      className="gap-2"
+  1111→                    >
+  1112→                      <AlertTriangle className={`w-4 h-4 ${showLowStockOnly ? '' : 'text-yellow-600'}`} />
+  1113→                      Stock bas
+  1114→                    </Button>
+  1115→                  </div>
+  1116→                </div>
+  1117→              </CardHeader>
+  1118→              <CardContent>
+  1119→                {filteredStockLevels.length === 0 ? (
+  1120→                  <EmptyState />
+  1121→                ) : (
+  1122→                  <div className="overflow-x-auto">
+  1123→                    <Table>
+  1124→                      <TableHeader>
+  1125→                        <TableRow>
+  1126→                          <TableHead>Référence</TableHead>
+  1127→                          <TableHead>Produit</TableHead>
+  1128→                          <TableHead>Catégorie</TableHead>
+  1129→                          <TableHead className="text-right">Stock</TableHead>
+  1130→                          <TableHead className="text-right">Stock Min.</TableHead>
+  1131→                          <TableHead>Prix HT</TableHead>
+  1132→                          <TableHead>Valeur Stock</TableHead>
+  1133→                          <TableHead>Statut</TableHead>
+  1134→                          <TableHead className="text-right">Actions</TableHead>
+  1135→                        </TableRow>
+  1136→                      </TableHeader>
+  1137→                      <TableBody>
+  1138→                        <AnimatePresence mode="popLayout">
+  1139→                          {filteredStockLevels.map((item) => (
+  1140→                            <motion.tr
+  1141→                              key={item.id}
+  1142→                              initial={{ opacity: 0 }}
+  1143→                              animate={{ opacity: 1 }}
+  1144→                              exit={{ opacity: 0 }}
+  1145→                              className="border-b transition-colors hover:bg-muted/50"
+  1146→                            >
+  1147→                              <TableCell className="font-mono text-sm font-medium">
+  1148→                                {item.product.code}
+  1149→                              </TableCell>
+  1150→                              <TableCell>
+  1151→                                <div>
+  1152→                                  <div className="font-medium">{item.product.name}</div>
+  1153→                                  {item.product.nameAr && (
+  1154→                                    <div className="text-xs text-muted-foreground" dir="rtl">{item.product.nameAr}</div>
+  1155→                                  )}
+  1156→                                </div>
+  1157→                              </TableCell>
+  1158→                              <TableCell>
+  1159→                                {item.product.category ? (
+  1160→                                  <Badge variant="secondary">{item.product.category.name}</Badge>
+  1161→                                ) : (
+  1162→                                  <span className="text-muted-foreground text-sm">-</span>
+  1163→                                )}
+  1164→                              </TableCell>
+  1165→                              <TableCell className="text-right font-mono">
+  1166→                                <span className={item.quantity <= item.minQty && item.minQty > 0 ? 'text-red-600 font-semibold' : ''}>
+  1167→                                  {formatNumber(item.quantity)}
+  1168→                                </span>
+  1169→                                <span className="text-xs text-muted-foreground ml-1">
+  1170→                                  {item.product.unitOfMeasure}
+  1171→                                </span>
+  1172→                              </TableCell>
+  1173→                              <TableCell className="text-right font-mono text-sm">
+  1174→                                {formatNumber(item.minQty)}
+  1175→                              </TableCell>
+  1176→                              <TableCell>{formatDZD(item.product.salePrice)}</TableCell>
+  1177→                              <TableCell className="font-mono">
+  1178→                                {formatDZD(item.quantity * item.product.costPrice)}
+  1179→                              </TableCell>
+  1180→                              <TableCell>
+  1181→                                {getStockStatus(item.quantity, item.minQty)}
+  1182→                              </TableCell>
+  1183→                              <TableCell className="text-right">
+  1184→                                <div className="flex justify-end gap-1">
+  1185→                                  <Button 
+  1186→                                    variant="ghost" 
+  1187→                                    size="icon" 
+  1188→                                    className="h-8 w-8"
+  1189→                                    onClick={() => openStockModal(item)}
+  1190→                                    title="Ajuster le stock"
+  1191→                                  >
+  1192→                                    <ArrowUpDown className="w-4 h-4" />
+  1193→                                  </Button>
+  1194→                                  <Button 
+  1195→                                    variant="ghost" 
+  1196→                                    size="icon" 
+  1197→                                    className="h-8 w-8"
+  1198→                                    onClick={() => openEditModal(item.product)}
+  1199→                                    title="Modifier"
+  1200→                                  >
+  1201→                                    <Edit3 className="w-4 h-4" />
+  1202→                                  </Button>
+  1203→                                </div>
+  1204→                              </TableCell>
+  1205→                            </motion.tr>
+  1206→                          ))}
+  1207→                        </AnimatePresence>
+  1208→                      </TableBody>
+  1209→                    </Table>
+  1210→                  </div>
+  1211→                )}
+  1212→                
+  1213→                {/* Pagination Info */}
+  1214→                {inventoryData && (
+  1215→                  <div className="flex items-center justify-between mt-4 pt-4 border-t text-sm text-muted-foreground">
+  1216→                    <span>
+  1217→                      Affichage de {filteredStockLevels.length} sur {inventoryData.pagination.total} articles
+  1218→                    </span>
+  1219→                    <Button variant="outline" size="sm" className="gap-2" onClick={fetchInventoryData}>
+  1220→                      <RefreshCw className="w-4 h-4" />
+  1221→                      Actualiser
+  1222→                    </Button>
+  1223→                  </div>
+  1224→                )}
+  1225→              </CardContent>
+  1226→            </Card>
+  1227→
+  1228→            {/* Low Stock Alert Section */}
+  1229→            {lowStockItems.length > 0 && (
+  1230→              <Card className="border-yellow-200 dark:border-yellow-800/50">
+  1231→                <CardHeader className="pb-3">
+  1232→                  <CardTitle className="flex items-center gap-2 text-yellow-700 dark:text-yellow-400">
+  1233→                    <AlertTriangle className="w-5 h-5" />
+  1234→                    Alertes de Stock
+  1235→                    <Badge variant="secondary" className="ml-2">{lowStockItems.length}</Badge>
+  1236→                  </CardTitle>
+  1237→                </CardHeader>
+  1238→                <CardContent>
+  1239→                  <div className="space-y-3 max-h-80 overflow-y-auto">
+  1240→                    {lowStockItems.map((item, index) => {
+  1241→                      const percentage = item.minQty > 0 ? (item.quantity / item.minQty) * 100 : 100
+  1242→                      const isCritical = item.quantity <= item.minQty * 0.5
+  1243→                      
+  1244→                      return (
+  1245→                        <motion.div
+  1246→                          key={item.id}
+  1247→                          initial={{ opacity: 0, x: -20 }}
+  1248→                          animate={{ opacity: 1, x: 0 }}
+  1249→                          transition={{ delay: index * 0.05 }}
+  1250→                          className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+  1251→                        >
+  1252→                          <div className="flex items-center gap-3 min-w-0">
+  1253→                            <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${isCritical ? 'bg-red-500 animate-pulse' : 'bg-yellow-500'}`} />
+  1254→                            <div className="min-w-0">
+  1255→                              <span className="font-medium truncate block">{item.product.name}</span>
+  1256→                              <span className="text-xs text-muted-foreground">{item.product.code} • {item.warehouse.name}</span>
+  1257→                            </div>
+  1258→                          </div>
+  1259→                          <div className="flex items-center gap-4 flex-shrink-0">
+  1260→                            <div className="text-right">
+  1261→                              <span className={`text-sm font-semibold ${isCritical ? 'text-red-600' : 'text-yellow-600'}`}>
+  1262→                                {formatNumber(item.quantity)}
+  1263→                              </span>
+  1264→                              <span className="text-muted-foreground text-xs ml-1">
+  1265→                                / {formatNumber(item.minQty)} {item.product.unitOfMeasure}
+  1266→                              </span>
+  1267→                            </div>
+  1268→                            <Progress 
+  1269→                              value={Math.min(percentage, 100)} 
+  1270→                              className={`w-24 h-2 ${isCritical ? '[&>div]:bg-red-500' : '[&>div]:bg-yellow-500'}`}
+  1271→                            />
+  1272→                            <Button 
+  1273→                              size="sm" 
+  1274→                              variant="outline"
+  1275→                              onClick={() => openStockModal(item)}
+  1276→                            >
+  1277→                              Ajuster
+  1278→                            </Button>
+  1279→                          </div>
+  1280→                        </motion.div>
+  1281→                      )
+  1282→                    })}
+  1283→                  </div>
+  1284→                </CardContent>
+  1285→              </Card>
+  1286→            )}
+  1287→          </motion.div>
+  1288→        </TabsContent>
+  1289→
+  1290→        {/* ==================== STOCK TAB ==================== */}
+  1291→        <TabsContent value="stock" className="space-y-4">
+  1292→          <motion.div
+  1293→            initial={{ opacity: 0, y: 20 }}
+  1294→            animate={{ opacity: 1, y: 0 }}
+  1295→            transition={{ duration: 0.3 }}
+  1296→          >
+  1297→            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  1298→              {/* Stock Summary */}
+  1299→              <Card className="lg:col-span-2">
+  1300→                <CardHeader>
+  1301→                  <div className="flex items-center justify-between">
+  1302→                    <CardTitle>Résumé du Stock</CardTitle>
+  1303→                    <Select value={selectedWarehouse} onValueChange={setSelectedWarehouse}>
+  1304→                      <SelectTrigger className="w-[180px]">
+  1305→                        <Warehouse className="w-4 h-4 mr-2" />
+  1306→                        <SelectValue placeholder="Entrepôt" />
+  1307→                      </SelectTrigger>
+  1308→                      <SelectContent>
+  1309→                        <SelectItem value="all">Tous les entrepôts</SelectItem>
+  1310→                        {inventoryData?.warehouses.map(wh => (
+  1311→                          <SelectItem key={wh.id} value={wh.id}>{wh.name}</SelectItem>
+  1312→                        ))}
+  1313→                      </SelectContent>
+  1314→                    </Select>
+  1315→                  </div>
+  1316→                </CardHeader>
+  1317→                <CardContent>
+  1318→                  {inventoryData?.kpis ? (
+  1319→                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+  1320→                      <div className="p-4 bg-muted/50 rounded-lg text-center">
+  1321→                        <p className="text-2xl font-bold text-primary">{formatNumber(inventoryData.kpis.totalQuantity)}</p>
+  1322→                        <p className="text-sm text-muted-foreground">Quantité Totale</p>
+  1323→                      </div>
+  1324→                      <div className="p-4 bg-muted/50 rounded-lg text-center">
+  1325→                        <p className="text-2xl font-bold text-emerald-600">{formatDZD(inventoryData.kpis.totalValue)}</p>
+  1326→                        <p className="text-sm text-muted-foreground">Valeur Stock</p>
+  1327→                      </div>
+  1328→                      <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg text-center">
+  1329→                        <p className="text-2xl font-bold text-yellow-600">{inventoryData.kpis.lowStockCount}</p>
+  1330→                        <p className="text-sm text-muted-foreground">Stock Bas</p>
+  1331→                      </div>
+  1332→                      <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg text-center">
+  1333→                        <p className="text-2xl font-bold text-red-600">{inventoryData.kpis.outOfStockCount}</p>
+  1334→                        <p className="text-sm text-muted-foreground">Rupture</p>
+  1335→                      </div>
+  1336→                    </div>
+  1337→                  ) : (
+  1338→                    <div className="text-center py-8 text-muted-foreground">
+  1339→                      <Loader2 className="w-8 h-8 mx-auto mb-2 animate-spin" />
+  1340→                      <p>Chargement...</p>
+  1341→                    </div>
+  1342→                  )}
+  1343→                </CardContent>
+  1344→              </Card>
+  1345→
+  1346→              {/* Quick Actions */}
+  1347→              <Card>
+  1348→                <CardHeader>
+  1349→                  <CardTitle>Actions Rapides</CardTitle>
+  1350→                </CardHeader>
+  1351→                <CardContent className="space-y-3">
+  1352→                  <Button 
+  1353→                    className="w-full justify-start gap-2" 
+  1354→                    variant="outline"
+  1355→                    onClick={() => openStockModal()}
+  1356→                  >
+  1357→                    <PlusCircle className="w-4 h-4 text-green-600" />
+  1358→                    Entrée de stock
+  1359→                  </Button>
+  1360→                  <Button 
+  1361→                    className="w-full justify-start gap-2" 
+  1362→                    variant="outline"
+  1363→                    onClick={() => {
+  1364→                      setAdjustingStock(null)
+  1365→                      setStockModalOpen(true)
+  1366→                      // Will be handled in modal
+  1367→                    }}
+  1368→                  >
+  1369→                    <MinusCircle className="w-4 h-4 text-red-600" />
+  1370→                    Sortie de stock
+  1371→                  </Button>
+  1372→                  <Button 
+  1373→                    className="w-full justify-start gap-2" 
+  1374→                    variant="outline"
+  1375→                    onClick={() => setShowLowStockOnly(!showLowStockOnly)}
+  1376→                  >
+  1377→                    <AlertTriangle className="w-4 h-4 text-yellow-600" />
+  1378→                    Voir stocks bas
+  1379→                  </Button>
+  1380→                  <Button 
+  1381→                    className="w-full justify-start gap-2" 
+  1382→                    variant="outline"
+  1383→                    onClick={fetchInventoryData}
+  1384→                  >
+  1385→                    <RefreshCw className="w-4 h-4" />
+  1386→                    Actualiser
+  1387→                  </Button>
+  1388→                </CardContent>
+  1389→              </Card>
+  1390→            </div>
+  1391→
+  1392→            {/* Stock by Warehouse Table */}
+  1393→            <Card className="mt-6">
+  1394→              <CardHeader>
+  1395→                <CardTitle>Stock par Entrepôt</CardTitle>
+  1396→                <CardDescription>Détail des niveaux de stock par emplacement</CardDescription>
+  1397→              </CardHeader>
+  1398→              <CardContent>
+  1399→                <div className="overflow-x-auto">
+  1400→                  <Table>
+  1401→                    <TableHeader>
+  1402→                      <TableRow>
+  1403→                        <TableHead>Entrepôt</TableHead>
+  1404→                        <TableHead>Emplacement</TableHead>
+  1405→                        <TableHead>Produit</TableHead>
+  1406→                        <TableHead className="text-right">Disponible</TableHead>
+  1407→                        <TableHead className="text-right">Réservé</TableHead>
+  1408→                        <TableHead className="text-right">Total</TableHead>
+  1409→                        <TableHead>Statut</TableHead>
+  1410→                      </TableRow>
+  1411→                    </TableHeader>
+  1412→                    <TableBody>
+  1413→                      {filteredStockLevels.slice(0, 15).map((item) => (
+  1414→                        <TableRow key={item.id}>
+  1415→                          <TableCell className="font-medium">{item.warehouse.name}</TableCell>
+  1416→                          <TableCell>
+  1417→                            {item.location ? (
+  1418→                              <Badge variant="outline">{item.location.name}</Badge>
+  1419→                            ) : (
+  1420→                              <span className="text-muted-foreground">-</span>
+  1421→                            )}
+  1422→                          </TableCell>
+  1423→                          <TableCell>
+  1424→                            <div className="max-w-[200px] truncate">{item.product.name}</div>
+  1425→                          </TableCell>
+  1426→                          <TableCell className="text-right font-mono">{formatNumber(item.availableQty)}</TableCell>
+  1427→                          <TableCell className="text-right font-mono text-orange-600">{formatNumber(item.reservedQty)}</TableCell>
+  1428→                          <TableCell className="text-right font-mono font-semibold">{formatNumber(item.quantity)}</TableCell>
+  1429→                          <TableCell>{getStockStatus(item.availableQty, item.minQty)}</TableCell>
+  1430→                        </TableRow>
+  1431→                      ))}
+  1432→                    </TableBody>
+  1433→                  </Table>
+  1434→                </div>
+  1435→              </CardContent>
+  1436→            </Card>
+  1437→          </motion.div>
+  1438→        </TabsContent>
+  1439→
+  1440→        {/* ==================== MOUVEMENTS TAB ==================== */}
+  1441→        <TabsContent value="mouvements">
+  1442→          <motion.div
+  1443→            initial={{ opacity: 0, y: 20 }}
+  1444→            animate={{ opacity: 1, y: 0 }}
+  1445→            transition={{ duration: 0.3 }}
+  1446→          >
+  1447→            <Card>
+  1448→              <CardHeader>
+  1449→                <div className="flex items-center justify-between">
+  1450→                  <div>
+  1451→                    <CardTitle>Mouvements de Stock</CardTitle>
+  1452→                    <CardDescription>Historique des entrées et sorties de stock</CardDescription>
+  1453→                  </div>
+  1454→                  <Button 
+  1455→                    size="sm" 
+  1456→                    variant="outline" 
+  1457→                    className="gap-2"
+  1458→                    onClick={() => openStockModal()}
+  1459→                  >
+  1460→                    <Plus className="w-4 h-4" />
+  1461→                    Nouveau mouvement
+  1462→                  </Button>
+  1463→                </div>
+  1464→              </CardHeader>
+  1465→              <CardContent>
+  1466→                <div className="text-center py-12 text-muted-foreground">
+  1467→                  <Truck className="w-12 h-12 mx-auto mb-4 opacity-50" />
+  1468→                  <p className="font-medium">Journal des mouvements</p>
+  1469→                  <p className="text-sm mt-1">
+  1470→                    Les mouvements de stock sont enregistrés lors des ajustements manuels, 
+  1471→                    des réceptions et des livraisons.
+  1472→                  </p>
+  1473→                  <p className="text-sm mt-2">
+  1474→                    Utilisez le bouton &quot;Ajustement&quot; pour créer un mouvement manuel.
+  1475→                  </p>
+  1476→                </div>
+  1477→              </CardContent>
+  1478→            </Card>
+  1479→          </motion.div>
+  1480→        </TabsContent>
+  1481→
+  1482→        {/* ==================== ENTREPÔTS TAB ==================== */}
+  1483→        <TabsContent value="entrepots">
+  1484→          <motion.div
+  1485→            initial={{ opacity: 0, y: 20 }}
+  1486→            animate={{ opacity: 1, y: 0 }}
+  1487→            transition={{ duration: 0.3 }}
+  1488→          >
+  1489→            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+  1490→              {inventoryData?.warehouses.map((warehouse, index) => {
+  1491→                // Calculate stats for this warehouse
+  1492→                const whStockLevels = inventoryData.stockLevels.filter(sl => sl.warehouseId === warehouse.id)
+  1493→                const totalItems = whStockLevels.reduce((acc, sl) => acc + sl.quantity, 0)
+  1494→                const uniqueProducts = whStockLevels.length
+  1495→                const lowStockInWh = whStockLevels.filter(sl => sl.quantity <= sl.minQty && sl.minQty > 0).length
+  1496→                
+  1497→                // Calculate capacity percentage (mock calculation based on items count)
+  1498→                const capacityPercent = Math.min(95, Math.round((uniqueProducts / Math.max(uniqueProducts * 1.5, 1)) * 100))
+  1499→
+  1500→                return (
+  1501→                  <motion.div
+  1502→                    key={warehouse.id}
+  1503→                    initial={{ opacity: 0, y: 20 }}
+  1504→                    animate={{ opacity: 1, y: 0 }}
+  1505→                    transition={{ delay: index * 0.05 }}
+  1506→                  >
+  1507→                    <Card className="hover:shadow-md transition-shadow">
+  1508→                      <CardContent className="p-6">
+  1509→                        <div className="flex items-start justify-between mb-4">
+  1510→                          <div className="flex items-center gap-3">
+  1511→                            <div className="p-2.5 bg-primary/10 rounded-lg">
+  1512→                              <Warehouse className="w-5 h-5 text-primary" />
+  1513→                            </div>
+  1514→                            <div>
+  1515→                              <h3 className="font-semibold">{warehouse.name}</h3>
+  1516→                              <p className="text-sm text-muted-foreground font-mono">{warehouse.code}</p>
+  1517→                            </div>
+  1518→                          </div>
+  1519→                          <Badge variant="secondary">{uniqueProducts} produits</Badge>
+  1520→                        </div>
+  1521→                        
+  1522→                        <div className="mt-4 space-y-3">
+  1523→                          <div className="flex justify-between text-sm">
+  1524→                            <span className="text-muted-foreground">Articles totaux</span>
+  1525→                            <span className="font-medium">{formatNumber(totalItems)}</span>
+  1526→                          </div>
+  1527→                          
+  1528→                          <div className="flex justify-between text-sm">
+  1529→                            <span className="text-muted-foreground">Capacité utilisée</span>
+  1530→                            <span className="font-medium">{capacityPercent}%</span>
+  1531→                          </div>
+  1532→                          
+  1533→                          <Progress 
+  1534→                            value={capacityPercent} 
+  1535→                            className={`h-2 ${capacityPercent > 80 ? '[&>div]:bg-red-500' : capacityPercent > 60 ? '[&>div]:bg-yellow-500' : '[&>div]:bg-green-500'}`}
+  1536→                          />
+  1537→
+  1538→                          {lowStockInWh > 0 && (
+  1539→                            <div className="flex items-center gap-2 text-sm text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20 p-2 rounded">
+  1540→                              <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+  1541→                              <span>{lowStockInWh} produit(s) en stock bas</span>
+  1542→                            </div>
+  1543→                          )}
+  1544→                        </div>
+  1545→
+  1546→                        <Button 
+  1547→                          variant="outline" 
+  1548→                          size="sm" 
+  1549→                          className="w-full mt-4 gap-2"
+  1550→                          onClick={() => {
+  1551→                            setSelectedWarehouse(warehouse.id)
+  1552→                            setActiveTab('produits')
+  1553→                          }}
+  1554→                        >
+  1555→                          <Eye className="w-4 h-4" />
+  1556→                          Voir le stock
+  1557→                        </Button>
+  1558→                      </CardContent>
+  1559→                    </Card>
+  1560→                  </motion.div>
+  1561→                )
+  1562→              })}
+  1563→
+  1564→              {/* No warehouses state */}
+  1565→              {(!inventoryData?.warehouses || inventoryData.warehouses.length === 0) && (
+  1566→                <div className="col-span-full">
+  1567→                  <Card>
+  1568→                    <CardContent className="py-12 text-center">
+  1569→                      <Warehouse className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+  1570→                      <p className="text-muted-foreground">Aucun entrepôt configuré</p>
+  1571→                    </CardContent>
+  1572→                  </Card>
+  1573→                </div>
+  1574→              )}
+  1575→            </div>
+  1576→          </motion.div>
+  1577→        </TabsContent>
+  1578→      </Tabs>
+  1579→
+  1580→      {/* Modals */}
+  1581→      <ProductModal
+  1582→        open={productModalOpen}
+  1583→        onClose={() => {
+  1584→          setProductModalOpen(false)
+  1585→          setEditingProduct(null)
+  1586→        }}
+  1587→        onSave={editingProduct ? handleUpdateProduct : handleCreateProduct}
+  1588→        product={editingProduct}
+  1589→        categories={categories}
+  1590→        loading={actionLoading}
+  1591→      />
+  1592→
+  1593→      <StockAdjustModal
+  1594→        open={stockModalOpen}
+  1595→        onClose={() => {
+  1596→          setStockModalOpen(false)
+  1597→          setAdjustingStock(null)
+  1598→        }}
+  1599→        onAdjust={handleStockAdjustment}
+  1600→        stockItem={adjustingStock}
+  1601→        warehouses={inventoryData?.warehouses || []}
+  1602→        loading={actionLoading}
+  1603→      />
+  1604→    </div>
+  1605→  )
+  1606→}
+  1607→

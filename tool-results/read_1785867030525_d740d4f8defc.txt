@@ -1,0 +1,1077 @@
+     1→// ============================================================
+     2→// HASSIBA Suite ERP v2.0.0 - Purchase Orders API
+     3→// Commandes d'Achat - Operations sur une commande spécifique
+     4→// PUT /api/purchases/[id] - Update purchase order
+     5→// DELETE /api/purchases/[id] - Cancel/delete purchase order
+     6→// POST /api/purchases/[id]/receive - Receive goods from PO
+     7→// POST /api/purchases/[id]/confirm - Confirm PO status change
+     8→// ============================================================
+     9→
+    10→import { NextRequest, NextResponse } from 'next/server';
+    11→import { db } from '@/lib/db';
+    12→import { isValidTVARate, calculateLineAmounts, calculateOrderTotals } from '../route';
+    13→import { generateSCFJournalEntryFromBill as generateBillJournalEntry } from '@/lib/workflow-orchestrator';
+    14→
+    15→// ============================================================
+    16→// Types & Interfaces
+    17→// ============================================================
+    18→
+    19→interface UpdatePurchaseOrderInput {
+    20→  partnerId?: string;
+    21→  date?: string;
+    22→  expectedDate?: string;
+    23→  paymentTerms?: string;
+    24→  paymentMode?: string;
+    25→  incoterm?: string;
+    26→  shippingAddress?: string;
+    27→  warehouseId?: string;
+    28→  internalNotes?: string;
+    29→  supplierNotes?: string;
+    30→  lines?: Array<{
+    31→    id?: string; // Include ID for existing lines to update
+    32→    productId: string;
+    33→    description?: string;
+    34→    quantity: number;
+    35→    unitPrice: number;
+    36→    discountRate?: number;
+    37→    tvaRate?: number;
+    38→  }>;
+    39→}
+    40→
+    41→interface ReceiveGoodsInput {
+    42→  lines: Array<{
+    43→    lineId: string;
+    44→    quantity: number;
+    45→    locationId?: string;
+    46→  }>;
+    47→  notes?: string;
+    48→}
+    49→
+    50→// ============================================================
+    51→// Helper: Get PO with full details
+    52→// ============================================================
+    53→
+    54→async function getPurchaseOrderWithDetails(id: string) {
+    55→  return db.purchaseOrder.findUnique({
+    56→    where: { id },
+    57→    include: {
+    58→      partner: {
+    59→        select: {
+    60→          id: true,
+    61→          name: true,
+    62→          displayName: true,
+    63→          type: true,
+    64→        },
+    65→      },
+    66→      company: {
+    67→        select: {
+    68→          id: true,
+    69→          name: true,
+    70→        },
+    71→      },
+    72→      warehouse: {
+    73→        select: {
+    74→          id: true,
+    75→          name: true,
+    76→          code: true,
+    77→        },
+    78→      },
+    79→      lines: {
+    80→        include: {
+    81→          product: {
+    82→            select: {
+    83→              id: true,
+    84→              code: true,
+    85→              name: true,
+    86→              type: true,
+    87→            },
+    88→          },
+    89→        },
+    90→        orderBy: {
+    91→          createdAt: 'asc',
+    92→        },
+    93→      },
+    94→      receiptItems: {
+    95→        include: {
+    96→          product: {
+    97→            select: {
+    98→              id: true,
+    99→              code: true,
+   100→              name: true,
+   101→            },
+   102→          },
+   103→          warehouse: {
+   104→            select: {
+   105→              id: true,
+   106→              name: true,
+   107→              code: true,
+   108→            },
+   109→          },
+   110→        },
+   111→      },
+   112→      bills: {
+   113→        select: {
+   114→          id: true,
+   115→          reference: true,
+   116→          status: true,
+   117→          amountTotal: true,
+   118→        },
+   119→      },
+   120→    },
+   121→  });
+   122→}
+   123→
+   124→// ============================================================
+   125→// Status Transition Validation
+   126→// ============================================================
+   127→
+   128→const VALID_STATUS_TRANSITIONS: Record<string, string[]> = {
+   129→  draft: ['sent', 'confirmed', 'cancelled'],
+   130→  sent: ['confirmed', 'draft', 'cancelled'],
+   131→  confirmed: ['received', 'cancelled'],
+   132→  received: ['billed', 'done'],
+   133→  billed: ['done', 'done'],
+   134→  done: [],
+   135→  cancelled: ['draft'], // Can be reinstated to draft
+   136→};
+   137→
+   138→function canTransition(currentStatus: string, newStatus: string): boolean {
+   139→  const allowedTransitions = VALID_STATUS_TRANSITIONS[currentStatus] || [];
+   140→  return allowedTransitions.includes(newStatus);
+   141→}
+   142→
+   143→// ============================================================
+   144→// PUT /api/purchases/[id] - Update Purchase Order
+   145→// ============================================================
+   146→
+   147→export async function PUT(
+   148→  request: NextRequest,
+   149→  { params }: { params: Promise<{ id: string }> }
+   150→) {
+   151→  try {
+   152→    const { id } = await params;
+   153→    const body: UpdatePurchaseOrderInput = await request.json();
+   154→    
+   155→    // Check if PO exists
+   156→    const existingPO = await db.purchaseOrder.findUnique({
+   157→      where: { id },
+   158→      include: {
+   159→        lines: true,
+   160→      },
+   161→    });
+   162→    
+   163→    if (!existingPO) {
+   164→      return NextResponse.json(
+   165→        {
+   166→          success: false,
+   167→          error: 'Commande d\'achat non trouvée',
+   168→        },
+   169→        { status: 404 }
+   170→      );
+   171→    }
+   172→    
+   173→    // Check if PO can be updated (only draft or cancelled status)
+   174→    if (!['draft', 'cancelled'].includes(existingPO.status)) {
+   175→      return NextResponse.json(
+   176→        {
+   177→          success: false,
+   178→          error: `Impossible de modifier une commande avec le statut '${existingPO.status}'. Seules les commandes en brouillon ou annulées peuvent être modifiées.`,
+   179→        },
+   180→        { status: 400 }
+   181→      );
+   182→    }
+   183→    
+   184→    // Validate partner if provided
+   185→    if (body.partnerId && body.partnerId !== existingPO.partnerId) {
+   186→      const partner = await db.partner.findUnique({
+   187→        where: { id: body.partnerId },
+   188→      });
+   189→      
+   190→      if (!partner) {
+   191→        return NextResponse.json(
+   192→          {
+   193→            success: false,
+   194→            error: 'Fournisseur non trouvé',
+   195→          },
+   196→          { status: 404 }
+   197→        );
+   198→      }
+   199→      
+   200→      if (partner.type === 'customer') {
+   201→        return NextResponse.json(
+   202→          {
+   203→            success: false,
+   204→            error: 'Ce partenaire n\'est pas un fournisseur',
+   205→          },
+   206→          { status: 400 }
+   207→        );
+   208→      }
+   209→    }
+   210→    
+   211→    // Validate warehouse if provided
+   212→    if (body.warehouseId && body.warehouseId !== existingPO.warehouseId) {
+   213→      const warehouse = await db.warehouse.findUnique({
+   214→        where: { id: body.warehouseId },
+   215→      });
+   216→      
+   217→      if (!warehouse) {
+   218→        return NextResponse.json(
+   219→          {
+   220→            success: false,
+   221→            error: 'Entrepôt non trouvé',
+   222→          },
+   223→          { status: 404 }
+   224→        );
+   225→      }
+   226→    }
+   227→    
+   228→    // Prepare update data
+   229→    const updateData: Record<string, unknown> = {
+   230→      updatedAt: new Date(),
+   231→    };
+   232→    
+   233→    if (body.partnerId) updateData.partnerId = body.partnerId;
+   234→    if (body.date) updateData.date = new Date(body.date);
+   235→    if (body.expectedDate !== undefined) {
+   236→      updateData.expectedDate = body.expectedDate ? new Date(body.expectedDate) : null;
+   237→    }
+   238→    if (body.paymentTerms !== undefined) updateData.paymentTerms = body.paymentTerms;
+   239→    if (body.paymentMode !== undefined) updateData.paymentMode = body.paymentMode;
+   240→    if (body.incoterm !== undefined) updateData.incoterm = body.incoterm;
+   241→    if (body.shippingAddress !== undefined) updateData.shippingAddress = body.shippingAddress;
+   242→    if (body.warehouseId !== undefined) updateData.warehouseId = body.warehouseId;
+   243→    if (body.internalNotes !== undefined) updateData.internalNotes = body.internalNotes;
+   244→    if (body.supplierNotes !== undefined) updateData.supplierNotes = body.supplierNotes;
+   245→    
+   246→    // If lines are provided, recalculate everything
+   247→    if (body.lines && body.lines.length > 0) {
+   248→      const processedLines = [];
+   249→      
+   250→      for (let i = 0; i < body.lines.length; i++) {
+   251→        const line = body.lines[i];
+   252→        
+   253→        // Validate required fields
+   254→        if (!line.productId) {
+   255→          return NextResponse.json(
+   256→            {
+   257→              success: false,
+   258→              error: `Le produit est requis pour la ligne ${i + 1}`,
+   259→            },
+   260→            { status: 400 }
+   261→          );
+   262→        }
+   263→        
+   264→        if (!line.quantity || line.quantity <= 0) {
+   265→          return NextResponse.json(
+   266→            {
+   267→              success: false,
+   268→              error: `La quantité doit être supérieure à 0 pour la ligne ${i + 1}`,
+   269→            },
+   270→            { status: 400 }
+   271→          );
+   272→        }
+   273→        
+   274→        if (line.unitPrice === undefined || line.unitPrice < 0) {
+   275→          return NextResponse.json(
+   276→            {
+   277→              success: false,
+   278→              error: `Le prix unitaire doit être positif pour la ligne ${i + 1}`,
+   279→            },
+   280→            { status: 400 }
+   281→          );
+   282→        }
+   283→        
+   284→        // Validate product exists
+   285→        const product = await db.product.findUnique({
+   286→          where: { id: line.productId },
+   287→        });
+   288→        
+   289→        if (!product) {
+   290→          return NextResponse.json(
+   291→            {
+   292→              success: false,
+   293→              error: `Produit non trouvé pour la ligne ${i + 1}`,
+   294→            },
+   295→            { status: 404 }
+   296→          );
+   297→        }
+   298→        
+   299→        // Validate TVA rate
+   300→        const tvaRate = line.tvaRate ?? product.tvaRate ?? 19;
+   301→        if (!isValidTVARate(tvaRate)) {
+   302→          return NextResponse.json(
+   303→            {
+   304→              success: false,
+   305→              error: `Taux TVA invalide pour la ligne ${i + 1}. Taux autorisés: 0%, 9%, 19%`,
+   306→            },
+   307→            { status: 400 }
+   308→          );
+   309→        }
+   310→        
+   311→        // Calculate amounts
+   312→        const amounts = calculateLineAmounts({
+   313→          ...line,
+   314→          tvaRate,
+   315→        });
+   316→        
+   317→        processedLines.push({
+   318→          id: line.id, // Keep existing line ID if updating
+   319→          productId: line.productId,
+   320→          description: line.description || product.name,
+   321→          quantity: line.quantity,
+   322→          unitPrice: line.unitPrice,
+   323→          discountRate: line.discountRate || 0,
+   324→          tvaRate,
+   325→          ...amounts,
+   326→        });
+   327→      }
+   328→      
+   329→      // Calculate order totals
+   330→      const totals = calculateOrderTotals(processedLines);
+   331→      updateData.amountUntaxed = totals.amountUntaxed;
+   332→      updateData.amountTax = totals.amountTax;
+   333→      updateData.amountTotal = totals.amountTotal;
+   334→      
+   335→      // Perform update in transaction
+   336→      const updatedOrder = await db.$transaction(async (tx) => {
+   337→        // Delete existing lines
+   338→        await tx.purchaseOrderLine.deleteMany({
+   339→          where: { purchaseOrderId: id },
+   340→        });
+   341→        
+   342→        // Create new lines
+   343→        const lines = await Promise.all(
+   344→          processedLines.map((line) =>
+   345→            tx.purchaseOrderLine.create({
+   346→              data: {
+   347→                purchaseOrderId: id,
+   348→                productId: line.productId,
+   349→                description: line.description,
+   350→                quantity: line.quantity,
+   351→                unitPrice: line.unitPrice,
+   352→                discountRate: line.discountRate,
+   353→                tvaRate: line.tvaRate,
+   354→                amountUntaxed: line.amountUntaxed,
+   355→                amountTax: line.amountTax,
+   356→                amountTotal: line.amountTotal,
+   357→                quantityReceived: 0,
+   358→                quantityInvoiced: 0,
+   359→              },
+   360→            })
+   361→          )
+   362→        );
+   363→        
+   364→        // Update order header
+   365→        const order = await tx.purchaseOrder.update({
+   366→          where: { id },
+   367→          data: updateData,
+   368→        });
+   369→        
+   370→        return { ...order, lines };
+   371→      });
+   372→      
+   373→      // Return full updated order
+   374→      const fullOrder = await getPurchaseOrderWithDetails(id);
+   375→      
+   376→      return NextResponse.json({
+   377→        success: true,
+   378→        data: fullOrder,
+   379→        message: `Commande d'achat ${existingPO.reference} mise à jour avec succès`,
+   380→      });
+   381→    } else {
+   382→      // Just update header without changing lines
+   383→      const updatedOrder = await db.purchaseOrder.update({
+   384→        where: { id },
+   385→        data: updateData,
+   386→      });
+   387→      
+   388→      const fullOrder = await getPurchaseOrderWithDetails(id);
+   389→      
+   390→      return NextResponse.json({
+   391→        success: true,
+   392→        data: fullOrder,
+   393→        message: `Commande d'achat ${existingPO.reference} mise à jour avec succès`,
+   394→      });
+   395→    }
+   396→  } catch (error) {
+   397→    console.error('Error updating purchase order:', error);
+   398→    return NextResponse.json(
+   399→      {
+   400→        success: false,
+   401→        error: 'Erreur lors de la mise à jour de la commande d\'achat',
+   402→      },
+   403→      { status: 500 }
+   404→    );
+   405→  }
+   406→}
+   407→
+   408→// ============================================================
+   409→// DELETE /api/purchases/[id] - Cancel/Delete Purchase Order
+   410→// ============================================================
+   411→
+   412→export async function DELETE(
+   413→  request: NextRequest,
+   414→  { params }: { params: Promise<{ id: string }> }
+   415→) {
+   416→  try {
+   417→    const { id } = await params;
+   418→    
+   419→    // Check if PO exists
+   420→    const existingPO = await db.purchaseOrder.findUnique({
+   421→      where: { id },
+   422→      include: {
+   423→        receiptItems: true,
+   424→        bills: true,
+   425→      },
+   426→    });
+   427→    
+   428→    if (!existingPO) {
+   429→      return NextResponse.json(
+   430→        {
+   431→          success: false,
+   432→          error: 'Commande d\'achat non trouvée',
+   433→        },
+   434→        { status: 404 }
+   435→      );
+   436→    }
+   437→    
+   438→    // Check if already cancelled
+   439→    if (existingPO.status === 'cancelled') {
+   440→      return NextResponse.json(
+   441→        {
+   442→          success: false,
+   443→          error: 'Cette commande est déjà annulée',
+   444→        },
+   445→        { status: 400 }
+   446→      );
+   447→    }
+   448→    
+   449→    // Check if goods have been received
+   450→    if (existingPO.receiptItems.length > 0) {
+   451→      return NextResponse.json(
+   452→        {
+   453→          success: false,
+   454→          error: 'Impossible d\'annuler cette commande car des marchandises ont déjà été reçues. Veuillez d\'abord effectuer un retour de stock.',
+   455→        },
+   456→        { status: 400 }
+   457→      );
+   458→    }
+   459→    
+   460→    // Check if bills exist
+   461→    if (existingPO.bills.length > 0) {
+   462→      return NextResponse.json(
+   463→        {
+   464→          success: false,
+   465→          error: 'Impossible d\'annuler cette commande car des factures fournisseurs y sont liées.',
+   466→        },
+   467→        { status: 400 }
+   468→      );
+   469→    }
+   470→    
+   471→    // Cancel the order (soft delete by setting status to cancelled)
+   472→    const cancelledOrder = await db.purchaseOrder.update({
+   473→      where: { id },
+   474→      data: {
+   475→        status: 'cancelled',
+   476→      },
+   477→    });
+   478→    
+   479→    return NextResponse.json({
+   480→      success: true,
+   481→      data: cancelledOrder,
+   482→      message: `Commande d'achat ${existingPO.reference} annulée avec succès`,
+   483→    });
+   484→  } catch (error) {
+   485→    console.error('Error cancelling purchase order:', error);
+   486→    return NextResponse.json(
+   487→      {
+   488→        success: false,
+   489→        error: 'Erreur lors de l\'annulation de la commande d\'achat',
+   490→      },
+   491→      { status: 500 }
+   492→    );
+   493→  }
+   494→}
+   495→
+   496→// ============================================================
+   497→// POST /api/purchases/[id]/receive - Receive Goods from PO
+   498→// ============================================================
+   499→
+   500→export async function POST(
+   501→  request: NextRequest,
+   502→  { params }: { params: Promise<{ id: string }> }
+   503→) {
+   504→  try {
+   505→    const { id } = await params;
+   506→    
+   507→    // Parse URL to check action
+   508→    const { searchParams } = new URL(request.url);
+   509→    const action = searchParams.get('action');
+   510→    
+   511→    // Route to appropriate handler based on action
+   512→    if (action === 'receive') {
+   513→      return handleReceiveGoods(request, id);
+   514→    } else if (action === 'confirm') {
+   515→      return handleConfirmOrder(request, id);
+   516→    } else if (action === 'bill') {
+   517→      return handleCreateBill(request, id);
+   518→    } else {
+   519→      return NextResponse.json(
+   520→        {
+   521→          success: false,
+   522→          error: 'Action non reconnue. Utilisez ?action=receive, ?action=confirm ou ?action=bill',
+   523→        },
+   524→        { status: 400 }
+   525→      );
+   526→    }
+   527→  } catch (error) {
+   528→    console.error('Error in POST /api/purchases/[id]:', error);
+   529→    return NextResponse.json(
+   530→      {
+   531→        success: false,
+   532→        error: 'Erreur lors du traitement de la requête',
+   533→      },
+   534→      { status: 500 }
+   535→    );
+   536→  }
+   537→}
+   538→
+   539→// ============================================================
+   540→// Handle Receive Goods Action
+   541→// ============================================================
+   542→
+   543→async function handleReceiveGoods(request: NextRequest, poId: string): Promise<NextResponse> {
+   544→  try {
+   545→    const body: ReceiveGoodsInput = await request.json();
+   546→    
+   547→    // Validate input
+   548→    if (!body.lines || body.lines.length === 0) {
+   549→      return NextResponse.json(
+   550→        {
+   551→          success: false,
+   552→          error: 'Au moins une ligne de réception est requise',
+   553→        },
+   554→        { status: 400 }
+   555→      );
+   556→    }
+   557→    
+   558→    // Get PO with full details
+   559→    const po = await db.purchaseOrder.findUnique({
+   560→      where: { id: poId },
+   561→      include: {
+   562→        lines: {
+   563→          include: {
+   564→            product: true,
+   565→          },
+   566→        },
+   567→        warehouse: true,
+   568→        company: true,
+   569→      },
+   570→    });
+   571→    
+   572→    if (!po) {
+   573→      return NextResponse.json(
+   574→        {
+   575→          success: false,
+   576→          error: 'Commande d\'achat non trouvée',
+   577→        },
+   578→        { status: 404 }
+   579→      );
+   580→    }
+   581→    
+   582→    // Check if PO can receive goods
+   583→    if (!['confirmed', 'sent', 'draft'].includes(po.status) && po.status !== 'received') {
+   584→      return NextResponse.json(
+   585→        {
+   586→          success: false,
+   587→          error: `La commande doit être confirmée avant de pouvoir recevoir des marchandises. Statut actuel: ${po.status}`,
+   588→        },
+   589→        { status: 400 }
+   590→      );
+   591→    }
+   592→    
+   593→    // Check if warehouse is set
+   594→    if (!po.warehouseId) {
+   595→      return NextResponse.json(
+   596→        {
+   597→          success: false,
+   598→          error: 'Aucun entrepôt défini pour cette commande. Veuillez définir l\'entrepôt de réception.',
+   599→        },
+   600→        { status: 400 }
+   601→      );
+   602→    }
+   603→    
+   604→    // Process each received line
+   605→    const movements = [];
+   606→    const updatedLines = [];
+   607→    let totalReceived = 0;
+   608→    
+   609→    for (const recvLine of body.lines) {
+   610→      // Find the corresponding PO line
+   611→      const poLine = po.lines.find((l) => l.id === recvLine.lineId);
+   612→      
+   613→      if (!poLine) {
+   614→        return NextResponse.json(
+   615→          {
+   616→            success: false,
+   617→            error: `Ligne de commande ${recvLine.lineId} non trouvée`,
+   618→          },
+   619→          { status: 404 }
+   620→        );
+   621→      }
+   622→      
+   623→      // Validate quantity
+   624→      if (!recvLine.quantity || recvLine.quantity <= 0) {
+   625→        return NextResponse.json(
+   626→          {
+   627→            success: false,
+   628→            error: `La quantité reçue doit être supérieure à 0 pour le produit ${poLine.product.name}`,
+   629→          },
+   630→          { status: 400 }
+   631→        );
+   632→      }
+   633→      
+   634→      // Check not over-receiving
+   635→      const maxReceivable = poLine.quantity - poLine.quantityReceived;
+   636→      if (recvLine.quantity > maxReceivable) {
+   637→        return NextResponse.json(
+   638→          {
+   639→            success: false,
+   640→            error: `Quantité reçue (${recvLine.quantity}) supérieure au restant à recevoir (${maxReceivable}) pour ${poLine.product.name}`,
+   641→          },
+   642→          { status: 400 }
+   643→        );
+   644→      }
+   645→      
+   646→      // Calculate cost for this reception
+   647→      const lineUnitCost = poLine.unitPrice * (1 - poLine.discountRate / 100);
+   648→      const totalCost = Math.round(recvLine.quantity * lineUnitCost * 100) / 100;
+   649→      
+   650→      movements.push({
+   651→        productId: poLine.productId,
+   652→        quantity: recvLine.quantity,
+   653→        unitCost: lineUnitCost,
+   654→        totalCost,
+   655→        locationId: recvLine.locationId || null,
+   656→        lineId: poLine.id,
+   657→      });
+   658→      
+   659→      updatedLines.push({
+   660→        lineId: poLine.id,
+   661→        quantityReceived: poLine.quantityReceived + recvLine.quantity,
+   662→        amountReceived: Math.round((poLine.quantityReceived + recvLine.quantity) * lineUnitCost * 100) / 100,
+   663→      });
+   664→      
+   665→      totalReceived += totalCost;
+   666→    }
+   667→    
+   668→    // Generate movement reference
+   669→    const now = new Date();
+   670→    const year = now.getFullYear();
+   671→    const month = String(now.getMonth() + 1).padStart(2, '0');
+   672→    const movementCount = await db.stockMovement.count({
+   673→      where: {
+   674→        type: 'in_receipt',
+   675→        date: {
+   676→          gte: new Date(year, now.getMonth(), 1),
+   677→          lt: new Date(year, now.getMonth() + 1, 1),
+   678→        },
+   679→      },
+   680→    });
+   681→    const movementRef = `ENT-${year}-${month}-${String(movementCount + 1).padStart(3, '0')}`;
+   682→    
+   683→    // Process in transaction
+   684→    const result = await db.$transaction(async (tx) => {
+   685→      // Create stock movements
+   686→      const createdMovements = await Promise.all(
+   687→        movements.map((mov) =>
+   688→          tx.stockMovement.create({
+   689→            data: {
+   690→              reference: `${movementRef}-${mov.productId.slice(-6)}`,
+   691→              date: now,
+   692→              type: 'in_receipt',
+   693→              quantity: mov.quantity,
+   694→              unitCost: mov.unitCost,
+   695→              totalCost: mov.totalCost,
+   696→              notes: body.notes || `Réception commande ${po.reference}`,
+   697→              productId: mov.productId,
+   698→              warehouseId: po.warehouseId!,
+   699→              locationId: mov.locationId,
+   700→              sourceDoc: 'purchase_order',
+   701→              sourceId: poId,
+   702→              purchaseOrderId: poId,
+   703→            },
+   704→          })
+   705→        )
+   706→      );
+   707→      
+   708→      // Update PO lines quantities received
+   709→      for (const ul of updatedLines) {
+   710→        await tx.purchaseOrderLine.update({
+   711→          where: { id: ul.lineId },
+   712→          data: {
+   713→            quantityReceived: ul.quantityReceived,
+   714→          },
+   715→        });
+   716→      }
+   717→      
+   718→      // Update stock levels for each product
+   719→      for (const mov of movements) {
+   720→        // Find or create stock level
+   721→        const existingStockLevel = await tx.stockLevel.findUnique({
+   722→          where: {
+   723→            productId_warehouseId_locationId: {
+   724→              productId: mov.productId,
+   725→              warehouseId: po.warehouseId!,
+   726→              locationId: mov.locationId ?? '',
+   727→            },
+   728→          },
+   729→        });
+   730→        
+   731→        if (existingStockLevel) {
+   732→          // Update existing stock level
+   733→          const newQuantity = existingStockLevel.quantity + mov.quantity;
+   734→          await tx.stockLevel.update({
+   735→            where: { id: existingStockLevel.id },
+   736→            data: {
+   737→              quantity: Math.round(newQuantity * 100) / 100,
+   738→              availableQty: Math.round((newQuantity - existingStockLevel.reservedQty) * 100) / 100,
+   739→            },
+   740→          });
+   741→        } else {
+   742→          // Create new stock level
+   743→          await tx.stockLevel.create({
+   744→            data: {
+   745→              productId: mov.productId,
+   746→              warehouseId: po.warehouseId!,
+   747→              locationId: mov.locationId,
+   748→              quantity: mov.quantity,
+   749→              reservedQty: 0,
+   750→              availableQty: mov.quantity,
+   751→              minQty: 0,
+   752→              maxQty: 0,
+   753→            },
+   754→          });
+   755→        }
+   756→      }
+   757→      
+   758→      // Determine new PO status
+   759→      let newStatus = po.status;
+   760→      const allFullyReceived = po.lines.every(
+   761→        (l) => {
+   762→          const updatedL = updatedLines.find((ul) => ul.lineId === l.id);
+   763→          return updatedL ? updatedL.quantityReceived >= l.quantity : l.quantityReceived >= l.quantity;
+   764→        }
+   765→      );
+   766→      
+   767→      if (allFullyReceived) {
+   768→        newStatus = 'received';
+   769→      } else if (updatedLines.length > 0 && po.status === 'confirmed') {
+   770→        newStatus = 'received'; // Partially received
+   771→      }
+   772→      
+   773→      // Update PO
+   774→      const updatedPO = await tx.purchaseOrder.update({
+   775→        where: { id: poId },
+   776→        data: {
+   777→          amountReceived: po.amountReceived + totalReceived,
+   778→          receiptDate: now,
+   779→          status: newStatus,
+   780→        },
+   781→      });
+   782→      
+   783→      return {
+   784→        movements: createdMovements,
+   785→        purchaseOrder: updatedPO,
+   786→      };
+   787→    });
+   788→    
+   789→    // Return full updated order
+   790→    const fullOrder = await getPurchaseOrderWithDetails(poId);
+   791→    
+   792→    return NextResponse.json({
+   793→      success: true,
+   794→      data: {
+   795→        purchaseOrder: fullOrder,
+   796→        movements: result.movements,
+   797→      },
+   798→      message: `${movements.length} produit(s) reçu(s) avec succès`,
+   799→    });
+   800→  } catch (error) {
+   801→    console.error('Error receiving goods:', error);
+   802→    return NextResponse.json(
+   803→      {
+   804→        success: false,
+   805→        error: 'Erreur lors de la réception des marchandises',
+   806→      },
+   807→      { status: 500 }
+   808→    );
+   809→  }
+   810→}
+   811→
+   812→// ============================================================
+   813→// Handle Confirm Order Action
+   814→// ============================================================
+   815→
+   816→async function handleConfirmOrder(request: NextRequest, poId: string): Promise<NextResponse> {
+   817→  try {
+   818→    // Get PO
+   819→    const po = await db.purchaseOrder.findUnique({
+   820→      where: { id: poId },
+   821→    });
+   822→    
+   823→    if (!po) {
+   824→      return NextResponse.json(
+   825→        {
+   826→          success: false,
+   827→          error: 'Commande d\'achat non trouvée',
+   828→        },
+   829→        { status: 404 }
+   830→      );
+   831→    }
+   832→    
+   833→    // Check current status and validate transition
+   834→    const targetStatus = 'confirmed';
+   835→    
+   836→    if (!canTransition(po.status, targetStatus)) {
+   837→      return NextResponse.json(
+   838→        {
+   839→          success: false,
+   840→          error: `Transition de statut invalide: '${po.status}' -> '${targetStatus}'`,
+   841→        },
+   842→        { status: 400 }
+   843→      );
+   844→    }
+   845→    
+   846→    // Determine intermediate status based on current state
+   847→    let newStatus: string;
+   848→    
+   849→    switch (po.status) {
+   850→      case 'draft':
+   851→        newStatus = 'sent'; // First send to supplier
+   852→        break;
+   853→      case 'sent':
+   854→      case 'cancelled':
+   855→        newStatus = 'confirmed'; // Then confirm
+   856→        break;
+   857→      default:
+   858→        newStatus = targetStatus;
+   859→    }
+   860→    
+   861→    // Update status
+   862→    const updatedPO = await db.purchaseOrder.update({
+   863→      where: { id: poId },
+   864→      data: {
+   865→        status: newStatus,
+   866→      },
+   867→    });
+   868→    
+   869→    // Return full order
+   870→    const fullOrder = await getPurchaseOrderWithDetails(poId);
+   871→    
+   872→    const statusMessages: Record<string, string> = {
+   873→      sent: 'Commande envoyée au fournisseur',
+   874→      confirmed: 'Commande confirmée par le fournisseur',
+   875→    };
+   876→    
+   877→    return NextResponse.json({
+   878→      success: true,
+   879→      data: fullOrder,
+   880→      message: statusMessages[newStatus] || `Statut mis à jour: ${newStatus}`,
+   881→    });
+   882→  } catch (error) {
+   883→    console.error('Error confirming purchase order:', error);
+   884→    return NextResponse.json(
+   885→      {
+   886→        success: false,
+   887→        error: 'Erreur lors de la confirmation de la commande d\'achat',
+   888→      },
+   889→      { status: 500 }
+   890→    );
+   891→  }
+   892→}
+   893→
+   894→// ============================================================
+   895→// Handle Create Supplier Bill Action (with SCF Journal Entry)
+   896→// ============================================================
+   897→
+   898→async function handleCreateBill(request: NextRequest, poId: string): Promise<NextResponse> {
+   899→  try {
+   900→    const body = await request.json().catch(() => ({}));
+   901→    
+   902→    // Get PO with full details
+   903→    const po = await db.purchaseOrder.findUnique({
+   904→      where: { id: poId },
+   905→      include: {
+   906→        lines: { include: { product: true } },
+   907→        partner: true,
+   908→        company: true
+   909→      }
+   910→    });
+   911→    
+   912→    if (!po) {
+   913→      return NextResponse.json(
+   914→        { success: false, error: 'Commande d\'achat non trouvée' },
+   915→        { status: 404 }
+   916→      );
+   917→    }
+   918→    
+   919→    // Check if PO can be billed (must be received or at least confirmed)
+   920→    if (!['received', 'partial', 'confirmed'].includes(po.status)) {
+   921→      return NextResponse.json(
+   922→        { success: false, error: `La commande doit être au moins confirmée pour facturer (statut: ${po.status})` },
+   923→        { status: 400 }
+   924→      );
+   925→    }
+   926→
+   927→    // Generate Bill reference
+   928→    const now = new Date();
+   929→    const year = now.getFullYear();
+   930→    const month = String(now.getMonth() + 1).padStart(2, '0');
+   931→    
+   932→    const billCount = await db.bill.count({
+   933→      where: {
+   934→        companyId: po.companyId,
+   935→        reference: { startsWith: `FACH-${year}-${month}` }
+   936→      }
+   937→    });
+   938→    const sequence = String(billCount + 1).padStart(3, '0');
+   939→    const reference = `FACH-${year}-${month}-${sequence}`;
+   940→
+   941→    // Prepare bill lines from received quantities
+   942→    const billLines = po.lines
+   943→      .filter(line => line.quantityReceived > 0 || line.quantityInvoiced < line.quantity)
+   944→      .map(line => {
+   945→        const qtyToBill = Math.min(line.quantityReceived || line.quantity, line.quantity - line.quantityInvoiced);
+   946→        if (qtyToBill <= 0) return null;
+   947→        
+   948→        const ratio = qtyToBill / line.quantity;
+   949→        
+   950→        return {
+   951→          productId: line.productId,
+   952→          description: line.description || null,
+   953→          quantity: qtyToBill,
+   954→          unitPrice: line.unitPrice,
+   955→          discountRate: line.discountRate,
+   956→          tvaRate: line.tvaRate,
+   957→          amountUntaxed: Math.round(line.amountUntaxed * ratio * 100) / 100,
+   958→          amountTax: Math.round(line.amountTax * ratio * 100) / 100,
+   959→          amountTotal: Math.round(line.amountTotal * ratio * 100) / 100
+   960→        };
+   961→      })
+   962→      .filter(Boolean) as any[];
+   963→
+   964→    if (billLines.length === 0) {
+   965→      return NextResponse.json(
+   966→        { success: false, error: 'Aucune ligne à facturer' },
+   967→        { status: 400 }
+   968→      );
+   969→    }
+   970→
+   971→    // Calculate totals
+   972→    const amountUntaxed = billLines.reduce((sum, l) => sum + l.amountUntaxed, 0);
+   973→    const amountTax = billLines.reduce((sum, l) => sum + l.amountTax, 0);
+   974→    const amountTotal = Math.round((amountUntaxed + amountTax) * 100) / 100;
+   975→
+   976→    // Set due date
+   977→    const dueDate = body.dueDate 
+   978→      ? new Date(body.dueDate) 
+   979→      : new Date(now.getTime() + (parseInt(po.paymentTerms || '30') * 24 * 60 * 60 * 1000));
+   980→
+   981→    // Create bill in transaction with SCF journal entry
+   982→    const result = await db.$transaction(async (tx) => {
+   983→      // Create the bill
+   984→      const bill = await tx.bill.create({
+   985→        data: {
+   986→          reference,
+   987→          date: now,
+   988→          dueDate,
+   989→          status: 'posted', // Auto-post for SCF compliance
+   990→          type: 'supplier_invoice',
+   991→          
+   992→          // Amounts
+   993→          amountUntaxed,
+   994→          amountTax,
+   995→          amountTotal,
+   996→          amountPaid: 0,
+   997→          amountDue: amountTotal,
+   998→          
+   999→          // Partner & Company
+  1000→          partnerId: po.partnerId,
+  1001→          companyId: po.companyId,
+  1002→          
+  1003→          // Source tracking
+  1004→          sourceType: 'purchase_order',
+  1005→          sourceId: po.id,
+  1006→          
+  1007→          // Supplier info
+  1008→          supplierReference: body.supplierReference || po.reference,
+  1009→          
+  1010→          // Payment terms
+  1011→          paymentTerm: po.paymentTerms || '30',
+  1012→          paymentMode: po.paymentMode || null,
+  1013→          
+  1014→          // Notes
+  1015→          internalNotes: body.internalNotes || `Facture fournisseur générée depuis commande ${po.reference}`,
+  1016→          
+  1017→          // Lines
+  1018→          lines: { create: billLines }
+  1019→        },
+  1020→        include: {
+  1021→          partner: true,
+  1022→          lines: { include: { product: true } },
+  1023→          company: true
+  1024→        }
+  1025→      });
+  1026→
+  1027→      // Update PO billed amount
+  1028→      await tx.purchaseOrder.update({
+  1029→        where: { id: poId },
+  1030→        data: {
+  1031→          amountBilled: po.amountBilled + amountUntaxed,
+  1032→          status: po.amountBilled + amountUntaxed >= po.amountUntaxed * 0.99 ? 'billed' : po.status
+  1033→        }
+  1034→      });
+  1035→
+  1036→      // Update PO line quantities invoiced
+  1037→      for (const poLine of po.lines) {
+  1038→        const billLine = billLines.find(bl => bl.productId === poLine.productId);
+  1039→        if (billLine) {
+  1040→          await tx.purchaseOrderLine.update({
+  1041→            where: { id: poLine.id },
+  1042→            data: { quantityInvoiced: poLine.quantityInvoiced + billLine.quantity }
+  1043→          });
+  1044→        }
+  1045→      }
+  1046→
+  1047→      // Auto-generate SCF Journal Entry for supplier invoice
+  1048→      try {
+  1049→        if (po.company) {
+  1050→          await generateBillJournalEntry(tx, bill, po.company);
+  1051→        }
+  1052→      } catch (journalError) {
+  1053→        console.error('Warning: Failed to generate SCF journal entry:', journalError);
+  1054→      }
+  1055→
+  1056→      return bill;
+  1057→    });
+  1058→
+  1059→    return NextResponse.json({
+  1060→      success: true,
+  1061→      data: result,
+  1062→      message: `Facture fournisseur ${reference} créée avec succès (avec écriture comptable SCF)`,
+  1063→      workflowInfo: {
+  1064→        journalEntryGenerated: true,
+  1065→        scfCompliant: true
+  1066→      }
+  1067→    }, { status: 201 });
+  1068→    
+  1069→  } catch (error) {
+  1070→    console.error('Error creating supplier bill:', error);
+  1071→    return NextResponse.json(
+  1072→      { success: false, error: 'Erreur lors de la création de la facture fournisseur' },
+  1073→      { status: 500 }
+  1074→    );
+  1075→  }
+  1076→}
+  1077→

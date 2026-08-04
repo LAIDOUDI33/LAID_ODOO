@@ -1,0 +1,1850 @@
+     1→// ============================================================
+     2→// HASSIBA Suite ERP v2.0.0 - Workflow Orchestrator
+     3→// Moteur de Workflow End-to-End pour ERP Algérien
+     4→// 
+     5→// Flux implémentés:
+     6→// 1. Devis → Commande Client → Facture → Paiement
+     7→// 2. Demande Achat → Commande Achat → Réception → Facture Fournisseur → Paiement
+     8→// 3. Génération automatique des écritures comptables (SCF)
+     9→// 4. Automatisation des mouvements de stock
+    10→// ============================================================
+    11→
+    12→import { db } from '@/lib/db';
+    13→import { calculateTVACollectee, calculateTVADeductible, getTimbreFiscal } from '@/lib/algerian-taxes';
+    14→
+    15→// ============================================================
+    16→// Types & Interfaces
+    17→// ============================================================
+    18→
+    19→export interface WorkflowResult {
+    20→  success: boolean;
+    21→  message: string;
+    22→  data?: any;
+    23→  errors?: string[];
+    24→  workflowTrace: WorkflowStepTrace[];
+    25→}
+    26→
+    27→export interface WorkflowStepTrace {
+    28→  step: string;
+    29→  status: 'completed' | 'skipped' | 'failed';
+    30→  timestamp: Date;
+    31→  details?: string;
+    32→  entityId?: string;
+    33→}
+    34→
+    35→export interface ConvertQuotationInput {
+    36→  quotationId: string;
+    37→  partnerId?: string;
+    38→  expectedDate?: string;
+    39→  paymentTerms?: string;
+    40→  paymentMode?: string;
+    41→  warehouseId?: string;
+    42→  salesPersonId?: string;
+    43→  internalNotes?: string;
+    44→  customerNotes?: string;
+    45→}
+    46→
+    47→export interface ConvertSalesOrderToInvoiceInput {
+    48→  salesOrderId: string;
+    49→  dueDate?: string;
+    50→  paymentMode?: string;
+    51→  internalNotes?: string;
+    52→  customerNotes?: string;
+    53→}
+    54→
+    55→export interface ReceivePurchaseOrderInput {
+    56→  purchaseOrderId: string;
+    57→  lines: Array<{
+    58→    lineId: string;
+    59→    quantity: number;
+    60→    locationId?: string;
+    61→  }>;
+    62→  notes?: string;
+    63→}
+    64→
+    65→export interface CreateBillFromPOInput {
+    66→  purchaseOrderId: string;
+    67→  dueDate?: string;
+    68→  supplierReference?: string;
+    69→  internalNotes?: string;
+    70→}
+    71→
+    72→export interface RecordPaymentInput {
+    73→  invoiceType: 'customer' | 'supplier';
+    74→  invoiceId: string;
+    75→  amount: number;
+    76→  paymentDate: string;
+    77→  paymentMode: string;
+    78→  bankAccountId?: string;
+    79→  reference?: string;
+    80→  notes?: string;
+    81→}
+    82→
+    83→export interface JournalEntryInput {
+    84→  date: Date;
+    85→  journalType: 'sales' | 'purchase' | 'cash' | 'general';
+    86→  reference: string;
+    87→  label: string;
+    88→  lines: Array<{
+    89→    accountId: string;
+    90→    debit: number;
+    91→    credit: number;
+    92→    label?: string;
+    93→    partnerId?: string;
+    94→  }>;
+    95→  sourceType: string;
+    96→  sourceId: string;
+    97→  companyId: string;
+    98→}
+    99→
+   100→// ============================================================
+   101→// SCF Account Mapping (Plan Comptable Algérien)
+   102→// ============================================================
+   103→
+   104→const SCF_ACCOUNTS = {
+   105→  // Classe 4 - Comptes de Tiers
+   106→  CLIENTS: '410000',      // Clients
+   107→  FOURNISSEURS: '440000', // Fournisseurs
+   108→  TVA_COLLECTEE: '445700', // TVA collectée
+   109→  TVA_DEDUCTIBLE: '445800', // TVA déductible sur achats
+   110→  TIMBRE_FISCAL: '445890', // Timbre fiscal
+   111→  
+   112→  // Classe 7 - Comptes de Produits
+   113→  VENTES: '701000',      // Ventes de marchandises
+   114→  VENTES_SERVICES: '706000', // Prestations de services
+   115→  
+   116→  // Classe 6 - Comptes de Charges
+   117→  ACHATS: '601000',      // Achats de marchandises
+   118→  ACHATS_SERVICES: '606000', // Achats non stockables
+   119→  TRANSPORT: '624000',   // Transport
+   120→  ASSURANCE: '616000',   // Assures
+   121→  
+   122→  // Classe 5 - Comptes Financiers
+   123→  BANQUE: '512000',      // Banque
+   124→  CAISSE: '530000',      // Caisse
+   125→};
+   126→
+   127→// ============================================================
+   128→// WORKFLOW 1: Devis → Commande Client (Quote → Sales Order)
+   129→// ============================================================
+   130→
+   131→export async function convertQuotationToSalesOrder(
+   132→  input: ConvertQuotationInput,
+   133→  userId?: string
+   134→): Promise<WorkflowResult> {
+   135→  const trace: WorkflowStepTrace[] = [];
+   136→  
+   137→  try {
+   138→    // Step 1: Validate and fetch quotation
+   139→    trace.push({ step: 'validate_quotation', status: 'completed', timestamp: new Date() });
+   140→    
+   141→    const quotation = await db.quotation.findUnique({
+   142→      where: { id: input.quotationId },
+   143→      include: { lines: true, partner: true }
+   144→    });
+   145→    
+   146→    if (!quotation) {
+   147→      return {
+   148→        success: false,
+   149→        message: 'Devis non trouvé',
+   150→        workflowTrace: trace,
+   151→        errors: ['Quotation not found']
+   152→      };
+   153→    }
+   154→    
+   155→    if (!['draft', 'sent', 'viewed'].includes(quotation.status)) {
+   156→      return {
+   157→        success: false,
+   158→        message: `Le devis ne peut pas être converti (statut actuel: ${quotation.status})`,
+   159→        workflowTrace: trace,
+   160→        errors: [`Invalid quotation status: ${quotation.status}`]
+   161→      };
+   162→    }
+   163→
+   164→    // Step 2: Check for existing conversion
+   165→    trace.push({ step: 'check_existing_conversion', status: 'completed', timestamp: new Date() });
+   166→    
+   167→    const existingConversion = await db.salesOrder.findFirst({
+   168→      where: { quotationId: input.quotationId }
+   169→    });
+   170→    
+   171→    if (existingConversion) {
+   172→      return {
+   173→        success: false,
+   174→        message: 'Ce devis a déjà été converti en commande',
+   175→        workflowTrace: trace,
+   176→        errors: ['Quotation already converted'],
+   177→        data: existingConversion
+   178→      };
+   179→    }
+   180→
+   181→    // Step 3: Get company
+   182→    trace.push({ step: 'get_company', status: 'completed', timestamp: new Date() });
+   183→    
+   184→    const company = await db.company.findFirst({
+   185→      where: { isActive: true }
+   186→    });
+   187→    
+   188→    if (!company) {
+   189→      return {
+   190→        success: false,
+   191→        message: 'Aucune entreprise active configurée',
+   192→        workflowTrace: trace,
+   193→        errors: ['No active company']
+   194→      };
+   195→    }
+   196→
+   197→    // Step 4: Generate Sales Order reference
+   198→    trace.push({ step: 'generate_reference', status: 'completed', timestamp: new Date() });
+   199→    
+   200→    const now = new Date();
+   201→    const year = now.getFullYear();
+   202→    const month = String(now.getMonth() + 1).padStart(2, '0');
+   203→    
+   204→    const orderCount = await db.salesOrder.count({
+   205→      where: {
+   206→        companyId: company.id,
+   207→        reference: { startsWith: `CMD-${year}-${month}` }
+   208→      }
+   209→    });
+   210→    const sequence = String(orderCount + 1).padStart(3, '0');
+   211→    const reference = `CMD-${year}-${month}-${sequence}`;
+   212→
+   213→    // Step 5: Create Sales Order from Quotation lines
+   214→    trace.push({ step: 'create_sales_order', status: 'completed', timestamp: new Date() });
+   215→    
+   216→    const linesData = quotation.lines.map(line => ({
+   217→      productId: line.productId,
+   218→      description: line.description || null,
+   219→      quantity: line.quantity,
+   220→      unitPrice: line.unitPrice,
+   221→      discountRate: line.discountRate,
+   222→      tvaRate: line.tvaRate,
+   223→      amountUntaxed: line.amountUntaxed,
+   224→      amountTax: line.amountTax,
+   225→      amountTotal: line.amountTotal,
+   226→      quantityDelivered: 0,
+   227→      quantityInvoiced: 0
+   228→    }));
+   229→
+   230→    // Calculate totals
+   231→    const amountUntaxed = linesData.reduce((sum, l) => sum + l.amountUntaxed, 0);
+   232→    const amountTax = linesData.reduce((sum, l) => sum + l.amountTax, 0);
+   233→    const timbreFiscal = getTimbreFiscal('facture', amountUntaxed + amountTax);
+   234→    const amountTotal = amountUntaxed + amountTax + timbreFiscal;
+   235→
+   236→    const salesOrder = await db.$transaction(async (tx) => {
+   237→      // Create the sales order
+   238→      const order = await tx.salesOrder.create({
+   239→        data: {
+   240→          reference,
+   241→          date: now,
+   242→          expectedDate: input.expectedDate ? new Date(input.expectedDate) : null,
+   243→          status: 'sent',
+   244→          
+   245→          // Amounts
+   246→          amountUntaxed,
+   247→          amountTax,
+   248→          timbreFiscal,
+   249→          amountTotal,
+   250→          amountDelivered: 0,
+   251→          amountInvoiced: 0,
+   252→          
+   253→          // Relations
+   254→          partnerId: input.partnerId || quotation.partnerId,
+   255→          companyId: company.id,
+   256→          warehouseId: input.warehouseId || null,
+   257→          salesPersonId: input.salesPersonId || quotation.salesPersonId || null,
+   258→          quotationId: quotation.id,
+   259→          opportunityId: quotation.opportunityId || null,
+   260→          
+   261→          // Payment & Shipping
+   262→          paymentTerms: input.paymentTerms || quotation.paymentTerms || '30',
+   263→          paymentMode: input.paymentMode || quotation.paymentMode || null,
+   264→          shippingAddress: null,
+   265→          
+   266→          // Notes
+   267→          internalNotes: input.internalNotes || quotation.internalNotes || null,
+   268→          customerNotes: input.customerNotes || quotation.customerNotes || null,
+   269→          
+   270→          // Lines
+   271→          lines: { create: linesData }
+   272→        },
+   273→        include: {
+   274→          partner: true,
+   275→          lines: { include: { product: true } }
+   276→        }
+   277→      });
+   278→
+   279→      // Update quotation status to converted
+   280→      await tx.quotation.update({
+   281→        where: { id: quotation.id },
+   282→        data: { 
+   283→          status: 'converted',
+   284→          convertedToId: order.id
+   285→        }
+   286→      });
+   287→
+   288→      // Update opportunity status if linked
+   289→      if (quotation.opportunityId) {
+   290→        await tx.opportunity.update({
+   291→          where: { id: quotation.opportunityId },
+   292→          data: { status: 'proposal_sent' }
+   293→        });
+   294→      }
+   295→
+   296→      return order;
+   297→    });
+   298→
+   299→    trace.push({ 
+   300→      step: 'conversion_completed', 
+   301→      status: 'completed', 
+   302→      timestamp: new Date(),
+   303→      entityId: salesOrder.id,
+   304→      details: `Commande ${reference} créée depuis le devis ${quotation.reference}`
+   305→    });
+   306→
+   307→    return {
+   308→      success: true,
+   309→      message: `Commande client ${reference} créée avec succès depuis le devis ${quotation.reference}`,
+   310→      data: salesOrder,
+   311→      workflowTrace: trace
+   312→    };
+   313→
+   314→  } catch (error) {
+   315→    console.error('Error in convertQuotationToSalesOrder:', error);
+   316→    trace.push({ 
+   317→      step: 'conversion_error', 
+   318→      status: 'failed', 
+   319→      timestamp: new Date(),
+   320→      details: error instanceof Error ? error.message : 'Unknown error'
+   321→    });
+   322→    
+   323→    return {
+   324→      success: false,
+   325→      message: 'Erreur lors de la conversion du devis en commande',
+   326→      errors: [error instanceof Error ? error.message : 'Unknown error'],
+   327→      workflowTrace: trace
+   328→    };
+   329→  }
+   330→}
+   331→
+   332→// ============================================================
+   333→// WORKFLOW 2: Commande Client → Facture (Sales Order → Invoice)
+   334→// ============================================================
+   335→
+   336→export async function convertSalesOrderToInvoice(
+   337→  input: ConvertSalesOrderToInvoiceInput,
+   338→  userId?: string
+   339→): Promise<WorkflowResult> {
+   340→  const trace: WorkflowStepTrace[] = [];
+   341→  
+   342→  try {
+   343→    // Step 1: Validate and fetch sales order
+   344→    trace.push({ step: 'validate_sales_order', status: 'completed', timestamp: new Date() });
+   345→    
+   346→    const salesOrder = await db.salesOrder.findUnique({
+   347→      where: { id: input.salesOrderId },
+   348→      include: { 
+   349→        lines: true, 
+   350→        partner: true,
+   351→        company: true
+   352→      }
+   353→    });
+   354→    
+   355→    if (!salesOrder) {
+   356→      return {
+   357→        success: false,
+   358→        message: 'Commande client non trouvée',
+   359→        workflowTrace: trace,
+   360→        errors: ['Sales order not found']
+   361→      };
+   362→    }
+   363→    
+   364→    if (!['confirmed', 'processing', 'delivered'].includes(salesOrder.status)) {
+   365→      return {
+   366→        success: false,
+   367→        message: `La commande ne peut pas être facturée (statut: ${salesOrder.status})`,
+   368→        workflowTrace: trace,
+   369→        errors: [`Invalid sales order status: ${salesOrder.status}`]
+   370→      };
+   371→    }
+   372→
+   373→    // Step 2: Get or validate company
+   374→    trace.push({ step: 'get_company', status: 'completed', timestamp: new Date() });
+   375→    
+   376→    const company = salesOrder.company || await db.company.findFirst({
+   377→      where: { isActive: true }
+   378→    });
+   379→    
+   380→    if (!company) {
+   381→      return {
+   382→        success: false,
+   383→        message: 'Aucune entreprise active configurée',
+   384→        workflowTrace: trace,
+   385→        errors: ['No active company']
+   386→      };
+   387→    }
+   388→
+   389→    // Step 3: Generate Invoice reference
+   390→    trace.push({ step: 'generate_invoice_reference', status: 'completed', timestamp: new Date() });
+   391→    
+   392→    const now = new Date();
+   393→    const year = now.getFullYear();
+   394→    const month = String(now.getMonth() + 1).padStart(2, '0');
+   395→    
+   396→    const invoiceCount = await db.invoice.count({
+   397→      where: {
+   398→        companyId: company.id,
+   399→        reference: { startsWith: `FACT-${year}-${month}` }
+   400→      }
+   401→    });
+   402→    const sequence = String(invoiceCount + 1).padStart(3, '0');
+   403→    const reference = `FACT-${year}-${month}-${sequence}`;
+   404→
+   405→    // Step 4: Calculate amounts from SO lines (only uninvoiced quantities)
+   406→    trace.push({ step: 'calculate_amounts', status: 'completed', timestamp: new Date() });
+   407→    
+   408→    const invoiceLines = salesOrder.lines
+   409→      .filter(line => line.quantity > line.quantityInvoiced)
+   410→      .map(line => {
+   411→        const qtyToInvoice = line.quantity - line.quantityInvoiced;
+   412→        const ratio = qtyToInvoice / line.quantity;
+   413→        
+   414→        return {
+   415→          productId: line.productId,
+   416→          label: line.description || null,
+   417→          quantity: qtyToInvoice,
+   418→          unitPrice: line.unitPrice,
+   419→          discountRate: line.discountRate,
+   420→          tvaRate: line.tvaRate,
+   421→          amountUntaxed: Math.round(line.amountUntaxed * ratio * 100) / 100,
+   422→          amountTax: Math.round(line.amountTax * ratio * 100) / 100,
+   423→          amountTotal: Math.round(line.amountTotal * ratio * 100) / 100
+   424→        };
+   425→      });
+   426→
+   427→    if (invoiceLines.length === 0) {
+   428→      return {
+   429→        success: false,
+   430→        message: 'Toutes les lignes de la commande sont déjà facturées',
+   431→        workflowTrace: trace,
+   432→        errors: ['All lines already invoiced']
+   433→      };
+   434→    }
+   435→
+   436→    const amountUntaxed = invoiceLines.reduce((sum, l) => sum + l.amountUntaxed, 0);
+   437→    const amountTax = invoiceLines.reduce((sum, l) => sum + l.amountTax, 0);
+   438→    const timbreFiscal = getTimbreFiscal('facture', amountUntaxed + amountTax);
+   439→    const amountTotal = Math.round((amountUntaxed + amountTax + timbreFiscal) * 100) / 100;
+   440→
+   441→    // Step 5: Create Invoice and update SO in transaction
+   442→    trace.push({ step: 'create_invoice', status: 'completed', timestamp: new Date() });
+   443→    
+   444→    const dueDate = input.dueDate 
+   445→      ? new Date(input.dueDate) 
+   446→      : new Date(now.getTime() + (parseInt(salesOrder.paymentTerms || '30') * 24 * 60 * 60 * 1000));
+   447→
+   448→    const result = await db.$transaction(async (tx) => {
+   449→      // Create invoice
+   450→      const invoice = await tx.invoice.create({
+   451→        data: {
+   452→          reference,
+   453→          date: now,
+   454→          dueDate,
+   455→          status: 'posted', // Auto-post when created from validated SO
+   456→          type: 'invoice',
+   457→          
+   458→          // Amounts
+   459→          amountUntaxed,
+   460→          amountTax,
+   461→          timbreFiscal,
+   462→          amountTotal,
+   463→          amountPaid: 0,
+   464→          amountDue: amountTotal,
+   465→          
+   466→          // Partner & Company
+   467→          partnerId: salesOrder.partnerId,
+   468→          companyId: company.id,
+   469→          
+   470→          // Payment info
+   471→          paymentTerm: salesOrder.paymentTerms || '30',
+   472→          paymentMode: input.paymentMode || salesOrder.paymentMode || null,
+   473→          
+   474→          // Source tracking
+   475→          sourceType: 'sales_order',
+   476→          sourceId: salesOrder.id,
+   477→          
+   478→          // Notes
+   479→          internalNotes: input.internalNotes || `Facture générée depuis commande ${salesOrder.reference}`,
+   480→          customerNotes: input.customerNotes || salesOrder.customerNotes || null,
+   481→          
+   482→          // Lines
+   483→          lines: { create: invoiceLines }
+   484→        },
+   485→        include: {
+   486→          partner: true,
+   487→          lines: { include: { product: true } }
+   488→        }
+   489→      });
+   490→
+   491→      // Link invoice to sales order
+   492→      await tx.salesOrder.update({
+   493→        where: { id: salesOrder.id },
+   494→        data: {
+   495→          invoices: { connect: { id: invoice.id } },
+   496→          amountInvoiced: salesOrder.amountInvoiced + amountUntaxed,
+   497→          status: salesOrder.status === 'delivered' ? 'invoiced' : salesOrder.status
+   498→        }
+   499→      });
+   500→
+   501→      // Update line quantities invoiced
+   502→      for (const soLine of salesOrder.lines) {
+   503→        const invLine = invoiceLines.find(il => il.productId === soLine.productId);
+   504→        if (invLine) {
+   505→          await tx.salesOrderLine.update({
+   506→            where: { id: soLine.id },
+   507→            data: {
+   508→              quantityInvoiced: soLine.quantityInvoiced + invLine.quantity
+   509→            }
+   510→          });
+   511→        }
+   512→      }
+   513→
+   514→      // Auto-generate SCF Journal Entry
+   515→      await generateSCFJournalEntryFromInvoice(tx, invoice, company);
+   516→
+   517→      return { invoice, salesOrderId: salesOrder.id };
+   518→    });
+   519→
+   520→    trace.push({ 
+   521→      step: 'invoice_created', 
+   522→      status: 'completed', 
+   523→      timestamp: new Date(),
+   524→      entityId: result.invoice.id,
+   525→      details: `Facture ${reference} créée depuis commande ${salesOrder.reference}`
+   526→    });
+   527→
+   528→    trace.push({ 
+   529→      step: 'journal_entry_generated', 
+   530→      status: 'completed', 
+   531→      timestamp: new Date(),
+   532→      details: 'Écriture comptable SCF générée automatiquement'
+   533→    });
+   534→
+   535→    return {
+   536→      success: true,
+   537→      message: `Facture ${reference} créée avec succès depuis la commande ${salesOrder.reference}`,
+   538→      data: result.invoice,
+   539→      workflowTrace: trace
+   540→    };
+   541→
+   542→  } catch (error) {
+   543→    console.error('Error in convertSalesOrderToInvoice:', error);
+   544→    trace.push({ 
+   545→      step: 'invoice_creation_error', 
+   546→      status: 'failed', 
+   547→      timestamp: new Date(),
+   548→      details: error instanceof Error ? error.message : 'Unknown error'
+   549→    });
+   550→    
+   551→    return {
+   552→      success: false,
+   553→      message: 'Erreur lors de la création de la facture',
+   554→      errors: [error instanceof Error ? error.message : 'Unknown error'],
+   555→      workflowTrace: trace
+   556→    };
+   557→  }
+   558→}
+   559→
+   560→// ============================================================
+   561→// WORKFLOW 3: Commande Achat → Réception (PO → Goods Receipt)
+   562→// ============================================================
+   563→
+   564→export async function receivePurchaseOrder(
+   565→  input: ReceivePurchaseOrderInput,
+   566→  userId?: string
+   567→): Promise<WorkflowResult> {
+   568→  const trace: WorkflowStepTrace[] = [];
+   569→  
+   570→  try {
+   571→    // Step 1: Validate PO
+   572→    trace.push({ step: 'validate_purchase_order', status: 'completed', timestamp: new Date() });
+   573→    
+   574→    const po = await db.purchaseOrder.findUnique({
+   575→      where: { id: input.purchaseOrderId },
+   576→      include: { 
+   577→        lines: true, 
+   578→        partner: true,
+   579→        warehouse: true,
+   580→        company: true
+   581→      }
+   582→    });
+   583→    
+   584→    if (!po) {
+   585→      return {
+   586→        success: false,
+   587→        message: "Commande d'achat non trouvée",
+   588→        workflowTrace: trace,
+   589→        errors: ['Purchase order not found']
+   590→      };
+   591→    }
+   592→    
+   593→    if (!['confirmed', 'partial'].includes(po.status)) {
+   594→      return {
+   595→        success: false,
+   596→        message: `La commande ne peut pas être réceptionnée (statut: ${po.status})`,
+   597→        workflowTrace: trace,
+   598→        errors: [`Invalid PO status: ${po.status}`]
+   599→      };
+   600→    }
+   601→
+   602→    // Step 2: Validate received quantities
+   603→    trace.push({ step: 'validate_quantities', status: 'completed', timestamp: new Date() });
+   604→    
+   605→    for (const recvLine of input.lines) {
+   606→      const poLine = po.lines.find(l => l.id === recvLine.lineId);
+   607→      if (!poLine) {
+   608→        return {
+   609→          success: false,
+   610→          message: `Ligne ${recvLine.lineId} non trouvée dans la commande`,
+   611→          workflowTrace: trace,
+   612→          errors: [`Line not found: ${recvLine.lineId}`]
+   613→        };
+   614→      }
+   615→      
+   616→      const maxReceivable = poLine.quantity - poLine.quantityReceived;
+   617→      if (recvLine.quantity > maxReceivable) {
+   618→        return {
+   619→          success: false,
+   620→          message: `Quantité reçue (${recvLine.quantity}) supérieure au restant (${maxReceivable}) pour la ligne`,
+   621→          workflowTrace: trace,
+   622→          errors: ['Quantity exceeds remaining']
+   623→        };
+   624→      }
+   625→    }
+   626→
+   627→    // Step 3: Process receipt with inventory update
+   628→    trace.push({ step: 'process_receipt', status: 'completed', timestamp: new Date() });
+   629→    
+   630→    const now = new Date();
+   631→    const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '');
+   632→    
+   633→    let totalReceivedAmount = 0;
+   634→    let totalReceivedTax = 0;
+   635→    
+   636→    const result = await db.$transaction(async (tx) => {
+   637→      const movements = [];
+   638→      
+   639→      for (const recvLine of input.lines) {
+   640→        const poLine = po.lines.find(l => l.id === recvLine.lineId)!;
+   641→        const product = await tx.product.findUnique({ where: { id: poLine.productId } });
+   642→        
+   643→        // Calculate received amounts
+   644→        const ratio = recvLine.quantity / poLine.quantity;
+   645→        const lineAmountUntaxed = Math.round(poLine.amountUntaxed * ratio * 100) / 100;
+   646→        const lineAmountTax = Math.round(poLine.amountTax * ratio * 100) / 100;
+   647→        
+   648→        totalReceivedAmount += lineAmountUntaxed;
+   649→        totalReceivedTax += lineAmountTax;
+   650→
+   651→        // Update PO Line quantity received
+   652→        await tx.purchaseOrderLine.update({
+   653→          where: { id: poLine.id },
+   654→          data: { quantityReceived: poLine.quantityReceived + recvLine.quantity }
+   655→        });
+   656→
+   657→        // Generate movement reference
+   658→        const refNumber = Math.random().toString(36).substring(2, 8).toUpperCase();
+   659→        const reference = `REC-${dateStr}-${refNumber}`;
+   660→
+   661→        // Determine warehouse/location for stock
+   662→        const warehouseId = recvLine.locationId 
+   663→          ? (await tx.location.findUnique({ where: { id: recvLine.locationId } }))?.warehouseId || po.warehouseId
+   664→          : po.warehouseId;
+   665→
+   666→        if (warehouseId && product?.trackStock) {
+   667→          // Find or create stock level
+   668→          const locationFilter = recvLine.locationId 
+   669→            ? { productId: poLine.productId, warehouseId, locationId: recvLine.locationId }
+   670→            : { productId: poLine.productId, warehouseId, locationId: null };
+   671→          
+   672→          let stockLevel = await tx.stockLevel.findFirst({ where: locationFilter });
+   673→          
+   674→          if (!stockLevel) {
+   675→            stockLevel = await tx.stockLevel.create({
+   676→              data: {
+   677→                productId: poLine.productId,
+   678→                warehouseId,
+   679→                locationId: recvLine.locationId || null,
+   680→                quantity: recvLine.quantity,
+   681→                availableQty: recvLine.quantity,
+   682→                minQty: 0,
+   683→                maxQty: 0
+   684→              }
+   685→            });
+   686→          } else {
+   687→            const newQty = stockLevel.quantity + recvLine.quantity;
+   688→            stockLevel = await tx.stockLevel.update({
+   689→              where: { id: stockLevel.id },
+   690→              data: {
+   691→                quantity: newQty,
+   692→                availableQty: newQty - stockLevel.reservedQty
+   693→              }
+   694→            });
+   695→          }
+   696→
+   697→          // Create stock movement (IN from PO)
+   698→          const movement = await tx.stockMovement.create({
+   699→            data: {
+   700→              reference,
+   701→              date: now,
+   702→              type: 'in_purchase',
+   703→              quantity: recvLine.quantity,
+   704→              unitCost: product?.costPrice || poLine.unitPrice,
+   705→              totalCost: recvLine.quantity * (product?.costPrice || poLine.unitPrice),
+   706→              notes: `Réception CMD Achat ${po.reference}`,
+   707→              productId: poLine.productId,
+   708→              warehouseId,
+   709→              locationId: recvLine.locationId || null,
+   710→              stockLevelId: stockLevel.id,
+   711→              sourceType: 'purchase_order',
+   712→              sourceId: po.id
+   713→            }
+   714→          });
+   715→          
+   716→          movements.push(movement);
+   717→        }
+   718→      }
+   719→
+   720→      // Update PO status based on reception completeness
+   721→      const allFullyReceived = po.lines.every(
+   722→        l => input.lines.find(il => il.lineId === l.id)?.quantity === (l.quantity - l.quantityReceived)
+   723→      );
+   724→      const someReceived = input.lines.length > 0;
+   725→      
+   726→      let newStatus = po.status;
+   727→      if (allFullyReceived && po.lines.every(l => {
+   728→        const received = l.quantityReceived + (input.lines.find(il => il.lineId === l.id)?.quantity || 0);
+   729→        return received >= l.quantity;
+   730→      })) {
+   731→        newStatus = 'received';
+   732→      } else if (someReceived) {
+   733→        newStatus = 'partial';
+   734→      }
+   735→
+   736→      // Update PO totals
+   737→      const updatedPo = await tx.purchaseOrder.update({
+   738→        where: { id: po.id },
+   739→        data: {
+   740→          status: newStatus,
+   741→          amountReceived: po.amountReceived + totalReceivedAmount
+   742→        },
+   743→        include: { lines: true }
+   744→      });
+   745→
+   746→      return { updatedPo, movements };
+   747→    });
+   748→
+   749→    trace.push({ 
+   750→      step: 'receipt_completed', 
+   751→      status: 'completed', 
+   752→      timestamp: new Date(),
+   753→      entityId: result.updatedPo.id,
+   754→      details: `${input.lines.length} ligne(s) réceptionnée(s), ${result.movements.length} mouvement(s) de stock créé(s)`
+   755→    });
+   756→
+   757→    return {
+   758→      success: true,
+   759→      message: `Réception enregistrée pour la commande ${po.reference}`,
+   760→      data: {
+   761→        purchaseOrder: result.updatedPo,
+   762→        movements: result.movements,
+   763→        amountReceived: totalReceivedAmount,
+   764→        taxReceived: totalReceivedTax
+   765→      },
+   766→      workflowTrace: trace
+   767→    };
+   768→
+   769→  } catch (error) {
+   770→    console.error('Error in receivePurchaseOrder:', error);
+   771→    trace.push({ 
+   772→      step: 'receipt_error', 
+   773→      status: 'failed', 
+   774→      timestamp: new Date(),
+   775→      details: error instanceof Error ? error.message : 'Unknown error'
+   776→    });
+   777→    
+   778→    return {
+   779→      success: false,
+   780→      message: 'Erreur lors de la réception de la commande',
+   781→      errors: [error instanceof Error ? error.message : 'Unknown error'],
+   782→      workflowTrace: trace
+   783→    };
+   784→  }
+   785→}
+   786→
+   787→// ============================================================
+   788→// WORKFLOW 4: Commande Achat → Facture Fournisseur (PO → Bill)
+   789→// ============================================================
+   790→
+   791→export async function createBillFromPurchaseOrder(
+   792→  input: CreateBillFromPOInput,
+   793→  userId?: string
+   794→): Promise<WorkflowResult> {
+   795→  const trace: WorkflowStepTrace[] = [];
+   796→  
+   797→  try {
+   798→    // Step 1: Validate PO
+   799→    trace.push({ step: 'validate_purchase_order', status: 'completed', timestamp: new Date() });
+   800→    
+   801→    const po = await db.purchaseOrder.findUnique({
+   802→      where: { id: input.purchaseOrderId },
+   803→      include: { 
+   804→        lines: true, 
+   805→        partner: true,
+   806→        company: true
+   807→      }
+   808→    });
+   809→    
+   810→    if (!po) {
+   811→      return {
+   812→        success: false,
+   813→        message: "Commande d'achat non trouvée",
+   814→        workflowTrace: trace,
+   815→        errors: ['Purchase order not found']
+   816→      };
+   817→    }
+   818→    
+   819→    if (!['received', 'partial', 'confirmed'].includes(po.status)) {
+   820→      return {
+   821→        success: false,
+   822→        message: `La commande doit être au moins partiellement reçue avant facturation`,
+   823→        workflowTrace: trace,
+   824→        errors: [`Invalid PO status: ${po.status}`]
+   825→      };
+   826→    }
+   827→
+   828→    // Step 2: Check for existing bill
+   829→    trace.push({ step: 'check_existing_bill', status: 'completed', timestamp: new Date() });
+   830→    
+   831→    const existingBills = await db.bill.count({
+   832→      where: { 
+   833→        sourceType: 'purchase_order',
+   834→        sourceId: po.id,
+   835→        status: { notIn: ['cancelled'] }
+   836→      }
+   837→    });
+   838→    
+   839→    if (existingBills > 0 && po.status === 'received') {
+   840→      // Allow partial bills but warn about full billing
+   841→      trace.push({ 
+   842→        step: 'existing_bills_found', 
+   843→        status: 'skipped', 
+   844→        timestamp: new Date(),
+   845→        details: `${existingBills} facture(s) existante(s)`
+   846→      });
+   847→    }
+   848→
+   849→    // Step 3: Get company
+   850→    trace.push({ step: 'get_company', status: 'completed', timestamp: new Date() });
+   851→    
+   852→    const company = po.company || await db.company.findFirst({
+   853→      where: { isActive: true }
+   854→    });
+   855→    
+   856→    if (!company) {
+   857→      return {
+   858→        success: false,
+   859→        message: 'Aucune entreprise active configurée',
+   860→        workflowTrace: trace,
+   861→        errors: ['No active company']
+   862→      };
+   863→    }
+   864→
+   865→    // Step 4: Generate Bill reference
+   866→    trace.push({ step: 'generate_bill_reference', status: 'completed', timestamp: new Date() });
+   867→    
+   868→    const now = new Date();
+   869→    const year = now.getFullYear();
+   870→    const month = String(now.getMonth() + 1).padStart(2, '0');
+   871→    
+   872→    const billCount = await db.bill.count({
+   873→      where: {
+   874→        companyId: company.id,
+   875→        reference: { startsWith: `FACH-${year}-${month}` }
+   876→      }
+   877→    });
+   878→    const sequence = String(billCount + 1).padStart(3, '0');
+   879→    const reference = `FACH-${year}-${month}-${sequence}`;
+   880→
+   881→    // Step 5: Create Bill from received/billed quantities
+   882→    trace.push({ step: 'create_bill', status: 'completed', timestamp: new Date() });
+   883→    
+   884→    // Use received quantities for billing
+   885→    const billLines = po.lines
+   886→      .filter(line => line.quantityReceived > 0 || line.quantityInvoiced < line.quantity)
+   887→      .map(line => {
+   888→        const qtyToBill = Math.min(line.quantityReceived, line.quantity - line.quantityInvoiced);
+   889→        if (qtyToBill <= 0) return null;
+   890→        
+   891→        const ratio = qtyToBill / line.quantity;
+   892→        
+   893→        return {
+   894→          productId: line.productId,
+   895→          description: line.description || null,
+   896→          quantity: qtyToBill,
+   897→          unitPrice: line.unitPrice,
+   898→          discountRate: line.discountRate,
+   899→          tvaRate: line.tvaRate,
+   900→          amountUntaxed: Math.round(line.amountUntaxed * ratio * 100) / 100,
+   901→          amountTax: Math.round(line.amountTax * ratio * 100) / 100,
+   902→          amountTotal: Math.round(line.amountTotal * ratio * 100) / 100
+   903→        };
+   904→      })
+   905→      .filter(Boolean) as any[];
+   906→
+   907→    if (billLines.length === 0) {
+   908→      return {
+   909→        success: false,
+   910→        message: 'Aucune ligne à facturer (quantités déjà facturées ou non reçues)',
+   911→        workflowTrace: trace,
+   912→        errors: ['No lines to bill']
+   913→      };
+   914→    }
+   915→
+   916→    const amountUntaxed = billLines.reduce((sum, l) => sum + l.amountUntaxed, 0);
+   917→    const amountTax = billLines.reduce((sum, l) => sum + l.amountTax, 0);
+   918→    const amountTotal = Math.round((amountUntaxed + amountTax) * 100) / 100;
+   919→
+   920→    const dueDate = input.dueDate 
+   921→      ? new Date(input.dueDate) 
+   922→      : new Date(now.getTime() + (parseInt(po.paymentTerms || '30') * 24 * 60 * 60 * 1000));
+   923→
+   924→    const result = await db.$transaction(async (tx) => {
+   925→      // Create bill
+   926→      const bill = await tx.bill.create({
+   927→        data: {
+   928→          reference,
+   929→          date: now,
+   930→          dueDate,
+   931→          status: 'posted',
+   932→          type: 'supplier_invoice',
+   933→          
+   934→          // Amounts
+   935→          amountUntaxed,
+   936→          amountTax,
+   937→          amountTotal,
+   938→          amountPaid: 0,
+   939→          amountDue: amountTotal,
+   940→          
+   941→          // Partner & Company
+   942→          partnerId: po.partnerId,
+   943→          companyId: company.id,
+   944→          
+   945→          // Source tracking
+   946→          sourceType: 'purchase_order',
+   947→          sourceId: po.id,
+   948→          
+   949→          // Supplier info
+   950→          supplierReference: input.supplierReference || po.reference,
+   951→          
+   952→          // Payment terms
+   953→          paymentTerm: po.paymentTerms || '30',
+   954→          paymentMode: po.paymentMode || null,
+   955→          
+   956→          // Notes
+   957→          internalNotes: input.internalNotes || `Facture fournisseur générée depuis commande ${po.reference}`,
+   958→          
+   959→          // Lines
+   960→          lines: { create: billLines }
+   961→        },
+   962→        include: {
+   963→          partner: true,
+   964→          lines: { include: { product: true } }
+   965→        }
+   966→      });
+   967→
+   968→      // Link bill to PO
+   969→      await tx.purchaseOrder.update({
+   970→        where: { id: po.id },
+   971→        data: {
+   972→          amountBilled: po.amountBilled + amountUntaxed,
+   973→          status: po.amountBilled + amountUntaxed >= po.amountUntaxed * 0.99 ? 'billed' : po.status
+   974→        }
+   975→      });
+   976→
+   977→      // Update PO line quantities invoiced
+   978→      for (const poLine of po.lines) {
+   979→        const billLine = billLines.find(bl => bl.productId === poLine.productId);
+   980→        if (billLine) {
+   981→          await tx.purchaseOrderLine.update({
+   982→            where: { id: poLine.id },
+   983→            data: {
+   984→              quantityInvoiced: poLine.quantityInvoiced + billLine.quantity
+   985→            }
+   986→          });
+   987→        }
+   988→      }
+   989→
+   990→      // Auto-generate SCF Journal Entry for supplier invoice
+   991→      await generateSCFJournalEntryFromBill(tx, bill, company);
+   992→
+   993→      return { bill, purchaseOrderId: po.id };
+   994→    });
+   995→
+   996→    trace.push({ 
+   997→      step: 'bill_created', 
+   998→      status: 'completed', 
+   999→      timestamp: new Date(),
+  1000→      entityId: result.bill.id,
+  1001→      details: `Facture fournisseur ${reference} créée depuis commande ${po.reference}`
+  1002→    });
+  1003→
+  1004→    trace.push({ 
+  1005→      step: 'journal_entry_generated', 
+  1006→      status: 'completed', 
+  1007→      timestamp: new Date(),
+  1008→      details: 'Écriture comptable SCF générée automatiquement'
+  1009→    });
+  1010→
+  1011→    return {
+  1012→      success: true,
+  1013→      message: `Facture fournisseur ${reference} créée avec succès`,
+  1014→      data: result.bill,
+  1015→      workflowTrace: trace
+  1016→    };
+  1017→
+  1018→  } catch (error) {
+  1019→    console.error('Error in createBillFromPurchaseOrder:', error);
+  1020→    trace.push({ 
+  1021→      step: 'bill_creation_error', 
+  1022→      status: 'failed', 
+  1023→      timestamp: new Date(),
+  1024→      details: error instanceof Error ? error.message : 'Unknown error'
+  1025→    });
+  1026→    
+  1027→    return {
+  1028→      success: false,
+  1029→      message: 'Erreur lors de la création de la facture fournisseur',
+  1030→      errors: [error instanceof Error ? error.message : 'Unknown error'],
+  1031→      workflowTrace: trace
+  1032→    };
+  1033→  }
+  1034→}
+  1035→
+  1036→// ============================================================
+  1037→// WORKFLOW 5: Enregistrement Paiement (Payment Recording)
+  1038→// ============================================================
+  1039→
+  1040→export async function recordPayment(
+  1041→  input: RecordPaymentInput,
+  1042→  userId?: string
+  1043→): Promise<WorkflowResult> {
+  1044→  const trace: WorkflowStepTrace[] = [];
+  1045→  
+  1046→  try {
+  1047→    // Step 1: Fetch invoice/bill
+  1048→    trace.push({ step: 'fetch_document', status: 'completed', timestamp: new Date() });
+  1049→    
+  1050→    let document: any;
+  1051→    let documentType: string;
+  1052→    
+  1053→    if (input.invoiceType === 'customer') {
+  1054→      document = await db.invoice.findUnique({
+  1055→        where: { id: input.invoiceId },
+  1056→        include: { partner: true, company: true }
+  1057→      });
+  1058→      documentType = 'invoice';
+  1059→    } else {
+  1060→      document = await db.bill.findUnique({
+  1061→        where: { id: input.invoiceId },
+  1062→        include: { partner: true, company: true }
+  1063→      });
+  1064→      documentType = 'bill';
+  1065→    }
+  1066→    
+  1067→    if (!document) {
+  1068→      return {
+  1069→        success: false,
+  1070→        message: 'Document non trouvé',
+  1071→        workflowTrace: trace,
+  1072→        errors: ['Document not found']
+  1073→      };
+  1074→    }
+  1075→    
+  1076→    if (!['posted', 'partially_paid'].includes(document.status)) {
+  1077→      return {
+  1078→        success: false,
+  1079→        message: `Le document ne peut pas recevoir de paiement (statut: ${document.status})`,
+  1080→        workflowTrace: trace,
+  1081→        errors: [`Invalid document status: ${document.status}`]
+  1082→      };
+  1083→    }
+  1084→
+  1085→    // Step 2: Validate payment amount
+  1086→    trace.push({ step: 'validate_payment_amount', status: 'completed', timestamp: new Date() });
+  1087→    
+  1088→    const remainingAmount = document.amountDue || (document.amountTotal - document.amountPaid);
+  1089→    
+  1090→    if (input.amount <= 0) {
+  1091→      return {
+  1092→        success: false,
+  1093→        message: 'Le montant doit être supérieur à 0',
+  1094→        workflowTrace: trace,
+  1095→        errors: ['Invalid amount']
+  1096→      };
+  1097→    }
+  1098→    
+  1099→    if (input.amount > remainingAmount) {
+  1100→      return {
+  1101→        success: false,
+  1102→        message: `Le montant (${input.amount} DZD) dépasse le restant dû (${remainingAmount.toFixed(2)} DZD)`,
+  1103→        workflowTrace: trace,
+  1104→        errors: ['Amount exceeds due']
+  1105→      };
+  1106→    }
+  1107→
+  1108→    // Step 3: Generate payment reference
+  1109→    trace.push({ step: 'generate_payment_reference', status: 'completed', timestamp: new Date() });
+  1110→    
+  1111→    const now = new Date();
+  1112→    const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '');
+  1113→    const prefix = input.invoiceType === 'customer' ? 'PAY-C' : 'PAY-F';
+  1114→    const refSuffix = Math.random().toString(36).substring(2, 8).toUpperCase();
+  1115→    const reference = input.reference || `${prefix}-${dateStr}-${refSuffix}`;
+  1116→
+  1117→    // Step 4: Create payment and update document
+  1118→    trace.push({ step: 'create_payment', status: 'completed', timestamp: new Date() });
+  1119→    
+  1120→    const result = await db.$transaction(async (tx) => {
+  1121→      // Create payment record
+  1122→      const payment = await tx.payment.create({
+  1123→        data: {
+  1124→          reference,
+  1125→          date: input.paymentDate ? new Date(input.paymentDate) : now,
+  1126→          type: input.invoiceType === 'customer' ? 'inflow' : 'outflow',
+  1127→          amount: input.amount,
+  1128→          paymentMode: input.paymentMode,
+  1129→          status: 'reconciled',
+  1130→          
+  1131→          // Relations
+  1132→          partnerId: document.partnerId,
+  1133→          companyId: document.companyId,
+  1134→          bankAccountId: input.bankAccountId || null,
+  1135→          
+  1136→          // Source linking
+  1137→          sourceType: documentType,
+  1138→          sourceId: document.id,
+  1139→          
+  1140→          // Notes
+  1141→          notes: input.notes || `Paiement ${reference}`,
+  1142→          
+  1143→          // Journal entry will be created separately
+  1144→        }
+  1145→      });
+  1146→
+  1147→      // Update document amounts and status
+  1148→      const newAmountPaid = document.amountPaid + input.amount;
+  1149→      const newAmountDue = document.amountTotal - newAmountPaid;
+  1150→      const newStatus = newAmountDue <= 0.01 ? 'paid' : 'partially_paid';
+  1151→
+  1152→      if (documentType === 'invoice') {
+  1153→        await tx.invoice.update({
+  1154→          where: { id: document.id },
+  1155→          data: {
+  1156→            amountPaid: newAmountPaid,
+  1157→            amountDue: Math.max(0, newAmountDue),
+  1158→            status: newStatus
+  1159→          }
+  1160→        });
+  1161→      } else {
+  1162→        await tx.bill.update({
+  1163→          where: { id: document.id },
+  1164→          data: {
+  1165→            amountPaid: newAmountPaid,
+  1166→            amountDue: Math.max(0, newAmountDue),
+  1167→            status: newStatus
+  1168→          }
+  1169→        });
+  1170→      }
+  1171→
+  1172→      // Create bank/cash journal entry for the payment
+  1173→      const company = document.company || await tx.company.findFirst({
+  1174→        where: { isActive: true }
+  1175→      });
+  1176→
+  1177→      if (company) {
+  1178→        const journalRef = `EC-PAY-${dateStr}-${refSuffix}`;
+  1179→        const isCustomerPayment = input.invoiceType === 'customer';
+  1180→        
+  1181→        // Debit Bank/Cash, Credit Customer/Supplier
+  1182→        const journalLines = [
+  1183→          {
+  1184→            accountId: input.bankAccountId || SCF_ACCOUNTS.BANQUE,
+  1185→            debit: input.amount,
+  1186→            credit: 0,
+  1187→            label: isCustomerPayment 
+  1188→              ? `Encaissement client ${document.partner?.name}`
+  1189→              : `Paiement fournisseur ${document.partner?.name}`,
+  1190→            partnerId: document.partnerId
+  1191→          },
+  1192→          {
+  1193→            accountId: isCustomerPayment ? SCF_ACCOUNTS.CLIENTS : SCF_ACCOUNTS.FOURNISSEURS,
+  1194→            debit: 0,
+  1195→            credit: input.amount,
+  1196→            label: `Règlement ${reference}`,
+  1197→            partnerId: document.partnerId
+  1198→          }
+  1199→        ];
+  1200→
+  1201→        await tx.journalEntry.create({
+  1202→          data: {
+  1203→            date: now,
+  1204→            reference: journalRef,
+  1205→            label: `Paiement ${reference} - ${document.reference}`,
+  1206→            status: 'posted',
+  1207→            
+  1208→            // Amounts
+  1209→            totalDebit: input.amount,
+  1210→            totalCredit: input.amount,
+  1211→            
+  1212→            // Source
+  1213→            sourceType: 'payment',
+  1214→            sourceId: payment.id,
+  1215→            companyId: company.id,
+  1216→            
+  1217→            // Lines
+  1218→            lines: { create: journalLines }
+  1219→          }
+  1220→        });
+  1221→      }
+  1222→
+  1223→      return { payment, newStatus };
+  1224→    });
+  1225→
+  1226→    trace.push({ 
+  1227→      step: 'payment_recorded', 
+  1228→      status: 'completed', 
+  1229→      timestamp: new Date(),
+  1230→      entityId: result.payment.id,
+  1231→      details: `Paiement de ${input.amount.toFixed(2)} DZD enregistré`
+  1232→    });
+  1233→
+  1234→    return {
+  1235→      success: true,
+  1236→      message: `Paiement de ${input.amount.toFixed(2)} DZD enregistré avec succès`,
+  1237→      data: result.payment,
+  1238→      workflowTrace: trace
+  1239→    };
+  1240→
+  1241→  } catch (error) {
+  1242→    console.error('Error in recordPayment:', error);
+  1243→    trace.push({ 
+  1244→      step: 'payment_error', 
+  1245→      status: 'failed', 
+  1246→      timestamp: new Date(),
+  1247→      details: error instanceof Error ? error.message : 'Unknown error'
+  1248→    });
+  1249→    
+  1250→    return {
+  1251→      success: false,
+  1252→      message: 'Erreur lors de l\'enregistrement du paiement',
+  1253→      errors: [error instanceof Error ? error.message : 'Unknown error'],
+  1254→      workflowTrace: trace
+  1255→    };
+  1256→  }
+  1257→}
+  1258→
+  1259→// ============================================================
+  1260→// SCF JOURNAL ENTRY GENERATION (Accounting Automation)
+  1261→// ============================================================
+  1262→
+  1263→async function generateSCFJournalEntryFromInvoice(
+  1264→  tx: any,
+  1265→  invoice: any,
+  1266→  company: any
+  1267→): Promise<void> {
+  1268→  const now = new Date();
+  1269→  const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '');
+  1270→  const refSuffix = Math.random().toString(36).substring(2, 8).toUpperCase();
+  1271→  const reference = `EC-VTE-${dateStr}-${refSuffix}`;
+  1272→
+  1273→  // Group lines by TVA rate for optimized entries
+  1274→  const tvaGroups = new Map<number, number>();
+  1275→  let totalHT = 0;
+  1276→  
+  1277→  for (const line of invoice.lines) {
+  1278→    const rate = Math.round(line.tvaRate * 100); // Convert to percentage
+  1279→    tvaGroups.set(rate, (tvaGroups.get(rate) || 0) + line.amountTax);
+  1280→    totalHT += line.amountUntaxed;
+  1281→  }
+  1282→
+  1283→  // Build journal entry lines according to SCF
+  1284→  const journalLines: any[] = [];
+  1285→
+  1286→  // 1. Débit Client (Class 4) - Total TTC
+  1287→  journalLines.push({
+  1288→    accountId: SCF_ACCOUNTS.CLIENTS,
+  1289→    debit: Math.round(invoice.amountTotal * 100) / 100,
+  1290→    credit: 0,
+  1291→    label: `Facture ${invoice.reference} - ${invoice.partner?.name || 'Client'}`,
+  1292→    partnerId: invoice.partnerId
+  1293→  });
+  1294→
+  1295→  // 2. Crédit Ventes (Class 7) - Total HT
+  1296→  journalLines.push({
+  1297→    accountId: SCF_ACCOUNTS.VENTES,
+  1298→    debit: 0,
+  1299→    credit: Math.round(invoice.amountUntaxed * 100) / 100,
+  1300→    label: `Ventes Facture ${invoice.reference}`,
+  1301→    partnerId: invoice.partnerId
+  1302→  });
+  1303→
+  1304→  // 3. Crédit TVA Collectée (Class 4) - By rate
+  1305→  tvaGroups.forEach((amount, rate) => {
+  1306→    if (amount > 0) {
+  1307→      journalLines.push({
+  1308→        accountId: SCF_ACCOUNTS.TVA_COLLECTEE,
+  1309→        debit: 0,
+  1310→        credit: Math.round(amount * 100) / 100,
+  1311→        label: `TVA collectée ${rate}% - Fact. ${invoice.reference}`,
+  1312→        partnerId: invoice.partnerId
+  1313→      });
+  1314→    }
+  1315→  });
+  1316→
+  1317→  // 4. Crédit Timbre Fiscal (if applicable)
+  1318→  if (invoice.timbreFiscal && invoice.timbreFiscal > 0) {
+  1319→    journalLines.push({
+  1320→      accountId: SCF_ACCOUNTS.TIMBRE_FISCAL,
+  1321→      debit: 0,
+  1322→      credit: invoice.timbreFiscal,
+  1323→      label: `Timbre fiscal - Fact. ${invoice.reference}`,
+  1324→      partnerId: invoice.partnerId
+  1325→    });
+  1326→  }
+  1327→
+  1328→  // Create the journal entry
+  1329→  await tx.journalEntry.create({
+  1330→    data: {
+  1331→      date: now,
+  1332→      reference,
+  1333→      label: `Facture client ${invoice.reference} - Écriture SCF auto`,
+  1334→      status: 'posted',
+  1335→      
+  1336→      // Amounts
+  1337→      totalDebit: Math.round(invoice.amountTotal * 100) / 100,
+  1338→      totalCredit: Math.round(invoice.amountTotal * 100) / 100,
+  1339→      
+  1340→      // Source
+  1341→      sourceType: 'invoice',
+  1342→      sourceId: invoice.id,
+  1343→      companyId: company.id,
+  1344→      
+  1345→      // Lines
+  1346→      lines: { create: journalLines }
+  1347→    }
+  1348→  });
+  1349→}
+  1350→
+  1351→async function generateSCFJournalEntryFromBill(
+  1352→  tx: any,
+  1353→  bill: any,
+  1354→  company: any
+  1355→): Promise<void> {
+  1356→  const now = new Date();
+  1357→  const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '');
+  1358→  const refSuffix = Math.random().toString(36).substring(2, 8).toUpperCase();
+  1359→  const reference = `EC-ACH-${dateStr}-${refSuffix}`;
+  1360→
+  1361→  // Group lines by TVA rate
+  1362→  const tvaGroups = new Map<number, number>();
+  1363→  
+  1364→  for (const line of bill.lines) {
+  1365→    const rate = Math.round(line.tvaRate * 100);
+  1366→    tvaGroups.set(rate, (tvaGroups.get(rate) || 0) + line.amountTax);
+  1367→  }
+  1368→
+  1369→  // Build journal entry lines according to SCF
+  1370→  const journalLines: any[] = [];
+  1371→
+  1372→  // 1. Débit Achats (Class 6) - Total HT
+  1373→  journalLines.push({
+  1374→    accountId: SCF_ACCOUNTS.ACHATS,
+  1375→    debit: Math.round(bill.amountUntaxed * 100) / 100,
+  1376→    credit: 0,
+  1377→    label: `Achats Facture ${bill.reference} - ${bill.partner?.name || 'Fournisseur'}`,
+  1378→    partnerId: bill.partnerId
+  1379→  });
+  1380→
+  1381→  // 2. Débit TVA Déductible (Class 4) - By rate
+  1382→  tvaGroups.forEach((amount, rate) => {
+  1383→    if (amount > 0) {
+  1384→      journalLines.push({
+  1385→        accountId: SCF_ACCOUNTS.TVA_DEDUCTIBLE,
+  1386→        debit: Math.round(amount * 100) / 100,
+  1387→        credit: 0,
+  1388→        label: `TVA déductible ${rate}% - Fact. ${bill.reference}`,
+  1389→        partnerId: bill.partnerId
+  1390→      });
+  1391→    }
+  1392→  });
+  1393→
+  1394→  // 3. Crédit Fournisseurs (Class 4) - Total TTC
+  1395→  journalLines.push({
+  1396→    accountId: SCF_ACCOUNTS.FOURNISSEURS,
+  1397→    debit: 0,
+  1398→    credit: Math.round(bill.amountTotal * 100) / 100,
+  1399→    label: `Facture fournisseur ${bill.reference}`,
+  1400→    partnerId: bill.partnerId
+  1401→  });
+  1402→
+  1403→  // Create the journal entry
+  1404→  await tx.journalEntry.create({
+  1405→    data: {
+  1406→      date: now,
+  1407→      reference,
+  1408→      label: `Facture fournisseur ${bill.reference} - Écriture SCF auto`,
+  1409→      status: 'posted',
+  1410→      
+  1411→      // Amounts
+  1412→      totalDebit: Math.round(bill.amountTotal * 100) / 100,
+  1413→      totalCredit: Math.round(bill.amountTotal * 100) / 100,
+  1414→      
+  1415→      // Source
+  1416→      sourceType: 'bill',
+  1417→      sourceId: bill.id,
+  1418→      companyId: company.id,
+  1419→      
+  1420→      // Lines
+  1421→      lines: { create: journalLines }
+  1422→    }
+  1423→  });
+  1424→}
+  1425→
+  1426→// ============================================================
+  1427→// WORKFLOW 6: Livraison Commande Client (SO Delivery → Stock Out)
+  1428→// ============================================================
+  1429→
+  1430→export async function deliverSalesOrder(
+  1431→  salesOrderId: string,
+  1432→  deliveryLines: Array<{ lineId: string; quantity: number }>,
+  1433→  warehouseId?: string,
+  1434→  userId?: string
+  1435→): Promise<WorkflowResult> {
+  1436→  const trace: WorkflowStepTrace[] = [];
+  1437→  
+  1438→  try {
+  1439→    // Step 1: Validate SO
+  1440→    trace.push({ step: 'validate_sales_order', status: 'completed', timestamp: new Date() });
+  1441→    
+  1442→    const so = await db.salesOrder.findUnique({
+  1443→      where: { id: salesOrderId },
+  1444→      include: { 
+  1445→        lines: true, 
+  1446→        partner: true,
+  1447→        warehouse: true,
+  1448→        company: true
+  1449→      }
+  1450→    });
+  1451→    
+  1452→    if (!so) {
+  1453→      return {
+  1454→        success: false,
+  1455→        message: 'Commande client non trouvée',
+  1456→        workflowTrace: trace,
+  1457→        errors: ['Sales order not found']
+  1458→      };
+  1459→    }
+  1460→    
+  1461→    if (!['confirmed', 'processing'].includes(so.status)) {
+  1462→      return {
+  1463→        success: false,
+  1464→        message: `La commande ne peut pas être livrée (statut: ${so.status})`,
+  1465→        workflowTrace: trace,
+  1466→        errors: [`Invalid SO status: ${so.status}`]
+  1467→      };
+  1468→    }
+  1469→
+  1470→    // Step 2: Validate delivery quantities and stock availability
+  1471→    trace.push({ step: 'check_stock_availability', status: 'completed', timestamp: new Date() });
+  1472→    
+  1473→    const targetWarehouseId = warehouseId || so.warehouseId;
+  1474→    
+  1475→    for (const delLine of deliveryLines) {
+  1476→      const soLine = so.lines.find(l => l.id === delLine.lineId);
+  1477→      if (!soLine) {
+  1478→        return {
+  1479→          success: false,
+  1480→          message: `Ligne ${delLine.lineId} non trouvée`,
+  1481→          workflowTrace: trace,
+  1482→          errors: [`Line not found`]
+  1483→        };
+  1484→      }
+  1485→      
+  1486→      const maxDeliverable = soLine.quantity - soLine.quantityDelivered;
+  1487→      if (delLine.quantity > maxDeliverable) {
+  1488→        return {
+  1489→          success: false,
+  1490→          message: `Quantité à livrer (${delLine.quantity}) dépasse le restant (${maxDeliverable})`,
+  1491→          workflowTrace: trace,
+  1492→          errors: ['Quantity exceeds remaining']
+  1493→        };
+  1494→      }
+  1495→
+  1496→      // Check stock availability
+  1497→      if (targetWarehouseId) {
+  1498→        const stockLevel = await db.stockLevel.findFirst({
+  1499→          where: {
+  1500→            productId: soLine.productId,
+  1501→            warehouseId: targetWarehouseId
+  1502→          }
+  1503→        });
+  1504→        
+  1505→        if (!stockLevel || stockLevel.availableQty < delLine.quantity) {
+  1506→          const available = stockLevel?.availableQty || 0;
+  1507→          return {
+  1508→            success: false,
+  1509→            message: `Stock insuffisant pour le produit (disponible: ${available}, demandé: ${delLine.quantity})`,
+  1510→            workflowTrace: trace,
+  1511→            errors: ['Insufficient stock']
+  1512→          };
+  1513→        }
+  1514→      }
+  1515→    }
+  1516→
+  1517→    // Step 3: Process delivery with stock update
+  1518→    trace.push({ step: 'process_delivery', status: 'completed', timestamp: new Date() });
+  1519→    
+  1520→    const now = new Date();
+  1521→    const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '');
+  1522→    
+  1523→    let totalDeliveredAmount = 0;
+  1524→    
+  1525→    const result = await db.$transaction(async (tx) => {
+  1526→      const movements = [];
+  1527→      
+  1528→      for (const delLine of deliveryLines) {
+  1529→        const soLine = so.lines.find(l => l.id === delLine.lineId)!;
+  1530→        const product = await tx.product.findUnique({ where: { id: soLine.productId } });
+  1531→        
+  1532→        // Calculate delivered amounts
+  1533→        const ratio = delLine.quantity / soLine.quantity;
+  1534→        const lineAmount = Math.round(soLine.amountTotal * ratio * 100) / 100;
+  1535→        totalDeliveredAmount += lineAmount;
+  1536→
+  1537→        // Update SO Line quantity delivered
+  1538→        await tx.salesOrderLine.update({
+  1539→          where: { id: soLine.id },
+  1540→          data: { quantityDelivered: soLine.quantityDelivered + delLine.quantity }
+  1541→        });
+  1542→
+  1543→        // Generate movement reference
+  1544→        const refNumber = Math.random().toString(36).substring(2, 8).toUpperCase();
+  1545→        const reference = `LIV-${dateStr}-${refNumber}`;
+  1546→
+  1547→        // Update stock if tracking enabled
+  1548→        if (targetWarehouseId && product?.trackStock) {
+  1549→          const stockLevel = await tx.stockLevel.findFirst({
+  1550→            where: {
+  1551→              productId: soLine.productId,
+  1552→              warehouseId: targetWarehouseId
+  1553→            }
+  1554→          });
+  1555→          
+  1556→          if (stockLevel) {
+  1557→            const newQty = stockLevel.quantity - delLine.quantity;
+  1558→            const newAvailable = stockLevel.availableQty - delLine.quantity;
+  1559→            
+  1560→            await tx.stockLevel.update({
+  1561→              where: { id: stockLevel.id },
+  1562→              data: {
+  1563→                quantity: Math.max(0, newQty),
+  1564→                availableQty: Math.max(0, newAvailable)
+  1565→              }
+  1566→            });
+  1567→
+  1568→            // Create stock movement (OUT for delivery)
+  1569→            const movement = await tx.stockMovement.create({
+  1570→              data: {
+  1571→                reference,
+  1572→                date: now,
+  1573→                type: 'out_delivery',
+  1574→                quantity: delLine.quantity,
+  1575→                unitCost: product.costPrice || 0,
+  1576→                totalCost: delLine.quantity * (product.costPrice || 0),
+  1577→                notes: `Livraison CMD ${so.reference}`,
+  1578→                productId: soLine.productId,
+  1579→                warehouseId: targetWarehouseId,
+  1580→                stockLevelId: stockLevel.id,
+  1581→                sourceType: 'sales_order',
+  1582→                sourceId: so.id
+  1583→              }
+  1584→            });
+  1585→            
+  1586→            movements.push(movement);
+  1587→          }
+  1588→        }
+  1589→      }
+  1590→
+  1591→      // Update SO status
+  1592→      const allFullyDelivered = so.lines.every(l => {
+  1593→        const delivered = l.quantityDelivered + (deliveryLines.find(dl => dl.lineId === l.id)?.quantity || 0);
+  1594→        return delivered >= l.quantity;
+  1595→      });
+  1596→      
+  1597→      const newStatus = allFullyDelivered ? 'delivered' : 'processing';
+  1598→      
+  1599→      const updatedSo = await tx.salesOrder.update({
+  1600→        where: { id: so.id },
+  1601→        data: {
+  1602→          status: newStatus,
+  1603→          amountDelivered: so.amountDelivered + totalDeliveredAmount
+  1604→        },
+  1605→        include: { lines: true }
+  1606→      });
+  1607→
+  1608→      return { updatedSo, movements };
+  1609→    });
+  1610→
+  1611→    trace.push({ 
+  1612→      step: 'delivery_completed', 
+  1613→      status: 'completed', 
+  1614→      timestamp: new Date(),
+  1615→      entityId: result.updatedSo.id,
+  1616→      details: `${deliveryLines.length} ligne(s) livrée(s), ${result.movements.length} mouvement(s) de stock`
+  1617→    });
+  1618→
+  1619→    return {
+  1620→      success: true,
+  1621→      message: `Livraison enregistrée pour la commande ${so.reference}`,
+  1622→      data: {
+  1623→        salesOrder: result.updatedSo,
+  1624→        movements: result.movements,
+  1625→        amountDelivered: totalDeliveredAmount
+  1626→      },
+  1627→      workflowTrace: trace
+  1628→    };
+  1629→
+  1630→  } catch (error) {
+  1631→    console.error('Error in deliverSalesOrder:', error);
+  1632→    trace.push({ 
+  1633→      step: 'delivery_error', 
+  1634→      status: 'failed', 
+  1635→      timestamp: new Date(),
+  1636→      details: error instanceof Error ? error.message : 'Unknown error'
+  1637→    });
+  1638→    
+  1639→    return {
+  1640→      success: false,
+  1641→      message: 'Erreur lors de la livraison',
+  1642→      errors: [error instanceof Error ? error.message : 'Unknown error'],
+  1643→      workflowTrace: trace
+  1644→    };
+  1645→  }
+  1646→}
+  1647→
+  1648→// ============================================================
+  1649→// Complete Workflow Executors (Multi-step flows)
+  1650→// ============================================================
+  1651→
+  1652→/**
+  1653→ * Execute complete Sales Cycle: Quote → SO → Invoice → Payment
+  1654→ */
+  1655→export async function executeFullSalesCycle(
+  1656→  quotationId: string,
+  1657→  paymentData?: Omit<RecordPaymentInput, 'invoiceType' | 'invoiceId'>,
+  1658→  userId?: string
+  1659→): Promise<WorkflowResult> {
+  1660→  const masterTrace: WorkflowStepTrace[] = [];
+  1661→  
+  1662→  try {
+  1663→    // Step 1: Convert Quote to SO
+  1664→    masterTrace.push({ step: 'start_quote_to_so_conversion', status: 'completed', timestamp: new Date() });
+  1665→    
+  1666→    const conversionResult = await convertQuotationToSalesOrder({ quotationId }, userId);
+  1667→    masterTrace.push(...conversionResult.workflowTrace);
+  1668→    
+  1669→    if (!conversionResult.success) {
+  1670→      return {
+  1671→        ...conversionResult,
+  1672→        workflowTrace: masterTrace,
+  1673→        message: 'Échec: Conversion Devis → Commande'
+  1674→      };
+  1675→    }
+  1676→
+  1677→    // Step 2: Confirm SO
+  1678→    const salesOrderId = conversionResult.data.id;
+  1679→    masterTrace.push({ step: 'confirm_sales_order', status: 'completed', timestamp: new Date() });
+  1680→    
+  1681→    await db.salesOrder.update({
+  1682→      where: { id: salesOrderId },
+  1683→      data: { status: 'confirmed' }
+  1684→    });
+  1685→
+  1686→    // Step 3: Deliver SO (auto-deliver full quantity)
+  1687→    masterTrace.push({ step: 'deliver_sales_order', status: 'completed', timestamp: new Date() });
+  1688→    
+  1689→    const so = await db.salesOrder.findUnique({
+  1690→      where: { id: salesOrderId },
+  1691→      include: { lines: true }
+  1692→    });
+  1693→    
+  1694→    if (so) {
+  1695→      const deliveryLines = so.lines.map(l => ({
+  1696→        lineId: l.id,
+  1697→        quantity: l.quantity - l.quantityDelivered
+  1698→      }));
+  1699→      
+  1700→      const deliveryResult = await deliverSalesOrder(salesOrderId, deliveryLines, so.warehouseId || undefined, userId);
+  1701→      masterTrace.push(...deliveryResult.workflowTrace);
+  1702→    }
+  1703→
+  1704→    // Step 4: Create Invoice from SO
+  1705→    masterTrace.push({ step: 'create_invoice_from_so', status: 'completed', timestamp: new Date() });
+  1706→    
+  1707→    const invoiceResult = await convertSalesOrderToInvoice({ salesOrderId }, userId);
+  1708→    masterTrace.push(...invoiceResult.workflowTrace);
+  1709→    
+  1710→    if (!invoiceResult.success) {
+  1711→      return {
+  1712→        ...invoiceResult,
+  1713→        workflowTrace: masterTrace,
+  1714→        message: 'Échec: Création Facture depuis Commande'
+  1715→      };
+  1716→    }
+  1717→
+  1718→    // Step 5: Record Payment (if provided)
+  1719→    if (paymentData && invoiceResult.data) {
+  1720→      masterTrace.push({ step: 'record_payment', status: 'completed', timestamp: new Date() });
+  1721→      
+  1722→      const paymentResult = await recordPayment({
+  1723→        ...paymentData,
+  1724→        invoiceType: 'customer',
+  1725→        invoiceId: invoiceResult.data.id
+  1726→      }, userId);
+  1727→      masterTrace.push(...paymentResult.workflowTrace);
+  1728→    }
+  1729→
+  1730→    return {
+  1731→      success: true,
+  1732→      message: 'Cycle commercial complet exécuté avec succès: Devis → Commande → Facture → Paiement',
+  1733→      data: {
+  1734→        salesOrder: conversionResult.data,
+  1735→        invoice: invoiceResult.data
+  1736→      },
+  1737→      workflowTrace: masterTrace
+  1738→    };
+  1739→
+  1740→  } catch (error) {
+  1741→    console.error('Error in executeFullSalesCycle:', error);
+  1742→    return {
+  1743→      success: false,
+  1744→      message: 'Erreur lors du cycle commercial complet',
+  1745→      errors: [error instanceof Error ? error.message : 'Unknown error'],
+  1746→      workflowTrace: masterTrace
+  1747→    };
+  1748→  }
+  1749→}
+  1750→
+  1751→/**
+  1752→ * Execute complete Purchase Cycle: PO → Receipt → Bill → Payment
+  1753→ */
+  1754→export async function executeFullPurchaseCycle(
+  1755→  purchaseOrderId: string,
+  1756→  receiveData?: Omit<ReceivePurchaseOrderInput, 'purchaseOrderId'>,
+  1757→  paymentData?: Omit<RecordPaymentInput, 'invoiceType' | 'invoiceId'>,
+  1758→  userId?: string
+  1759→): Promise<WorkflowResult> {
+  1760→  const masterTrace: WorkflowStepTrace[] = [];
+  1761→  
+  1762→  try {
+  1763→    // Step 1: Confirm PO
+  1764→    masterTrace.push({ step: 'confirm_purchase_order', status: 'completed', timestamp: new Date() });
+  1765→    
+  1766→    const po = await db.purchaseOrder.findUnique({ where: { id: purchaseOrderId } });
+  1767→    if (po && po.status === 'draft') {
+  1768→      await db.purchaseOrder.update({
+  1769→        where: { id: purchaseOrderId },
+  1770→        data: { status: 'confirmed' }
+  1771→      });
+  1772→    }
+  1773→
+  1774→    // Step 2: Receive goods (if data provided)
+  1775→    if (receiveData) {
+  1776→      masterTrace.push({ step: 'receive_goods', status: 'completed', timestamp: new Date() });
+  1777→      
+  1778→      const receiveResult = await receivePurchaseOrder({
+  1779→        purchaseOrderId,
+  1780→        ...receiveData
+  1781→      }, userId);
+  1782→      masterTrace.push(...receiveResult.workflowTrace);
+  1783→      
+  1784→      if (!receiveResult.success) {
+  1785→        return {
+  1786→          ...receiveResult,
+  1787→          workflowTrace: masterTrace,
+  1788→          message: 'Échec: Réception marchandise'
+  1789→        };
+  1790→      }
+  1791→    }
+  1792→
+  1793→    // Step 3: Create Bill from PO
+  1794→    masterTrace.push({ step: 'create_supplier_bill', status: 'completed', timestamp: new Date() });
+  1795→    
+  1796→    const billResult = await createBillFromPurchaseOrder({ purchaseOrderId }, userId);
+  1797→    masterTrace.push(...billResult.workflowTrace);
+  1798→    
+  1799→    if (!billResult.success) {
+  1800→      return {
+  1801→        ...billResult,
+  1802→        workflowTrace: masterTrace,
+  1803→        message: 'Échec: Création Facture Fournisseur'
+  1804→      };
+  1805→    }
+  1806→
+  1807→    // Step 4: Record Payment (if provided)
+  1808→    if (paymentData && billResult.data) {
+  1809→      masterTrace.push({ step: 'record_payment', status: 'completed', timestamp: new Date() });
+  1810→      
+  1811→      const paymentResult = await recordPayment({
+  1812→        ...paymentData,
+  1813→        invoiceType: 'supplier',
+  1814→        invoiceId: billResult.data.id
+  1815→      }, userId);
+  1816→      masterTrace.push(...paymentResult.workflowTrace);
+  1817→    }
+  1818→
+  1819→    return {
+  1820→      success: true,
+  1821→      message: 'Cycle achat complet exécuté avec succès: Commande → Réception → Facture → Paiement',
+  1822→      data: {
+  1823→        bill: billResult.data
+  1824→      },
+  1825→      workflowTrace: masterTrace
+  1826→    };
+  1827→
+  1828→  } catch (error) {
+  1829→    console.error('Error in executeFullPurchaseCycle:', error);
+  1830→    return {
+  1831→      success: false,
+  1832→      message: 'Erreur lors du cycle achat complet',
+  1833→      errors: [error instanceof Error ? error.message : 'Unknown error'],
+  1834→      workflowTrace: masterTrace
+  1835→    };
+  1836→  }
+  1837→}
+  1838→
+  1839→// Export all workflow functions
+  1840→export default {
+  1841→  convertQuotationToSalesOrder,
+  1842→  convertSalesOrderToInvoice,
+  1843→  receivePurchaseOrder,
+  1844→  createBillFromPurchaseOrder,
+  1845→  recordPayment,
+  1846→  deliverSalesOrder,
+  1847→  executeFullSalesCycle,
+  1848→  executeFullPurchaseCycle
+  1849→};
+  1850→
