@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
+import { DashboardLayout } from "@/components/layout/dashboard-layout";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,24 +15,27 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Z.ai Code Scaffold - AI-Powered Development",
-  description: "Modern Next.js scaffold optimized for AI-powered development with Z.ai. Built with TypeScript, Tailwind CSS, and shadcn/ui.",
-  keywords: ["Z.ai", "Next.js", "TypeScript", "Tailwind CSS", "shadcn/ui", "AI development", "React"],
-  authors: [{ name: "Z.ai Team" }],
+  title: "ERP-DZ | Système de Gestion Intégré Algérien",
+  description: "ERP-DZ - Solution complète de gestion d'entreprise adaptée au contexte algérien. Finance, Ventes, RH, Stocks et plus.",
+  keywords: [
+    "ERP", 
+    "Algérie", 
+    "Gestion", 
+    "Comptabilité", 
+    "DZ", 
+    "TVA", 
+    "Facturation",
+    "Ressources Humaines"
+  ],
+  authors: [{ name: "ERP-DZ Team" }],
   icons: {
-    icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
+    icon: "/favicon.ico",
   },
   openGraph: {
-    title: "Z.ai Code Scaffold",
-    description: "AI-powered development with modern React stack",
-    url: "https://chat.z.ai",
-    siteName: "Z.ai",
+    title: "ERP-DZ - Système de Gestion Algérien",
+    description: "Solution ERP complète pour les entreprises algériennes",
     type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Z.ai Code Scaffold",
-    description: "AI-powered development with modern React stack",
+    locale: "fr_DZ",
   },
 };
 
@@ -41,11 +45,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="fr" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >
-        {children}
+        <DashboardLayout>
+          {children}
+        </DashboardLayout>
         <Toaster />
       </body>
     </html>

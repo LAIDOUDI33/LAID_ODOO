@@ -1,0 +1,325 @@
+import { NextResponse } from 'next/server';
+import { db } from '@/lib/db';
+import { 
+  calculateCotisations, 
+  calculateIRGMensuel,
+  calculatePrimeAncienete,
+  getAllocationsFamiliales
+} from '@/lib/algerian-taxes';
+
+// GET /api/payroll - List payrolls
+export async function GET(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const period = searchParams.get('period'); // YYYY-MM format
+    const employeeId = searchParams.get('employeeId');
+    const status = searchParams.get('status');
+
+    const whereClause: any = {};
+    
+    if (period) {
+      whereClause.period = period;
+    }
+
+    if (employeeId) {
+      whereClause.employeeId = employeeId;
+    }
+
+    if (status && status !== 'all') {
+      whereClause.status = status;
+    }
+
+    const payrolls = await db.payroll.findMany({
+      where: whereClause,
+      orderBy: [{ period: 'desc' }, { createdAt: 'desc' }],
+      include: {
+        employee: {
+          select: {
+            matricule: true,
+            firstName: true,
+            lastName: true,
+            department: true,
+            jobTitle: true,
+            contractStartDate: true,
+            baseSalary: true
+          }
+        }
+      }
+    });
+
+    return NextResponse.json({ success: true, data: payrolls });
+  } catch (error) {
+    console.error('Payroll GET Error:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to fetch payrolls' },
+      { status: 500 }
+    );
+  }
+}
+
+// POST /api/payroll - Generate payroll for an employee
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
+    
+    if (!body.employeeId || !body.period) {
+      return NextResponse.json(
+        { success: false, error: 'Employee ID and period (YYYY-MM) are required' },
+        { status: 400 }
+      );
+    }
+
+    // Get employee data
+    const employee = await db.employee.findUnique({
+      where: { id: body.employeeId }
+    });
+
+    if (!employee) {
+      return NextResponse.json(
+        { success: false, error: 'Employee not found' },
+        { status: 404 }
+      );
+    }
+
+    // Check if payroll already exists for this period
+    const existingPayroll = await db.payroll.findFirst({
+      where: {
+        employeeId: body.employeeId,
+        period: body.period
+      }
+    });
+
+    if (existingPayroll && !body.forceRegenerate) {
+      return NextResponse.json(
+        { success: false, error: `Payroll already exists for ${body.period}. Use forceRegenerate to overwrite.` },
+        { status: 409 }
+      );
+    }
+
+    // Parse options
+    const options = {
+      // Primes (optional)
+      primeRendement: parseFloat(body.primeRendement) || 0,
+      primeResponsabilite: parseFloat(body.primeResponsabilite) || 0,
+      primeTechnicite: parseFloat(body.primeTechnicite) || 0,
+      primeTransport: parseFloat(body.primeTransport) || 0,
+      primePanier: parseFloat(body.primePanier) || 0,
+      primeLogement: parseFloat(body.primeLogement) || 0,
+      primeMarie: parseFloat(body.primeMarie) || 0,
+      
+      // Heures supplémentaires
+      heuresSupp: parseFloat(body.heuresSupp) || 0,
+      tauxHeureSupp: parseFloat(body.tauxHeureSupp) || (employee.hourlyRate || employee.baseSalary / 173.33),
+      
+      // Autres
+      nombreEnfants: parseInt(body.nombreEnfants) || 0,
+      partsFamiliales: parseInt(body.partsFamiliales) || 1 + (body.marie ? 1 : 0) + Math.min(body.nombreEnfants || 0, 4),
+      avanceSalaire: parseFloat(body.avanceSalaire) || 0,
+      opposition: parseFloat(body.opposition) || 0,
+      mutuelle: parseFloat(body.mutuelle) || 0,
+      cnacCredit: parseFloat(body.cnacCredit) || 0,
+      joursTravailles: parseInt(body.joursTravailles) || 26,
+      joursAbsences: parseInt(body.joursAbsences) || 0,
+      joursConges: parseInt(body.joursConges) || 0,
+    };
+
+    // Calculate years of service for seniority bonus
+    const hireDate = new Date(employee.contractStartDate);
+    const now = new Date();
+    const anneesService = (now.getTime() - hireDate.getTime()) / (365.25 * 24 * 60 * 60 * 1000);
+
+    // === CALCULATIONS ===
+
+    // 1. Base salary (prorated if needed)
+    const salaireBase = employee.baseSalary;
+
+    // 2. Prime ancienneté
+    const primeAncienete = calculatePrimeAncienete(salaireBase, anneesService);
+
+    // 3. Allocations familiales
+    const allocationsFam = getAllocationsFamiliales(options.nombreEnfants);
+
+    // 4. Heures supplémentaires
+    const montantHeuresSupp = options.heuresSupp > 0 
+      ? options.heuresSupp * options.tauxHeureSupp * 1.5 // 50% majoration standard
+      : 0;
+
+    // 5. Total brut
+    const totalPrimes = 
+      primeAncienete +
+      options.primeRendement +
+      options.primeResponsabilite +
+      options.primeTechnicite +
+      options.primeTransport +
+      options.primePanier +
+      options.primeLogement +
+      options.primeMarie +
+      allocationsFam +
+      montantHeuresSupp;
+
+    const grossSalary = salaireBase + totalPrimes;
+
+    // 6. Cotisations sociales
+    const cotisations = calculateCotisations(salaireBase, {
+      irgParts: options.partsFamiliales
+    });
+
+    // 7. IRG sur salaire brut
+    const irgResult = calculateIRGMensuel(grossSalary, options.partsFamiliales);
+
+    // 8. Total retenues
+    const totalRetenues = 
+      cotisations.totalSalarial +
+      irgResult.irgNet +
+      options.avanceSalaire +
+      options.opposition +
+      options.mutuelle +
+      options.cnacCredit;
+
+    // 9. Net à payer
+    const netPayable = Math.max(0, grossSalary - totalRetenues);
+
+    // Generate reference
+    const [year, month] = body.period.split('-');
+    const refSequence = String(Math.floor(Math.random() * 999) + 1).padStart(3, '0');
+    const reference = `PAIE-${year}-${month}-${refSequence}`;
+
+    // Create or update payroll record
+    let payroll;
+    if (existingPayroll && body.forceRegenerate) {
+      payroll = await db.payroll.update({
+        where: { id: existingPayroll.id },
+        data: {
+          reference,
+          period: body.period,
+          
+          // Gains
+          baseSalary: salaireBase,
+          grossSalary: Math.round(grossSalary * 100) / 100,
+          primeAncienete: Math.round(primeAncienete * 100) / 100,
+          primeRendement: Math.round(options.primeRendement * 100) / 100,
+          primeResponsabilite: Math.round(options.primeResponsabilite * 100) / 100,
+          primeTechnicite: Math.round(options.primeTechnicite * 100) / 100,
+          primeTransport: Math.round(options.primeTransport * 100) / 100,
+          primePanier: Math.round(options.primePanier * 100) / 100,
+          primeLogement: Math.round(options.primeLogement * 100) / 100,
+          primeMarie: Math.round(options.primeMarie * 100) / 100,
+          allocationsFam: Math.round(allocationsFam * 100) / 100,
+          heuresSupp: options.heuresSupp,
+          montantHeuresSupp: Math.round(montantHeuresSupp * 100) / 100,
+          
+          // Cotisations salariales
+          cotisationCNAS: Math.round(cotisations.cnasSalarie * 100) / 100,
+          cotisationCASNOS: Math.round(cotisations.casnosSalarie * 100) / 100,
+          totalCotisations: Math.round(cotisations.totalSalarial * 100) / 100,
+          
+          // Retenues
+          irgRetenu: Math.round(irgResult.irgNet),
+          avanceSalaire: options.avanceSalaire,
+          opposition: options.opposition,
+          mutuelle: options.mutuelle,
+          cnacCredit: options.cnacCredit,
+          totalRetenues: Math.round(totalRetenues * 100) / 100,
+          
+          // Net
+          netPayable: Math.round(netPayable * 100) / 100,
+          
+          // Charges patronales
+          patronalCNAS: Math.round(cotisations.cnasEmployeur * 100) / 100,
+          patronalCASNOS: Math.round(cotisations.casnosEmployeur * 100) / 100,
+          patronalChomage: Math.round(cotisations.chomageEmployeur * 100) / 100,
+          patronalAT: Math.round(cotisations.atEmployer * 100) / 100,
+          patronalOEuvres: Math.round(cotisations.oeuvresSociales * 100) / 100,
+          totalPatronal: Math.round(cotisations.totalPatronal * 100) / 100,
+          coutTotalEmploye: Math.round(cotisations.coutTotalEmploye * 100) / 100,
+          
+          // Jours
+          joursTravailles: options.joursTravailles,
+          joursAbsences: options.joursAbsences,
+          joursConges: options.joursConges,
+          
+          status: 'calculated'
+        },
+        include: { employee: true }
+      });
+    } else {
+      payroll = await db.payroll.create({
+        data: {
+          reference,
+          period: body.period,
+          
+          // Gains
+          baseSalary: salaireBase,
+          grossSalary: Math.round(grossSalary * 100) / 100,
+          primeAncienete: Math.round(primeAncienete * 100) / 100,
+          primeRendement: Math.round(options.primeRendement * 100) / 100,
+          primeResponsabilite: Math.round(options.primeResponsabilite * 100) / 100,
+          primeTechnicite: Math.round(options.primeTechnicite * 100) / 100,
+          primeTransport: Math.round(options.primeTransport * 100) / 100,
+          primePanier: Math.round(options.primePanier * 100) / 100,
+          primeLogement: Math.round(options.primeLogement * 100) / 100,
+          primeMarie: Math.round(options.primeMarie * 100) / 100,
+          allocationsFam: Math.round(allocationsFam * 100) / 100,
+          heuresSupp: options.heuresSupp,
+          montantHeuresSupp: Math.round(montantHeuresSupp * 100) / 100,
+          
+          // Cotisations salariales
+          cotisationCNAS: Math.round(cotisations.cnasSalarie * 100) / 100,
+          cotisationCASNOS: Math.round(cotisations.casnosSalarie * 100) / 100,
+          totalCotisations: Math.round(cotisations.totalSalarial * 100) / 100,
+          
+          // Retenues
+          irgRetenu: Math.round(irgResult.irgNet),
+          avanceSalaire: options.avanceSalaire,
+          opposition: options.opposition,
+          mutuelle: options.mutuelle,
+          cnacCredit: options.cnacCredit,
+          totalRetenues: Math.round(totalRetenues * 100) / 100,
+          
+          // Net
+          netPayable: Math.round(netPayable * 100) / 100,
+          
+          // Charges patronales
+          patronalCNAS: Math.round(cotisations.cnasEmployeur * 100) / 100,
+          patronalCASNOS: Math.round(cotisations.casnosEmployeur * 100) / 100,
+          patronalChomage: Math.round(cotisations.chomageEmployeur * 100) / 100,
+          patronalAT: Math.round(cotisations.atEmployer * 100) / 100,
+          patronalOEuvres: Math.round(cotisations.oeuvresSociales * 100) / 100,
+          totalPatronal: Math.round(cotisations.totalPatronal * 100) / 100,
+          coutTotalEmploye: Math.round(cotisations.coutTotalEmploye * 100) / 100,
+          
+          // Jours
+          joursTravailles: options.joursTravailles,
+          joursAbsences: options.joursAbsences,
+          joursConges: options.joursConges,
+          
+          status: 'calculated',
+          employeeId: body.employeeId
+        },
+        include: { employee: true }
+      });
+    }
+
+    return NextResponse.json({ 
+      success: true, 
+      data: payroll,
+      calculations: {
+        anneesService: Math.round(anneesService * 10) / 10,
+        salaireBase,
+        totalPrimes: Math.round(totalPrimes * 100) / 100,
+        grossSalary: Math.round(grossSalary * 100) / 100,
+        cotisations,
+        irg: irgResult,
+        totalRetenues: Math.round(totalRetenues * 100) / 100,
+        netPayable: Math.round(netPayable * 100) / 100
+      },
+      message: `Payroll ${reference} generated successfully`
+    }, { status: 201 });
+  } catch (error) {
+    console.error('Payroll POST Error:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to generate payroll' },
+      { status: 500 }
+    );
+  }
+}

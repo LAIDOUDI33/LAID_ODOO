@@ -1,8 +1,7 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// ============================================================
+// ERP-DZ - ALGERIAN ENTERPRISE RESOURCE PLANNING SYSTEM
+// Complete Database Schema - SCF Compliant
+// ============================================================
 
 generator client {
   provider = "prisma-client-js"
@@ -13,20 +12,1067 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ============================================================
+// CORE USER & AUTHENTICATION
+// ============================================================
+
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String   @id @default(cuid())
+  email         String   @unique
+  name          String
+  password      String?
+  role          String   @default("user") // admin, manager, accountant, hr, sales, user
+  avatar        String?
+  phone         String?
+  isActive      Boolean  @default(true)
+  lastLoginAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relations
+  company       Company? @relation(fields: [companyId], references: [id])
+  companyId     String?
+  
+  @@map("users")
 }
 
-model Post {
-  id        String   @id @default(cuid())
-  title     String
-  content   String?
-  published Boolean  @default(false)
-  authorId  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+// ============================================================
+// COMPANY & ALGERIAN LOCALIZATION
+// ============================================================
+
+model Company {
+  id                String   @id @default(cuid())
+  name              String
+  nameAr            String?  // Nom en arabe
+  commercialName    String?
+  legalForm         String   @default("SARL") // SARL, EURL, SPA, SNC, SCS
+  capital           Float    @default(0) // Capital social en DZD
+  currency          String   @default("DZD")
+  
+  // Identifiants Algériens (Obligatoires)
+  rc                String?  // Registre de Commerce
+  nif               String?  // Numéro Identification Fiscale
+  nis               String?  // Numéro Identification Statistique
+  ai                String?  // Article d'Imposition
+  taxRegime         String   @default("reel") // reel, simplifie, forfait
+  
+  // Contact
+  address           String?
+  addressAr         String?
+  postalCode        String?
+  city              String?
+  wilayaCode        String?  // Code wilaya (01-58)
+  phone             String?
+  fax               String?
+  email             String?
+  website           String?
+  
+  // Relations inverses
+  wilaya            Wilaya?   @relation(fields: [wilayaCode], references: [code])
+  
+  // Configuration
+  fiscalYearStart   Int      @default(1) // Mois début exercice (1=Janvier)
+  language          String   @default("fr") // fr, ar, ber
+  logo              String?
+  isActive          Boolean  @default(true)
+  
+  // Timestamps
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  // Relations
+  users             User[]
+  chartOfAccounts   ChartOfAccount[]
+  journals          Journal[]
+  partners          Partner[]
+  products          Product[]
+  employees         Employee[]
+  invoices          Invoice[]
+  bills             Bill[]
+  bankAccounts      BankAccount[]
+  warehouses        Warehouse[]
+  taxDeclarations   TaxDeclaration[]
+  fixedAssets        FixedAsset[]
+  
+  @@map("companies")
+}
+
+// ============================================================
+// WILAYAS & COMMUNES (Algerian Geography)
+// ============================================================
+
+model Wilaya {
+  id              String   @id @default(cuid())
+  code            String   @unique // 01-58
+  nameFr          String   // Nom français
+  nameAr          String?  // Nom arabe
+  chiefCity       String?  // Chef-lieu
+  taxZone         String   @default("nord") // nord, hauts_plateaux, sud
+  abattementRate  Float    @default(0) // Taux d'abattement TAP (%)
+  surfaceKm2      Float?
+  population      Int?
+  
+  communes        Commune[]
+  companies       Company[] // Via company.wilayaCode
+  
+  @@map("wilayas")
+}
+
+model Commune {
+  id          String   @id @default(cuid())
+  code        String   // Code commune
+  nameFr      String   // Nom français
+  nameAr      String?  // Nom arabe
+  postalCode  String?  // Code postal
+  wilayaCode  String   // Code wilaya parent
+  wilaya      Wilaya    @relation(fields: [wilayaCode], references: [code])
+  
+  @@map("communes")
+  @@unique([code, wilayaCode])
+}
+
+// ============================================================
+// CHART OF ACCOUNTS - PLAN COMPTABLE SCF ALGÉRIEN
+// ============================================================
+
+model ChartOfAccount {
+  id            String   @id @default(cuid())
+  code          String   @unique // Code compte SCF
+  name          String   // Intitulé du compte
+  nameAr        String?  // Intitulé en arabe
+  type          String   // asset, liability, equity, revenue, expense
+  class         String   // Classe 1-8
+  parentCode    String?  // Code compte parent
+  nature        String?  // detail, header, view
+  isLeaf        Boolean  @default(false)
+  
+  // Configurations spéciales
+  isTaxAccount Boolean  @default(false) // Compte de TVA, IRG, etc.
+  taxType       String?  // tva_collectee, tva_deductible, tap, irg, ibs
+  reconcileable Boolean  @default(false)
+  
+  companyId     String
+  company       Company  @relation(fields: [companyId], references: [id])
+  
+  children      ChartOfAccount[] @relation("AccountHierarchy")
+  parent        ChartOfAccount? @relation("AccountHierarchy", fields: [parentCode], references: [code])
+  
+  journalItems  JournalItem[]
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@map("chart_of_accounts")
+  @@unique([code, companyId])
+}
+
+// ============================================================
+// ACCOUNTING JOURNAUX & ENTRIES
+// ============================================================
+
+model Journal {
+  id          String   @id @default(cuid())
+  code        String   @unique // VT, AC, BQ, CA, OD, PA
+  name        String   // Journal des Ventes, Achats, Banque...
+  type        String   // sale, purchase, bank, cash, miscellaneous, payroll
+  defaultDebitAccount  String?
+  defaultCreditAccount String?
+  
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id])
+  
+  entries     JournalEntry[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("journals")
+}
+
+model JournalEntry {
+  id            String   @id @default(cuid())
+  reference     String   @unique // Numéro d'écriture
+  date          DateTime
+  label         String   // Libellé de l'écriture
+  totalDebit    Float    @default(0)
+  totalCredit   Float    @default(0)
+  status        String   @default("draft") // draft, posted, cancelled
+  source        String?  // manual, invoice, bill, payment
+  sourceId      String?
+  
+  journalId     String
+  journal       Journal  @relation(fields: [journalId], references: [id])
+  
+  items         JournalItem[]
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@map("journal_entries")
+}
+
+model JournalItem {
+  id          String   @id @default(cuid())
+  accountId   String
+  account     ChartOfAccount @relation(fields: [accountId], references: [id])
+  debit       Float    @default(0)
+  credit      Float    @default(0)
+  label       String?
+  
+  entryId     String
+  entry       JournalEntry @relation(fields: [entryId], references: [id])
+  
+  @@map("journal_items")
+}
+
+// ============================================================
+// PARTNERS (CLIENTS & FOURNISSEURS)
+// ============================================================
+
+enum PartnerType {
+  customer
+  supplier
+  both
+}
+
+model Partner {
+  id              String      @id @default(cuid())
+  name            String
+  displayName     String?
+  type            PartnerType @default(customer)
+  isCompany       Boolean     @default(true)
+  isTaxPayer      Boolean     @default(true)
+  
+  // Identifiants Algériens
+  rc              String?     // Registre Commerce
+  nif             String?      // NIF
+  nis             String?      // NIS
+  ai              String?      // AI
+  numArticleImpot  String?     // Article imposition
+  
+  // Contact
+  contactName     String?      // Nom du contact
+  email           String?
+  phone           String?
+  mobile          String?
+  website         String?
+  
+  // Adresse
+  address         String?
+  addressAr       String?
+  postalCode      String?
+  city            String?
+  wilayaCode      String?
+  
+  // Financier
+  paymentTerms    String       @default("30") // Délai paiement jours
+  paymentMode     String?      // virement, cheque, espece, traite
+  creditLimit      Float        @default(0)
+  bankAccount      String?      // RIB
+  
+  // Catégorisation
+  category        String?      // Catégorie client/fournisseur
+  priceList       String?      // Liste de prix applicable
+  
+  // Statut
+  isActive        Boolean      @default(true)
+  notes           String?
+  
+  // Relations
+  companyId       String
+  company         Company       @relation(fields: [companyId], references: [id])
+  
+  invoices        Invoice[]
+  bills           Bill[]
+  
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  
+  @@map("partners")
+}
+
+// ============================================================
+// PRODUCTS & SERVICES
+// ============================================================
+
+model ProductCategory {
+  id            String   @id @default(cuid())
+  name          String
+  nameAr        String?
+  code          String   @unique
+  parentId      String?
+  parent        ProductCategory? @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children      ProductCategory[] @relation("CategoryHierarchy")
+  products      Product[]
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@map("product_categories")
+}
+
+enum ProductType {
+  stockable
+  consumable
+  service
+  kit
+  digital
+}
+
+model Product {
+  id                String      @id @default(cuid())
+  code              String      @unique
+  name              String
+  nameAr            String?
+  description       String?
+  type              ProductType @default(stockable)
+  
+  // Prix
+  salePrice         Float       @default(0)      // Prix vente HT
+  purchasePrice     Float       @default(0)      // Prix achat HT
+  costPrice         Float       @default(0)      // Coût de revient
+  
+  // TVA
+  tvaRate           Float       @default(19)     // Taux TVA (%)
+  
+  // Stock
+  trackStock        Boolean     @default(true)
+  useSerials        Boolean     @default(false)
+  useLots           Boolean     @default(false)
+  
+  // Unité
+  unitOfMeasure     String      @default("U")    // U, KG, L, m², m³, ML
+  
+  // Catégorie
+  categoryId        String?
+  category          ProductCategory? @relation(fields: [categoryId], references: [id])
+  
+  // Image
+  image             String?
+  
+  // Statut
+  isActive          Boolean     @default(true)
+  canBeSold         Boolean     @default(true)
+  canBePurchased    Boolean     @default(true)
+  
+  // Relations
+  companyId         String
+  company           Company     @relation(fields: [companyId], references: [id])
+  
+  invoiceLines      InvoiceLine[]
+  billLines         BillLine[]
+  stockMovements    StockMovement[]
+  stockLevels       StockLevel[]
+  
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  
+  @@map("products")
+}
+
+// ============================================================
+// INVOICING (FACTURATION CLIENT)
+// ============================================================
+
+enum InvoiceStatus {
+  draft
+  sent
+  paid
+  partial
+  cancelled
+}
+
+enum InvoiceType {
+  invoice
+  credit_note
+  proforma
+  deposit
+}
+
+model Invoice {
+  id                String        @id @default(cuid())
+  reference         String        @unique // Facture-YYYY-MM-XXX
+  date              DateTime
+  dueDate           DateTime?
+  status            InvoiceStatus @default(draft)
+  type              InvoiceType   @default(invoice)
+  
+  // Montants
+  amountUntaxed     Float         @default(0)  // Total HT
+  amountTax         Float         @default(0)  // Total TVA
+  timbreFiscal      Float         @default(1)  // Timbre fiscal DZD
+  amountTotal       Float         @default(0)  // Total TTC
+  amountPaid        Float         @default(0)  // Montant payé
+  amountDue         Float         @default(0)  // Reste à payer
+  
+  // Client
+  partnerId         String
+  partner           Partner       @relation(fields: [partnerId], references: [id])
+  
+  // Société
+  companyId         String
+  company           Company       @relation(fields: [companyId], references: [id])
+  
+  // Paiement
+  paymentTerm       String?       // Conditions paiement
+  paymentMode       String?
+  paymentRef        String?       // Référence paiement
+  
+  // Notes
+  internalNotes     String?
+  customerNotes     String?
+  
+  // Écriture comptable
+  journalEntryId    String?
+  
+  lines             InvoiceLine[]
+  payments          Payment[]
+  
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  
+  @@map("invoices")
+}
+
+model InvoiceLine {
+  id            String   @id @default(cuid())
+  productId     String
+  product       Product  @relation(fields: [productId], references: [id])
+  label         String?  // Description personnalisée
+  quantity      Float    @default(1)
+  unitPrice     Float    @default(0)  // PU HT
+  discountRate  Float    @default(0)  // Remise %
+  tvaRate       Float    @default(19)
+  amountUntaxed Float    @default(0)  // Montant HT ligne
+  amountTax     Float    @default(0)  // TVA ligne
+  amountTotal   Float    @default(0)  // Total TTC ligne
+  
+  invoiceId     String
+  invoice       Invoice  @relation(fields: [invoiceId], references: [id])
+  
+  @@map("invoice_lines")
+}
+
+// ============================================================
+// SUPPLIER BILLS (FACTURATION FOURNISSEUR)
+// ============================================================
+
+enum BillStatus {
+  draft
+  received
+  verified
+  approved
+  paid
+  cancelled
+}
+
+model Bill {
+  id                String      @id @default(cuid())
+  reference         String      @unique // Fournisseur-YYYY-MM-XXX
+  date              DateTime
+  dueDate           DateTime?
+  status            BillStatus  @default(draft)
+  
+  // Montants
+  amountUntaxed     Float        @default(0)
+  amountTax         Float        @default(0)
+  timbreFiscal      Float        @default(1)
+  amountTotal       Float        @default(0)
+  amountPaid        Float        @default(0)
+  amountDue         Float        @default(0)
+  
+  // Fournisseur
+  partnerId         String
+  partner           Partner      @relation(fields: [partnerId], references: [id])
+  
+  // Société
+  companyId         String
+  company           Company      @relation(fields: [companyId], references: [id])
+  
+  // Notes
+  internalNotes     String?
+  
+  lines             BillLine[]
+  payments          Payment[]
+  
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  
+  @@map("bills")
+}
+
+model BillLine {
+  id            String   @id @default(cuid())
+  productId     String
+  product       Product  @relation(fields: [productId], references: [id])
+  label         String?
+  quantity      Float    @default(1)
+  unitPrice     Float    @default(0)
+  discountRate  Float    @default(0)
+  tvaRate       Float    @default(19)
+  amountUntaxed Float    @default(0)
+  amountTax     Float    @default(0)
+  amountTotal   Float    @default(0)
+  
+  billId        String
+  bill          Bill     @relation(fields: [billId], references: [id])
+  
+  @@map("bill_lines")
+}
+
+// ============================================================
+// PAYMENTS (PAIEMENTS)
+// ============================================================
+
+enum PaymentType {
+  incoming  // Encaissement client
+  outgoing  // Paiement fournisseur
+}
+
+enum PaymentMethod {
+  cash
+  check
+  transfer
+  card
+  draft
+  other
+}
+
+model Payment {
+  id            String       @id @default(cuid())
+  reference     String       @unique
+  date          DateTime
+  amount        Float
+  type          PaymentType
+  method        PaymentMethod @default(transfer)
+  status        String        @default("draft") // draft, reconciled, cancelled
+  label         String?
+  checkNumber   String?
+  bankAccountId String?
+  bankAccount   BankAccount?  @relation(fields: [bankAccountId], references: [id])
+  
+  // Liens factures
+  invoiceId     String?
+  invoice       Invoice?       @relation(fields: [invoiceId], references: [id])
+  billId        String?
+  bill          Bill?          @relation(fields: [billId], references: [id])
+  
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  
+  @@map("payments")
+}
+
+// ============================================================
+// BANK ACCOUNTS
+// ============================================================
+
+model BankAccount {
+  id            String   @id @default(cuid())
+  name          String   // Ex: CPA Compte courant
+  bankName      String   // CPA, BNA, BDL, BEA, etc.
+  accountNumber String   @unique // Numéro de compte
+  rib           String?  // RIB (20 chiffres)
+  currency      String   @default("DZD")
+  accountType   String   @default("current") // current, savings, term
+  balance       Float    @default(0)
+  minBalance    Float    @default(0)
+  isActive      Boolean  @default(true)
+  
+  companyId     String
+  company       Company   @relation(fields: [companyId], references: [id])
+  
+  payments      Payment[]
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@map("bank_accounts")
+}
+
+// ============================================================
+// TAX MANAGEMENT (GESTION FISCALE ALGÉRIENNE)
+// ============================================================
+
+model TaxDeclaration {
+  id            String   @id @default(cuid())
+  type          String   // G50_TVA, G1_IRG, G2_TAP, G4_IBS
+  period        String   // YYYY-MM ou YYYY pour annuel
+  status        String   @default("draft") // draft, submitted, validated, paid
+  
+  // TVA (G50)
+  tvaCollecte19 Float    @default(0)
+  tvaCollecte9  Float    @default(0)
+  tvaDeductibleBiens Float @default(0)
+  tvaDeductibleServices Float @default(0)
+  tvaDeductibleImport Float @default(0)
+  tvaNet        Float    @default(0)
+  
+  // TAP (G2)
+  tapBaseCA     Float    @default(0)
+  tapTaux       Float    @default(1)
+  tapAbattement Float    @default(0)
+  tapDue        Float    @default(0)
+  
+  // IRG (G1)
+  irgRetenuSalaires  Float @default(0)
+  irgRetenuAutres    Float @default(0)
+  irgTotal           Float @default(0)
+  
+  // IBS (G4)
+  ibsBenefice    Float    @default(0)
+  ibsTaux        Float    @default(19)
+  ibsDue         Float    @default(0)
+  
+  // Totals
+  totalDue       Float    @default(0)
+  totalPaid      Float    @default(0)
+  
+  companyId     String
+  company       Company   @relation(fields: [companyId], references: [id])
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@map("tax_declarations")
+}
+
+// ============================================================
+// HUMAN RESOURCES / EMPLOYEES
+// ============================================================
+
+enum ContractType {
+  cdi
+  cdd
+  internship
+  temporary
+  part_time
+}
+
+enum EmployeeStatus {
+  active
+  on_leave
+  resigned
+  retired
+  terminated
+}
+
+model Employee {
+  id                  String         @id @default(cuid())
+  matricule           String         @unique // Matricule interne
+  firstName           String
+  lastName            String
+  firstNameAr         String?
+  lastNameAr          String?
+  gender              String         // M, F
+  dateOfBirth         DateTime?
+  placeOfBirth        String?
+  nationality         String         @default("DZ")
+  
+  // Identification
+  cin                 String?        // Carte identité nationale
+  cnasNumber          String?        // N° sécurité sociale CNAS
+  casnosNumber        String?        // N° CASNOS
+  
+  // Contact
+  personalEmail       String?
+  workEmail           String?
+  phone               String?
+  address             String?
+  city                String?
+  wilayaCode          String?
+  
+  // Professionnel
+  department          String?
+  jobTitle            String?
+  jobPosition         String?
+  managerId           String?
+  manager             Employee?      @relation("EmployeeManager", fields: [managerId], references: [id])
+  subordinates        Employee[]     @relation("EmployeeManager")
+  
+  // Contrat
+  contractType        ContractType   @default(cdi)
+  contractStartDate   DateTime
+  contractEndDate     DateTime?
+  employeeStatus      EmployeeStatus @default(active)
+  
+  // Salaire
+  baseSalary          Float          @default(0)  // Salaire de base
+  dailyRate           Float          @default(0)  // Taux journalier
+  hourlyRate          Float          @default(0)  // Taux horaire
+  
+  // Banque
+  bankName            String?
+  bankAccount         String?        // CCP ou RIB
+  
+  // Documents
+  cvFile              String?
+  contractFile        String?
+  cinFile             String?
+  photo               String?
+  
+  // Statut
+  isActive            Boolean        @default(true)
+  hireDate            DateTime?
+  terminationDate     DateTime?
+  terminationReason   String?
+  
+  // Relations
+  companyId           String
+  company             Company         @relation(fields: [companyId], references: [id])
+  
+  payrolls            Payroll[]
+  leaves              LeaveRequest[]
+  attendances         Attendance[]
+  
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+  
+  @@map("employees")
+}
+
+// ============================================================
+// PAYROLL (PAIE)
+// ============================================================
+
+model Payroll {
+  id                  String   @id @default(cuid())
+  reference           String   @unique // PAIE-YYYY-MM-XXX
+  period              String   // YYYY-MM
+  status              String   @default("draft") // draft, calculated, validated, paid
+  
+  // Éléments gains
+  baseSalary          Float    @default(0)
+  grossSalary         Float    @default(0)
+  
+  // Primes
+  primeAnciennete     Float    @default(0)
+  primeRendement      Float    @default(0)
+  primeResponsabilite Float    @default(0)
+  primeTechnicite     Float    @default(0)
+  primeTransport      Float    @default(0)
+  primePanier         Float    @default(0)
+  primeLogement       Float    @default(0)
+  primeMarie          Float    @default(0)
+  allocationsFam      Float    @default(0)
+  heuresSupp         Float    @default(0)
+  montantHeuresSupp   Float    @default(0)
+  autresGains         Float    @default(0)
+  
+  // Cotisations salariales
+  cotisationCNAS      Float    @default(0)  // 1.5%
+  cotisationCASNOS    Float    @default(0)  // 7.5%
+  totalCotisations    Float    @default(0)  // 9%
+  
+  // Retenues
+  irgRetenu           Float    @default(0)
+  avanceSalaire       Float    @default(0)
+  opposition          Float    @default(0)
+  mutuelle            Float    @default(0)
+  cnacCredit          Float    @default(0)
+  autresRetenues      Float    @default(0)
+  totalRetenues       Float    @default(0)
+  
+  // Net
+  netPayable          Float    @default(0)
+  netEnLettres        String?
+  
+  // Charges patronales
+  patronalCNAS        Float    @default(0)  // 8.5%
+  patronalCASNOS      Float    @default(0)  // 12.5%
+  patronalChomage     Float    @default(0)  // 1%
+  patronalAT          Float    @default(0)  // Accident travail
+  patronalOEuvres     Float    @default(0)  // Œuvres sociales
+  totalPatronal       Float    @default(0)  // ~25-30%
+  coutTotalEmploye    Float    @default(0)
+  
+  // Jours
+  joursTravailles     Int      @default(26)
+  joursAbsences       Int      @default(0)
+  joursConges         Int      @default(0)
+  
+  employeeId          String
+  employee            Employee  @relation(fields: [employeeId], references: [id])
+  
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  
+  @@map("payrolls")
+}
+
+// ============================================================
+// LEAVE MANAGEMENT (CONGÉS)
+// ============================================================
+
+enum LeaveType {
+  annual
+  sickness
+  maternity
+  paternity
+  unpaid
+  exceptional
+  marriage
+  birth
+  death
+  pilgrimage
+}
+
+enum LeaveStatus {
+  draft
+  submitted
+  approved
+  rejected
+  cancelled
+}
+
+model LeaveRequest {
+  id            String      @id @default(cuid())
+  type          LeaveType
+  startDate     DateTime
+  endDate       DateTime
+  daysCount     Float       @default(0)
+  halfDay       Boolean     @default(false)
+  morningOnly   Boolean     @default(false)
+  reason        String?
+  status        LeaveStatus @default(draft)
+  rejectReason  String?
+  approvedBy    String?
+  approvedAt    DateTime?
+  
+  employeeId    String
+  employee      Employee    @relation(fields: [employeeId], references: [id])
+  
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  
+  @@map("leave_requests")
+}
+
+// ============================================================
+// ATTENDANCE (POINTAGE)
+// ============================================================
+
+model Attendance {
+  id            String   @id @default(cuid())
+  date          DateTime
+  clockIn       DateTime?
+  clockOut      DateTime?
+  breakDuration Int      @default(0) // minutes
+  workedHours   Float    @default(0)
+  overtimeHours Float    @default(0)
+  status        String   @default("present") // present, absent, late, leave, holiday
+  notes         String?
+  
+  employeeId    String
+  employee      Employee  @relation(fields: [employeeId], references: [id])
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@map("attendances")
+  @@unique([employeeId, date])
+}
+
+// ============================================================
+// INVENTORY / STOCK
+// ============================================================
+
+model Warehouse {
+  id            String   @id @default(cuid())
+  name          String
+  code          String   @unique
+  address       String?
+  contact       String?
+  phone         String?
+  isActive      Boolean  @default(true)
+  
+  companyId     String
+  company       Company   @relation(fields: [companyId], references: [id])
+  
+  locations     Location[]
+  stockLevels   StockLevel[]
+  movements     StockMovement[]
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@map("warehouses")
+}
+
+model Location {
+  id            String   @id @default(cuid())
+  name          String   // Zone A, Rack B1, Etagère 2...
+  code          String
+  warehouseId   String
+  warehouse     Warehouse @relation(fields: [warehouseId], references: [id])
+  
+  stockLevels   StockLevel[]
+  movements     StockMovement[]
+  
+  @@map("locations")
+  @@unique([code, warehouseId])
+}
+
+model StockLevel {
+  id            String   @id @default(cuid())
+  quantity      Float    @default(0)
+  reservedQty   Float    @default(0)
+  availableQty  Float    @default(0)
+  minQty        Float    @default(0)
+  maxQty        Float    @default(0)
+  
+  productId     String
+  warehouseId   String
+  locationId   String?
+  
+  product       Product    @relation(fields: [productId], references: [id])
+  warehouse    Warehouse  @relation(fields: [warehouseId], references: [id])
+  location     Location?  @relation(fields: [locationId], references: [id])
+  
+  movements     StockMovement[]
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@map("stock_levels")
+  @@unique([productId, warehouseId, locationId])
+}
+
+enum MovementType {
+  in_receipt    // Réception fournisseur
+  in_return     // Retour client
+  in_adjustment // Inventaire positif
+  in_transfer   // Transfert entrant
+  out_delivery  // Livraison client
+  out_return    // Retour fournisseur
+  out_adjustment // Inventaire négatif
+  out_transfer  // Transfert sortant
+  out_consumption // Consommation interne
+}
+
+model StockMovement {
+  id            String       @id @default(cuid())
+  reference     String       @unique
+  date          DateTime
+  type          MovementType
+  quantity      Float        @default(0)
+  unitCost      Float        @default(0)
+  totalCost     Float        @default(0)
+  notes         String?
+  
+  productId     String
+  product       Product       @relation(fields: [productId], references: [id])
+  warehouseId   String
+  warehouse     Warehouse     @relation(fields: [warehouseId], references: [id])
+  locationId    String?
+  location      Location?      @relation(fields: [locationId], references: [id])
+  stockLevelId  String?
+  stockLevel    StockLevel?    @relation(fields: [stockLevelId], references: [id])
+  
+  sourceDoc     String?       // Type document source
+  sourceId      String?       // ID document source
+  
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  
+  @@map("stock_movements")
+}
+
+// ============================================================
+// FIXED ASSETS (IMMOBILISATIONS)
+// ============================================================
+
+enum AssetClass {
+  incorporelle  // Classe 20
+  corporelle    // Classe 21
+  financiere    // Classe 22
+}
+
+enum DepreciationMethod {
+  linear
+  declining
+}
+
+model FixedAsset {
+  id                    String             @id @default(cuid())
+  code                  String             @unique
+  name                  String
+  description           String?
+  assetClass            AssetClass         @default(corporelle)
+  serialNumber          String?
+  
+  // Valeurs
+  acquisitionValue      Float              @default(0)
+  currentValue          Float              @default(0)
+  residualValue         Float              @default(0)
+  
+  // Amortissement
+  depreciationMethod    DepreciationMethod @default(linear)
+  depreciationRate      Float              @default(10)  // % annuel
+  usefulLifeYears       Int                @default(10)
+  accumulatedDepreciation Float            @default(0)
+  lastDepreciationDate  DateTime?
+  
+  // Dates
+  acquisitionDate       DateTime
+  putInServiceDate      DateTime?
+  disposalDate          DateTime?
+  
+  // Localisation
+  location              String?
+  responsiblePerson     String?
+  supplierPartnerId     String?
+  
+  // Comptabilité
+  accountCode           String?
+  
+  // Statut
+  status                String              @default("active") // active, disposed, scrapped
+  
+  // Document
+  image                 String?
+  invoiceId             String?
+  
+  companyId             String
+  company               Company             @relation(fields: [companyId], references: [id])
+  
+  depreciations          AssetDepreciation[]
+  
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  
+  @@map("fixed_assets")
+}
+
+model AssetDepreciation {
+  id                    String   @id @default(cuid())
+  assetId               String
+  asset                 FixedAsset @relation(fields: [assetId], references: [id])
+  date                  DateTime
+  period                String   // YYYY-MM
+  amount                Float    @default(0)
+  accumulatedAmount     Float    @default(0)
+  netBookValue          Float    @default(0)
+  
+  createdAt             DateTime @default(now())
+  
+  @@map("asset_depreciations")
+}
+
+// ============================================================
+// CURRENCY & EXCHANGE RATES
+// ============================================================
+
+model CurrencyRate {
+  id            String   @id @default(cuid())
+  fromCurrency  String   @default("DZD")
+  toCurrency    String   // EUR, USD
+  rate          Float    @default(1)
+  date          DateTime
+  source        String?  // Banque d'Algérie, custom
+  
+  createdAt     DateTime @default(now())
+  
+  @@map("currency_rates")
+  @@unique([fromCurrency, toCurrency, date])
 }
