@@ -1,11 +1,30 @@
 import { NextResponse } from 'next/server';
 import { seedDatabase } from '@/lib/seed';
+import { seedAuthAndWorkflows } from '@/lib/seed-auth-workflow';
 
 // POST /api/seed - Seed the database with demo data
-export async function POST() {
+export async function POST(request: Request) {
   try {
-    const result = await seedDatabase();
-    return NextResponse.json(result);
+    const { searchParams } = new URL(request.url);
+    const type = searchParams.get('type');
+    
+    if (type === 'auth' || type === 'workflow') {
+      // Seed only auth and workflow data
+      const result = await seedAuthAndWorkflows();
+      return NextResponse.json(result);
+    }
+    
+    // Default: seed all data
+    const [mainResult, authResult] = await Promise.all([
+      seedDatabase(),
+      seedAuthAndWorkflows()
+    ]);
+    
+    return NextResponse.json({
+      success: mainResult.success && authResult.success,
+      message: 'All data seeded successfully',
+      details: { main: mainResult, auth: authResult }
+    });
   } catch (error) {
     console.error('Seed API Error:', error);
     return NextResponse.json(
@@ -20,10 +39,12 @@ export async function GET() {
   try {
     const { db } = await import('@/lib/db');
     
-    const [companyCount, accountCount, productCount] = await Promise.all([
+    const [companyCount, accountCount, productCount, userCount, workflowCount] = await Promise.all([
       db.company.count(),
       db.chartOfAccount.count(),
-      db.product.count()
+      db.product.count(),
+      db.user.count(),
+      db.workflowDefinition.count()
     ]);
 
     return NextResponse.json({
@@ -32,6 +53,8 @@ export async function GET() {
         companies: companyCount,
         accounts: accountCount,
         products: productCount,
+        users: userCount,
+        workflows: workflowCount,
         isSeeded: companyCount > 0 && accountCount > 0
       },
       message: companyCount > 0 ? 'Database is seeded' : 'Database needs seeding'
