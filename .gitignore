@@ -52,3 +52,26 @@ prompt
 server.log
 # Skills directory
 /skills/
+
+# Old Odoo project (separate repo)
+/LAID_ODOO/
+
+# Tool results and temp files
+/tool-results/
+/download/
+/upload/
+
+# Test files
+*.test.ts
+test-db-*.ts
+
+# Screenshots
+*.png
+!.public/*.png
+
+# Database files (regenerated)
+/db/*.db
+/db/*.db-journal
+
+# Repo info
+repo_info.json
