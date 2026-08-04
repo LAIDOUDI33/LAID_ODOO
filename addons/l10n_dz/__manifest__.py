@@ -57,6 +57,7 @@ Ce module s'applique aux entreprises établies en Algérie.
         'data/account_chart_template_configuration_data.xml',
         
         # Geographic Data
+        'data/res_country_dz.xml',            # Algeria country + DZD currency
         'data/res_country_state_dz.csv',      # 58 Wilayas
         'data/res_country_group_dz.xml',      # Trade groups (Maghreb, Arab League, EU)
     ],

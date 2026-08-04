@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Algerian Localization - Country Definition
+    Module: l10n_dz (Odoo 19.4)
+    
+    Ensures Algeria (DZ) exists in res.country with proper settings
+-->
+<odoo>
+    
+    <!-- Ensure Algeria country record exists -->
+    <record id="base.dz" model="res.country">
+        <field name="name">Algérie</field>
+        <field name="code">DZ</field>
+        <field name="phone_prefix">213</field>
+        <field name="currency_id" ref="base.DZD"/>
+        <field name="address_format">
+%(street)s\n%(street2)s\n%(city)s %(state_code)s\n%(zip)s\n%(country_name)s
+        </field>
+    </record>
+
+    <!-- Ensure DZD currency is properly configured for Algeria -->
+    <record id="base.DZD" model="res.currency">
+        <field name="name">Dinar Algérien</field>
+        <field name="symbol">DA</field>
+        <field name="rounding">0.01</field>
+        <field name="decimal_places">2</field>
+        <field name="position">after</field>
+        <field name="currency_unit_label">DZD</field>
+        <field name="active" eval="True"/>
+    </record>
+
+</odoo>
