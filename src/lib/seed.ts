@@ -199,7 +199,6 @@ export async function seedDatabase() {
         addressAr: '123 شارع ديدوش مراد',
         postalCode: '16000',
         city: 'Alger',
-        cityAr: 'الجزائر',
         wilayaCode: '16',
         phone: '+213 21 23 45 67',
         fax: '+213 21 23 45 68',
@@ -217,12 +216,7 @@ export async function seedDatabase() {
     let accountsCreated = 0;
     for (const account of SCF_ACCOUNTS) {
       await prisma.chartOfAccount.upsert({
-        where: { 
-          code_companyId: {
-            code: account.code,
-            companyId: company.id
-          }
-        },
+        where: { code: account.code },
         update: {},
         create: {
           code: account.code,
@@ -245,12 +239,7 @@ export async function seedDatabase() {
     let journalsCreated = 0;
     for (const journal of JOURNALS) {
       await prisma.journal.upsert({
-        where: { 
-          code_companyId: {
-            code: journal.code,
-            companyId: company.id
-          }
-        },
+        where: { code: journal.code },
         update: {},
         create: {
           code: journal.code,
@@ -274,7 +263,6 @@ export async function seedDatabase() {
         name: 'Entrepôt Principal',
         code: 'ENT-01',
         address: 'Zone Industrielle Oued Smar',
-        city: 'Alger',
         contact: 'Responsable Stock',
         phone: '+213 555 123 456',
         isActive: true,
@@ -350,7 +338,7 @@ export async function seedDatabase() {
         cin: '001234567890123',
         cnasNumber: '0012345678',
         casnosNumber: '198901234567890',
-        email: 'a.mansouri@erp-dz.dz',
+        workEmail: 'a.mansouri@erp-dz.dz',
         phone: '+213 550 123 456',
         department: 'Direction Générale',
         jobTitle: 'Directeur Technique',
