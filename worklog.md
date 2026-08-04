@@ -146,6 +146,79 @@ Stage Summary:
 | **Authentication** | ✅ **NEW** | RBAC + 10 roles |
 | **Audit Trail** | ✅ **NEW** | Conformité DZ |
 | **Workflows** | ✅ **NEW** | 6 templates |
+| **Notifications** | ✅ **NEW** | 16 types + 5 canaux |
+| **Reports/Docs** | ✅ **NEW** | 13 types + Templates |
+| **Budget/Treasury** | ✅ **NEW** | 12 mois + CashFlow |
+| **CRM Pipeline** | ✅ **NEW** | 5 étapes + Activities |
 | Inventory | 🔄 In Progress | Multi-site |
 | Purchases | 🔄 In Progress | Procurement |
 | Production | 🔄 In Progress | Manufacturing |
+
+---
+Task ID: 3
+Agent: Full Stack Developer
+Task: Implement Phase 2 Modules - Notifications, CRM, Budget, Reports
+
+Work Log:
+- **MODULE 4: NOTIFICATIONS SYSTEM**
+  - Created `/src/lib/notifications.ts` (complete notification engine)
+  - 16 notification types: info, success, warning, error, workflow_*, invoice_*, leave_*, payroll_ready, low_stock, system_alert
+  - 5 channels: in_app, email, sms, push, webhook
+  - NotificationHelper class with predefined methods:
+    * workflowPending/approved/rejected
+    * invoiceDue/paymentReceived
+    * leaveApproved/rejected
+    * payrollReady
+    * lowStock
+    * systemAlert
+  - User preferences per notification type
+  - Stats endpoint (total, unread, byType)
+  - API Route: `/api/notifications` (GET/POST)
+
+- **MODULE 5: REPORTS & DOCUMENTS**
+  - Report model with 13 types:
+    financial_statement, balance_sheet, income_result, cash_flow,
+    invoice_report, payroll_report, tax_declaration, inventory_report,
+    sales_report, purchase_report, employee_list, audit_trail, custom
+  - ReportTemplate for customizable reports
+  - Support for PDF, Excel, CSV, HTML, JSON formats
+  - Generation tracking (status, time, record count)
+
+- **MODULE 6: BUDGETING & TRÉSORERIE**
+  - Budget model with 7 types:
+    operational, investment, revenue, expense, cash_flow, departmental, project
+  - BudgetLine with 12 monthly columns (budgeted vs actual)
+  - Variance calculations (absolute and %)
+  - 8 status workflow: draft → archived
+  - CashFlowEntry for treasury management
+  - 3 categories: operating, investing, financing
+  - Bank reconciliation support
+
+- **MODULE 8: CRM PIPELINE VENTES**
+  - Opportunity model with full pipeline:
+    * 9 LeadStatus: new → won_won / lost_lost
+    * 9 LeadSource: website, linkedin, facebook, cold_call, etc.
+    * 3 LeadRating: hot (>70%), warm (30-70%), cold (<30%)
+    * 5 pipeline stages with auto-progression
+    * Weighted value calculation (expected × probability / 100)
+  - Activity model for follow-ups:
+    * 9 ActivityType: call, meeting, email, note, task, demo, proposal, follow_up, other
+    * Due dates, duration tracking, results
+  - Assignment to sales reps
+  - Conversion to invoices
+
+- **DATABASE UPDATES (+12 new models)**
+  - Notification, NotificationPreference
+  - Report, ReportTemplate
+  - Budget, BudgetLine
+  - CashFlowEntry
+  - Opportunity, Activity
+  - Updated relations on: User, Company, BankAccount, Partner
+
+Stage Summary:
+- **Phase 2 modules completed and pushed to GitHub**
+- Commit: `0a9bbf3`
+- Total files changed: 5, +1,375 lines
+- New API routes: 2 (notifications, crm)
+- New libraries: 1 (notifications.ts ~500 lines)
+- Database now has 55+ models
