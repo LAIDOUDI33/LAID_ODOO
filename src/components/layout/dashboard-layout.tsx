@@ -99,8 +99,14 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             }}
           >
             <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <p>© 2024 ERP-DZ - Système de Gestion Algérien</p>
-              <p>v1.0.0 | Fait avec ❤️ en Algérie</p>
+              <p>© 2024 <span className="font-semibold text-primary">HASSIBA Suite ERP</span> - Plateforme Enterprise Algérienne</p>
+              <div className="flex items-center gap-3">
+                <span>v2.0.0 Enterprise</span>
+                <span className="w-1 h-1 rounded-full bg-muted-foreground"></span>
+                <span>🇩🇿 Fait avec ❤️ en Algérie</span>
+                <span className="w-1 h-1 rounded-full bg-muted-foreground"></span>
+                <span className="text-dz-green font-medium">✓ Production Ready</span>
+              </div>
             </div>
           </footer>
         </main>

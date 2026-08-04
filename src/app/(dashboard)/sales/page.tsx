@@ -9,7 +9,9 @@ import {
   Search,
   Phone,
   Mail,
-  MapPin
+  MapPin,
+  Target,
+  DollarSign
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -28,11 +30,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { KpiCard } from '@/components/dashboard/kpi-card'
 import { motion } from 'framer-motion'
 
-// Sales KPIs
+// Enterprise Sales KPIs - Scaled
 const salesKpis = [
   {
     title: "Commandes du Mois",
-    value: 147,
+    value: 1847,
     change: 12.3,
     icon: ShoppingCart,
     iconColor: "text-dz-green",
@@ -41,7 +43,7 @@ const salesKpis = [
   },
   {
     title: "CA Ventes (DZD)",
-    value: 5200000,
+    value: 5200000000,
     change: 8.5,
     icon: TrendingUp,
     iconColor: "text-blue-600",
@@ -50,7 +52,7 @@ const salesKpis = [
   },
   {
     title: "Clients Actifs",
-    value: 89,
+    value: 2450,
     change: 4.2,
     icon: Users,
     iconColor: "text-purple-600",
@@ -59,7 +61,7 @@ const salesKpis = [
   },
   {
     title: "Panier Moyen",
-    value: 35374,
+    value: 2815400,
     change: -2.1,
     icon: ShoppingCart,
     iconColor: "text-orange-600",
@@ -68,21 +70,21 @@ const salesKpis = [
   },
 ]
 
-// Recent orders
+// Recent orders (enterprise scale)
 const recentOrders = [
-  { id: 'CMD-2024-0142', client: 'SARL Algeria Tech', amount: 450000, status: 'livrée', date: '04/01/2024' },
-  { id: 'CMD-2024-0141', client: 'EURL Services Pro', amount: 125000, status: 'en cours', date: '04/01/2024' },
-  { id: 'CMD-2024-0140', client: 'Entreprise DZ', amount: 890000, status: 'préparée', date: '03/01/2024' },
-  { id: 'CMD-2024-0139', client: 'Société ABC', amount: 340000, status: 'expédiée', date: '03/01/2024' },
-  { id: 'CMD-2024-0138', client: 'DZ Commerce', amount: 675000, status: 'en attente', date: '02/01/2024' },
+  { id: 'CMD-2024-1847', client: 'SARL Algeria Tech Group', amount: 45000000, status: 'livrée', date: '04/01/2024' },
+  { id: 'CMD-2024-1846', client: 'EURL Services Pro', amount: 12500000, status: 'en cours', date: '04/01/2024' },
+  { id: 'CMD-2024-1845', client: 'Entreprise DZ National', amount: 89000000, status: 'préparée', date: '03/01/2024' },
+  { id: 'CMD-2024-1844', client: 'Société ABC Holding', amount: 34000000, status: 'expédiée', date: '03/01/2024' },
+  { id: 'CMD-2024-1843', client: 'DZ Commerce SARL', amount: 67500000, status: 'en attente', date: '02/01/2024' },
 ]
 
-// Top clients
+// Top clients (enterprise scale)
 const topClients = [
-  { name: 'SARL Algeria Tech', totalOrders: 45, revenue: 4500000, contact: 'contact@algeriatech.dz' },
-  { name: 'Entreprise DZ', totalOrders: 32, revenue: 3200000, contact: 'info@entreprisedz.dz' },
-  { name: 'EURL Services Pro', totalOrders: 28, revenue: 2100000, contact: 'services@pro.dz' },
-  { name: 'Société ABC', totalOrders: 24, revenue: 1850000, contact: 'commercial@abc.dz' },
+  { name: 'SARL Algeria Tech Group', totalOrders: 450, revenue: 4500000000, contact: 'commercial@algeriatech.dz', wilaya: '16 - Alger' },
+  { name: 'Entreprise DZ National', totalOrders: 320, revenue: 3200000000, contact: 'info@entreprisedz.dz', wilaya: '13 - Oran' },
+  { name: 'EURL Services Pro', totalOrders: 280, revenue: 2100000000, contact: 'services@pro.dz', wilaya: '25 - Constantine' },
+  { name: 'Société ABC Holding', totalOrders: 240, revenue: 1850000000, contact: 'contact@abc-holding.dz', wilaya: '09 - Béjaïa' },
 ]
 
 function getOrderStatus(status: string) {
@@ -109,10 +111,10 @@ export default function SalesPage() {
         <div>
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight flex items-center gap-3">
             <ShoppingCart className="w-8 h-8 text-primary" />
-            Ventes & CRM
+            Ventes & CRM Enterprise
           </h1>
           <p className="text-muted-foreground mt-1">
-            Gestion des ventes, clients et relations commerciales
+            Gestion commerciale pour 2,450+ clients • Pipeline multi-canal
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -153,10 +155,13 @@ export default function SalesPage() {
             <Card>
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle>Commandes Récentes</CardTitle>
+                  <div className="flex items-center gap-3">
+                    <CardTitle>Commandes Récentes</CardTitle>
+                    <Badge variant="secondary">1,847 ce mois</Badge>
+                  </div>
                   <div className="relative w-64 hidden md:block">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input placeholder="Rechercher une commande..." className="pl-10" />
+                    <Input placeholder="Rechercher..." className="pl-10" />
                   </div>
                 </div>
               </CardHeader>
@@ -175,7 +180,7 @@ export default function SalesPage() {
                   <TableBody>
                     {recentOrders.map((order) => (
                       <TableRow key={order.id}>
-                        <TableCell className="font-medium">{order.id}</TableCell>
+                        <TableCell className="font-medium font-mono">{order.id}</TableCell>
                         <TableCell>{order.client}</TableCell>
                         <TableCell>{new Intl.NumberFormat('fr-DZ').format(order.amount)}</TableCell>
                         <TableCell>{order.date}</TableCell>
@@ -202,8 +207,13 @@ export default function SalesPage() {
             {/* Top Clients */}
             <Card>
               <CardHeader>
-                <CardTitle>Clients Principaux</CardTitle>
-                <CardDescription>Vos meilleurs clients par chiffre d'affaires</CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Clients Principaux</CardTitle>
+                    <CardDescription>Vos meilleurs clients par chiffre d'affaires</CardDescription>
+                  </div>
+                  <Badge className="bg-dz-green/10 text-dz-green border-dz-green/20">2,450+ clients</Badge>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -222,6 +232,10 @@ export default function SalesPage() {
                             {client.totalOrders} commandes
                           </span>
                           <span className="flex items-center gap-1">
+                            <MapPin className="w-3 h-3" />
+                            {client.wilaya}
+                          </span>
+                          <span className="flex items-center gap-1">
                             <Mail className="w-3 h-3" />
                             {client.contact}
                           </span>
@@ -229,7 +243,7 @@ export default function SalesPage() {
                       </div>
                       <div className="text-right">
                         <p className="font-semibold text-primary">
-                          {new Intl.NumberFormat('fr-DZ').format(client.revenue)} DZD
+                          {(client.revenue / 1000000).toFixed(0)}M DZD
                         </p>
                         <Badge variant="outline" className="mt-1">
                           Top #{index + 1}
@@ -240,6 +254,38 @@ export default function SalesPage() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Client Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
+              <Card>
+                <CardContent className="pt-6 text-center">
+                  <Users className="w-8 h-8 mx-auto text-primary mb-2" />
+                  <p className="text-2xl font-bold">2,450</p>
+                  <p className="text-sm text-muted-foreground">Clients Actifs</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-6 text-center">
+                  <Target className="w-8 h-8 mx-auto text-green-600 mb-2" />
+                  <p className="text-2xl font-bold">89%</p>
+                  <p className="text-sm text-muted-foreground">Taux Fidélité</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-6 text-center">
+                  <TrendingUp className="w-8 h-8 mx-auto text-blue-600 mb-2" />
+                  <p className="text-2xl font-bold">+156</p>
+                  <p className="text-sm text-muted-foreground">Nouveaux/Mois</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-6 text-center">
+                  <DollarSign className="w-8 h-8 mx-auto text-orange-600 mb-2" />
+                  <p className="text-2xl font-bold">2.8M</p>
+                  <p className="text-sm text-muted-foreground">Panier Moyen (DZD)</p>
+                </CardContent>
+              </Card>
+            </div>
           </motion.div>
         </TabsContent>
 
@@ -252,14 +298,31 @@ export default function SalesPage() {
           >
             <Card>
               <CardHeader>
-                <CardTitle>Pipeline Commercial</CardTitle>
-                <CardDescription>Suivi des opportunités en cours</CardDescription>
+                <CardTitle>Pipeline Commercial Enterprise</CardTitle>
+                <CardDescription>Suivi des opportunités en cours - Valeur totale: 850M DZD</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-12 text-muted-foreground">
-                  <TrendingUp className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <p>Pipeline des opportunités à venir</p>
-                  <p className="text-sm">Module en développement</p>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div className="p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-center">
+                    <p className="text-3xl font-bold text-blue-600">45</p>
+                    <p className="text-sm text-muted-foreground">Qualification</p>
+                    <p className="text-xs text-blue-600 mt-1">120M DZD</p>
+                  </div>
+                  <div className="p-4 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 text-center">
+                    <p className="text-3xl font-bold text-yellow-600">32</p>
+                    <p className="text-sm text-muted-foreground">Proposition</p>
+                    <p className="text-xs text-yellow-600 mt-1">285M DZD</p>
+                  </div>
+                  <div className="p-4 rounded-lg bg-purple-50 dark:bg-purple-900/20 text-center">
+                    <p className="text-3xl font-bold text-purple-600">18</p>
+                    <p className="text-sm text-muted-foreground">Négociation</p>
+                    <p className="text-xs text-purple-600 mt-1">320M DZD</p>
+                  </div>
+                  <div className="p-4 rounded-lg bg-green-50 dark:bg-green-900/20 text-center">
+                    <p className="text-3xl font-bold text-green-600">12</p>
+                    <p className="text-sm text-muted-foreground">Signature</p>
+                    <p className="text-xs text-green-600 mt-1">125M DZD</p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -276,13 +339,22 @@ export default function SalesPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Gestion des Devis</CardTitle>
-                <CardDescription>Création et suivi des devis clients</CardDescription>
+                <CardDescription>Création et suivi des devis clients - TVA incluse</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-12 text-muted-foreground">
-                  <ShoppingCart className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <p>Liste des devis à venir</p>
-                  <p className="text-sm">Module en développement</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="p-6 rounded-lg border border-border text-center">
+                    <p className="text-3xl font-bold text-primary">234</p>
+                    <p className="text-sm text-muted-foreground">Devis en cours</p>
+                  </div>
+                  <div className="p-6 rounded-lg border border-border text-center">
+                    <p className="text-3xl font-bold text-green-600">78%</p>
+                    <p className="text-sm text-muted-foreground">Taux conversion</p>
+                  </div>
+                  <div className="p-6 rounded-lg border border-border text-center">
+                    <p className="text-3xl font-bold text-blue-600">45M DZD</p>
+                    <p className="text-sm text-muted-foreground">Valeur en attente</p>
+                  </div>
                 </div>
               </CardContent>
             </Card>

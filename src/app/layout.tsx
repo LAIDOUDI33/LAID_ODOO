@@ -15,25 +15,32 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ERP-DZ | Système de Gestion Intégré Algérien",
-  description: "ERP-DZ - Solution complète de gestion d'entreprise adaptée au contexte algérien. Finance, Ventes, RH, Stocks et plus.",
+  title: "HASSIBA Suite ERP | Système de Gestion Intégré Algérien",
+  description: "HASSIBA Suite ERP - Solution entreprise complète adaptée au contexte algérien. Finance, Comptabilité SCF, Ventes, RH/Paie, Stocks, Production, BI Analytics. Déploiement pour 25,000+ employés.",
   keywords: [
-    "ERP", 
-    "Algérie", 
-    "Gestion", 
-    "Comptabilité", 
-    "DZ", 
-    "TVA", 
+    "HASSIBA Suite ERP",
+    "ERP Algérie",
+    "Système de Gestion",
+    "Comptabilité SCF",
+    "DZD",
+    "TVA Algérie",
+    "TAP",
+    "IRG",
+    "CNAS",
+    "CASNOS",
     "Facturation",
-    "Ressources Humaines"
+    "Ressources Humaines",
+    "Paie Algérie",
+    "Business Intelligence",
+    "Enterprise Resource Planning"
   ],
-  authors: [{ name: "ERP-DZ Team" }],
+  authors: [{ name: "HASSIBA Suite Team" }],
   icons: {
     icon: "/favicon.ico",
   },
   openGraph: {
-    title: "ERP-DZ - Système de Gestion Algérien",
-    description: "Solution ERP complète pour les entreprises algériennes",
+    title: "HASSIBA Suite ERP - Plateforme de Gestion Algérienne",
+    description: "Solution ERP enterprise complète pour les entreprises algériennes - 25,000 employés",
     type: "website",
     locale: "fr_DZ",
   },

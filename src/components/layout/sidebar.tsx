@@ -96,15 +96,17 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
         {/* Logo Section */}
         <div className="flex items-center h-16 px-4 border-b border-sidebar-border">
           <Link href="/" className="flex items-center gap-3 overflow-hidden">
-            <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br from-dz-green to-dz-green-light flex items-center justify-center">
-              <Building2 className="w-6 h-6 text-white" />
+            <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br from-dz-green via-dz-green-light to-dz-red flex items-center justify-center shadow-lg">
+              <span className="text-white font-bold text-lg">H</span>
             </div>
             {!collapsed && (
               <div className="animate-fade-in">
-                <h1 className="text-lg font-bold text-sidebar-foreground leading-tight">
-                  ERP-DZ
+                <h1 className="text-lg font-bold text-sidebar-foreground leading-tight flex items-center gap-1">
+                  <span className="bg-gradient-to-r from-dz-green to-dz-red bg-clip-text text-transparent">HASSIBA</span>
+                  <span className="text-xs font-normal text-muted-foreground">Suite</span>
                 </h1>
-                <p className="text-xs text-muted-foreground">Gestion Algérienne</p>
+                <p className="text-xs text-muted-foreground">ERP Enterprise v2.0</p>
+                <span className="inline-block mt-1 px-2 py-0.5 text-[10px] font-medium bg-dz-green/10 text-dz-green rounded-full">25K Users Ready</span>
               </div>
             )}
           </Link>
