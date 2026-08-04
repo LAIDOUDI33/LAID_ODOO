@@ -69,7 +69,7 @@ export async function GET(request: Request) {
           },
           orderBy: [{ expectedCloseDate: "asc" }, { createdAt: "desc" }],
           take: limit,
-          offset,
+          skip: offset,
         }),
         db.opportunity.count({ where }),
       ]);
@@ -103,7 +103,7 @@ export async function GET(request: Request) {
         },
         orderBy: { dueDate: "desc" },
         take: limit,
-        offset,
+        skip: offset,
       });
 
       return NextResponse.json({

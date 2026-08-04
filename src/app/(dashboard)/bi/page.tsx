@@ -296,7 +296,7 @@ export default function BiPage() {
                       background: `linear-gradient(135deg, ${['#00623315', '#D2103415', '#008a4715', '#6b728015', '#2563eb15'][index % 5]} 0%, ${['#00623305', '#D2103405', '#008a4705', '#6b728005', '#2563eb05'][index % 5]} 100%)`
                     }}
                   >
-                    <BarChart3 className={`w-12 h-12 text-primary/30 group-hover:text-primary/60 transition-all duration-300 ${group ? 'scale-110' : ''}`} />
+                    <BarChart3 className="w-12 h-12 text-primary/30 group-hover:text-primary/60 transition-all duration-300 group-hover:scale-110" />
                   </div>
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between mb-2">
