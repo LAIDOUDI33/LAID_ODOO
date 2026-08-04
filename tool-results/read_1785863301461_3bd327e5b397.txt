@@ -1,0 +1,837 @@
+     1→import { NextResponse } from 'next/server';
+     2→import { db } from '@/lib/db';
+     3→import { calculateTVACollectee, getTimbreFiscal } from '@/lib/algerian-taxes';
+     4→
+     5→// Valid sales order statuses
+     6→const VALID_STATUSES = ['draft', 'sent', 'confirmed', 'processing', 'delivered', 'invoiced', 'done', 'cancelled'];
+     7→
+     8→// Status transition rules
+     9→const VALID_TRANSITIONS: Record<string, string[]> = {
+    10→  draft: ['sent', 'cancelled'],
+    11→  sent: ['confirmed', 'draft', 'cancelled'],
+    12→  confirmed: ['processing', 'sent', 'cancelled'],
+    13→  processing: ['delivered', 'confirmed'],
+    14→  delivered: ['invoiced', 'processing'],
+    15→  invoiced: ['done', 'delivered'],
+    16→  done: [],
+    17→  cancelled: ['draft'] // Can reinstate cancelled orders
+    18→};
+    19→
+    20→// ============================================================
+    21→// Helper: Validate status transition
+    22→// ============================================================
+    23→function canTransition(currentStatus: string, newStatus: string): boolean {
+    24→  if (!VALID_TRANSITIONS[currentStatus]) return false;
+    25→  return VALID_TRANSITIONS[currentStatus].includes(newStatus);
+    26→}
+    27→
+    28→// ============================================================
+    29→// GET /api/sales-orders/[id] - Get single sales order
+    30→// ============================================================
+    31→export async function GET(
+    32→  request: Request,
+    33→  { params }: { params: Promise<{ id: string }> }
+    34→) {
+    35→  try {
+    36→    const { id } = await params;
+    37→    
+    38→    const salesOrder = await db.salesOrder.findUnique({
+    39→      where: { id },
+    40→      include: {
+    41→        partner: {
+    42→          select: { 
+    43→            id: true, name: true, nif: true, nis: true, rc: true, 
+    44→            city: true, address: true, phone: true, email: true,
+    45→            type: true
+    46→          }
+    47→        },
+    48→        company: {
+    49→          select: { id: true, name: true, logo: true, address: true, phone: true }
+    50→        },
+    51→        warehouse: {
+    52→          select: { id: true, name: true, address: true }
+    53→        },
+    54→        salesPerson: {
+    55→          select: { id: true, name: true, email: true }
+    56→        },
+    57→        quotation: {
+    58→          select: { id: true, reference: true, date: true, status: true }
+    59→        },
+    60→        opportunity: {
+    61→          select: { id: true, name: true, stage: true }
+    62→        },
+    63→        lines: {
+    64→          orderBy: { createdAt: 'asc' },
+    65→          include: {
+    66→            product: {
+    67→              select: { 
+    68→                id: true, name: true, reference: true, description: true,
+    69→                unit: true, sellingPrice: true, tvaRate: true
+    70→              }
+    71→            }
+    72→          }
+    73→        },
+    74→        deliveryItems: {
+    75→          include: {
+    76→            product: { select: { id: true, name: true } },
+    77→            warehouse: { select: { id: true, name: true } }
+    78→          }
+    79→        },
+    80→        invoices: {
+    81→          select: { id: true, reference: true, date: true, status: true, amountTotal }
+    82→        },
+    83→        _count: {
+    84→          select: {
+    85→            lines: true,
+    86→            deliveryItems: true,
+    87→            invoices: true
+    88→          }
+    89→        }
+    90→      }
+    91→    });
+    92→
+    93→    if (!salesOrder) {
+    94→      return NextResponse.json(
+    95→        { success: false, error: 'Sales order not found' },
+    96→        { status: 404 }
+    97→      );
+    98→    }
+    99→
+   100→    return NextResponse.json({
+   101→      success: true,
+   102→      data: salesOrder
+   103→    });
+   104→  } catch (error) {
+   105→    console.error('SalesOrders [id] GET Error:', error);
+   106→    return NextResponse.json(
+   107→      { success: false, error: 'Failed to fetch sales order' },
+   108→      { status: 500 }
+   109→    );
+   110→  }
+   111→}
+   112→
+   113→// ============================================================
+   114→// PUT /api/sales-orders/[id] - Update a sales order
+   115→// ============================================================
+   116→export async function PUT(
+   117→  request: Request,
+   118→  { params }: { params: Promise<{ id: string }> }
+   119→) {
+   120→  try {
+   121→    const { id } = await params;
+   122→    const body = await request.json();
+   123→
+   124→    // Check if sales order exists
+   125→    const existingOrder = await db.salesOrder.findUnique({
+   126→      where: { id },
+   127→      include: { lines: true }
+   128→    });
+   129→
+   130→    if (!existingOrder) {
+   131→      return NextResponse.json(
+   132→        { success: false, error: 'Sales order not found' },
+   133→        { status: 404 }
+   134→      );
+   135→    }
+   136→
+   137→    // Check if order can be modified (only draft/sent can be edited)
+   138→    if (!['draft', 'sent'].includes(existingOrder.status)) {
+   139→      return NextResponse.json(
+   140→        { success: false, error: `Cannot modify sales order with status '${existingOrder.status}'. Only draft or sent orders can be modified.` },
+   141→        { status: 400 }
+   142→      );
+   143→    }
+   144→
+   145→    const {
+   146→      expectedDate,
+   147→      paymentTerms,
+   148→      paymentMode,
+   149→      shippingAddress,
+   150→      warehouseId,
+   151→      internalNotes,
+   152→      customerNotes,
+   153→      lines,
+   154→      status
+   155→    } = body;
+   156→
+   157→    // Validate status change if provided
+   158→    if (status && status !== existingOrder.status) {
+   159→      if (!VALID_STATUSES.includes(status)) {
+   160→        return NextResponse.json(
+   161→          { success: false, error: `Invalid status. Must be one of: ${VALID_STATUSES.join(', ')}` },
+   162→          { status: 400 }
+   163→        );
+   164→      }
+   165→      if (!canTransition(existingOrder.status, status)) {
+   166→        return NextResponse.json(
+   167→          { success: false, error: `Cannot transition from '${existingOrder.status}' to '${status}'` },
+   168→          { status: 400 }
+   169→        );
+   170→      }
+   171→    }
+   172→
+   173→    // Check warehouse if provided
+   174→    if (warehouseId && warehouseId !== existingOrder.warehouseId) {
+   175→      const warehouse = await db.warehouse.findUnique({ where: { id: warehouseId } });
+   176→      if (!warehouse) {
+   177→        return NextResponse.json(
+   178→          { success: false, error: 'Warehouse not found' },
+   179→          { status: 404 }
+   180→        );
+   181→      }
+   182→    }
+   183→
+   184→    // Prepare update data
+   185→    const updateData: any = {};
+   186→    
+   187→    if (expectedDate !== undefined) updateData.expectedDate = expectedDate ? new Date(expectedDate) : null;
+   188→    if (paymentTerms !== undefined) updateData.paymentTerms = paymentTerms;
+   189→    if (paymentMode !== undefined) updateData.paymentMode = paymentMode;
+   190→    if (shippingAddress !== undefined) updateData.shippingAddress = shippingAddress;
+   191→    if (warehouseId !== undefined) updateData.warehouseId = warehouseId;
+   192→    if (internalNotes !== undefined) updateData.internalNotes = internalNotes;
+   193→    if (customerNotes !== undefined) updateData.customerNotes = customerNotes;
+   194→    if (status !== undefined) updateData.status = status;
+   195→
+   196→    // Handle line updates if provided
+   197→    let calculatedAmounts = null;
+   198→    
+   199→    if (lines && Array.isArray(lines)) {
+   200→      if (lines.length === 0) {
+   201→        return NextResponse.json(
+   202→          { success: false, error: 'At least one line item is required' },
+   203→          { status: 400 }
+   204→        );
+   205→      }
+   206→
+   207→      // Validate new lines
+   208→      for (let i = 0; i < lines.length; i++) {
+   209→        const line = lines[i];
+   210→        if (!line.productId) {
+   211→          return NextResponse.json(
+   212→            { success: false, error: `Line ${i + 1}: Product is required` },
+   213→            { status: 400 }
+   214→          );
+   215→        }
+   216→        if (!line.quantity || parseFloat(line.quantity) <= 0) {
+   217→          return NextResponse.json(
+   218→            { success: false, error: `Line ${i + 1}: Quantity must be greater than 0` },
+   219→            { status: 400 }
+   220→          );
+   221→        }
+   222→      }
+   223→
+   224→      // Process new lines with calculations
+   225→      const processedLines = lines.map((line: any) => {
+   226→        const quantity = parseFloat(line.quantity) || 0;
+   227→        const unitPrice = parseFloat(line.unitPrice) || 0;
+   228→        const discountRate = parseFloat(line.discountRate) || 0;
+   229→        let tvaRate = parseFloat(line.tvaRate);
+   230→        
+   231→        if (isNaN(tvaRate)) tvaRate = 0.19;
+   232→
+   233→        const amountUntaxedBeforeDiscount = quantity * unitPrice;
+   234→        const amountUntaxed = Math.round(amountUntaxedBeforeDiscount * (1 - discountRate / 100) * 100) / 100;
+   235→        const amountTax = Math.round(amountUntaxed * tvaRate * 100) / 100;
+   236→        const amountTotal = amountUntaxed + amountTax;
+   237→
+   238→        return {
+   239→          productId: line.productId,
+   240→          description: line.description || null,
+   241→          quantity,
+   242→          unitPrice,
+   243→          discountRate,
+   244→          tvaRate,
+   245→          amountUntaxed,
+   246→          amountTax,
+   247→          amountTotal
+   248→        };
+   249→      });
+   250→
+   251→      // Calculate totals
+   252→      const tvaResult = calculateTVACollectee(processedLines.map((l) => ({ 
+   253→        amountUntaxed: l.amountUntaxed, 
+   254→        tvaRate: l.tvaRate 
+   255→      })));
+   256→
+   257→      const timbreFiscal = getTimbreFiscal('facture', tvaResult.totalTTC);
+   258→
+   259→      calculatedAmounts = {
+   260→        amountUntaxed: tvaResult.totalHT,
+   261→        amountTax: tvaResult.totalTVACollectee,
+   262→        timbreFiscal,
+   263→        amountTotal: tvaResult.totalTTC + timbreFiscal
+   264→      };
+   265→
+   266→      updateData.amountUntaxed = calculatedAmounts.amountUntaxed;
+   267→      updateData.amountTax = calculatedAmounts.amountTax;
+   268→      updateData.timbreFiscal = calculatedAmounts.timbreFiscal;
+   269→      updateData.amountTotal = calculatedAmounts.amountTotal;
+   270→    }
+   271→
+   272→    // Update in transaction to handle lines properly
+   273→    const updatedOrder = await db.$transaction(async (tx) => {
+   274→      // Delete old lines and create new ones if lines are being updated
+   275→      if (lines && Array.isArray(lines)) {
+   276→        await tx.salesOrderLine.deleteMany({
+   277→          where: { salesOrderId: id }
+   278→        });
+   279→      }
+   280→
+   281→      const order = await tx.salesOrder.update({
+   282→        where: { id },
+   283→        data: {
+   284→          ...updateData,
+   285→          ...(lines && Array.isArray(lines) ? {
+   286→            lines: {
+   287→              create: lines.map((line: any) => {
+   288→                const quantity = parseFloat(line.quantity) || 0;
+   289→                const unitPrice = parseFloat(line.unitPrice) || 0;
+   290→                const discountRate = parseFloat(line.discountRate) || 0;
+   291→                let tvaRate = parseFloat(line.tvaRate);
+   292→                if (isNaN(tvaRate)) tvaRate = 0.19;
+   293→
+   294→                const amountUntaxedBeforeDiscount = quantity * unitPrice;
+   295→                const amountUntaxed = Math.round(amountUntaxedBeforeDiscount * (1 - discountRate / 100) * 100) / 100;
+   296→                const amountTax = Math.round(amountUntaxed * tvaRate * 100) / 100;
+   297→                const amountTotal = amountUntaxed + amountTax;
+   298→
+   299→                return {
+   300→                  productId: line.productId,
+   301→                  description: line.description || null,
+   302→                  quantity,
+   303→                  unitPrice,
+   304→                  discountRate,
+   305→                  tvaRate,
+   306→                  amountUntaxed,
+   307→                  amountTax,
+   308→                  amountTotal,
+   309→                  quantityDelivered: 0,
+   310→                  quantityInvoiced: 0
+   311→                };
+   312→              })
+   313→            }
+   314→          } : {})
+   315→        },
+   316→        include: {
+   317→          partner: { select: { id: true, name: true } },
+   318→          lines: { include: { product: { select: { id: true, name: true } } } }
+   319→        }
+   320→      });
+   321→
+   322→      return order;
+   323→    });
+   324→
+   325→    return NextResponse.json({
+   326→      success: true,
+   327→      data: updatedOrder,
+   328→      message: `Sales Order ${updatedOrder.reference} updated successfully`
+   329→    });
+   330→  } catch (error) {
+   331→    console.error('SalesOrders [id] PUT Error:', error);
+   332→    return NextResponse.json(
+   333→      { success: false, error: 'Failed to update sales order' },
+   334→      { status: 500 }
+   335→    );
+   336→  }
+   337→}
+   338→
+   339→// ============================================================
+   340→// DELETE /api/sales-orders/[id] - Cancel a sales order
+   341→// ============================================================
+   342→export async function DELETE(
+   343→  request: Request,
+   344→  { params }: { params: Promise<{ id: string }> }
+   345→) {
+   346→  try {
+   347→    const { id } = await params;
+   348→
+   349→    // Check if sales order exists
+   350→    const existingOrder = await db.salesOrder.findUnique({
+   351→      where: { id },
+   352→      include: {
+   353→        deliveryItems: true,
+   354→        invoices: true
+   355→      }
+   356→    });
+   357→
+   358→    if (!existingOrder) {
+   359→      return NextResponse.json(
+   360→        { success: false, error: 'Sales order not found' },
+   361→        { status: 404 }
+   362→      );
+   363→    }
+   364→
+   365→    // Check if already cancelled
+   366→    if (existingOrder.status === 'cancelled') {
+   367→      return NextResponse.json(
+   368→        { success: false, error: 'Sales order is already cancelled' },
+   369→        { status: 400 }
+   370→      );
+   371→    }
+   372→
+   373→    // Check if can be cancelled (no deliveries or invoices for confirmed+ orders)
+   374→    if (['confirmed', 'processing', 'delivered', 'invoiced', 'done'].includes(existingOrder.status)) {
+   375→      if (existingOrder.deliveryItems.length > 0) {
+   376→        return NextResponse.json(
+   377→          { success: false, error: 'Cannot cancel sales order that has deliveries. Please reverse deliveries first.' },
+   378→          { status: 400 }
+   379→        );
+   380→      }
+   381→      if (existingOrder.invoices.length > 0) {
+   382→        return NextResponse.json(
+   383→          { success: false, error: 'Cannot cancel sales order that has invoices. Please delete invoices first.' },
+   384→          { status: 400 }
+   385→        );
+   386→      }
+   387→    }
+   388→
+   389→    // Cancel the order (soft delete by changing status)
+   390→    const cancelledOrder = await db.salesOrder.update({
+   391→      where: { id },
+   392→      data: { status: 'cancelled' },
+   393→      include: {
+   394→        partner: { select: { id: true, name: true } }
+   395→      }
+   396→    });
+   397→
+   398→    return NextResponse.json({
+   399→      success: true,
+   400→      data: cancelledOrder,
+   401→      message: `Sales Order ${cancelledOrder.reference} has been cancelled`
+   402→    });
+   403→  } catch (error) {
+   404→    console.error('SalesOrders [id] DELETE Error:', error);
+   405→    return NextResponse.json(
+   406→      { success: false, error: 'Failed to cancel sales order' },
+   407→      { status: 500 }
+   408→    );
+   409→  }
+   410→}
+   411→
+   412→// ============================================================
+   413→// POST /api/sales-orders/[id]/confirm - Confirm a sales order
+   414→// ============================================================
+   415→export async function POST(
+   416→  request: Request,
+   417→  { params }: { params: Promise<{ id: string }> }
+   418→) {
+   419→  try {
+   420→    const { id } = await params;
+   421→    const body = await request.json().catch(() => ({}));
+   422→    const action = body.action;
+   423→
+   424→    // Route based on action parameter
+   425→    switch (action) {
+   426→      case 'confirm':
+   427→        return handleConfirm(id);
+   428→      case 'deliver':
+   429→        return handleDeliver(id, body);
+   430→      case 'invoice':
+   431→        return handleCreateInvoice(id, body);
+   432→      default:
+   433→        return NextResponse.json(
+   434→          { success: false, error: 'Invalid action. Use: confirm, deliver, or invoice' },
+   435→          { status: 400 }
+   436→        );
+   437→    }
+   438→  } catch (error) {
+   439→    console.error('SalesOrders [id] POST Error:', error);
+   440→    return NextResponse.json(
+   441→      { success: false, error: 'Failed to process action' },
+   442→      { status: 500 }
+   443→    );
+   444→  }
+   445→}
+   446→
+   447→// ============================================================
+   448→// Action: Confirm Sales Order
+   449→// ============================================================
+   450→async function handleConfirm(id: string) {
+   451→  const order = await db.salesOrder.findUnique({
+   452→    where: { id },
+   453→    include: { lines: true }
+   454→  });
+   455→
+   456→  if (!order) {
+   457→    return NextResponse.json(
+   458→      { success: false, error: 'Sales order not found' },
+   459→      { status: 404 }
+   460→    );
+   461→  }
+   462→
+   463→  if (!['draft', 'sent'].includes(order.status)) {
+   464→    return NextResponse.json(
+   465→      { success: false, error: `Cannot confirm sales order with status '${order.status}'. Only draft or sent orders can be confirmed.` },
+   466→      { status: 400 }
+   467→    );
+   468→  }
+   469→
+   470→  const confirmedOrder = await db.salesOrder.update({
+   471→    where: { id },
+   472→    data: { status: 'confirmed' },
+   473→    include: {
+   474→      partner: { select: { id: true, name: true } },
+   475→      lines: { include: { product: { select: { id: true, name: true } } } }
+   476→    }
+   477→  });
+   478→
+   479→  return NextResponse.json({
+   480→    success: true,
+   481→    data: confirmedOrder,
+   482→    message: `Sales Order ${confirmedOrder.reference} has been confirmed`
+   483→  });
+   484→}
+   485→
+   486→// ============================================================
+   487→// Action: Deliver Goods from Sales Order
+   488→// ============================================================
+   489→async function handleDeliver(id: string, body: any) {
+   490→  const order = await db.salesOrder.findUnique({
+   491→    where: { id },
+   492→    include: {
+   493→      lines: { include: { product: true } },
+   494→      partner: true,
+   495→      warehouse: true
+   496→    }
+   497→  });
+   498→
+   499→  if (!order) {
+   500→    return NextResponse.json(
+   501→      { success: false, error: 'Sales order not found' },
+   502→      { status: 404 }
+   503→    );
+   504→  }
+   505→
+   506→  if (!['confirmed', 'processing'].includes(order.status)) {
+   507→    return NextResponse.json(
+   508→      { success: false, error: `Cannot deliver sales order with status '${order.status}'. Order must be confirmed first.` },
+   509→      { status: 400 }
+   510→    );
+   511→  }
+   512→
+   513→  // Get delivery details from body
+   514→  const { items, deliveryDate, notes, warehouseId } = body;
+   515→
+   516→  if (!items || !Array.isArray(items) || items.length === 0) {
+   517→    return NextResponse.json(
+   518→      { success: false, error: 'Delivery items are required' },
+   519→      { status: 400 }
+   520→    );
+   521→  }
+   522→
+   523→  // Determine target warehouse
+   524→  const targetWarehouseId = warehouseId || order.warehouseId;
+   525→  if (!targetWarehouseId) {
+   526→    return NextResponse.json(
+   527→      { success: false, error: 'No warehouse specified for delivery' },
+   528→      { status: 400 }
+   529→    );
+   530→  }
+   531→
+   532→  // Verify warehouse exists
+   533→  const warehouse = await db.warehouse.findUnique({ where: { id: targetWarehouseId } });
+   534→  if (!warehouse) {
+   535→    return NextResponse.json(
+   536→      { success: false, error: 'Warehouse not found' },
+   537→      { status: 404 }
+   538→    );
+   539→  }
+   540→
+   541→  // Process delivery in transaction
+   542→  const result = await db.$transaction(async (tx) => {
+   543→    const movements: any[] = [];
+   544→    let totalDelivered = 0;
+   545→    const now = new Date();
+   546→    const deliveryDt = deliveryDate ? new Date(deliveryDate) : now;
+   547→
+   548→    // Generate movement reference
+   549→    const year = now.getFullYear();
+   550→    const month = String(now.getMonth() + 1).padStart(2, '0');
+   551→    const moveCount = await tx.stockMovement.count({
+   552→      where: {
+   553→        reference: { startsWith: `SORT-${year}-${month}` }
+   554→      }
+   555→    });
+   556→    const sequence = String(moveCount + 1).padStart(3, '0');
+   557→
+   558→    for (const item of items) {
+   559→      const line = order.lines.find(l => l.id === item.lineId);
+   560→      if (!line) {
+   561→        throw new Error(`Line item ${item.lineId} not found in sales order`);
+   562→      }
+   563→
+   564→      const qtyToDeliver = parseFloat(item.quantity);
+   565→      if (qtyToDeliver <= 0) {
+   566→        throw new Error(`Invalid quantity for line ${item.lineId}`);
+   567→      }
+   568→
+   569→      const remainingQty = line.quantity - line.quantityDelivered;
+   570→      if (qtyToDeliver > remainingQty) {
+   571→        throw new Error(`Cannot deliver ${qtyToDeliver} units. Only ${remainingQty} remaining for this line.`);
+   572→      }
+   573→
+   574→      // Create stock movement (outgoing)
+   575→      const movementRef = `SORT-${year}-${month}-${sequence}-${movements.length + 1}`;
+   576→      const movement = await tx.stockMovement.create({
+   577→        data: {
+   578→          reference: movementRef,
+   579→          date: deliveryDt,
+   580→          type: 'out',
+   581→          quantity: qtyToDeliver,
+   582→          unitCost: line.unitPrice, // Use selling price as cost reference
+   583→          totalCost: Math.round(qtyToDeliver * line.unitPrice * 100) / 100,
+   584→          notes: notes || `Delivery for SO: ${order.reference}`,
+   585→          
+   586→          productId: line.productId,
+   587→          warehouseId: targetWarehouseId,
+   588→          
+   589→          sourceDoc: 'sales_order',
+   590→          sourceId: order.id
+   591→        }
+   592→      });
+   593→      movements.push(movement);
+   594→
+   595→      // Update line delivered quantity
+   596→      const newQtyDelivered = line.quantityDelivered + qtyToDeliver;
+   597→      await tx.salesOrderLine.update({
+   598→        where: { id: line.id },
+   599→        data: { quantityDelivered: newQtyDelivered }
+   600→      });
+   601→
+   602→      // Calculate delivered amount for this line
+   603→      const lineRatio = qtyToDeliver / line.quantity;
+   604→      totalDelivered += line.amountTotal * lineRatio;
+   605→    }
+   606→
+   607→    // Update order amounts and status
+   608→    const newAmountDelivered = order.amountDelivered + totalDelivered;
+   609→    let newStatus = order.status;
+   610→    
+   611→    // Check if fully delivered
+   612→    const allLinesFullyDelivered = order.lines.every(line => {
+   613→      const deliveredItem = items.find((item: any) => item.lineId === line.id);
+   614→      if (deliveredItem) {
+   615→        return (line.quantityDelivered + parseFloat(deliveredItem.quantity)) >= line.quantity;
+   616→      }
+   617→      return line.quantityDelivered >= line.quantity;
+   618→    });
+   619→
+   620→    if (allLinesFullyDelivered && Math.abs(newAmountDelivered - order.amountTotal) < 0.01) {
+   621→      newStatus = 'delivered';
+   622→    } else if (newAmountDelivered > 0) {
+   623→      newStatus = 'processing';
+   624→    }
+   625→
+   626→    const updatedOrder = await tx.salesOrder.update({
+   627→      where: { id },
+   628→      data: {
+   629→        amountDelivered: Math.round(newAmountDelivered * 100) / 100,
+   630→        deliveryDate: deliveryDt,
+   631→        status: newStatus
+   632→      },
+   633→      include: {
+   634→        partner: { select: { id: true, name: true } },
+   635→        lines: { include: { product: { select: { id: true, name: true } } } }
+   636→      }
+   637→    });
+   638→
+   639→    return { order: updatedOrder, movements };
+   640→  });
+   641→
+   642→  return NextResponse.json({
+   643→    success: true,
+   644→    data: result.order,
+   645→    movements: result.movements,
+   646→    message: `Delivery processed for Sales Order ${result.order.reference}. ${result.movements.length} stock movement(s) created.`
+   647→  });
+   648→}
+   649→
+   650→// ============================================================
+   651→// Action: Create Invoice from Sales Order
+   652→// ============================================================
+   653→async function handleCreateInvoice(id: string, body: any) {
+   654→  const order = await db.salesOrder.findUnique({
+   655→    where: { id },
+   656→    include: {
+   657→      lines: { include: { product: true } },
+   658→      partner: true,
+   659→      company: true
+   660→    }
+   661→  });
+   662→
+   663→  if (!order) {
+   664→    return NextResponse.json(
+   665→      { success: false, error: 'Sales order not found' },
+   666→      { status: 404 }
+   667→    );
+   668→  }
+   669→
+   670→  // Allow invoicing from confirmed/processing/delivered statuses
+   671→  if (!['confirmed', 'processing', 'delivered'].includes(order.status)) {
+   672→    return NextResponse.json(
+   673→      { success: false, error: `Cannot invoice sales order with status '${order.status}'. Order must be at least confirmed.` },
+   674→      { status: 400 }
+   675→    );
+   676→  }
+   677→
+   678→  // Get invoice options from body
+   679→  const { invoiceAll, items, dueDate, paymentTerms, paymentMode, internalNotes, customerNotes } = body;
+   680→  
+   681→  // Default to invoicing all if not specified
+   682→  const shouldInvoiceAll = invoiceAll !== false;
+   683→
+   684→  // Determine which lines to invoice
+   685→  let linesToInvoice: typeof order.lines;
+   686→  
+   687→  if (shouldInvoiceAll) {
+   688→    linesToInvoice = order.lines.filter(line => line.quantityInvoiced < line.quantity);
+   689→  } else if (items && Array.isArray(items)) {
+   690→    linesToInvoice = order.lines.filter(line => 
+   691→      items.some((item: any) => item.lineId === line.id)
+   692→    );
+   693→  } else {
+   694→    linesToInvoice = order.lines.filter(line => line.quantityInvoiced < line.quantity);
+   695→  }
+   696→
+   697→  if (linesToInvoice.length === 0) {
+   698→    return NextResponse.json(
+   699→      { success: false, error: 'No eligible lines to invoice (all quantities already invoiced)' },
+   700→      { status: 400 }
+   701→    );
+   702→  }
+   703→
+   704→  // Create invoice in transaction
+   705→  const result = await db.$transaction(async (tx) => {
+   706→    const now = new Date();
+   707→    
+   708→    // Generate invoice reference
+   709→    const year = now.getFullYear();
+   710→    const month = String(now.getMonth() + 1).padStart(2, '0');
+   711→    const invoiceCount = await tx.invoice.count({
+   712→      where: {
+   713→        companyId: order.companyId,
+   714→        reference: { startsWith: `FACT-${year}-${month}` }
+   715→      }
+   716→    });
+   717→    const sequence = String(invoiceCount + 1).padStart(3, '0');
+   718→    const invoiceRef = `FACT-${year}-${month}-${sequence}`;
+   719→
+   720→    // Prepare invoice lines
+   721→    const invoiceLines = linesToInvoice.map(line => {
+   722→      // Calculate remaining quantity to invoice
+   723→      const remainingQty = line.quantity - line.quantityInvoiced;
+   724→      
+   725→      // If specific quantity requested
+   726→      const requestedItem = items?.find((item: any) => item.lineId === line.id);
+   727→      const qtyToInvoice = requestedItem 
+   728→        ? Math.min(parseFloat(requestedItem.quantity), remainingQty)
+   729→        : remainingQty;
+   730→
+   731→      const lineRatio = qtyToInvoice / line.quantity;
+   732→      
+   733→      return {
+   734→        productId: line.productId,
+   735→        label: line.description || line.product?.name || null,
+   736→        quantity: qtyToInvoice,
+   737→        unitPrice: line.unitPrice,
+   738→        discountRate: line.discountRate,
+   739→        tvaRate: line.tvaRate,
+   740→        amountUntaxed: Math.round(line.amountUntaxed * lineRatio * 100) / 100,
+   741→        amountTax: Math.round(line.amountTax * lineRatio * 100) / 100,
+   742→        amountTotal: Math.round(line.amountTotal * lineRatio * 100) / 100
+   743→      };
+   744→    });
+   745→
+   746→    // Calculate totals
+   747→    const tvaResult = calculateTVACollectee(invoiceLines.map(l => ({
+   748→      amountUntaxed: l.amountUntaxed,
+   749→      tvaRate: l.tvaRate
+   750→    })));
+   751→
+   752→    const timbreFiscal = getTimbreFiscal('facture', tvaResult.totalTTC);
+   753→    const amountUntaxed = tvaResult.totalHT;
+   754→    const amountTax = tvaResult.totalTVACollectee;
+   755→    const amountTotal = tvaResult.totalTTC + timbreFiscal;
+   756→
+   757→    // Set due date
+   758→    const invoiceDueDate = dueDate 
+   759→      ? new Date(dueDate) 
+   760→      : new Date(now.getTime() + (parseInt(paymentTerms || order.paymentTerms || '30') * 24 * 60 * 60 * 1000));
+   761→
+   762→    // Create invoice
+   763→    const invoice = await tx.invoice.create({
+   764→      data: {
+   765→        reference: invoiceRef,
+   766→        date: now,
+   767→        dueDate: invoiceDueDate,
+   768→        status: 'draft',
+   769→        type: 'invoice',
+   770→        
+   771→        amountUntaxed,
+   772→        amountTax,
+   773→        timbreFiscal,
+   774→        amountTotal,
+   775→        amountPaid: 0,
+   776→        amountDue: amountTotal,
+   777→        
+   778→        partnerId: order.partnerId,
+   779→        companyId: order.companyId,
+   780→        salesOrderId: order.id,
+   781→        
+   782→        paymentTerm: paymentTerms || order.paymentTerms || '30',
+   783→        paymentMode: paymentMode || order.paymentMode || null,
+   784→        
+   785→        internalNotes: internalNotes || order.internalNotes || null,
+   786→        customerNotes: customerNotes || order.customerNotes || null,
+   787→        
+   788→        lines: {
+   789→          create: invoiceLines
+   790→        }
+   791→      },
+   792→      include: {
+   793→        partner: { select: { id: true, name: true } },
+   794→        lines: { include: { product: { select: { id: true, name: true } } } }
+   795→      }
+   796→    });
+   797→
+   798→    // Update sales order lines invoiced quantities
+   799→    for (const invLine of invoiceLines) {
+   800→      const soLine = linesToInvoice.find(l => l.productId === invLine.productId);
+   801→      if (soLine) {
+   802→        await tx.salesOrderLine.update({
+   803→          where: { id: soLine.id },
+   804→          data: {
+   805→            quantityInvoiced: soLine.quantityInvoiced + invLine.quantity
+   806→          }
+   807→        });
+   808→      }
+   809→    }
+   810→
+   811→    // Update sales order invoiced amount
+   812→    const newAmountInvoiced = order.amountInvoiced + amountTotal;
+   813→    let newStatus = order.status;
+   814→    
+   815→    // Check if fully invoiced
+   816→    if (Math.abs(newAmountInvoiced - order.amountTotal) < 0.01) {
+   817→      newStatus = order.status === 'delivered' ? 'invoiced' : 'invoiced';
+   818→    }
+   819→
+   820→    await tx.salesOrder.update({
+   821→      where: { id },
+   822→      data: {
+   823→        amountInvoiced: Math.round(newAmountInvoiced * 100) / 100,
+   824→        status: newStatus
+   825→      }
+   826→    });
+   827→
+   828→    return invoice;
+   829→  });
+   830→
+   831→  return NextResponse.json({
+   832→    success: true,
+   833→    data: result,
+   834→    message: `Invoice ${result.reference} created successfully from Sales Order ${order.reference}`
+   835→  }, { status: 201 });
+   836→}
+   837→

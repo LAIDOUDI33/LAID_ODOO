@@ -1,0 +1,2002 @@
+     1→     1→// ============================================================
+     2→     2→// ERP-DZ - ALGERIAN ENTERPRISE RESOURCE PLANNING SYSTEM
+     3→     3→// Complete Database Schema - SCF Compliant
+     4→     4→// ============================================================
+     5→     5→
+     6→     6→generator client {
+     7→     7→  provider = "prisma-client-js"
+     8→     8→}
+     9→     9→
+    10→    10→datasource db {
+    11→    11→  provider = "sqlite"
+    12→    12→  url      = env("DATABASE_URL")
+    13→    13→}
+    14→    14→
+    15→    15→// ============================================================
+    16→    16→// CORE USER & AUTHENTICATION (Extended with Auth, Audit, Workflow)
+    17→    17→// ============================================================
+    18→    18→
+    19→    19→model User {
+    20→    20→  id            String   @id @default(cuid())
+    21→    21→  email         String   @unique
+    22→    22→  name          String
+    23→    23→  password      String?
+    24→    24→  role          String   @default("user") // admin, manager, accountant, hr, sales, user
+    25→    25→  avatar        String?
+    26→    26→  phone         String?
+    27→    27→  isActive      Boolean  @default(true)
+    28→    28→  lastLoginAt   DateTime?
+    29→    29→  createdAt     DateTime @default(now())
+    30→    30→  updatedAt     DateTime @updatedAt
+    31→    31→  
+    32→    32→  // Relations Entreprise
+    33→    33→  company       Company? @relation(fields: [companyId], references: [id])
+    34→    34→  companyId     String?
+    35→    35→  
+    36→    36→  // Relations Authentification (NextAuth.js v4)
+    37→    37→  sessions      Session[]
+    38→    38→  accounts      Account[]
+    39→    39→  
+    40→    40→  // Relations Audit Trail
+    41→    41→  auditLogs     AuditLog[]
+    42→    42→  
+    43→    43→  // Relations Workflow
+    44→    44→  initiatedWorkflows WorkflowInstance[] @relation("WorkflowInitiator")
+    45→    45→  receivedApprovals  WorkflowApproval[]
+    46→    46→  delegatedApprovals WorkflowApproval[] @relation("DelegatedApproval")
+    47→    47→  workflowComments   WorkflowComment[]
+    48→    48→  
+    49→    49→  // Relations Notifications
+    50→    50→  notifications       Notification[]
+    51→    51→  notificationPrefs   NotificationPreference?
+    52→    52→  
+    53→    53→  // Relations Reports
+    54→    54→  generatedReports    Report[]
+    55→    55→  reportTemplates     ReportTemplate[]
+    56→    56→  
+    57→    57→  // Relations CRM
+    58→    58→  assignedOpportunities Opportunity[] @relation("SalesAssigned")
+    59→    59→  activities          Activity[]
+    60→    60→  
+    61→    61→  // Relations Sales
+    62→    62→  salesOrders          SalesOrder[]    @relation("SalesPersonOrders")
+    63→    63→  quotations           Quotation[]     @relation("QuotationSalesPersons")
+    64→    64→  
+    65→    65→  @@map("users")
+    66→    66→}
+    67→    67→
+    68→    68→// ============================================================
+    69→    69→// COMPANY & ALGERIAN LOCALIZATION
+    70→    70→// ============================================================
+    71→    71→
+    72→    72→model Company {
+    73→    73→  id                String   @id @default(cuid())
+    74→    74→  name              String
+    75→    75→  nameAr            String?  // Nom en arabe
+    76→    76→  commercialName    String?
+    77→    77→  legalForm         String   @default("SARL") // SARL, EURL, SPA, SNC, SCS
+    78→    78→  capital           Float    @default(0) // Capital social en DZD
+    79→    79→  currency          String   @default("DZD")
+    80→    80→  
+    81→    81→  // Identifiants Algériens (Obligatoires)
+    82→    82→  rc                String?  // Registre de Commerce
+    83→    83→  nif               String?  // Numéro Identification Fiscale
+    84→    84→  nis               String?  // Numéro Identification Statistique
+    85→    85→  ai                String?  // Article d'Imposition
+    86→    86→  taxRegime         String   @default("reel") // reel, simplifie, forfait
+    87→    87→  
+    88→    88→  // Contact
+    89→    89→  address           String?
+    90→    90→  addressAr         String?
+    91→    91→  postalCode        String?
+    92→    92→  city              String?
+    93→    93→  wilayaCode        String?  // Code wilaya (01-58)
+    94→    94→  phone             String?
+    95→    95→  fax               String?
+    96→    96→  email             String?
+    97→    97→  website           String?
+    98→    98→  
+    99→    99→  // Relations inverses
+   100→   100→  wilaya            Wilaya?   @relation(fields: [wilayaCode], references: [code])
+   101→   101→  
+   102→   102→  // Configuration
+   103→   103→  fiscalYearStart   Int      @default(1) // Mois début exercice (1=Janvier)
+   104→   104→  language          String   @default("fr") // fr, ar, ber
+   105→   105→  logo              String?
+   106→   106→  isActive          Boolean  @default(true)
+   107→   107→  
+   108→   108→  // Timestamps
+   109→   109→  createdAt         DateTime @default(now())
+   110→   110→  updatedAt         DateTime @updatedAt
+   111→   111→  
+   112→   112→  // Relations
+   113→   113→  users             User[]
+   114→   114→  chartOfAccounts   ChartOfAccount[]
+   115→   115→  journals          Journal[]
+   116→   116→  partners          Partner[]
+   117→   117→  products          Product[]
+   118→   118→  employees         Employee[]
+   119→   119→  invoices          Invoice[]
+   120→   120→  bills             Bill[]
+   121→   121→  bankAccounts      BankAccount[]
+   122→   122→  warehouses        Warehouse[]
+   123→   123→  taxDeclarations   TaxDeclaration[]
+   124→   124→  fixedAssets        FixedAsset[]
+   125→   125→  workflowDefinitions WorkflowDefinition[]
+   126→   126→  
+   127→   127→  // Nouvelles relations (Modules 4-8)
+   128→   128→  reports           Report[]
+   129→   129→  reportTemplates   ReportTemplate[]
+   130→   130→  budgets           Budget[]
+   131→   131→  cashFlows         CashFlowEntry[]
+   132→   132→  opportunities      Opportunity[]
+   133→   133→  
+   134→   134→  // Phase 1 Relations (Modules 9-11)
+   135→   135→  purchaseOrders    PurchaseOrder[]
+   136→   136→  salesOrders       SalesOrder[]
+   137→   137→  quotations        Quotation[]
+   138→   138→  
+   139→   139→  @@map("companies")
+   140→   140→}
+   141→   141→
+   142→   142→// ============================================================
+   143→   143→// WILAYAS & COMMUNES (Algerian Geography)
+   144→   144→// ============================================================
+   145→   145→
+   146→   146→model Wilaya {
+   147→   147→  id              String   @id @default(cuid())
+   148→   148→  code            String   @unique // 01-58
+   149→   149→  nameFr          String   // Nom français
+   150→   150→  nameAr          String?  // Nom arabe
+   151→   151→  chiefCity       String?  // Chef-lieu
+   152→   152→  taxZone         String   @default("nord") // nord, hauts_plateaux, sud
+   153→   153→  abattementRate  Float    @default(0) // Taux d'abattement TAP (%)
+   154→   154→  surfaceKm2      Float?
+   155→   155→  population      Int?
+   156→   156→  
+   157→   157→  communes        Commune[]
+   158→   158→  companies       Company[] // Via company.wilayaCode
+   159→   159→  
+   160→   160→  @@map("wilayas")
+   161→   161→}
+   162→   162→
+   163→   163→model Commune {
+   164→   164→  id          String   @id @default(cuid())
+   165→   165→  code        String   // Code commune
+   166→   166→  nameFr      String   // Nom français
+   167→   167→  nameAr      String?  // Nom arabe
+   168→   168→  postalCode  String?  // Code postal
+   169→   169→  wilayaCode  String   // Code wilaya parent
+   170→   170→  wilaya      Wilaya    @relation(fields: [wilayaCode], references: [code])
+   171→   171→  
+   172→   172→  @@map("communes")
+   173→   173→  @@unique([code, wilayaCode])
+   174→   174→}
+   175→   175→
+   176→   176→// ============================================================
+   177→   177→// CHART OF ACCOUNTS - PLAN COMPTABLE SCF ALGÉRIEN
+   178→   178→// ============================================================
+   179→   179→
+   180→   180→model ChartOfAccount {
+   181→   181→  id            String   @id @default(cuid())
+   182→   182→  code          String   @unique // Code compte SCF
+   183→   183→  name          String   // Intitulé du compte
+   184→   184→  nameAr        String?  // Intitulé en arabe
+   185→   185→  type          String   // asset, liability, equity, revenue, expense
+   186→   186→  class         String   // Classe 1-8
+   187→   187→  parentCode    String?  // Code compte parent
+   188→   188→  nature        String?  // detail, header, view
+   189→   189→  isLeaf        Boolean  @default(false)
+   190→   190→  
+   191→   191→  // Configurations spéciales
+   192→   192→  isTaxAccount Boolean  @default(false) // Compte de TVA, IRG, etc.
+   193→   193→  taxType       String?  // tva_collectee, tva_deductible, tap, irg, ibs
+   194→   194→  reconcileable Boolean  @default(false)
+   195→   195→  
+   196→   196→  companyId     String
+   197→   197→  company       Company  @relation(fields: [companyId], references: [id])
+   198→   198→  
+   199→   199→  children      ChartOfAccount[] @relation("AccountHierarchy")
+   200→   200→  parent        ChartOfAccount? @relation("AccountHierarchy", fields: [parentCode], references: [code])
+   201→   201→  
+   202→   202→  journalItems  JournalItem[]
+   203→   203→  
+   204→   204→  createdAt     DateTime @default(now())
+   205→   205→  updatedAt     DateTime @updatedAt
+   206→   206→  
+   207→   207→  @@map("chart_of_accounts")
+   208→   208→  @@unique([code, companyId])
+   209→   209→}
+   210→   210→
+   211→   211→// ============================================================
+   212→   212→// ACCOUNTING JOURNAUX & ENTRIES
+   213→   213→// ============================================================
+   214→   214→
+   215→   215→model Journal {
+   216→   216→  id          String   @id @default(cuid())
+   217→   217→  code        String   @unique // VT, AC, BQ, CA, OD, PA
+   218→   218→  name        String   // Journal des Ventes, Achats, Banque...
+   219→   219→  type        String   // sale, purchase, bank, cash, miscellaneous, payroll
+   220→   220→  defaultDebitAccount  String?
+   221→   221→  defaultCreditAccount String?
+   222→   222→  
+   223→   223→  companyId   String
+   224→   224→  company     Company  @relation(fields: [companyId], references: [id])
+   225→   225→  
+   226→   226→  entries     JournalEntry[]
+   227→   227→  
+   228→   228→  createdAt   DateTime @default(now())
+   229→   229→  updatedAt   DateTime @updatedAt
+   230→   230→  
+   231→   231→  @@map("journals")
+   232→   232→}
+   233→   233→
+   234→   234→model JournalEntry {
+   235→   235→  id            String   @id @default(cuid())
+   236→   236→  reference     String   @unique // Numéro d'écriture
+   237→   237→  date          DateTime
+   238→   238→  label         String   // Libellé de l'écriture
+   239→   239→  totalDebit    Float    @default(0)
+   240→   240→  totalCredit   Float    @default(0)
+   241→   241→  status        String   @default("draft") // draft, posted, cancelled
+   242→   242→  source        String?  // manual, invoice, bill, payment
+   243→   243→  sourceId      String?
+   244→   244→  
+   245→   245→  journalId     String
+   246→   246→  journal       Journal  @relation(fields: [journalId], references: [id])
+   247→   247→  
+   248→   248→  items         JournalItem[]
+   249→   249→  
+   250→   250→  createdAt     DateTime @default(now())
+   251→   251→  updatedAt     DateTime @updatedAt
+   252→   252→  
+   253→   253→  @@map("journal_entries")
+   254→   254→}
+   255→   255→
+   256→   256→model JournalItem {
+   257→   257→  id          String   @id @default(cuid())
+   258→   258→  accountId   String
+   259→   259→  account     ChartOfAccount @relation(fields: [accountId], references: [id])
+   260→   260→  debit       Float    @default(0)
+   261→   261→  credit      Float    @default(0)
+   262→   262→  label       String?
+   263→   263→  
+   264→   264→  entryId     String
+   265→   265→  entry       JournalEntry @relation(fields: [entryId], references: [id])
+   266→   266→  
+   267→   267→  @@map("journal_items")
+   268→   268→}
+   269→   269→
+   270→   270→// ============================================================
+   271→   271→// PARTNERS (CLIENTS & FOURNISSEURS)
+   272→   272→// ============================================================
+   273→   273→
+   274→   274→enum PartnerType {
+   275→   275→  customer
+   276→   276→  supplier
+   277→   277→  both
+   278→   278→}
+   279→   279→
+   280→   280→model Partner {
+   281→   281→  id              String      @id @default(cuid())
+   282→   282→  name            String
+   283→   283→  displayName     String?
+   284→   284→  type            PartnerType @default(customer)
+   285→   285→  isCompany       Boolean     @default(true)
+   286→   286→  isTaxPayer      Boolean     @default(true)
+   287→   287→  
+   288→   288→  // Identifiants Algériens
+   289→   289→  rc              String?     // Registre Commerce
+   290→   290→  nif             String?      // NIF
+   291→   291→  nis             String?      // NIS
+   292→   292→  ai              String?      // AI
+   293→   293→  numArticleImpot  String?     // Article imposition
+   294→   294→  
+   295→   295→  // Contact
+   296→   296→  contactName     String?      // Nom du contact
+   297→   297→  email           String?
+   298→   298→  phone           String?
+   299→   299→  mobile          String?
+   300→   300→  website         String?
+   301→   301→  
+   302→   302→  // Adresse
+   303→   303→  address         String?
+   304→   304→  addressAr       String?
+   305→   305→  postalCode      String?
+   306→   306→  city            String?
+   307→   307→  wilayaCode      String?
+   308→   308→  
+   309→   309→  // Financier
+   310→   310→  paymentTerms    String       @default("30") // Délai paiement jours
+   311→   311→  paymentMode     String?      // virement, cheque, espece, traite
+   312→   312→  creditLimit      Float        @default(0)
+   313→   313→  bankAccount      String?      // RIB
+   314→   314→  
+   315→   315→  // Catégorisation
+   316→   316→  category        String?      // Catégorie client/fournisseur
+   317→   317→  priceList       String?      // Liste de prix applicable
+   318→   318→  
+   319→   319→  // Statut
+   320→   320→  isActive        Boolean      @default(true)
+   321→   321→  notes           String?
+   322→   322→  
+   323→   323→  // Relations
+   324→   324→  companyId       String
+   325→   325→  company         Company       @relation(fields: [companyId], references: [id])
+   326→   326→  
+   327→   327→  invoices        Invoice[]
+   328→   328→  bills           Bill[]
+   329→   329→  opportunities   Opportunity[]
+   330→   330→  purchaseOrders  PurchaseOrder[] @relation("PurchaseOrders")
+   331→   331→  salesOrders     SalesOrder[]    @relation("SalesOrders")
+   332→   332→  quotations      Quotation[]     @relation("Quotations")
+   333→   333→  
+   334→   334→  createdAt       DateTime     @default(now())
+   335→   335→  updatedAt       DateTime     @updatedAt
+   336→   336→  
+   337→   337→  @@map("partners")
+   338→   338→}
+   339→   339→
+   340→   340→// ============================================================
+   341→   341→// PRODUCTS & SERVICES
+   342→   342→// ============================================================
+   343→   343→
+   344→   344→model ProductCategory {
+   345→   345→  id            String   @id @default(cuid())
+   346→   346→  name          String
+   347→   347→  nameAr        String?
+   348→   348→  code          String   @unique
+   349→   349→  parentId      String?
+   350→   350→  parent        ProductCategory? @relation("CategoryHierarchy", fields: [parentId], references: [id])
+   351→   351→  children      ProductCategory[] @relation("CategoryHierarchy")
+   352→   352→  products      Product[]
+   353→   353→  
+   354→   354→  createdAt     DateTime @default(now())
+   355→   355→  updatedAt     DateTime @updatedAt
+   356→   356→  
+   357→   357→  @@map("product_categories")
+   358→   358→}
+   359→   359→
+   360→   360→enum ProductType {
+   361→   361→  stockable
+   362→   362→  consumable
+   363→   363→  service
+   364→   364→  kit
+   365→   365→  digital
+   366→   366→}
+   367→   367→
+   368→   368→model Product {
+   369→   369→  id                String      @id @default(cuid())
+   370→   370→  code              String      @unique
+   371→   371→  name              String
+   372→   372→  nameAr            String?
+   373→   373→  description       String?
+   374→   374→  type              ProductType @default(stockable)
+   375→   375→  
+   376→   376→  // Prix
+   377→   377→  salePrice         Float       @default(0)      // Prix vente HT
+   378→   378→  purchasePrice     Float       @default(0)      // Prix achat HT
+   379→   379→  costPrice         Float       @default(0)      // Coût de revient
+   380→   380→  
+   381→   381→  // TVA
+   382→   382→  tvaRate           Float       @default(19)     // Taux TVA (%)
+   383→   383→  
+   384→   384→  // Stock
+   385→   385→  trackStock        Boolean     @default(true)
+   386→   386→  useSerials        Boolean     @default(false)
+   387→   387→  useLots           Boolean     @default(false)
+   388→   388→  
+   389→   389→  // Unité
+   390→   390→  unitOfMeasure     String      @default("U")    // U, KG, L, m², m³, ML
+   391→   391→  
+   392→   392→  // Catégorie
+   393→   393→  categoryId        String?
+   394→   394→  category          ProductCategory? @relation(fields: [categoryId], references: [id])
+   395→   395→  
+   396→   396→  // Image
+   397→   397→  image             String?
+   398→   398→  
+   399→   399→  // Statut
+   400→   400→  isActive          Boolean     @default(true)
+   401→   401→  canBeSold         Boolean     @default(true)
+   402→   402→  canBePurchased    Boolean     @default(true)
+   403→   403→  
+   404→   404→  // Relations
+   405→   405→  companyId         String
+   406→   406→  company           Company     @relation(fields: [companyId], references: [id])
+   407→   407→  
+   408→   408→  invoiceLines      InvoiceLine[]
+   409→   409→  billLines         BillLine[]
+   410→   410→  stockMovements    StockMovement[]
+   411→   411→  stockLevels       StockLevel[]
+   412→   412→  purchaseOrderLines PurchaseOrderLine[] @relation("POLines")
+   413→   413→  salesOrderLines   SalesOrderLine[]    @relation("SOLines")
+   414→   414→  quotationLines    QuotationLine[]     @relation("QuoteLines")
+   415→   415→  
+   416→   416→  createdAt         DateTime    @default(now())
+   417→   417→  updatedAt         DateTime    @updatedAt
+   418→   418→  
+   419→   419→  @@map("products")
+   420→   420→}
+   421→   421→
+   422→   422→// ============================================================
+   423→   423→// INVOICING (FACTURATION CLIENT)
+   424→   424→// ============================================================
+   425→   425→
+   426→   426→enum InvoiceStatus {
+   427→   427→  draft
+   428→   428→  sent
+   429→   429→  paid
+   430→   430→  partial
+   431→   431→  cancelled
+   432→   432→}
+   433→   433→
+   434→   434→enum InvoiceType {
+   435→   435→  invoice
+   436→   436→  credit_note
+   437→   437→  proforma
+   438→   438→  deposit
+   439→   439→}
+   440→   440→
+   441→   441→model Invoice {
+   442→   442→  id                String        @id @default(cuid())
+   443→   443→  reference         String        @unique // Facture-YYYY-MM-XXX
+   444→   444→  date              DateTime
+   445→   445→  dueDate           DateTime?
+   446→   446→  status            InvoiceStatus @default(draft)
+   447→   447→  type              InvoiceType   @default(invoice)
+   448→   448→  
+   449→   449→  // Montants
+   450→   450→  amountUntaxed     Float         @default(0)  // Total HT
+   451→   451→  amountTax         Float         @default(0)  // Total TVA
+   452→   452→  timbreFiscal      Float         @default(1)  // Timbre fiscal DZD
+   453→   453→  amountTotal       Float         @default(0)  // Total TTC
+   454→   454→  amountPaid        Float         @default(0)  // Montant payé
+   455→   455→  amountDue         Float         @default(0)  // Reste à payer
+   456→   456→  
+   457→   457→  // Client
+   458→   458→  partnerId         String
+   459→   459→  partner           Partner       @relation(fields: [partnerId], references: [id])
+   460→   460→  
+   461→   461→  // Société
+   462→   462→  companyId         String
+   463→   463→  company           Company       @relation(fields: [companyId], references: [id])
+   464→   464→  
+   465→   465→  // Paiement
+   466→   466→  paymentTerm       String?       // Conditions paiement
+   467→   467→  paymentMode       String?
+   468→   468→  paymentRef        String?       // Référence paiement
+   469→   469→  
+   470→   470→  // Notes
+   471→   471→  internalNotes     String?
+   472→   472→  customerNotes     String?
+   473→   473→  
+   474→   474→  // Écriture comptable
+   475→   475→  journalEntryId    String?
+   476→   476→  salesOrderId      String?
+   477→   477→  
+   478→   478→  lines             InvoiceLine[]
+   479→   479→  payments          Payment[]
+   480→   480→  salesOrder        SalesOrder? @relation("SalesOrderInvoices", fields: [salesOrderId], references: [id])
+   481→   481→  
+   482→   482→  createdAt         DateTime      @default(now())
+   483→   483→  updatedAt         DateTime      @updatedAt
+   484→   484→  
+   485→   485→  @@map("invoices")
+   486→   486→}
+   487→   487→
+   488→   488→model InvoiceLine {
+   489→   489→  id            String   @id @default(cuid())
+   490→   490→  productId     String
+   491→   491→  product       Product  @relation(fields: [productId], references: [id])
+   492→   492→  label         String?  // Description personnalisée
+   493→   493→  quantity      Float    @default(1)
+   494→   494→  unitPrice     Float    @default(0)  // PU HT
+   495→   495→  discountRate  Float    @default(0)  // Remise %
+   496→   496→  tvaRate       Float    @default(19)
+   497→   497→  amountUntaxed Float    @default(0)  // Montant HT ligne
+   498→   498→  amountTax     Float    @default(0)  // TVA ligne
+   499→   499→  amountTotal   Float    @default(0)  // Total TTC ligne
+   500→   500→  
+   501→   501→  invoiceId     String
+   502→   502→  invoice       Invoice  @relation(fields: [invoiceId], references: [id])
+   503→   503→  
+   504→   504→  @@map("invoice_lines")
+   505→   505→}
+   506→   506→
+   507→   507→// ============================================================
+   508→   508→// SUPPLIER BILLS (FACTURATION FOURNISSEUR)
+   509→   509→// ============================================================
+   510→   510→
+   511→   511→enum BillStatus {
+   512→   512→  draft
+   513→   513→  received
+   514→   514→  verified
+   515→   515→  approved
+   516→   516→  paid
+   517→   517→  cancelled
+   518→   518→}
+   519→   519→
+   520→   520→model Bill {
+   521→   521→  id                String      @id @default(cuid())
+   522→   522→  reference         String      @unique // Fournisseur-YYYY-MM-XXX
+   523→   523→  date              DateTime
+   524→   524→  dueDate           DateTime?
+   525→   525→  status            BillStatus  @default(draft)
+   526→   526→  
+   527→   527→  // Montants
+   528→   528→  amountUntaxed     Float        @default(0)
+   529→   529→  amountTax         Float        @default(0)
+   530→   530→  timbreFiscal      Float        @default(1)
+   531→   531→  amountTotal       Float        @default(0)
+   532→   532→  amountPaid        Float        @default(0)
+   533→   533→  amountDue         Float        @default(0)
+   534→   534→  
+   535→   535→  // Fournisseur
+   536→   536→  partnerId         String
+   537→   537→  partner           Partner      @relation(fields: [partnerId], references: [id])
+   538→   538→  
+   539→   539→  // Société
+   540→   540→  companyId         String
+   541→   541→  company           Company      @relation(fields: [companyId], references: [id])
+   542→   542→  
+   543→   543→  // Notes
+   544→   544→  internalNotes     String?
+   545→   545→  purchaseOrderId   String?
+   546→   546→  
+   547→   547→  lines             BillLine[]
+   548→   548→  payments          Payment[]
+   549→   549→  purchaseOrder     PurchaseOrder? @relation("PurchaseOrderBills", fields: [purchaseOrderId], references: [id])
+   550→   550→  
+   551→   551→  createdAt         DateTime     @default(now())
+   552→   552→  updatedAt         DateTime     @updatedAt
+   553→   553→  
+   554→   554→  @@map("bills")
+   555→   555→}
+   556→   556→
+   557→   557→model BillLine {
+   558→   558→  id            String   @id @default(cuid())
+   559→   559→  productId     String
+   560→   560→  product       Product  @relation(fields: [productId], references: [id])
+   561→   561→  label         String?
+   562→   562→  quantity      Float    @default(1)
+   563→   563→  unitPrice     Float    @default(0)
+   564→   564→  discountRate  Float    @default(0)
+   565→   565→  tvaRate       Float    @default(19)
+   566→   566→  amountUntaxed Float    @default(0)
+   567→   567→  amountTax     Float    @default(0)
+   568→   568→  amountTotal   Float    @default(0)
+   569→   569→  
+   570→   570→  billId        String
+   571→   571→  bill          Bill     @relation(fields: [billId], references: [id])
+   572→   572→  
+   573→   573→  @@map("bill_lines")
+   574→   574→}
+   575→   575→
+   576→   576→// ============================================================
+   577→   577→// PAYMENTS (PAIEMENTS)
+   578→   578→// ============================================================
+   579→   579→
+   580→   580→enum PaymentType {
+   581→   581→  incoming  // Encaissement client
+   582→   582→  outgoing  // Paiement fournisseur
+   583→   583→}
+   584→   584→
+   585→   585→enum PaymentMethod {
+   586→   586→  cash
+   587→   587→  check
+   588→   588→  transfer
+   589→   589→  card
+   590→   590→  draft
+   591→   591→  other
+   592→   592→}
+   593→   593→
+   594→   594→model Payment {
+   595→   595→  id            String       @id @default(cuid())
+   596→   596→  reference     String       @unique
+   597→   597→  date          DateTime
+   598→   598→  amount        Float
+   599→   599→  type          PaymentType
+   600→   600→  method        PaymentMethod @default(transfer)
+   601→   601→  status        String        @default("draft") // draft, reconciled, cancelled
+   602→   602→  label         String?
+   603→   603→  checkNumber   String?
+   604→   604→  bankAccountId String?
+   605→   605→  bankAccount   BankAccount?  @relation(fields: [bankAccountId], references: [id])
+   606→   606→  
+   607→   607→  // Liens factures
+   608→   608→  invoiceId     String?
+   609→   609→  invoice       Invoice?       @relation(fields: [invoiceId], references: [id])
+   610→   610→  billId        String?
+   611→   611→  bill          Bill?          @relation(fields: [billId], references: [id])
+   612→   612→  
+   613→   613→  createdAt     DateTime     @default(now())
+   614→   614→  updatedAt     DateTime     @updatedAt
+   615→   615→  
+   616→   616→  @@map("payments")
+   617→   617→}
+   618→   618→
+   619→   619→// ============================================================
+   620→   620→// BANK ACCOUNTS
+   621→   621→// ============================================================
+   622→   622→
+   623→   623→model BankAccount {
+   624→   624→  id            String   @id @default(cuid())
+   625→   625→  name          String   // Ex: CPA Compte courant
+   626→   626→  bankName      String   // CPA, BNA, BDL, BEA, etc.
+   627→   627→  accountNumber String   @unique // Numéro de compte
+   628→   628→  rib           String?  // RIB (20 chiffres)
+   629→   629→  currency      String   @default("DZD")
+   630→   630→  accountType   String   @default("current") // current, savings, term
+   631→   631→  balance       Float    @default(0)
+   632→   632→  minBalance    Float    @default(0)
+   633→   633→  isActive      Boolean  @default(true)
+   634→   634→  
+   635→   635→  companyId     String
+   636→   636→  company       Company   @relation(fields: [companyId], references: [id])
+   637→   637→  
+   638→   638→  payments      Payment[]
+   639→   639→  cashFlows     CashFlowEntry[]
+   640→   640→  
+   641→   641→  createdAt     DateTime @default(now())
+   642→   642→  updatedAt     DateTime @updatedAt
+   643→   643→  
+   644→   644→  @@map("bank_accounts")
+   645→   645→}
+   646→   646→
+   647→   647→// ============================================================
+   648→   648→// TAX MANAGEMENT (GESTION FISCALE ALGÉRIENNE)
+   649→   649→// ============================================================
+   650→   650→
+   651→   651→model TaxDeclaration {
+   652→   652→  id            String   @id @default(cuid())
+   653→   653→  type          String   // G50_TVA, G1_IRG, G2_TAP, G4_IBS
+   654→   654→  period        String   // YYYY-MM ou YYYY pour annuel
+   655→   655→  status        String   @default("draft") // draft, submitted, validated, paid
+   656→   656→  
+   657→   657→  // TVA (G50)
+   658→   658→  tvaCollecte19 Float    @default(0)
+   659→   659→  tvaCollecte9  Float    @default(0)
+   660→   660→  tvaDeductibleBiens Float @default(0)
+   661→   661→  tvaDeductibleServices Float @default(0)
+   662→   662→  tvaDeductibleImport Float @default(0)
+   663→   663→  tvaNet        Float    @default(0)
+   664→   664→  
+   665→   665→  // TAP (G2)
+   666→   666→  tapBaseCA     Float    @default(0)
+   667→   667→  tapTaux       Float    @default(1)
+   668→   668→  tapAbattement Float    @default(0)
+   669→   669→  tapDue        Float    @default(0)
+   670→   670→  
+   671→   671→  // IRG (G1)
+   672→   672→  irgRetenuSalaires  Float @default(0)
+   673→   673→  irgRetenuAutres    Float @default(0)
+   674→   674→  irgTotal           Float @default(0)
+   675→   675→  
+   676→   676→  // IBS (G4)
+   677→   677→  ibsBenefice    Float    @default(0)
+   678→   678→  ibsTaux        Float    @default(19)
+   679→   679→  ibsDue         Float    @default(0)
+   680→   680→  
+   681→   681→  // Totals
+   682→   682→  totalDue       Float    @default(0)
+   683→   683→  totalPaid      Float    @default(0)
+   684→   684→  
+   685→   685→  companyId     String
+   686→   686→  company       Company   @relation(fields: [companyId], references: [id])
+   687→   687→  
+   688→   688→  createdAt     DateTime @default(now())
+   689→   689→  updatedAt     DateTime @updatedAt
+   690→   690→  
+   691→   691→  @@map("tax_declarations")
+   692→   692→}
+   693→   693→
+   694→   694→// ============================================================
+   695→   695→// HUMAN RESOURCES / EMPLOYEES
+   696→   696→// ============================================================
+   697→   697→
+   698→   698→enum ContractType {
+   699→   699→  cdi
+   700→   700→  cdd
+   701→   701→  internship
+   702→   702→  temporary
+   703→   703→  part_time
+   704→   704→}
+   705→   705→
+   706→   706→enum EmployeeStatus {
+   707→   707→  active
+   708→   708→  on_leave
+   709→   709→  resigned
+   710→   710→  retired
+   711→   711→  terminated
+   712→   712→}
+   713→   713→
+   714→   714→model Employee {
+   715→   715→  id                  String         @id @default(cuid())
+   716→   716→  matricule           String         @unique // Matricule interne
+   717→   717→  firstName           String
+   718→   718→  lastName            String
+   719→   719→  firstNameAr         String?
+   720→   720→  lastNameAr          String?
+   721→   721→  gender              String         // M, F
+   722→   722→  dateOfBirth         DateTime?
+   723→   723→  placeOfBirth        String?
+   724→   724→  nationality         String         @default("DZ")
+   725→   725→  
+   726→   726→  // Identification
+   727→   727→  cin                 String?        // Carte identité nationale
+   728→   728→  cnasNumber          String?        // N° sécurité sociale CNAS
+   729→   729→  casnosNumber        String?        // N° CASNOS
+   730→   730→  
+   731→   731→  // Contact
+   732→   732→  personalEmail       String?
+   733→   733→  workEmail           String?
+   734→   734→  phone               String?
+   735→   735→  address             String?
+   736→   736→  city                String?
+   737→   737→  wilayaCode          String?
+   738→   738→  
+   739→   739→  // Professionnel
+   740→   740→  department          String?
+   741→   741→  jobTitle            String?
+   742→   742→  jobPosition         String?
+   743→   743→  managerId           String?
+   744→   744→  manager             Employee?      @relation("EmployeeManager", fields: [managerId], references: [id])
+   745→   745→  subordinates        Employee[]     @relation("EmployeeManager")
+   746→   746→  
+   747→   747→  // Contrat
+   748→   748→  contractType        ContractType   @default(cdi)
+   749→   749→  contractStartDate   DateTime
+   750→   750→  contractEndDate     DateTime?
+   751→   751→  employeeStatus      EmployeeStatus @default(active)
+   752→   752→  
+   753→   753→  // Salaire
+   754→   754→  baseSalary          Float          @default(0)  // Salaire de base
+   755→   755→  dailyRate           Float          @default(0)  // Taux journalier
+   756→   756→  hourlyRate          Float          @default(0)  // Taux horaire
+   757→   757→  
+   758→   758→  // Banque
+   759→   759→  bankName            String?
+   760→   760→  bankAccount         String?        // CCP ou RIB
+   761→   761→  
+   762→   762→  // Documents
+   763→   763→  cvFile              String?
+   764→   764→  contractFile        String?
+   765→   765→  cinFile             String?
+   766→   766→  photo               String?
+   767→   767→  
+   768→   768→  // Statut
+   769→   769→  isActive            Boolean        @default(true)
+   770→   770→  hireDate            DateTime?
+   771→   771→  terminationDate     DateTime?
+   772→   772→  terminationReason   String?
+   773→   773→  
+   774→   774→  // Relations
+   775→   775→  companyId           String
+   776→   776→  company             Company         @relation(fields: [companyId], references: [id])
+   777→   777→  
+   778→   778→  payrolls            Payroll[]
+   779→   779→  leaves              LeaveRequest[]
+   780→   780→  attendances         Attendance[]
+   781→   781→  
+   782→   782→  createdAt           DateTime       @default(now())
+   783→   783→  updatedAt           DateTime       @updatedAt
+   784→   784→  
+   785→   785→  @@map("employees")
+   786→   786→}
+   787→   787→
+   788→   788→// ============================================================
+   789→   789→// PAYROLL (PAIE)
+   790→   790→// ============================================================
+   791→   791→
+   792→   792→model Payroll {
+   793→   793→  id                  String   @id @default(cuid())
+   794→   794→  reference           String   @unique // PAIE-YYYY-MM-XXX
+   795→   795→  period              String   // YYYY-MM
+   796→   796→  status              String   @default("draft") // draft, calculated, validated, paid
+   797→   797→  
+   798→   798→  // Éléments gains
+   799→   799→  baseSalary          Float    @default(0)
+   800→   800→  grossSalary         Float    @default(0)
+   801→   801→  
+   802→   802→  // Primes
+   803→   803→  primeAnciennete     Float    @default(0)
+   804→   804→  primeRendement      Float    @default(0)
+   805→   805→  primeResponsabilite Float    @default(0)
+   806→   806→  primeTechnicite     Float    @default(0)
+   807→   807→  primeTransport      Float    @default(0)
+   808→   808→  primePanier         Float    @default(0)
+   809→   809→  primeLogement       Float    @default(0)
+   810→   810→  primeMarie          Float    @default(0)
+   811→   811→  allocationsFam      Float    @default(0)
+   812→   812→  heuresSupp         Float    @default(0)
+   813→   813→  montantHeuresSupp   Float    @default(0)
+   814→   814→  autresGains         Float    @default(0)
+   815→   815→  
+   816→   816→  // Cotisations salariales
+   817→   817→  cotisationCNAS      Float    @default(0)  // 1.5%
+   818→   818→  cotisationCASNOS    Float    @default(0)  // 7.5%
+   819→   819→  totalCotisations    Float    @default(0)  // 9%
+   820→   820→  
+   821→   821→  // Retenues
+   822→   822→  irgRetenu           Float    @default(0)
+   823→   823→  avanceSalaire       Float    @default(0)
+   824→   824→  opposition          Float    @default(0)
+   825→   825→  mutuelle            Float    @default(0)
+   826→   826→  cnacCredit          Float    @default(0)
+   827→   827→  autresRetenues      Float    @default(0)
+   828→   828→  totalRetenues       Float    @default(0)
+   829→   829→  
+   830→   830→  // Net
+   831→   831→  netPayable          Float    @default(0)
+   832→   832→  netEnLettres        String?
+   833→   833→  
+   834→   834→  // Charges patronales
+   835→   835→  patronalCNAS        Float    @default(0)  // 8.5%
+   836→   836→  patronalCASNOS      Float    @default(0)  // 12.5%
+   837→   837→  patronalChomage     Float    @default(0)  // 1%
+   838→   838→  patronalAT          Float    @default(0)  // Accident travail
+   839→   839→  patronalOEuvres     Float    @default(0)  // Œuvres sociales
+   840→   840→  totalPatronal       Float    @default(0)  // ~25-30%
+   841→   841→  coutTotalEmploye    Float    @default(0)
+   842→   842→  
+   843→   843→  // Jours
+   844→   844→  joursTravailles     Int      @default(26)
+   845→   845→  joursAbsences       Int      @default(0)
+   846→   846→  joursConges         Int      @default(0)
+   847→   847→  
+   848→   848→  employeeId          String
+   849→   849→  employee            Employee  @relation(fields: [employeeId], references: [id])
+   850→   850→  
+   851→   851→  createdAt           DateTime @default(now())
+   852→   852→  updatedAt           DateTime @updatedAt
+   853→   853→  
+   854→   854→  @@map("payrolls")
+   855→   855→}
+   856→   856→
+   857→   857→// ============================================================
+   858→   858→// LEAVE MANAGEMENT (CONGÉS)
+   859→   859→// ============================================================
+   860→   860→
+   861→   861→enum LeaveType {
+   862→   862→  annual
+   863→   863→  sickness
+   864→   864→  maternity
+   865→   865→  paternity
+   866→   866→  unpaid
+   867→   867→  exceptional
+   868→   868→  marriage
+   869→   869→  birth
+   870→   870→  death
+   871→   871→  pilgrimage
+   872→   872→}
+   873→   873→
+   874→   874→enum LeaveStatus {
+   875→   875→  draft
+   876→   876→  submitted
+   877→   877→  approved
+   878→   878→  rejected
+   879→   879→  cancelled
+   880→   880→}
+   881→   881→
+   882→   882→model LeaveRequest {
+   883→   883→  id            String      @id @default(cuid())
+   884→   884→  type          LeaveType
+   885→   885→  startDate     DateTime
+   886→   886→  endDate       DateTime
+   887→   887→  daysCount     Float       @default(0)
+   888→   888→  halfDay       Boolean     @default(false)
+   889→   889→  morningOnly   Boolean     @default(false)
+   890→   890→  reason        String?
+   891→   891→  status        LeaveStatus @default(draft)
+   892→   892→  rejectReason  String?
+   893→   893→  approvedBy    String?
+   894→   894→  approvedAt    DateTime?
+   895→   895→  
+   896→   896→  employeeId    String
+   897→   897→  employee      Employee    @relation(fields: [employeeId], references: [id])
+   898→   898→  
+   899→   899→  createdAt     DateTime    @default(now())
+   900→   900→  updatedAt     DateTime    @updatedAt
+   901→   901→  
+   902→   902→  @@map("leave_requests")
+   903→   903→}
+   904→   904→
+   905→   905→// ============================================================
+   906→   906→// ATTENDANCE (POINTAGE)
+   907→   907→// ============================================================
+   908→   908→
+   909→   909→model Attendance {
+   910→   910→  id            String   @id @default(cuid())
+   911→   911→  date          DateTime
+   912→   912→  clockIn       DateTime?
+   913→   913→  clockOut      DateTime?
+   914→   914→  breakDuration Int      @default(0) // minutes
+   915→   915→  workedHours   Float    @default(0)
+   916→   916→  overtimeHours Float    @default(0)
+   917→   917→  status        String   @default("present") // present, absent, late, leave, holiday
+   918→   918→  notes         String?
+   919→   919→  
+   920→   920→  employeeId    String
+   921→   921→  employee      Employee  @relation(fields: [employeeId], references: [id])
+   922→   922→  
+   923→   923→  createdAt     DateTime @default(now())
+   924→   924→  updatedAt     DateTime @updatedAt
+   925→   925→  
+   926→   926→  @@map("attendances")
+   927→   927→  @@unique([employeeId, date])
+   928→   928→}
+   929→   929→
+   930→   930→// ============================================================
+   931→   931→// INVENTORY / STOCK
+   932→   932→// ============================================================
+   933→   933→
+   934→   934→model Warehouse {
+   935→   935→  id            String   @id @default(cuid())
+   936→   936→  name          String
+   937→   937→  code          String   @unique
+   938→   938→  address       String?
+   939→   939→  contact       String?
+   940→   940→  phone         String?
+   941→   941→  isActive      Boolean  @default(true)
+   942→   942→  
+   943→   943→  companyId     String
+   944→   944→  company       Company   @relation(fields: [companyId], references: [id])
+   945→   945→  
+   946→   946→  locations     Location[]
+   947→   947→  stockLevels   StockLevel[]
+   948→   948→  movements     StockMovement[]
+   949→   949→  salesOrders   SalesOrder[]    @relation("SOWarehouse")
+   950→   950→  purchaseOrders PurchaseOrder[]
+   951→   951→  
+   952→   952→  createdAt     DateTime @default(now())
+   953→   953→  updatedAt     DateTime @updatedAt
+   954→   954→  
+   955→   955→  @@map("warehouses")
+   956→   956→}
+   957→   957→
+   958→   958→model Location {
+   959→   959→  id            String   @id @default(cuid())
+   960→   960→  name          String   // Zone A, Rack B1, Etagère 2...
+   961→   961→  code          String
+   962→   962→  warehouseId   String
+   963→   963→  warehouse     Warehouse @relation(fields: [warehouseId], references: [id])
+   964→   964→  
+   965→   965→  stockLevels   StockLevel[]
+   966→   966→  movements     StockMovement[]
+   967→   967→  
+   968→   968→  @@map("locations")
+   969→   969→  @@unique([code, warehouseId])
+   970→   970→}
+   971→   971→
+   972→   972→model StockLevel {
+   973→   973→  id            String   @id @default(cuid())
+   974→   974→  quantity      Float    @default(0)
+   975→   975→  reservedQty   Float    @default(0)
+   976→   976→  availableQty  Float    @default(0)
+   977→   977→  minQty        Float    @default(0)
+   978→   978→  maxQty        Float    @default(0)
+   979→   979→  
+   980→   980→  productId     String
+   981→   981→  warehouseId   String
+   982→   982→  locationId   String?
+   983→   983→  
+   984→   984→  product       Product    @relation(fields: [productId], references: [id])
+   985→   985→  warehouse    Warehouse  @relation(fields: [warehouseId], references: [id])
+   986→   986→  location     Location?  @relation(fields: [locationId], references: [id])
+   987→   987→  
+   988→   988→  movements     StockMovement[]
+   989→   989→  
+   990→   990→  createdAt     DateTime @default(now())
+   991→   991→  updatedAt     DateTime @updatedAt
+   992→   992→  
+   993→   993→  @@map("stock_levels")
+   994→   994→  @@unique([productId, warehouseId, locationId])
+   995→   995→}
+   996→   996→
+   997→   997→enum MovementType {
+   998→   998→  in_receipt    // Réception fournisseur
+   999→   999→  in_return     // Retour client
+  1000→  1000→  in_adjustment // Inventaire positif
+  1001→  1001→  in_transfer   // Transfert entrant
+  1002→  1002→  out_delivery  // Livraison client
+  1003→  1003→  out_return    // Retour fournisseur
+  1004→  1004→  out_adjustment // Inventaire négatif
+  1005→  1005→  out_transfer  // Transfert sortant
+  1006→  1006→  out_consumption // Consommation interne
+  1007→  1007→}
+  1008→  1008→
+  1009→  1009→model StockMovement {
+  1010→  1010→  id            String       @id @default(cuid())
+  1011→  1011→  reference     String       @unique
+  1012→  1012→  date          DateTime
+  1013→  1013→  type          MovementType
+  1014→  1014→  quantity      Float        @default(0)
+  1015→  1015→  unitCost      Float        @default(0)
+  1016→  1016→  totalCost     Float        @default(0)
+  1017→  1017→  notes         String?
+  1018→  1018→  
+  1019→  1019→  productId     String
+  1020→  1020→  product       Product       @relation(fields: [productId], references: [id])
+  1021→  1021→  warehouseId   String
+  1022→  1022→  warehouse     Warehouse     @relation(fields: [warehouseId], references: [id])
+  1023→  1023→  locationId    String?
+  1024→  1024→  location      Location?      @relation(fields: [locationId], references: [id])
+  1025→  1025→  stockLevelId  String?
+  1026→  1026→  stockLevel    StockLevel?    @relation(fields: [stockLevelId], references: [id])
+  1027→  1027→  
+  1028→  1028→  sourceDoc     String?       // Type document source
+  1029→  1029→  sourceId      String?       // ID document source
+  1030→  1030→  
+  1031→  1031→  // Order Relations
+  1032→  1032→  purchaseOrderId String?
+  1033→  1033→  purchaseOrder   PurchaseOrder? @relation("POReceipts", fields: [purchaseOrderId], references: [id])
+  1034→  1034→  salesOrderId    String?
+  1035→  1035→  salesOrder      SalesOrder? @relation("SODeliveries", fields: [salesOrderId], references: [id])
+  1036→  1036→  
+  1037→  1037→  createdAt     DateTime      @default(now())
+  1038→  1038→  updatedAt     DateTime      @updatedAt
+  1039→  1039→  
+  1040→  1040→  @@map("stock_movements")
+  1041→  1041→}
+  1042→  1042→
+  1043→  1043→// ============================================================
+  1044→  1044→// FIXED ASSETS (IMMOBILISATIONS)
+  1045→  1045→// ============================================================
+  1046→  1046→
+  1047→  1047→enum AssetClass {
+  1048→  1048→  incorporelle  // Classe 20
+  1049→  1049→  corporelle    // Classe 21
+  1050→  1050→  financiere    // Classe 22
+  1051→  1051→}
+  1052→  1052→
+  1053→  1053→enum DepreciationMethod {
+  1054→  1054→  linear
+  1055→  1055→  declining
+  1056→  1056→}
+  1057→  1057→
+  1058→  1058→model FixedAsset {
+  1059→  1059→  id                    String             @id @default(cuid())
+  1060→  1060→  code                  String             @unique
+  1061→  1061→  name                  String
+  1062→  1062→  description           String?
+  1063→  1063→  assetClass            AssetClass         @default(corporelle)
+  1064→  1064→  serialNumber          String?
+  1065→  1065→  
+  1066→  1066→  // Valeurs
+  1067→  1067→  acquisitionValue      Float              @default(0)
+  1068→  1068→  currentValue          Float              @default(0)
+  1069→  1069→  residualValue         Float              @default(0)
+  1070→  1070→  
+  1071→  1071→  // Amortissement
+  1072→  1072→  depreciationMethod    DepreciationMethod @default(linear)
+  1073→  1073→  depreciationRate      Float              @default(10)  // % annuel
+  1074→  1074→  usefulLifeYears       Int                @default(10)
+  1075→  1075→  accumulatedDepreciation Float            @default(0)
+  1076→  1076→  lastDepreciationDate  DateTime?
+  1077→  1077→  
+  1078→  1078→  // Dates
+  1079→  1079→  acquisitionDate       DateTime
+  1080→  1080→  putInServiceDate      DateTime?
+  1081→  1081→  disposalDate          DateTime?
+  1082→  1082→  
+  1083→  1083→  // Localisation
+  1084→  1084→  location              String?
+  1085→  1085→  responsiblePerson     String?
+  1086→  1086→  supplierPartnerId     String?
+  1087→  1087→  
+  1088→  1088→  // Comptabilité
+  1089→  1089→  accountCode           String?
+  1090→  1090→  
+  1091→  1091→  // Statut
+  1092→  1092→  status                String              @default("active") // active, disposed, scrapped
+  1093→  1093→  
+  1094→  1094→  // Document
+  1095→  1095→  image                 String?
+  1096→  1096→  invoiceId             String?
+  1097→  1097→  
+  1098→  1098→  companyId             String
+  1099→  1099→  company               Company             @relation(fields: [companyId], references: [id])
+  1100→  1100→  
+  1101→  1101→  depreciations          AssetDepreciation[]
+  1102→  1102→  
+  1103→  1103→  createdAt             DateTime            @default(now())
+  1104→  1104→  updatedAt             DateTime            @updatedAt
+  1105→  1105→  
+  1106→  1106→  @@map("fixed_assets")
+  1107→  1107→}
+  1108→  1108→
+  1109→  1109→model AssetDepreciation {
+  1110→  1110→  id                    String   @id @default(cuid())
+  1111→  1111→  assetId               String
+  1112→  1112→  asset                 FixedAsset @relation(fields: [assetId], references: [id])
+  1113→  1113→  date                  DateTime
+  1114→  1114→  period                String   // YYYY-MM
+  1115→  1115→  amount                Float    @default(0)
+  1116→  1116→  accumulatedAmount     Float    @default(0)
+  1117→  1117→  netBookValue          Float    @default(0)
+  1118→  1118→  
+  1119→  1119→  createdAt             DateTime @default(now())
+  1120→  1120→  
+  1121→  1121→  @@map("asset_depreciations")
+  1122→  1122→}
+  1123→  1123→
+  1124→  1124→// ============================================================
+  1125→  1125→// CURRENCY & EXCHANGE RATES
+  1126→  1126→// ============================================================
+  1127→  1127→
+  1128→  1128→model CurrencyRate {
+  1129→  1129→  id            String   @id @default(cuid())
+  1130→  1130→  fromCurrency  String   @default("DZD")
+  1131→  1131→  toCurrency    String   // EUR, USD
+  1132→  1132→  rate          Float    @default(1)
+  1133→  1133→  date          DateTime
+  1134→  1134→  source        String?  // Banque d'Algérie, custom
+  1135→  1135→  
+  1136→  1136→  createdAt     DateTime @default(now())
+  1137→  1137→  
+  1138→  1138→  @@map("currency_rates")
+  1139→  1139→  @@unique([fromCurrency, toCurrency, date])
+  1140→  1140→}
+  1141→  1141→
+  1142→  1142→// ============================================================
+  1143→  1143→// MODULE 1: AUTHENTIFICATION & SESSIONS (NextAuth.js v4)
+  1144→  1144→// ============================================================
+  1145→  1145→
+  1146→  1146→model Session {
+  1147→  1147→  id           String   @id @default(cuid())
+  1148→  1148→  sessionToken String   @unique
+  1149→  1149→  userId       String
+  1150→  1150→  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  1151→  1151→  expires      DateTime
+  1152→  1152→  
+  1153→  1153→  @@map("sessions")
+  1154→  1154→}
+  1155→  1155→
+  1156→  1156→model Account {
+  1157→  1157→  id                String  @id @default(cuid())
+  1158→  1158→  userId            String
+  1159→  1159→  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  1160→  1160→  type              String  // "oauth" | "oidc" | "email"
+  1161→  1161→  provider          String  // "google" | "credentials" etc.
+  1162→  1162→  providerAccountId String  @unique // "sub" for OAuth
+  1163→  1163→  refresh_token     String? 
+  1164→  1164→  access_token      String? 
+  1165→  1165→  expires_at        Int?
+  1166→  1166→  token_type        String?
+  1167→  1167→  scope             String?
+  1168→  1168→  id_token          String? 
+  1169→  1169→  session_state     String?
+  1170→  1170→
+  1171→  1171→  @@map("accounts")
+  1172→  1172→}
+  1173→  1173→
+  1174→  1174→model VerificationToken {
+  1175→  1175→  identifier String
+  1176→  1176→  token      String   @unique
+  1177→  1177→  expires    DateTime
+  1178→  1178→
+  1179→  1179→  @@unique([identifier, token])
+  1180→  1180→  @@map("verification_tokens")
+  1181→  1181→}
+  1182→  1182→
+  1183→  1183→model PasswordReset {
+  1184→  1184→  id            String   @id @default(cuid())
+  1185→  1185→  email         String
+  1186→  1186→  token         String   @unique
+  1187→  1187→  expiresAt     DateTime
+  1188→  1188→  used          Boolean  @default(false)
+  1189→  1189→  usedAt        DateTime?
+  1190→  1190→  
+  1191→  1191→  createdAt     DateTime @default(now())
+  1192→  1192→  
+  1193→  1193→  @@map("password_resets")
+  1194→  1194→}
+  1195→  1195→
+  1196→  1196→// ============================================================
+  1197→  1197→// MODULE 2: AUDIT TRAIL (Journal des Actions - Conformité DZ)
+  1198→  1198→// ============================================================
+  1199→  1199→
+  1200→  1200→enum AuditAction {
+  1201→  1201→  create
+  1202→  1202→  update
+  1203→  1203→  delete
+  1204→  1204→  login
+  1205→  1205→  logout
+  1206→  1206→  view
+  1207→  1207→  export
+  1208→  1208→  print
+  1209→  1209→  approve
+  1210→  1210→  reject
+  1211→  1211→  submit
+  1212→  1212→  cancel
+  1213→  1213→  restore
+  1214→  1214→  archive
+  1215→  1215→}
+  1216→  1216→
+  1217→  1217→enum AuditModule {
+  1218→  1218→  auth
+  1219→  1219→  users
+  1220→  1220→  company
+  1221→  1221→  accounting
+  1222→  1222→  invoices
+  1223→  1223→  bills
+  1224→  1224→  payments
+  1225→  1225→  partners
+  1226→  1226→  products
+  1227→  1227→  inventory
+  1228→  1228→  employees
+  1229→  1229→  payroll
+  1230→  1230→  leaves
+  1231→  1231→  taxes
+  1232→  1232→  reports
+  1233→  1233→  settings
+  1234→  1234→  system
+  1235→  1235→  workflow
+  1236→  1236→}
+  1237→  1237→
+  1238→  1238→model AuditLog {
+  1239→  1239→  id            String       @id @default(cuid())
+  1240→  1240→  action        AuditAction
+  1241→  1241→  module        AuditModule
+  1242→  1242→  entityName    String?       // Nom de l'entité (ex: "Invoice", "Employee")
+  1243→  1243→  entityId      String?       // ID de l'entité modifiée
+  1244→  1244→  description   String?       // Description détaillée de l'action
+  1245→  1245→  
+  1246→  1246→  // Anciennes et nouvelles valeurs (JSON pour flexibilité)
+  1247→  1247→  oldValues     String?        // JSON des anciennes valeurs
+  1248→  1248→  newValues     String?        // JSON des nouvelles valeurs
+  1249→  1249→  
+  1250→  1250→  // Métadonnées de la requête
+  1251→  1251→  ipAddress     String?       // IP de l'utilisateur
+  1252→  1252→  userAgent     String?        // Navigateur/Device
+  1253→  1253→  method        String?       // HTTP Method (GET, POST, PUT, DELETE)
+  1254→  1254→  endpoint      String?       // API Endpoint appelé
+  1255→  1255→  
+  1256→  1256→  // Référence utilisateur
+  1257→  1257→  userId        String?
+  1258→  1258→  user          User?         @relation(fields: [userId], references: [id])
+  1259→  1259→  userName      String?       // Snapshot du nom (au cas où user supprimé)
+  1260→  1260→  userEmail     String?       // Snapshot de l'email
+  1261→  1261→  
+  1262→  1262→  // Timestamps
+  1263→  1263→  createdAt     DateTime     @default(now()) // Moment exact de l'action
+  1264→  1264→  
+  1265→  1265→  // Index pour recherche rapide
+  1266→  1266→  @@index([userId])
+  1267→  1267→  @@index([module])
+  1268→  1268→  @@index([action])
+  1269→  1269→  @@index([createdAt])
+  1270→  1270→  @@index([entityName, entityId])
+  1271→  1271→  
+  1272→  1272→  @@map("audit_logs")
+  1273→  1273→}
+  1274→  1274→
+  1275→  1275→// ============================================================
+  1276→  1276→// MODULE 3: WORKFLOW APPROBATIONS (Circuits de Validation)
+  1277→  1277→// ============================================================
+  1278→  1278→
+  1279→  1279→enum WorkflowType {
+  1280→  1280→  invoice_approval      // Approbation facture client
+  1281→  1281→  bill_approval         // Approbation facture fournisseur
+  1282→  1282→  leave_request         // Demande de congés
+  1283→  1283→  purchase_order        // Commande d'achat
+  1284→  1284→  expense_report        // Note de frais
+  1285→  1285→  payroll_validation    // Validation paie
+  1286→  1286→  tax_declaration       // Déclaration fiscale
+  1287→  1287→  payment_approval      // Validation paiement
+  1288→  1288→  document_approval     // Validation document
+  1289→  1289→  custom                // Workflow personnalisé
+  1290→  1290→}
+  1291→  1291→
+  1292→  1292→enum WorkflowStatus {
+  1293→  1293→  draft
+  1294→  1294→  pending               // En attente
+  1295→  1295→  in_progress           // En cours d'approbation
+  1296→  1296→  approved              // Approuvé
+  1297→  1297→  partially_approved    // Partiellement approuvé
+  1298→  1298→  rejected              // Rejeté
+  1299→  1299→  cancelled             // Annulé
+  1300→  1300→  completed             // Terminé
+  1301→  1301→}
+  1302→  1302→
+  1303→  1303→enum StepStatus {
+  1304→  1304→  pending
+  1305→  1305→  approved
+  1306→  1306→  rejected
+  1307→  1307→  skipped
+  1308→  1308→  delegated
+  1309→  1309→}
+  1310→  1310→
+  1311→  1311→enum ApprovalAction {
+  1312→  1312→  submit
+  1313→  1313→  approve
+  1314→  1314→  reject
+  1315→  1315→  request_changes
+  1316→  1316→  delegate
+  1317→  1317→  return_to_initiator
+  1318→  1318→  cancel
+  1319→  1319→}
+  1320→  1320→
+  1321→  1321→model WorkflowDefinition {
+  1322→  1322→  id                  String         @id @default(cuid())
+  1323→  1323→  name                String         // Nom du workflow
+  1324→  1324→  description         String?        // Description
+  1325→  1325→  type                WorkflowType   // Type de workflow
+  1326→  1326→  isActive            Boolean        @default(true)
+  1327→  1327→  
+  1328→  1328→  // Configuration
+  1329→  1329→  priority            Int            @default(5) // 1-10
+  1330→  1330→  maxAmount           Float?         // Montant maximum (optionnel)
+  1331→  1331→  currency            String         @default("DZD")
+  1332→  1332→  
+  1333→  1333→  // Conditions déclenchement
+  1334→  1334→  conditions          String?         // JSON conditions avancées
+  1335→  1335→  
+  1336→  1336→  // Notifications
+  1337→  1337→  notifyCreator       Boolean        @default(true)
+  1338→  1338→  notifyApprovers     Boolean        @default(true)
+  1339→  1339→  notifyOnComplete    Boolean        @default(true)
+  1340→  1340→  
+  1341→  1341→  companyId           String
+  1342→  1342→  company             Company        @relation(fields: [companyId], references: [id])
+  1343→  1343→  
+  1344→  1344→  steps               WorkflowStep[]
+  1345→  1345→  instances           WorkflowInstance[]
+  1346→  1346→  
+  1347→  1347→  createdAt           DateTime       @default(now())
+  1348→  1348→  updatedAt           DateTime       @updatedAt
+  1349→  1349→  
+  1350→  1350→  @@map("workflow_definitions")
+  1351→  1351→}
+  1352→  1352→
+  1353→  1353→model WorkflowStep {
+  1354→  1354→  id                  String       @id @default(cuid())
+  1355→  1355→  sequenceOrder       Int          // Ordre d'exécution (1, 2, 3...)
+  1356→  1356→  name                String       // Nom de l'étape
+  1357→  1357→  description         String?
+  1358→  1358→  
+  1359→  1359→  // Type d'approbateur
+  1360→  1360→  approverType        String       @default("user") // user, role, manager, department_head, specific_user
+  1361→  1361→  approverRole        String?      // Rôle requis (admin, manager, accountant, hr_director...)
+  1362→  1362→  approverId          String?      // Utilisateur spécifique
+  1363→  1363→  department          String?      // Département concerné
+  1364→  1364→  
+  1365→  1365→  // Configuration étape
+  1366→  1366→  isOptional          Boolean      @default(false) // Étape optionnelle
+  1367→  1367→  allowDelegation     Boolean      @default(true)  // Permettre délégation
+  1368→  1368→  requireComment      Boolean      @default(false) // Commentaire obligatoire
+  1369→  1369→  deadlineHours       Int?         // Délai en heures (SLA)
+  1370→  1370→  autoApprove         Boolean      @default(false) // Auto-approbation si conditions
+  1371→  1371→  
+  1372→  1372→  // Action par défaut si deadline dépassée
+  1373→  1373→  onDeadlineExceeded  String       @default("escalate") // escalate, auto_approve, auto_reject
+  1374→  1374→  
+  1375→  1375→  definitionId        String
+  1376→  1376→  definition          WorkflowDefinition @relation(fields: [definitionId], references: [id], onDelete: Cascade)
+  1377→  1377→  
+  1378→  1378→  approvals           WorkflowApproval[]
+  1379→  1379→  
+  1380→  1380→  createdAt           DateTime     @default(now())
+  1381→  1381→  updatedAt           DateTime     @updatedAt
+  1382→  1382→  
+  1383→  1383→  @@map("workflow_steps")
+  1384→  1384→  @@unique([definitionId, sequenceOrder])
+  1385→  1385→}
+  1386→  1386→
+  1387→  1387→model WorkflowInstance {
+  1388→  1388→  id                  String         @id @default(cuid())
+  1389→  1389→  reference           String         @unique // REF-WF-YYYYMM-XXX
+  1390→  1390→  
+  1391→  1391→  // Status
+  1392→  1392→  status              WorkflowStatus @default(draft)
+  1393→  1393→  currentStep         Int            @default(0) // Étape actuelle
+  1394→  1394→  
+  1395→  1395→  // Données métier liées
+  1396→  1396→  entityType          String?        // Type entité (Invoice, LeaveRequest, Bill...)
+  1397→  1397→  entityId            String?        // ID de l'entité
+  1398→  1398→  entityReference     String?        // Référence de l'entité (ex: FAC-2024-001)
+  1399→  1399→  
+  1400→  1400→  // Montant (si applicable)
+  1401→  1401→  amount              Float          @default(0)
+  1402→  1402→  currency            String         @default("DZD")
+  1403→  1403→  
+  1404→  1404→  // Description contexte
+  1405→  1405→  title               String?        // Titre personnalisé de cette instance
+  1406→  1406→  description         String?        // Contexte/Détails
+  1407→  1407→  requestReason       String?         // Motif de la demande
+  1408→  1408→  
+  1409→  1409→  // Données initiales (snapshot)
+  1410→  1410→  initialData         String?         // JSON snapshot au moment de la soumission
+  1411→  1411→  
+  1412→  1412→  // Initiator
+  1413→  1413→  initiatorId         String
+  1414→  1414→  initiator           User           @relation("WorkflowInitiator", fields: [initiatorId], references: [id])
+  1415→  1415→  
+  1416→  1416→  // Workflow définition
+  1417→  1417→  definitionId        String
+  1418→  1418→  definition          WorkflowDefinition @relation(fields: [definitionId], references: [id])
+  1419→  1419→  
+  1420→  1420→  // Approbations
+  1421→  1421→  approvals           WorkflowApproval[]
+  1422→  1422→  
+  1423→  1423→  // Commentaires globaux
+  1424→  1424→  comments            WorkflowComment[]
+  1425→  1425→  
+  1426→  1426→  // Dates importantes
+  1427→  1427→  submittedAt         DateTime?
+  1428→  1428→  completedAt         DateTime?
+  1429→  1429→  lastActivityAt      DateTime       @default(now())
+  1430→  1430→  
+  1431→  1431→  createdAt           DateTime       @default(now())
+  1432→  1432→  updatedAt           DateTime       @updatedAt
+  1433→  1433→  
+  1434→  1434→  @@index([status])
+  1435→  1435→  @@index([initiatorId])
+  1436→  1436→  @@index([entityType, entityId])
+  1437→  1437→  @@index([definitionId])
+  1438→  1438→  
+  1439→  1439→  @@map("workflow_instances")
+  1440→  1440→}
+  1441→  1441→
+  1442→  1442→model WorkflowApproval {
+  1443→  1443→  id                  String       @id @default(cuid())
+  1444→  1444→  stepSequence        Int          // Numéro de l'étape
+  1445→  1445→  
+  1446→  1446→  status              StepStatus   @default(pending)
+  1447→  1447→  action              ApprovalAction?
+  1448→  1448→  
+  1449→  1449→  // Approbateur assigné
+  1450→  1450→  approverId          String?
+  1451→  1451→  approver            User?        @relation(fields: [approverId], references: [id])
+  1452→  1452→  approverRole        String?      // Rôle au moment de l'assignation
+  1453→  1453→  approverName        String?      // Snapshot nom
+  1454→  1454→  
+  1455→  1455→  // Décision
+  1456→  1456→  comment             String?       // Commentaire décision
+  1457→  1457→  rejectedReason      String?       // Motif rejet
+  1458→  1458→  
+  1459→  1459→  // Délégation
+  1460→  1460→  delegatedToId       String?
+  1461→  1461→  delegatedTo         User?        @relation("DelegatedApproval", fields: [delegatedToId], references: [id])
+  1462→  1462→  delegationNote      String?
+  1463→  1463→  
+  1464→  1464→  // Timestamps
+  1465→  1465→  assignedAt          DateTime?
+  1466→  1466→  viewedAt            DateTime?    // Date de consultation
+  1467→  1467→  actionedAt          DateTime?    // Date d'action
+  1468→  1468→  deadlineAt          DateTime?    // Date limite
+  1469→  1469→  
+  1470→  1470→  // Instance et Step
+  1471→  1471→  instanceId          String
+  1472→  1472→  instance            WorkflowInstance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+  1473→  1473→  stepId              String
+  1474→  1474→  step                WorkflowStep @relation(fields: [stepId], references: [id], onDelete: Cascade)
+  1475→  1475→  
+  1476→  1476→  createdAt           DateTime     @default(now())
+  1477→  1477→  updatedAt           DateTime     @updatedAt
+  1478→  1478→  
+  1479→  1479→  @@index([instanceId])
+  1480→  1480→  @@index([approverId])
+  1481→  1481→  @@index([status])
+  1482→  1482→  
+  1483→  1483→  @@map("workflow_approvals")
+  1484→  1484→}
+  1485→  1485→
+  1486→  1486→model WorkflowComment {
+  1487→  1487→  id                  String       @id @default(cuid())
+  1488→  1488→  content             String       
+  1489→  1489→  
+  1490→  1490→  // Auteur
+  1491→  1491→  authorId            String
+  1492→  1492→  author              User         @relation(fields: [authorId], references: [id])
+  1493→  1493→  
+  1494→  1494→  // Pièce jointe (optionnel)
+  1495→  1495→  attachmentUrl       String?
+  1496→  1496→  attachmentName      String?
+  1497→  1497→  
+  1498→  1498→  instanceId          String
+  1499→  1499→  instance            WorkflowInstance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+  1500→  1500→  
+  1501→  1501→  createdAt           DateTime     @default(now())
+  1502→  1502→  
+  1503→  1503→  @@map("workflow_comments")
+  1504→  1504→}
+  1505→  1505→
+  1506→  1506→// ============================================================
+  1507→  1507→// MODULE 4: NOTIFICATIONS SYSTEM (Alertes In-App/Email)
+  1508→  1508→// ============================================================
+  1509→  1509→
+  1510→  1510→enum NotificationType {
+  1511→  1511→  info
+  1512→  1512→  success
+  1513→  1513→  warning
+  1514→  1514→  error
+  1515→  1515→  workflow_pending      // Approbation requise
+  1516→  1516→  workflow_approved     // Approuvé
+  1517→  1517→  workflow_rejected     // Rejeté
+  1518→  1518→  invoice_due           // Échéance facture
+  1519→  1519→  payment_received      // Paiement reçu
+  1520→  1520→  leave_approved // Congé approuvé
+  1521→  1521→  leave_rejected // Congé rejeté
+  1522→  1522→  payroll_ready // Paie disponible
+  1523→  1523→  low_stock // Stock bas
+  1524→  1524→  system_alert // Alerte système
+  1525→  1525→}
+  1526→  1526→
+  1527→  1527→enum NotificationChannel {
+  1528→  1528→  in_app
+  1529→  1529→  email
+  1530→  1530→  sms
+  1531→  1531→  push
+  1532→  1532→  webhook
+  1533→  1533→}
+  1534→  1534→
+  1535→  1535→model Notification {
+  1536→  1536→  id              String            @id @default(cuid())
+  1537→  1537→  title           String
+  1538→  1538→  message         String
+  1539→  1539→  type            NotificationType @default(info)
+  1540→  1540→  
+  1541→  1541→  // Canal de notification
+  1542→  1542→  channel         NotificationChannel @default(in_app)
+  1543→  1543→  
+  1544→  1544→  // Destinataire
+  1545→  1545→  userId          String
+  1546→  1546→  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  1547→  1547→  
+  1548→  1548→  // Lecture
+  1549→  1549→  isRead          Boolean           @default(false)
+  1550→  1550→  readAt          DateTime?
+  1551→  1551→  
+  1552→  1552→  // Action associée (lien vers une entité)
+  1553→  1553→  actionUrl       String?           // Lien vers la page concernée
+  1554→  1554→  actionLabel     String?           // Texte du bouton d'action
+  1555→  1555→  entityType      String?           // Type entité liée
+  1556→  1556→  entityId        String?           // ID entité liée
+  1557→  1557→  
+  1558→  1558→  // Données supplémentaires (JSON)
+  1559→  1559→  metadata        String?           // JSON pour données custom
+  1560→  1560→  
+  1561→  1561→  // Email spécifique (si canal email)
+  1562→  1562→  emailSent       Boolean           @default(false)
+  1563→  1563→  emailSentAt     DateTime?
+  1564→  1564→  
+  1565→  1565→  // Priorité (1-10, 10 = urgent)
+  1566→  1566→  priority        Int               @default(5)
+  1567→  1567→  
+  1568→  1568→  // Expiration
+  1569→  1569→  expiresAt       DateTime?
+  1570→  1570→  
+  1571→  1571→  createdAt       DateTime          @default(now())
+  1572→  1572→  
+  1573→  1573→  @@index([userId])
+  1574→  1574→  @@index([isRead])
+  1575→  1575→  @@index([createdAt])
+  1576→  1576→  @@index([type])
+  1577→  1577→  
+  1578→  1578→  @@map("notifications")
+  1579→  1579→}
+  1580→  1580→
+  1581→  1581→model NotificationPreference {
+  1582→  1582→  id              String   @id @default(cuid())
+  1583→  1583→  userId          String
+  1584→  1584→  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  1585→  1585→  
+  1586→  1586→  // Préférences par type de notification
+  1587→  1587→  workflowEnabled    Boolean @default(true)
+  1588→  1588→  invoiceEnabled     Boolean @default(true)
+  1589→  1589→  paymentEnabled     Boolean @default(true)
+  1590→  1590→  leaveEnabled       Boolean @default(true)
+  1591→  1591→  payrollEnabled     Boolean @default(true)
+  1592→  1592→  stockEnabled       Boolean @default(true)
+  1593→  1593→  systemEnabled      Boolean @default(true)
+  1594→  1594→  
+  1595→  1595→  // Canaux préférés
+  1596→  1596→  inAppEnabled       Boolean @default(true)
+  1597→  1597→  emailEnabled       Boolean @default(false)
+  1598→  1598→  pushEnabled        Boolean @default(false)
+  1599→  1599→  
+  1600→  1600→  // Email pour notifications
+  1601→  1601→  emailNotification  String?
+  1602→  1602→  
+  1603→  1603→  createdAt       DateTime @default(now())
+  1604→  1604→  updatedAt       DateTime @updatedAt
+  1605→  1605→  
+  1606→  1606→  @@unique([userId])
+  1607→  1607→  
+  1608→  1608→  @@map("notification_preferences")
+  1609→  1609→}
+  1610→  1610→
+  1611→  1611→// ============================================================
+  1612→  1612→// MODULE 5: REPORTS & DOCUMENTS GENERATION
+  1613→  1613→// ============================================================
+  1614→  1614→
+  1615→  1615→enum ReportType {
+  1616→  1616→  financial_statement  // États financiers
+  1617→  1617→  balance_sheet        // Bilan
+  1618→  1618→  income_result        // Compte résultat
+  1619→  1619→  cash_flow            // Trésorerie
+  1620→  1620→  invoice_report       // Rapport factures
+  1621→  1621→  payroll_report       // Rapport paie
+  1622→  1622→  tax_declaration     // Déclaration fiscale
+  1623→  1623→  inventory_report     // Rapport stock
+  1624→  1624→  sales_report         // Rapport ventes
+  1625→  1625→  purchase_report      // Rapport achats
+  1626→  1626→  employee_list        // Liste employés
+  1627→  1627→  audit_trail          // Journal audit
+  1628→  1628→  custom               // Personnalisé
+  1629→  1629→}
+  1630→  1630→
+  1631→  1631→enum ReportFormat {
+  1632→  1632→  pdf
+  1633→  1633→  excel
+  1634→  1634→  csv
+  1635→  1635→  html
+  1636→  1636→  json
+  1637→  1637→}
+  1638→  1638→
+  1639→  1639→enum ReportStatus {
+  1640→  1640→  generating
+  1641→  1641→  completed
+  1642→  1642→  failed
+  1643→  1643→  scheduled
+  1644→  1644→}
+  1645→  1645→
+  1646→  1646→model Report {
+  1647→  1647→  id              String          @id @default(cuid())
+  1648→  1648→  name            String
+  1649→  1649→  description     String?
+  1650→  1650→  type            ReportType
+  1651→  1651→  format          ReportFormat    @default(pdf)
+  1652→  1652→  status          ReportStatus    @default(generating)
+  1653→  1653→  
+  1654→  1654→  // Paramètres du rapport
+  1655→  1655→  parameters      String?         // JSON des filtres/paramètres
+  1656→  1656→  
+  1657→  1657→  // Fichier généré
+  1658→  1658→  fileUrl         String?
+  1659→  1659→  fileName        String?
+  1660→  1660→  fileSize        Int?            // en bytes
+  1661→  1661→  
+  1662→  1662→  // Période couverte
+  1663→  1663→  dateStart       DateTime?
+  1664→  1664→  dateEnd         DateTime?
+  1665→  1665→  
+  1666→  1666→  // Générateur
+  1667→  1667→  generatedBy     String
+  1668→  1668→  generator       User            @relation(fields: [generatedBy], references: [id])
+  1669→  1669→  
+  1670→  1670→  // Dates
+  1671→  1671→  completedAt     DateTime?
+  1672→  1672→  expiresAt       DateTime?       // Expiration du fichier
+  1673→  1673→  
+  1674→  1674→  // Statistiques génération
+  1675→  1675→  generationTimeMs Int?          // Temps de génération en ms
+  1676→  1676→  recordCount     Int?            // Nombre d'enregistrements
+  1677→  1677→  
+  1678→  1678→  // Erreur si échec
+  1679→  1679→  errorMessage    String?
+  1680→  1680→  
+  1681→  1681→  companyId       String
+  1682→  1682→  company         Company         @relation(fields: [companyId], references: [id])
+  1683→  1683→  
+  1684→  1684→  createdAt       DateTime        @default(now())
+  1685→  1685→  updatedAt       DateTime        @updatedAt
+  1686→  1686→  
+  1687→  1687→  @@index([type])
+  1688→  1688→  @@index([status])
+  1689→  1689→  @@index([generatedBy])
+  1690→  1690→  @@index([companyId])
+  1691→  1691→  
+  1692→  1692→  @@map("reports")
+  1693→  1693→}
+  1694→  1694→
+  1695→  1695→model ReportTemplate {
+  1696→  1696→  id              String          @id @default(cuid())
+  1697→  1697→  name            String
+  1698→  1698→  description     String?
+  1699→  1699→  type            ReportType
+  1700→  1700→  isDefault       Boolean         @default(false)
+  1701→  1701→  
+  1702→  1702→  // Template configuration
+  1703→  1703→  templateConfig  String?         // JSON structure du rapport
+  1704→  1704→  headerTemplate  String?         // En-tête personnalisé
+  1705→  1705→  footerTemplate  String?         // Pied de page personnalisé
+  1706→  1706→  logoIncluded    Boolean         @default(true)
+  1707→  1707→  
+  1708→  1708→  // Colonnes incluses
+  1709→  1709→  columns         String?         // JSON array des colonnes
+  1710→  1710→  
+  1711→  1711→  // Filtres disponibles
+  1712→  1712→  availableFilters String?        // JSON des filtres possibles
+  1713→  1713→  
+  1714→  1714→  // Tri par défaut
+  1715→  1715→  defaultSort     String?         // Champ de tri default
+  1716→  1716→  defaultSortOrder String?        @default("asc")
+  1717→  1717→  
+  1718→  1718→  companyId       String?
+  1719→  1719→  company         Company?        @relation(fields: [companyId], references: [id])
+  1720→  1720→  
+  1721→  1721→  createdBy       String?
+  1722→  1722→  creator         User?           @relation(fields: [createdBy], references: [id])
+  1723→  1723→  
+  1724→  1724→  createdAt       DateTime        @default(now())
+  1725→  1725→  updatedAt       DateTime        @updatedAt()
+  1726→  1726→  
+  1727→  1727→  @@map("report_templates")
+  1728→  1728→}
+  1729→  1729→
+  1730→  1730→// ============================================================
+  1731→  1731→// END OF SCHEMA - HASSIBA Suite ERP v2.0.0 Enterprise
+  1732→  1732→// Total: 55+ Models with full Algerian ERP functionality
+  1733→  1733→// ============================================================
+  1734→  1734→
+  1735→  1735→// ============================================================
+  1736→  1736→// MODULE 6: BUDGETING & TRÉSORERIE
+  1737→  1737→// ============================================================
+  1738→  1738→
+  1739→  1739→enum BudgetStatus {
+  1740→  1740→  draft
+  1741→  1741→  submitted
+  1742→  1742→  under_review
+  1743→  1743→  approved
+  1744→  1744→  rejected
+  1745→  1745→  active
+  1746→  1746→  closed
+  1747→  1747→  archived
+  1748→  1748→}
+  1749→  1749→
+  1750→  1750→enum BudgetType {
+  1751→  1751→  operational        // Budget opérationnel
+  1752→  1752→  investment         // Budget investissement
+  1753→  1753→  revenue            // Budget revenus
+  1754→  1754→  expense            // Budget dépenses
+  1755→  1755→  cash_flow          // Budget trésorerie
+  1756→  1756→  departmental       // Budget départemental
+  1757→  1757→  project            // Budget projet
+  1758→  1758→}
+  1759→  1759→
+  1760→  1760→model Budget {
+  1761→  1761→  id                String        @id @default(cuid())
+  1762→  1762→  name              String
+  1763→  1763→  description       String?
+  1764→  1764→  code              String        @unique // BUD-YYYY-XXX
+  1765→  1765→  type              BudgetType
+  1766→  1766→  status            BudgetStatus  @default(draft)
+  1767→  1767→  
+  1768→  1768→  // Période budgétaire
+  1769→  1769→  year              Int
+  1770→  1770→  startMonth        Int           @default(1) // 1-12
+  1771→  1771→  endMonth          Int           @default(12) // 1-12
+  1772→  1772→  
+  1773→  1773→  // Montants
+  1774→  1774→  totalBudgeted     Float         @default(0)  // Total budgété
+  1775→  1775→  totalActual       Float         @default(0)  // Total réel
+  1776→  1776→  variance          Float         @default(0)  // Écart
+  1777→  1777→  variancePercent   Float         @default(0)  // Écart %
+  1778→  1778→  
+  1779→  1779→  // Devise
+  1780→  1780→  currency          String        @default("DZD")
+  1781→  1781→  
+  1782→  1782→  // Approbation
+  1783→  1783→  approvedBy        String?
+  1784→  1784→  approvedAt        DateTime?
+  1785→  1785→  rejectionReason   String?
+  1786→  1786→  
+  1787→  1787→  // Département/Responsable
+  1788→  1788→  departmentId      String?
+  1789→  1789→  departmentName    String?
+  1790→  1790→  managerId         String?
+  1791→  1791→  managerName       String?
+  1792→  1792→  
+  1793→  1793→  // Notes
+  1794→  1794→  notes             String?
+  1795→  1795→  
+  1796→  1796→  companyId         String
+  1797→  1797→  company           Company        @relation(fields: [companyId], references: [id])
+  1798→  1798→  
+  1799→  1799→  lines             BudgetLine[]
+  1800→  1800→  
+  1801→  1801→  createdAt         DateTime      @default(now())
+  1802→  1802→  updatedAt         DateTime      @updatedAt
+  1803→  1803→  
+  1804→  1804→  @@index([status])
+  1805→  1805→  @@index([year])
+  1806→  1806→  @@index([type])
+  1807→  1807→  @@index([companyId])
+  1808→  1808→  
+  1809→  1809→  @@map("budgets")
+  1810→  1810→}
+  1811→  1811→
+  1812→  1812→model BudgetLine {
+  1813→  1813→  id                String   @id @default(cuid())
+  1814→  1814→  accountCode       String?  // Code compte SCF
+  1815→  1815→  accountName       String?  // Nom du compte
+  1816→  1816→  category          String?  // Catégorie (personnel, matière première, etc.)
+  1817→  1817→  
+  1818→  1818→  // Montants mensuels (12 colonnes)
+  1819→  1819→  m1Budgeted        Float    @default(0)
+  1820→  1820→  m1Actual          Float    @default(0)
+  1821→  1821→  m2Budgeted        Float    @default(0)
+  1822→  1822→  m2Actual          Float    @default(0)
+  1823→  1823→  m3Budgeted        Float    @default(0)
+  1824→  1824→  m3Actual          Float    @default(0)
+  1825→  1825→  m4Budgeted        Float    @default(0)
+  1826→  1826→  m4Actual          Float    @default(0)
+  1827→  1827→  m5Budgeted        Float    @default(0)
+  1828→  1828→  m5Actual          Float    @default(0)
+  1829→  1829→  m6Budgeted        Float    @default(0)
+  1830→  1830→  m6Actual          Float    @default(0)
+  1831→  1831→  m7Budgeted        Float    @default(0)
+  1832→  1832→  m7Actual          Float    @default(0)
+  1833→  1833→  m8Budgeted        Float    @default(0)
+  1834→  1834→  m8Actual          Float    @default(0)
+  1835→  1835→  m9Budgeted        Float    @default(0)
+  1836→  1836→  m9Actual          Float    @default(0)
+  1837→  1837→  m10Budgeted       Float    @default(0)
+  1838→  1838→  m10Actual         Float    @default(0)
+  1839→  1839→  m11Budgeted       Float    @default(0)
+  1840→  1840→  m11Actual         Float    @default(0)
+  1841→  1841→  m12Budgeted       Float    @default(0)
+  1842→  1842→  m12Actual         Float    @default(0)
+  1843→  1843→  
+  1844→  1844→  // Totaux
+  1845→  1845→  totalBudgeted     Float    @default(0)
+  1846→  1846→  totalActual       Float    @default(0)
+  1847→  1847→  variance          Float    @default(0)
+  1848→  1848→  
+  1849→  1849→  budgetId          String
+  1850→  1850→  budget            Budget   @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+  1851→  1851→  
+  1852→  1852→  createdAt         DateTime @default(now())
+  1853→  1853→  updatedAt         DateTime @updatedAt
+  1854→  1854→  
+  1855→  1855→  @@map("budget_lines")
+  1856→  1856→}
+  1857→  1857→
+  1858→  1858→// ============================================================
+  1859→  1859→// CASH FLOW / TRÉSORERIE
+  1860→  1860→// ============================================================
+  1861→  1861→
+  1862→  1862→enum CashFlowType {
+  1863→  1863→  inflow            // Entrée (encaissement)
+  1864→  1864→  outflow           // Sortie (décaissement)
+  1865→  1865→}
+  1866→  1866→
+  1867→  1867→enum CashFlowCategory {
+  1868→  1868→  operating          // Exploitation
+  1869→  1869→  investing          // Investissement
+  1870→  1870→  financing          // Financement
+  1871→  1871→}
+  1872→  1872→
+  1873→  1873→model CashFlowEntry {
+  1874→  1874→  id                String            @id @default(cuid())
+  1875→  1875→  reference         String            @unique // TRS-YYYYMM-XXX
+  1876→  1876→  date              DateTime
+  1877→  1877→  type              CashFlowType
+  1878→  1878→  category          CashFlowCategory  @default(operating)
+  1879→  1879→  
+  1880→  1880→  // Description
+  1881→  1881→  label             String
+  1882→  1882→  description       String?
+  1883→  1883→  
+  1884→  1884→  // Montants
+  1885→  1885→  amount            Float              @default(0)
+  1886→  1886→  currency          String             @default("DZD")
+  1887→  1887→  
+  1888→  1888→  // Comptabilité
+  1889→  1889→  bankAccountId     String?
+  1890→  1890→  bankAccount       BankAccount?       @relation(fields: [bankAccountId], references: [id])
+  1891→  1891→  counterpartName   String?           // Nom contrepartie
+  1892→  1892→  
+  1893→  1893→  // Rapprochement
+  1894→  1894→  reconciled        Boolean            @default(false)
+  1895→  1895→  reconciledAt      DateTime?
+  1896→  1896→  reconciledBy      String?
+  1897→  1897→  
+  1898→  1898→  // Pièce justificative
+  1899→  1899→  documentRef       String?           // Référence facture, paiement...
+  1900→  1900→  documentType      String?           // Type document
+  1901→  1901→  
+  1902→  1902→  // Prévisionnel vs Réel
+  1903→  1903→  isForecast        Boolean            @default(false)
+  1904→  1904→  forecastDate      DateTime?         // Date prévue si différente
+  1905→  1905→  
+  1906→  1906→  companyId         String
+  1907→  1907→  company           Company            @relation(fields: [companyId], references: [id])
+  1908→  1908→  
+  1909→  1909→  createdAt         DateTime           @default(now())
+  1910→  1910→  updatedAt         DateTime           @updatedAt
+  1911→  1911→  
+  1912→  1912→  @@index([date])
+  1913→  1913→  @@index([type])
+  1914→  1914→  @@index([category])
+  1915→  1915→  @@index([companyId])
+  1916→  1916→  
+  1917→  1917→  @@map("cash_flow_entries")
+  1918→  1918→}
+  1919→  1919→
+  1920→  1920→// ============================================================
+  1921→  1921→// MODULE 8: CRM PIPELINE VENTES AVANCÉ
+  1922→  1922→// ============================================================
+  1923→  1923→
+  1924→  1924→enum LeadStatus {
+  1925→  1925→  new               // Nouveau
+  1926→  1926→  contacted         // Contacté
+  1927→  1927→  qualified         // Qualifié
+  1928→  1928→  proposal_sent     // Proposition envoyée
+  1929→  1929→  negotiation       // Négociation
+  1930→  1930→  won_won           // Gagné
+  1931→  1931→  lost_lost         // Perdu
+  1932→  1932→}
+  1933→  1933→
+  1934→  1934→enum LeadSource {
+  1935→  1935→  website
+  1936→  1936→  referral
+  1937→  1937→  linkedin
+  1938→  1938→  facebook
+  1939→  1939→  cold_call
+  1940→  1940→  exhibition
+  1941→  1941→  partner
+  1942→  1942→  advertising
+  1943→  1943→  other
+  1944→  1944→}
+  1945→  1945→
+  1946→  1946→enum LeadRating {
+  1947→  1947→  hot               // Chaud (probabilité >70%)
+  1948→  1948→  warm              // Tiède (30-70%)
+  1949→  1949→  cold              // Froid (<30%)
+  1950→  1950→}
+  1951→  1951→
+  1952→  1952→model Opportunity {
+  1953→  1953→  id                String        @id @default(cuid())
+  1954→  1954→  name              String        // Nom de l'opportunité
+  1955→  1955→  reference         String        @unique // OPP-YYYY-XXX
+  1956→  1956→  
+  1957→  1957→  // Client potentiel ou existant
+  1958→  1958→  partnerId         String?
+  1959→  1959→  partner           Partner?      @relation(fields: [partnerId], references: [id])
+  1960→  1960→  contactName       String?       // Nom du contact
+  1961→  1961→  contactEmail      String?
+  1962→  1962→  contactPhone      String?
+  1963→  1963→  
+  1964→  1964→  // Statut & Étape
+  1965→  1965→  status            LeadStatus    @default(new)
+  1966→  1966→  stage             Int           @default(1) // Étape actuelle dans le pipeline (1-5)
+  1967→  1967→  
+  1968→  1968→  // Source & Rating
+  1969→  1969→  source            LeadSource    @default(other)
+  1970→  1970→  rating            LeadRating    @default(cold)
+  1971→  1971→  
+  1972→  1972→  // Montants (DZD)
+  1973→  1973→  expectedRevenue   Float         @default(0)  // CA espéré
+  1974→  1974→  probability       Int           @default(10)  // Probabilité (%)
+  1975→  1975→  weightedValue     Float         @default(0)  // Valeur pondérée = expected * proba/100
+  1976→  1976→  
+  1977→  1977→  // Produit/Service
+  1978→  1978→  productName       String?
+  1979→  1979→  productDescription String?
+  1980→  1980→  quantity          Int           @default(1)
+  1981→  1981→  unitPrice         Float         @default(0)
+  1982→  1982→  
+  1983→  1983→  // Dates importantes
+  1984→  1984→  expectedCloseDate DateTime?     // Date de clôture prévue
+  1985→  1985→  actualCloseDate   DateTime?
+  1986→  1986→  
+  1987→  1987→  // Suivi
+  1988→  1988→  lastActivityAt    DateTime      @default(now())
+  1989→  1989→  nextActionDate    DateTime?
+  1990→  1990→  nextAction        String?       // Prochaine action
+  1991→  1991→  notes             String?
+  1992→  1992→  
+  1993→  1993→  // Assignation
+  1994→  1994→  assignedToId      String?
+  1995→  1995→  assignedTo        User?         @relation("SalesAssigned", fields: [assignedToId], references: [id])
+  1996→  1996→  
+  1997→  1997→  // Conversion
+  1998→  1998→  convertedInvoiceId String?
+  1999→  1999→  lostReason        String?
+  2000→  2000→  
+
+[showing lines 1-2000 of 2002; use offset=2001 with limit to continue reading]

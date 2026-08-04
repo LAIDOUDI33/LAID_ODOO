@@ -1,0 +1,890 @@
+     1→     1→// ============================================================
+     2→     2→// HASSIBA Suite ERP v2.0.0 - Purchase Orders API
+     3→     3→// Commandes d'Achat - Operations sur une commande spécifique
+     4→     4→// PUT /api/purchases/[id] - Update purchase order
+     5→     5→// DELETE /api/purchases/[id] - Cancel/delete purchase order
+     6→     6→// POST /api/purchases/[id]/receive - Receive goods from PO
+     7→     7→// POST /api/purchases/[id]/confirm - Confirm PO status change
+     8→     8→// ============================================================
+     9→     9→
+    10→    10→import { NextRequest, NextResponse } from 'next/server';
+    11→    11→import { db } from '@/lib/db';
+    12→    12→import { isValidTVARate, calculateLineAmounts, calculateOrderTotals } from '../route';
+    13→    13→
+    14→    14→// ============================================================
+    15→    15→// Types & Interfaces
+    16→    16→// ============================================================
+    17→    17→
+    18→    18→interface UpdatePurchaseOrderInput {
+    19→    19→  partnerId?: string;
+    20→    20→  date?: string;
+    21→    21→  expectedDate?: string;
+    22→    22→  paymentTerms?: string;
+    23→    23→  paymentMode?: string;
+    24→    24→  incoterm?: string;
+    25→    25→  shippingAddress?: string;
+    26→    26→  warehouseId?: string;
+    27→    27→  internalNotes?: string;
+    28→    28→  supplierNotes?: string;
+    29→    29→  lines?: Array<{
+    30→    30→    id?: string; // Include ID for existing lines to update
+    31→    31→    productId: string;
+    32→    32→    description?: string;
+    33→    33→    quantity: number;
+    34→    34→    unitPrice: number;
+    35→    35→    discountRate?: number;
+    36→    36→    tvaRate?: number;
+    37→    37→  }>;
+    38→    38→}
+    39→    39→
+    40→    40→interface ReceiveGoodsInput {
+    41→    41→  lines: Array<{
+    42→    42→    lineId: string;
+    43→    43→    quantity: number;
+    44→    44→    locationId?: string;
+    45→    45→  }>;
+    46→    46→  notes?: string;
+    47→    47→}
+    48→    48→
+    49→    49→// ============================================================
+    50→    50→// Helper: Get PO with full details
+    51→    51→// ============================================================
+    52→    52→
+    53→    53→async function getPurchaseOrderWithDetails(id: string) {
+    54→    54→  return db.purchaseOrder.findUnique({
+    55→    55→    where: { id },
+    56→    56→    include: {
+    57→    57→      partner: {
+    58→    58→        select: {
+    59→    59→          id: true,
+    60→    60→          name: true,
+    61→    61→          displayName: true,
+    62→    62→          type: true,
+    63→    63→        },
+    64→    64→      },
+    65→    65→      company: {
+    66→    66→        select: {
+    67→    67→          id: true,
+    68→    68→          name: true,
+    69→    69→        },
+    70→    70→      },
+    71→    71→      warehouse: {
+    72→    72→        select: {
+    73→    73→          id: true,
+    74→    74→          name: true,
+    75→    75→          code: true,
+    76→    76→        },
+    77→    77→      },
+    78→    78→      lines: {
+    79→    79→        include: {
+    80→    80→          product: {
+    81→    81→            select: {
+    82→    82→              id: true,
+    83→    83→              code: true,
+    84→    84→              name: true,
+    85→    85→              type: true,
+    86→    86→            },
+    87→    87→          },
+    88→    88→        },
+    89→    89→        orderBy: {
+    90→    90→          createdAt: 'asc',
+    91→    91→        },
+    92→    92→      },
+    93→    93→      receiptItems: {
+    94→    94→        include: {
+    95→    95→          product: {
+    96→    96→            select: {
+    97→    97→              id: true,
+    98→    98→              code: true,
+    99→    99→              name: true,
+   100→   100→            },
+   101→   101→          },
+   102→   102→          warehouse: {
+   103→   103→            select: {
+   104→   104→              id: true,
+   105→   105→              name: true,
+   106→   106→              code: true,
+   107→   107→            },
+   108→   108→          },
+   109→   109→        },
+   110→   110→      },
+   111→   111→      bills: {
+   112→   112→        select: {
+   113→   113→          id: true,
+   114→   114→          reference: true,
+   115→   115→          status: true,
+   116→   116→          amountTotal: true,
+   117→   117→        },
+   118→   118→      },
+   119→   119→    },
+   120→   120→  });
+   121→   121→}
+   122→   122→
+   123→   123→// ============================================================
+   124→   124→// Status Transition Validation
+   125→   125→// ============================================================
+   126→   126→
+   127→   127→const VALID_STATUS_TRANSITIONS: Record<string, string[]> = {
+   128→   128→  draft: ['sent', 'confirmed', 'cancelled'],
+   129→   129→  sent: ['confirmed', 'draft', 'cancelled'],
+   130→   130→  confirmed: ['received', 'cancelled'],
+   131→   131→  received: ['billed', 'done'],
+   132→   132→  billed: ['done', 'done'],
+   133→   133→  done: [],
+   134→   134→  cancelled: ['draft'], // Can be reinstated to draft
+   135→   135→};
+   136→   136→
+   137→   137→function canTransition(currentStatus: string, newStatus: string): boolean {
+   138→   138→  const allowedTransitions = VALID_STATUS_TRANSITIONS[currentStatus] || [];
+   139→   139→  return allowedTransitions.includes(newStatus);
+   140→   140→}
+   141→   141→
+   142→   142→// ============================================================
+   143→   143→// PUT /api/purchases/[id] - Update Purchase Order
+   144→   144→// ============================================================
+   145→   145→
+   146→   146→export async function PUT(
+   147→   147→  request: NextRequest,
+   148→   148→  { params }: { params: Promise<{ id: string }> }
+   149→   149→) {
+   150→   150→  try {
+   151→   151→    const { id } = await params;
+   152→   152→    const body: UpdatePurchaseOrderInput = await request.json();
+   153→   153→    
+   154→   154→    // Check if PO exists
+   155→   155→    const existingPO = await db.purchaseOrder.findUnique({
+   156→   156→      where: { id },
+   157→   157→      include: {
+   158→   158→        lines: true,
+   159→   159→      },
+   160→   160→    });
+   161→   161→    
+   162→   162→    if (!existingPO) {
+   163→   163→      return NextResponse.json(
+   164→   164→        {
+   165→   165→          success: false,
+   166→   166→          error: 'Commande d\'achat non trouvée',
+   167→   167→        },
+   168→   168→        { status: 404 }
+   169→   169→      );
+   170→   170→    }
+   171→   171→    
+   172→   172→    // Check if PO can be updated (only draft or cancelled status)
+   173→   173→    if (!['draft', 'cancelled'].includes(existingPO.status)) {
+   174→   174→      return NextResponse.json(
+   175→   175→        {
+   176→   176→          success: false,
+   177→   177→          error: `Impossible de modifier une commande avec le statut '${existingPO.status}'. Seules les commandes en brouillon ou annulées peuvent être modifiées.`,
+   178→   178→        },
+   179→   179→        { status: 400 }
+   180→   180→      );
+   181→   181→    }
+   182→   182→    
+   183→   183→    // Validate partner if provided
+   184→   184→    if (body.partnerId && body.partnerId !== existingPO.partnerId) {
+   185→   185→      const partner = await db.partner.findUnique({
+   186→   186→        where: { id: body.partnerId },
+   187→   187→      });
+   188→   188→      
+   189→   189→      if (!partner) {
+   190→   190→        return NextResponse.json(
+   191→   191→          {
+   192→   192→            success: false,
+   193→   193→            error: 'Fournisseur non trouvé',
+   194→   194→          },
+   195→   195→          { status: 404 }
+   196→   196→        );
+   197→   197→      }
+   198→   198→      
+   199→   199→      if (partner.type === 'customer') {
+   200→   200→        return NextResponse.json(
+   201→   201→          {
+   202→   202→            success: false,
+   203→   203→            error: 'Ce partenaire n\'est pas un fournisseur',
+   204→   204→          },
+   205→   205→          { status: 400 }
+   206→   206→        );
+   207→   207→      }
+   208→   208→    }
+   209→   209→    
+   210→   210→    // Validate warehouse if provided
+   211→   211→    if (body.warehouseId && body.warehouseId !== existingPO.warehouseId) {
+   212→   212→      const warehouse = await db.warehouse.findUnique({
+   213→   213→        where: { id: body.warehouseId },
+   214→   214→      });
+   215→   215→      
+   216→   216→      if (!warehouse) {
+   217→   217→        return NextResponse.json(
+   218→   218→          {
+   219→   219→            success: false,
+   220→   220→            error: 'Entrepôt non trouvé',
+   221→   221→          },
+   222→   222→          { status: 404 }
+   223→   223→        );
+   224→   224→      }
+   225→   225→    }
+   226→   226→    
+   227→   227→    // Prepare update data
+   228→   228→    const updateData: Record<string, unknown> = {
+   229→   229→      updatedAt: new Date(),
+   230→   230→    };
+   231→   231→    
+   232→   232→    if (body.partnerId) updateData.partnerId = body.partnerId;
+   233→   233→    if (body.date) updateData.date = new Date(body.date);
+   234→   234→    if (body.expectedDate !== undefined) {
+   235→   235→      updateData.expectedDate = body.expectedDate ? new Date(body.expectedDate) : null;
+   236→   236→    }
+   237→   237→    if (body.paymentTerms !== undefined) updateData.paymentTerms = body.paymentTerms;
+   238→   238→    if (body.paymentMode !== undefined) updateData.paymentMode = body.paymentMode;
+   239→   239→    if (body.incoterm !== undefined) updateData.incoterm = body.incoterm;
+   240→   240→    if (body.shippingAddress !== undefined) updateData.shippingAddress = body.shippingAddress;
+   241→   241→    if (body.warehouseId !== undefined) updateData.warehouseId = body.warehouseId;
+   242→   242→    if (body.internalNotes !== undefined) updateData.internalNotes = body.internalNotes;
+   243→   243→    if (body.supplierNotes !== undefined) updateData.supplierNotes = body.supplierNotes;
+   244→   244→    
+   245→   245→    // If lines are provided, recalculate everything
+   246→   246→    if (body.lines && body.lines.length > 0) {
+   247→   247→      const processedLines = [];
+   248→   248→      
+   249→   249→      for (let i = 0; i < body.lines.length; i++) {
+   250→   250→        const line = body.lines[i];
+   251→   251→        
+   252→   252→        // Validate required fields
+   253→   253→        if (!line.productId) {
+   254→   254→          return NextResponse.json(
+   255→   255→            {
+   256→   256→              success: false,
+   257→   257→              error: `Le produit est requis pour la ligne ${i + 1}`,
+   258→   258→            },
+   259→   259→            { status: 400 }
+   260→   260→          );
+   261→   261→        }
+   262→   262→        
+   263→   263→        if (!line.quantity || line.quantity <= 0) {
+   264→   264→          return NextResponse.json(
+   265→   265→            {
+   266→   266→              success: false,
+   267→   267→              error: `La quantité doit être supérieure à 0 pour la ligne ${i + 1}`,
+   268→   268→            },
+   269→   269→            { status: 400 }
+   270→   270→          );
+   271→   271→        }
+   272→   272→        
+   273→   273→        if (line.unitPrice === undefined || line.unitPrice < 0) {
+   274→   274→          return NextResponse.json(
+   275→   275→            {
+   276→   276→              success: false,
+   277→   277→              error: `Le prix unitaire doit être positif pour la ligne ${i + 1}`,
+   278→   278→            },
+   279→   279→            { status: 400 }
+   280→   280→          );
+   281→   281→        }
+   282→   282→        
+   283→   283→        // Validate product exists
+   284→   284→        const product = await db.product.findUnique({
+   285→   285→          where: { id: line.productId },
+   286→   286→        });
+   287→   287→        
+   288→   288→        if (!product) {
+   289→   289→          return NextResponse.json(
+   290→   290→            {
+   291→   291→              success: false,
+   292→   292→              error: `Produit non trouvé pour la ligne ${i + 1}`,
+   293→   293→            },
+   294→   294→            { status: 404 }
+   295→   295→          );
+   296→   296→        }
+   297→   297→        
+   298→   298→        // Validate TVA rate
+   299→   299→        const tvaRate = line.tvaRate ?? product.tvaRate ?? 19;
+   300→   300→        if (!isValidTVARate(tvaRate)) {
+   301→   301→          return NextResponse.json(
+   302→   302→            {
+   303→   303→              success: false,
+   304→   304→              error: `Taux TVA invalide pour la ligne ${i + 1}. Taux autorisés: 0%, 9%, 19%`,
+   305→   305→            },
+   306→   306→            { status: 400 }
+   307→   307→          );
+   308→   308→        }
+   309→   309→        
+   310→   310→        // Calculate amounts
+   311→   311→        const amounts = calculateLineAmounts({
+   312→   312→          ...line,
+   313→   313→          tvaRate,
+   314→   314→        });
+   315→   315→        
+   316→   316→        processedLines.push({
+   317→   317→          id: line.id, // Keep existing line ID if updating
+   318→   318→          productId: line.productId,
+   319→   319→          description: line.description || product.name,
+   320→   320→          quantity: line.quantity,
+   321→   321→          unitPrice: line.unitPrice,
+   322→   322→          discountRate: line.discountRate || 0,
+   323→   323→          tvaRate,
+   324→   324→          ...amounts,
+   325→   325→        });
+   326→   326→      }
+   327→   327→      
+   328→   328→      // Calculate order totals
+   329→   329→      const totals = calculateOrderTotals(processedLines);
+   330→   330→      updateData.amountUntaxed = totals.amountUntaxed;
+   331→   331→      updateData.amountTax = totals.amountTax;
+   332→   332→      updateData.amountTotal = totals.amountTotal;
+   333→   333→      
+   334→   334→      // Perform update in transaction
+   335→   335→      const updatedOrder = await db.$transaction(async (tx) => {
+   336→   336→        // Delete existing lines
+   337→   337→        await tx.purchaseOrderLine.deleteMany({
+   338→   338→          where: { purchaseOrderId: id },
+   339→   339→        });
+   340→   340→        
+   341→   341→        // Create new lines
+   342→   342→        const lines = await Promise.all(
+   343→   343→          processedLines.map((line) =>
+   344→   344→            tx.purchaseOrderLine.create({
+   345→   345→              data: {
+   346→   346→                purchaseOrderId: id,
+   347→   347→                productId: line.productId,
+   348→   348→                description: line.description,
+   349→   349→                quantity: line.quantity,
+   350→   350→                unitPrice: line.unitPrice,
+   351→   351→                discountRate: line.discountRate,
+   352→   352→                tvaRate: line.tvaRate,
+   353→   353→                amountUntaxed: line.amountUntaxed,
+   354→   354→                amountTax: line.amountTax,
+   355→   355→                amountTotal: line.amountTotal,
+   356→   356→                quantityReceived: 0,
+   357→   357→                quantityInvoiced: 0,
+   358→   358→              },
+   359→   359→            })
+   360→   360→          )
+   361→   361→        );
+   362→   362→        
+   363→   363→        // Update order header
+   364→   364→        const order = await tx.purchaseOrder.update({
+   365→   365→          where: { id },
+   366→   366→          data: updateData,
+   367→   367→        });
+   368→   368→        
+   369→   369→        return { ...order, lines };
+   370→   370→      });
+   371→   371→      
+   372→   372→      // Return full updated order
+   373→   373→      const fullOrder = await getPurchaseOrderWithDetails(id);
+   374→   374→      
+   375→   375→      return NextResponse.json({
+   376→   376→        success: true,
+   377→   377→        data: fullOrder,
+   378→   378→        message: `Commande d'achat ${existingPO.reference} mise à jour avec succès`,
+   379→   379→      });
+   380→   380→    } else {
+   381→   381→      // Just update header without changing lines
+   382→   382→      const updatedOrder = await db.purchaseOrder.update({
+   383→   383→        where: { id },
+   384→   384→        data: updateData,
+   385→   385→      });
+   386→   386→      
+   387→   387→      const fullOrder = await getPurchaseOrderWithDetails(id);
+   388→   388→      
+   389→   389→      return NextResponse.json({
+   390→   390→        success: true,
+   391→   391→        data: fullOrder,
+   392→   392→        message: `Commande d'achat ${existingPO.reference} mise à jour avec succès`,
+   393→   393→      });
+   394→   394→    }
+   395→   395→  } catch (error) {
+   396→   396→    console.error('Error updating purchase order:', error);
+   397→   397→    return NextResponse.json(
+   398→   398→      {
+   399→   399→        success: false,
+   400→   400→        error: 'Erreur lors de la mise à jour de la commande d\'achat',
+   401→   401→      },
+   402→   402→      { status: 500 }
+   403→   403→    );
+   404→   404→  }
+   405→   405→}
+   406→   406→
+   407→   407→// ============================================================
+   408→   408→// DELETE /api/purchases/[id] - Cancel/Delete Purchase Order
+   409→   409→// ============================================================
+   410→   410→
+   411→   411→export async function DELETE(
+   412→   412→  request: NextRequest,
+   413→   413→  { params }: { params: Promise<{ id: string }> }
+   414→   414→) {
+   415→   415→  try {
+   416→   416→    const { id } = await params;
+   417→   417→    
+   418→   418→    // Check if PO exists
+   419→   419→    const existingPO = await db.purchaseOrder.findUnique({
+   420→   420→      where: { id },
+   421→   421→      include: {
+   422→   422→        receiptItems: true,
+   423→   423→        bills: true,
+   424→   424→      },
+   425→   425→    });
+   426→   426→    
+   427→   427→    if (!existingPO) {
+   428→   428→      return NextResponse.json(
+   429→   429→        {
+   430→   430→          success: false,
+   431→   431→          error: 'Commande d\'achat non trouvée',
+   432→   432→        },
+   433→   433→        { status: 404 }
+   434→   434→      );
+   435→   435→    }
+   436→   436→    
+   437→   437→    // Check if already cancelled
+   438→   438→    if (existingPO.status === 'cancelled') {
+   439→   439→      return NextResponse.json(
+   440→   440→        {
+   441→   441→          success: false,
+   442→   442→          error: 'Cette commande est déjà annulée',
+   443→   443→        },
+   444→   444→        { status: 400 }
+   445→   445→      );
+   446→   446→    }
+   447→   447→    
+   448→   448→    // Check if goods have been received
+   449→   449→    if (existingPO.receiptItems.length > 0) {
+   450→   450→      return NextResponse.json(
+   451→   451→        {
+   452→   452→          success: false,
+   453→   453→          error: 'Impossible d\'annuler cette commande car des marchandises ont déjà été reçues. Veuillez d\'abord effectuer un retour de stock.',
+   454→   454→        },
+   455→   455→        { status: 400 }
+   456→   456→      );
+   457→   457→    }
+   458→   458→    
+   459→   459→    // Check if bills exist
+   460→   460→    if (existingPO.bills.length > 0) {
+   461→   461→      return NextResponse.json(
+   462→   462→        {
+   463→   463→          success: false,
+   464→   464→          error: 'Impossible d\'annuler cette commande car des factures fournisseurs y sont liées.',
+   465→   465→        },
+   466→   466→        { status: 400 }
+   467→   467→      );
+   468→   468→    }
+   469→   469→    
+   470→   470→    // Cancel the order (soft delete by setting status to cancelled)
+   471→   471→    const cancelledOrder = await db.purchaseOrder.update({
+   472→   472→      where: { id },
+   473→   473→      data: {
+   474→   474→        status: 'cancelled',
+   475→   475→      },
+   476→   476→    });
+   477→   477→    
+   478→   478→    return NextResponse.json({
+   479→   479→      success: true,
+   480→   480→      data: cancelledOrder,
+   481→   481→      message: `Commande d'achat ${existingPO.reference} annulée avec succès`,
+   482→   482→    });
+   483→   483→  } catch (error) {
+   484→   484→    console.error('Error cancelling purchase order:', error);
+   485→   485→    return NextResponse.json(
+   486→   486→      {
+   487→   487→        success: false,
+   488→   488→        error: 'Erreur lors de l\'annulation de la commande d\'achat',
+   489→   489→      },
+   490→   490→      { status: 500 }
+   491→   491→    );
+   492→   492→  }
+   493→   493→}
+   494→   494→
+   495→   495→// ============================================================
+   496→   496→// POST /api/purchases/[id]/receive - Receive Goods from PO
+   497→   497→// ============================================================
+   498→   498→
+   499→   499→export async function POST(
+   500→   500→  request: NextRequest,
+   501→   501→  { params }: { params: Promise<{ id: string }> }
+   502→   502→) {
+   503→   503→  try {
+   504→   504→    const { id } = await params;
+   505→   505→    
+   506→   506→    // Parse URL to check action
+   507→   507→    const { searchParams } = new URL(request.url);
+   508→   508→    const action = searchParams.get('action');
+   509→   509→    
+   510→   510→    // Route to appropriate handler based on action
+   511→   511→    if (action === 'receive') {
+   512→   512→      return handleReceiveGoods(request, id);
+   513→   513→    } else if (action === 'confirm') {
+   514→   514→      return handleConfirmOrder(request, id);
+   515→   515→    } else {
+   516→   516→      return NextResponse.json(
+   517→   517→        {
+   518→   518→          success: false,
+   519→   519→          error: 'Action non reconnue. Utilisez ?action=receive ou ?action=confirm',
+   520→   520→        },
+   521→   521→        { status: 400 }
+   522→   522→      );
+   523→   523→    }
+   524→   524→  } catch (error) {
+   525→   525→    console.error('Error in POST /api/purchases/[id]:', error);
+   526→   526→    return NextResponse.json(
+   527→   527→      {
+   528→   528→        success: false,
+   529→   529→        error: 'Erreur lors du traitement de la requête',
+   530→   530→      },
+   531→   531→      { status: 500 }
+   532→   532→    );
+   533→   533→  }
+   534→   534→}
+   535→   535→
+   536→   536→// ============================================================
+   537→   537→// Handle Receive Goods Action
+   538→   538→// ============================================================
+   539→   539→
+   540→   540→async function handleReceiveGoods(request: NextRequest, poId: string): Promise<NextResponse> {
+   541→   541→  try {
+   542→   542→    const body: ReceiveGoodsInput = await request.json();
+   543→   543→    
+   544→   544→    // Validate input
+   545→   545→    if (!body.lines || body.lines.length === 0) {
+   546→   546→      return NextResponse.json(
+   547→   547→        {
+   548→   548→          success: false,
+   549→   549→          error: 'Au moins une ligne de réception est requise',
+   550→   550→        },
+   551→   551→        { status: 400 }
+   552→   552→      );
+   553→   553→    }
+   554→   554→    
+   555→   555→    // Get PO with full details
+   556→   556→    const po = await db.purchaseOrder.findUnique({
+   557→   557→      where: { id: poId },
+   558→   558→      include: {
+   559→   559→        lines: {
+   560→   560→          include: {
+   561→   561→            product: true,
+   562→   562→          },
+   563→   563→        },
+   564→   564→        warehouse: true,
+   565→   565→        company: true,
+   566→   566→      },
+   567→   567→    });
+   568→   568→    
+   569→   569→    if (!po) {
+   570→   570→      return NextResponse.json(
+   571→   571→        {
+   572→   572→          success: false,
+   573→   573→          error: 'Commande d\'achat non trouvée',
+   574→   574→        },
+   575→   575→        { status: 404 }
+   576→   576→      );
+   577→   577→    }
+   578→   578→    
+   579→   579→    // Check if PO can receive goods
+   580→   580→    if (!['confirmed', 'sent', 'draft'].includes(po.status) && po.status !== 'received') {
+   581→   581→      return NextResponse.json(
+   582→   582→        {
+   583→   583→          success: false,
+   584→   584→          error: `La commande doit être confirmée avant de pouvoir recevoir des marchandises. Statut actuel: ${po.status}`,
+   585→   585→        },
+   586→   586→        { status: 400 }
+   587→   587→      );
+   588→   588→    }
+   589→   589→    
+   590→   590→    // Check if warehouse is set
+   591→   591→    if (!po.warehouseId) {
+   592→   592→      return NextResponse.json(
+   593→   593→        {
+   594→   594→          success: false,
+   595→   595→          error: 'Aucun entrepôt défini pour cette commande. Veuillez définir l\'entrepôt de réception.',
+   596→   596→        },
+   597→   597→        { status: 400 }
+   598→   598→      );
+   599→   599→    }
+   600→   600→    
+   601→   601→    // Process each received line
+   602→   602→    const movements = [];
+   603→   603→    const updatedLines = [];
+   604→   604→    let totalReceived = 0;
+   605→   605→    
+   606→   606→    for (const recvLine of body.lines) {
+   607→   607→      // Find the corresponding PO line
+   608→   608→      const poLine = po.lines.find((l) => l.id === recvLine.lineId);
+   609→   609→      
+   610→   610→      if (!poLine) {
+   611→   611→        return NextResponse.json(
+   612→   612→          {
+   613→   613→            success: false,
+   614→   614→            error: `Ligne de commande ${recvLine.lineId} non trouvée`,
+   615→   615→          },
+   616→   616→          { status: 404 }
+   617→   617→        );
+   618→   618→      }
+   619→   619→      
+   620→   620→      // Validate quantity
+   621→   621→      if (!recvLine.quantity || recvLine.quantity <= 0) {
+   622→   622→        return NextResponse.json(
+   623→   623→          {
+   624→   624→            success: false,
+   625→   625→            error: `La quantité reçue doit être supérieure à 0 pour le produit ${poLine.product.name}`,
+   626→   626→          },
+   627→   627→          { status: 400 }
+   628→   628→        );
+   629→   629→      }
+   630→   630→      
+   631→   631→      // Check not over-receiving
+   632→   632→      const maxReceivable = poLine.quantity - poLine.quantityReceived;
+   633→   633→      if (recvLine.quantity > maxReceivable) {
+   634→   634→        return NextResponse.json(
+   635→   635→          {
+   636→   636→            success: false,
+   637→   637→            error: `Quantité reçue (${recvLine.quantity}) supérieure au restant à recevoir (${maxReceivable}) pour ${poLine.product.name}`,
+   638→   638→          },
+   639→   639→          { status: 400 }
+   640→   640→        );
+   641→   641→      }
+   642→   642→      
+   643→   643→      // Calculate cost for this reception
+   644→   644→      const lineUnitCost = poLine.unitPrice * (1 - poLine.discountRate / 100);
+   645→   645→      const totalCost = Math.round(recvLine.quantity * lineUnitCost * 100) / 100;
+   646→   646→      
+   647→   647→      movements.push({
+   648→   648→        productId: poLine.productId,
+   649→   649→        quantity: recvLine.quantity,
+   650→   650→        unitCost: lineUnitCost,
+   651→   651→        totalCost,
+   652→   652→        locationId: recvLine.locationId || null,
+   653→   653→        lineId: poLine.id,
+   654→   654→      });
+   655→   655→      
+   656→   656→      updatedLines.push({
+   657→   657→        lineId: poLine.id,
+   658→   658→        quantityReceived: poLine.quantityReceived + recvLine.quantity,
+   659→   659→        amountReceived: Math.round((poLine.quantityReceived + recvLine.quantity) * lineUnitCost * 100) / 100,
+   660→   660→      });
+   661→   661→      
+   662→   662→      totalReceived += totalCost;
+   663→   663→    }
+   664→   664→    
+   665→   665→    // Generate movement reference
+   666→   666→    const now = new Date();
+   667→   667→    const year = now.getFullYear();
+   668→   668→    const month = String(now.getMonth() + 1).padStart(2, '0');
+   669→   669→    const movementCount = await db.stockMovement.count({
+   670→   670→      where: {
+   671→   671→        type: 'in_receipt',
+   672→   672→        date: {
+   673→   673→          gte: new Date(year, now.getMonth(), 1),
+   674→   674→          lt: new Date(year, now.getMonth() + 1, 1),
+   675→   675→        },
+   676→   676→      },
+   677→   677→    });
+   678→   678→    const movementRef = `ENT-${year}-${month}-${String(movementCount + 1).padStart(3, '0')}`;
+   679→   679→    
+   680→   680→    // Process in transaction
+   681→   681→    const result = await db.$transaction(async (tx) => {
+   682→   682→      // Create stock movements
+   683→   683→      const createdMovements = await Promise.all(
+   684→   684→        movements.map((mov) =>
+   685→   685→          tx.stockMovement.create({
+   686→   686→            data: {
+   687→   687→              reference: `${movementRef}-${mov.productId.slice(-6)}`,
+   688→   688→              date: now,
+   689→   689→              type: 'in_receipt',
+   690→   690→              quantity: mov.quantity,
+   691→   691→              unitCost: mov.unitCost,
+   692→   692→              totalCost: mov.totalCost,
+   693→   693→              notes: body.notes || `Réception commande ${po.reference}`,
+   694→   694→              productId: mov.productId,
+   695→   695→              warehouseId: po.warehouseId!,
+   696→   696→              locationId: mov.locationId,
+   697→   697→              sourceDoc: 'purchase_order',
+   698→   698→              sourceId: poId,
+   699→   699→              purchaseOrderId: poId,
+   700→   700→            },
+   701→   701→          })
+   702→   702→        )
+   703→   703→      );
+   704→   704→      
+   705→   705→      // Update PO lines quantities received
+   706→   706→      for (const ul of updatedLines) {
+   707→   707→        await tx.purchaseOrderLine.update({
+   708→   708→          where: { id: ul.lineId },
+   709→   709→          data: {
+   710→   710→            quantityReceived: ul.quantityReceived,
+   711→   711→          },
+   712→   712→        });
+   713→   713→      }
+   714→   714→      
+   715→   715→      // Update stock levels for each product
+   716→   716→      for (const mov of movements) {
+   717→   717→        // Find or create stock level
+   718→   718→        const existingStockLevel = await tx.stockLevel.findUnique({
+   719→   719→          where: {
+   720→   720→            productId_warehouseId_locationId: {
+   721→   721→              productId: mov.productId,
+   722→   722→              warehouseId: po.warehouseId!,
+   723→   723→              locationId: mov.locationId ?? '',
+   724→   724→            },
+   725→   725→          },
+   726→   726→        });
+   727→   727→        
+   728→   728→        if (existingStockLevel) {
+   729→   729→          // Update existing stock level
+   730→   730→          const newQuantity = existingStockLevel.quantity + mov.quantity;
+   731→   731→          await tx.stockLevel.update({
+   732→   732→            where: { id: existingStockLevel.id },
+   733→   733→            data: {
+   734→   734→              quantity: Math.round(newQuantity * 100) / 100,
+   735→   735→              availableQty: Math.round((newQuantity - existingStockLevel.reservedQty) * 100) / 100,
+   736→   736→            },
+   737→   737→          });
+   738→   738→        } else {
+   739→   739→          // Create new stock level
+   740→   740→          await tx.stockLevel.create({
+   741→   741→            data: {
+   742→   742→              productId: mov.productId,
+   743→   743→              warehouseId: po.warehouseId!,
+   744→   744→              locationId: mov.locationId,
+   745→   745→              quantity: mov.quantity,
+   746→   746→              reservedQty: 0,
+   747→   747→              availableQty: mov.quantity,
+   748→   748→              minQty: 0,
+   749→   749→              maxQty: 0,
+   750→   750→            },
+   751→   751→          });
+   752→   752→        }
+   753→   753→      }
+   754→   754→      
+   755→   755→      // Determine new PO status
+   756→   756→      let newStatus = po.status;
+   757→   757→      const allFullyReceived = po.lines.every(
+   758→   758→        (l) => {
+   759→   759→          const updatedL = updatedLines.find((ul) => ul.lineId === l.id);
+   760→   760→          return updatedL ? updatedL.quantityReceived >= l.quantity : l.quantityReceived >= l.quantity;
+   761→   761→        }
+   762→   762→      );
+   763→   763→      
+   764→   764→      if (allFullyReceived) {
+   765→   765→        newStatus = 'received';
+   766→   766→      } else if (updatedLines.length > 0 && po.status === 'confirmed') {
+   767→   767→        newStatus = 'received'; // Partially received
+   768→   768→      }
+   769→   769→      
+   770→   770→      // Update PO
+   771→   771→      const updatedPO = await tx.purchaseOrder.update({
+   772→   772→        where: { id: poId },
+   773→   773→        data: {
+   774→   774→          amountReceived: po.amountReceived + totalReceived,
+   775→   775→          receiptDate: now,
+   776→   776→          status: newStatus,
+   777→   777→        },
+   778→   778→      });
+   779→   779→      
+   780→   780→      return {
+   781→   781→        movements: createdMovements,
+   782→   782→        purchaseOrder: updatedPO,
+   783→   783→      };
+   784→   784→    });
+   785→   785→    
+   786→   786→    // Return full updated order
+   787→   787→    const fullOrder = await getPurchaseOrderWithDetails(poId);
+   788→   788→    
+   789→   789→    return NextResponse.json({
+   790→   790→      success: true,
+   791→   791→      data: {
+   792→   792→        purchaseOrder: fullOrder,
+   793→   793→        movements: result.movements,
+   794→   794→      },
+   795→   795→      message: `${movements.length} produit(s) reçu(s) avec succès`,
+   796→   796→    });
+   797→   797→  } catch (error) {
+   798→   798→    console.error('Error receiving goods:', error);
+   799→   799→    return NextResponse.json(
+   800→   800→      {
+   801→   801→        success: false,
+   802→   802→        error: 'Erreur lors de la réception des marchandises',
+   803→   803→      },
+   804→   804→      { status: 500 }
+   805→   805→    );
+   806→   806→  }
+   807→   807→}
+   808→   808→
+   809→   809→// ============================================================
+   810→   810→// Handle Confirm Order Action
+   811→   811→// ============================================================
+   812→   812→
+   813→   813→async function handleConfirmOrder(request: NextRequest, poId: string): Promise<NextResponse> {
+   814→   814→  try {
+   815→   815→    // Get PO
+   816→   816→    const po = await db.purchaseOrder.findUnique({
+   817→   817→      where: { id: poId },
+   818→   818→    });
+   819→   819→    
+   820→   820→    if (!po) {
+   821→   821→      return NextResponse.json(
+   822→   822→        {
+   823→   823→          success: false,
+   824→   824→          error: 'Commande d\'achat non trouvée',
+   825→   825→        },
+   826→   826→        { status: 404 }
+   827→   827→      );
+   828→   828→    }
+   829→   829→    
+   830→   830→    // Check current status and validate transition
+   831→   831→    const targetStatus = 'confirmed';
+   832→   832→    
+   833→   833→    if (!canTransition(po.status, targetStatus)) {
+   834→   834→      return NextResponse.json(
+   835→   835→        {
+   836→   836→          success: false,
+   837→   837→          error: `Transition de statut invalide: '${po.status}' -> '${targetStatus}'`,
+   838→   838→        },
+   839→   839→        { status: 400 }
+   840→   840→      );
+   841→   841→    }
+   842→   842→    
+   843→   843→    // Determine intermediate status based on current state
+   844→   844→    let newStatus: string;
+   845→   845→    
+   846→   846→    switch (po.status) {
+   847→   847→      case 'draft':
+   848→   848→        newStatus = 'sent'; // First send to supplier
+   849→   849→        break;
+   850→   850→      case 'sent':
+   851→   851→      case 'cancelled':
+   852→   852→        newStatus = 'confirmed'; // Then confirm
+   853→   853→        break;
+   854→   854→      default:
+   855→   855→        newStatus = targetStatus;
+   856→   856→    }
+   857→   857→    
+   858→   858→    // Update status
+   859→   859→    const updatedPO = await db.purchaseOrder.update({
+   860→   860→      where: { id: poId },
+   861→   861→      data: {
+   862→   862→        status: newStatus,
+   863→   863→      },
+   864→   864→    });
+   865→   865→    
+   866→   866→    // Return full order
+   867→   867→    const fullOrder = await getPurchaseOrderWithDetails(poId);
+   868→   868→    
+   869→   869→    const statusMessages: Record<string, string> = {
+   870→   870→      sent: 'Commande envoyée au fournisseur',
+   871→   871→      confirmed: 'Commande confirmée par le fournisseur',
+   872→   872→    };
+   873→   873→    
+   874→   874→    return NextResponse.json({
+   875→   875→      success: true,
+   876→   876→      data: fullOrder,
+   877→   877→      message: statusMessages[newStatus] || `Statut mis à jour: ${newStatus}`,
+   878→   878→    });
+   879→   879→  } catch (error) {
+   880→   880→    console.error('Error confirming purchase order:', error);
+   881→   881→    return NextResponse.json(
+   882→   882→      {
+   883→   883→        success: false,
+   884→   884→        error: 'Erreur lors de la confirmation de la commande d\'achat',
+   885→   885→      },
+   886→   886→      { status: 500 }
+   887→   887→    );
+   888→   888→  }
+   889→   889→}
+   890→   890→

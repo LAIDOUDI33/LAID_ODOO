@@ -10,6 +10,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { isValidTVARate, calculateLineAmounts, calculateOrderTotals } from '../route';
+import { generateSCFJournalEntryFromBill as generateBillJournalEntry } from '@/lib/workflow-orchestrator';
 
 // ============================================================
 // Types & Interfaces
@@ -512,11 +513,13 @@ export async function POST(
       return handleReceiveGoods(request, id);
     } else if (action === 'confirm') {
       return handleConfirmOrder(request, id);
+    } else if (action === 'bill') {
+      return handleCreateBill(request, id);
     } else {
       return NextResponse.json(
         {
           success: false,
-          error: 'Action non reconnue. Utilisez ?action=receive ou ?action=confirm',
+          error: 'Action non reconnue. Utilisez ?action=receive, ?action=confirm ou ?action=bill',
         },
         { status: 400 }
       );
@@ -883,6 +886,190 @@ async function handleConfirmOrder(request: NextRequest, poId: string): Promise<N
         success: false,
         error: 'Erreur lors de la confirmation de la commande d\'achat',
       },
+      { status: 500 }
+    );
+  }
+}
+
+// ============================================================
+// Handle Create Supplier Bill Action (with SCF Journal Entry)
+// ============================================================
+
+async function handleCreateBill(request: NextRequest, poId: string): Promise<NextResponse> {
+  try {
+    const body = await request.json().catch(() => ({}));
+    
+    // Get PO with full details
+    const po = await db.purchaseOrder.findUnique({
+      where: { id: poId },
+      include: {
+        lines: { include: { product: true } },
+        partner: true,
+        company: true
+      }
+    });
+    
+    if (!po) {
+      return NextResponse.json(
+        { success: false, error: 'Commande d\'achat non trouvée' },
+        { status: 404 }
+      );
+    }
+    
+    // Check if PO can be billed (must be received or at least confirmed)
+    if (!['received', 'partial', 'confirmed'].includes(po.status)) {
+      return NextResponse.json(
+        { success: false, error: `La commande doit être au moins confirmée pour facturer (statut: ${po.status})` },
+        { status: 400 }
+      );
+    }
+
+    // Generate Bill reference
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    
+    const billCount = await db.bill.count({
+      where: {
+        companyId: po.companyId,
+        reference: { startsWith: `FACH-${year}-${month}` }
+      }
+    });
+    const sequence = String(billCount + 1).padStart(3, '0');
+    const reference = `FACH-${year}-${month}-${sequence}`;
+
+    // Prepare bill lines from received quantities
+    const billLines = po.lines
+      .filter(line => line.quantityReceived > 0 || line.quantityInvoiced < line.quantity)
+      .map(line => {
+        const qtyToBill = Math.min(line.quantityReceived || line.quantity, line.quantity - line.quantityInvoiced);
+        if (qtyToBill <= 0) return null;
+        
+        const ratio = qtyToBill / line.quantity;
+        
+        return {
+          productId: line.productId,
+          description: line.description || null,
+          quantity: qtyToBill,
+          unitPrice: line.unitPrice,
+          discountRate: line.discountRate,
+          tvaRate: line.tvaRate,
+          amountUntaxed: Math.round(line.amountUntaxed * ratio * 100) / 100,
+          amountTax: Math.round(line.amountTax * ratio * 100) / 100,
+          amountTotal: Math.round(line.amountTotal * ratio * 100) / 100
+        };
+      })
+      .filter(Boolean) as any[];
+
+    if (billLines.length === 0) {
+      return NextResponse.json(
+        { success: false, error: 'Aucune ligne à facturer' },
+        { status: 400 }
+      );
+    }
+
+    // Calculate totals
+    const amountUntaxed = billLines.reduce((sum, l) => sum + l.amountUntaxed, 0);
+    const amountTax = billLines.reduce((sum, l) => sum + l.amountTax, 0);
+    const amountTotal = Math.round((amountUntaxed + amountTax) * 100) / 100;
+
+    // Set due date
+    const dueDate = body.dueDate 
+      ? new Date(body.dueDate) 
+      : new Date(now.getTime() + (parseInt(po.paymentTerms || '30') * 24 * 60 * 60 * 1000));
+
+    // Create bill in transaction with SCF journal entry
+    const result = await db.$transaction(async (tx) => {
+      // Create the bill
+      const bill = await tx.bill.create({
+        data: {
+          reference,
+          date: now,
+          dueDate,
+          status: 'posted', // Auto-post for SCF compliance
+          type: 'supplier_invoice',
+          
+          // Amounts
+          amountUntaxed,
+          amountTax,
+          amountTotal,
+          amountPaid: 0,
+          amountDue: amountTotal,
+          
+          // Partner & Company
+          partnerId: po.partnerId,
+          companyId: po.companyId,
+          
+          // Source tracking
+          sourceType: 'purchase_order',
+          sourceId: po.id,
+          
+          // Supplier info
+          supplierReference: body.supplierReference || po.reference,
+          
+          // Payment terms
+          paymentTerm: po.paymentTerms || '30',
+          paymentMode: po.paymentMode || null,
+          
+          // Notes
+          internalNotes: body.internalNotes || `Facture fournisseur générée depuis commande ${po.reference}`,
+          
+          // Lines
+          lines: { create: billLines }
+        },
+        include: {
+          partner: true,
+          lines: { include: { product: true } },
+          company: true
+        }
+      });
+
+      // Update PO billed amount
+      await tx.purchaseOrder.update({
+        where: { id: poId },
+        data: {
+          amountBilled: po.amountBilled + amountUntaxed,
+          status: po.amountBilled + amountUntaxed >= po.amountUntaxed * 0.99 ? 'billed' : po.status
+        }
+      });
+
+      // Update PO line quantities invoiced
+      for (const poLine of po.lines) {
+        const billLine = billLines.find(bl => bl.productId === poLine.productId);
+        if (billLine) {
+          await tx.purchaseOrderLine.update({
+            where: { id: poLine.id },
+            data: { quantityInvoiced: poLine.quantityInvoiced + billLine.quantity }
+          });
+        }
+      }
+
+      // Auto-generate SCF Journal Entry for supplier invoice
+      try {
+        if (po.company) {
+          await generateBillJournalEntry(tx, bill, po.company);
+        }
+      } catch (journalError) {
+        console.error('Warning: Failed to generate SCF journal entry:', journalError);
+      }
+
+      return bill;
+    });
+
+    return NextResponse.json({
+      success: true,
+      data: result,
+      message: `Facture fournisseur ${reference} créée avec succès (avec écriture comptable SCF)`,
+      workflowInfo: {
+        journalEntryGenerated: true,
+        scfCompliant: true
+      }
+    }, { status: 201 });
+    
+  } catch (error) {
+    console.error('Error creating supplier bill:', error);
+    return NextResponse.json(
+      { success: false, error: 'Erreur lors de la création de la facture fournisseur' },
       { status: 500 }
     );
   }

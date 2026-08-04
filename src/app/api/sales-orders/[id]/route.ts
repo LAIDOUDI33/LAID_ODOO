@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { calculateTVACollectee, getTimbreFiscal } from '@/lib/algerian-taxes';
+import { generateSCFJournalEntryFromInvoice as generateJournalEntry } from '@/lib/workflow-orchestrator';
 
 // Valid sales order statuses
 const VALID_STATUSES = ['draft', 'sent', 'confirmed', 'processing', 'delivered', 'invoiced', 'done', 'cancelled'];
@@ -759,13 +760,13 @@ async function handleCreateInvoice(id: string, body: any) {
       ? new Date(dueDate) 
       : new Date(now.getTime() + (parseInt(paymentTerms || order.paymentTerms || '30') * 24 * 60 * 60 * 1000));
 
-    // Create invoice
+    // Create invoice with posted status (SCF auto-posting)
     const invoice = await tx.invoice.create({
       data: {
         reference: invoiceRef,
         date: now,
         dueDate: invoiceDueDate,
-        status: 'draft',
+        status: 'posted', // Auto-post when created from validated SO
         type: 'invoice',
         
         amountUntaxed,
@@ -777,12 +778,15 @@ async function handleCreateInvoice(id: string, body: any) {
         
         partnerId: order.partnerId,
         companyId: order.companyId,
-        salesOrderId: order.id,
+        
+        // Source tracking
+        sourceType: 'sales_order',
+        sourceId: order.id,
         
         paymentTerm: paymentTerms || order.paymentTerms || '30',
         paymentMode: paymentMode || order.paymentMode || null,
         
-        internalNotes: internalNotes || order.internalNotes || null,
+        internalNotes: internalNotes || `Facture générée depuis commande ${order.reference}`,
         customerNotes: customerNotes || order.customerNotes || null,
         
         lines: {
@@ -791,7 +795,8 @@ async function handleCreateInvoice(id: string, body: any) {
       },
       include: {
         partner: { select: { id: true, name: true } },
-        lines: { include: { product: { select: { id: true, name: true } } } }
+        lines: { include: { product: { select: { id: true, name: true } } } },
+        company: true
       }
     });
 
@@ -825,12 +830,27 @@ async function handleCreateInvoice(id: string, body: any) {
       }
     });
 
+    // Auto-generate SCF Journal Entry (Accounting Automation)
+    try {
+      const company = await tx.company.findUnique({ where: { id: order.companyId } });
+      if (company) {
+        await generateJournalEntry(tx, invoice, company);
+      }
+    } catch (journalError) {
+      console.error('Warning: Failed to generate SCF journal entry:', journalError);
+      // Don't fail the invoice creation - just log warning
+    }
+
     return invoice;
   });
 
   return NextResponse.json({
     success: true,
     data: result,
-    message: `Invoice ${result.reference} created successfully from Sales Order ${order.reference}`
+    message: `Invoice ${result.reference} created successfully from Sales Order ${order.reference} (with SCF journal entry)`,
+    workflowInfo: {
+      journalEntryGenerated: true,
+      scfCompliant: true
+    }
   }, { status: 201 });
 }

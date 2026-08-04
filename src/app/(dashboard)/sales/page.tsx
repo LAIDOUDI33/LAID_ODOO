@@ -515,23 +515,53 @@ export default function SalesPage() {
   }, [fetchSalesOrders, fetchQuotations, fetchOpportunities, fetchCustomers])
 
   // ============================================================
-  // Action Handlers
+  // Action Handlers (with Workflow Integration)
   // ============================================================
   const handleUpdateSalesOrderStatus = async (orderId: string, newStatus: string) => {
     setActionLoading(true)
     try {
-      const response = await fetch(`/api/sales-orders/${orderId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus }),
-      })
-      const result = await response.json()
-      
-      if (result.success) {
-        toast.success(`Commande ${SALES_ORDER_STATUSES[newStatus as keyof typeof SALES_ORDER_STATUSES]?.label || newStatus}`)
-        fetchSalesOrders(soPagination.page, soStatusFilter, soSearch)
+      // Use workflow API for actions that trigger business processes
+      if (['confirmed', 'delivered', 'invoiced'].includes(newStatus)) {
+        const actionMap: Record<string, string> = {
+          'confirmed': 'confirm',
+          'delivered': 'deliver',
+          'invoiced': 'invoice'
+        }
+        
+        const response = await fetch(`/api/sales-orders/${orderId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: actionMap[newStatus] }),
+        })
+        const result = await response.json()
+        
+        if (result.success) {
+          const msg = result.message || `Commande ${SALES_ORDER_STATUSES[newStatus as keyof typeof SALES_ORDER_STATUSES]?.label || newStatus}`
+          // Show SCF journal entry info if invoice created
+          if (result.workflowInfo?.journalEntryGenerated) {
+            toast.success(`${msg} ✓ Écriture comptable SCF générée`, { duration: 5000 })
+          } else {
+            toast.success(msg)
+          }
+          fetchSalesOrders(soPagination.page, soStatusFilter, soSearch)
+        } else {
+          toast.error(result.error || 'Erreur lors de l\'action')
+        }
       } else {
-        toast.error(result.error || 'Erreur lors de la mise à jour')
+        // Simple status update for other cases
+        const response = await fetch(`/api/sales-orders/${orderId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: newStatus }),
+        })
+        const result = await response.json()
+        
+        if (result.success) {
+          toast.success(`Commande ${SALES_ORDER_STATUSES[newStatus as keyof typeof SALES_ORDER_STATUSES]?.label || newStatus}`)
+          fetchSalesOrders(soPagination.page, soStatusFilter, soSearch)
+        } else {
+          toast.error(result.error || 'Erreur lors de la mise à jour')
+        }
       }
     } catch (error) {
       console.error('Error updating order:', error)

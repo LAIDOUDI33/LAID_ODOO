@@ -1020,6 +1020,18 @@ export function PODetailModal({
                 Réceptionner
               </Button>
             )}
+            {(order.status === 'received' || order.status === 'confirmed') && (
+              <Button
+                size="sm"
+                variant="default"
+                onClick={() => onStatusChange(order.id, 'bill')}
+                disabled={loading}
+                className="gap-2 bg-purple-600 hover:bg-purple-700"
+              >
+                <FileText className="w-4 h-4" />
+                Facturer
+              </Button>
+            )}
             {!['done', 'cancelled'].includes(order.status) && (
               <Button
                 variant="destructive"
@@ -1237,12 +1249,25 @@ export default function PurchasesPage() {
           options.method = 'POST'
           break
         case 'receive':
-          url += '?action=receive'
+          // For receive, we need to send the lines data
           options.method = 'POST'
+          options.headers = { 'Content-Type': 'application/json' }
+          options.body = JSON.stringify({ 
+            action: 'receive',
+            lines: (order?.lines || []).map((l: PurchaseOrderLine) => ({
+              lineId: l.id,
+              quantity: l.quantity - (l as any).quantityReceived
+            })).filter((l: any) => l.quantity > 0)
+          })
+          break
+        case 'bill':
+          url += '?action=bill'
+          options.method = 'POST'
+          options.headers = { 'Content-Type': 'application/json' }
+          options.body = JSON.stringify({})
           break
         case 'cancel':
-          url += '?action=cancel'
-          options.method = 'POST'
+          options.method = 'DELETE'
           break
         default:
           throw new Error(`Action inconnue: ${action}`)
@@ -1252,7 +1277,12 @@ export default function PurchasesPage() {
       const result = await response.json()
 
       if (result.success) {
-        toast.success(result.message || 'Statut mis à jour')
+        // Show SCF journal entry info if bill created
+        if (action === 'bill' && result.workflowInfo?.journalEntryGenerated) {
+          toast.success(result.message || 'Facture fournisseur créée ✓ Écriture comptable SCF générée', { duration: 5000 })
+        } else {
+          toast.success(result.message || 'Statut mis à jour')
+        }
         setDetailModalOpen(false)
         setSelectedOrder(null)
         fetchOrders()
