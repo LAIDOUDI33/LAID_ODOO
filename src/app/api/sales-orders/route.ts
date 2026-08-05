@@ -86,7 +86,7 @@ export async function GET(request: Request) {
           lines: {
             include: {
               product: {
-                select: { id: true, name: true, reference: true, unit: true }
+                select: { id: true, name: true, code: true, unitOfMeasure: true }
               }
             }
           },
@@ -111,10 +111,10 @@ export async function GET(request: Request) {
         pages: Math.ceil(total / limit)
       }
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('SalesOrders GET Error:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch sales orders' },
+      { success: false, error: 'Failed to fetch sales orders', details: error?.message?.substring(0, 500) },
       { status: 500 }
     );
   }
