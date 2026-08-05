@@ -3569,3 +3569,8 @@ model OEERecord {
   @@map("oee_records")
 }
 
+// ============================================================
+// END OF SCHEMA - HASSIBA Suite ERP v2.0.0 Enterprise
+// Total: 60+ Models with full Algerian ERP + Production + Maintenance modules
+// ============================================================
+

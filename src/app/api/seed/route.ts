@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { seedDatabase } from '@/lib/seed';
 import { seedAuthAndWorkflows } from '@/lib/seed-auth-workflow';
+import { seedProductionData } from '@/lib/seed-production';
 
 // POST /api/seed - Seed the database with demo data
 export async function POST(request: Request) {
@@ -14,16 +15,23 @@ export async function POST(request: Request) {
       return NextResponse.json(result);
     }
     
+    if (type === 'production') {
+      // Seed only production data
+      const result = await seedProductionData();
+      return NextResponse.json(result);
+    }
+    
     // Default: seed all data
-    const [mainResult, authResult] = await Promise.all([
+    const [mainResult, authResult, productionResult] = await Promise.all([
       seedDatabase(),
-      seedAuthAndWorkflows()
+      seedAuthAndWorkflows(),
+      seedProductionData()
     ]);
     
     return NextResponse.json({
-      success: mainResult.success && authResult.success,
+      success: mainResult.success && authResult.success && productionResult.success,
       message: 'All data seeded successfully',
-      details: { main: mainResult, auth: authResult }
+      details: { main: mainResult, auth: authResult, production: productionResult }
     });
   } catch (error) {
     console.error('Seed API Error:', error);
