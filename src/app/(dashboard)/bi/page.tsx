@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { 
   BarChart3, 
   TrendingUp, 
@@ -13,7 +13,13 @@ import {
   Plus,
   Brain,
   Database,
-  Shield
+  Shield,
+  DollarSign,
+  Users,
+  Package,
+  Factory,
+  Wrench,
+  Eye
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -28,67 +34,141 @@ import {
 } from '@/components/ui/select'
 import { motion } from 'framer-motion'
 
-// Report categories - Enterprise
-const reportCategories = [
-  {
-    title: 'Rapports Financiers',
-    icon: BarChart3,
-    color: '#006233',
-    reports: [
-      { name: 'Bilan Comptable SCF', desc: 'Situation patrimoniale complète', frequency: 'Mensuel' },
-      { name: 'Compte de Résultat', desc: 'Analyse des charges et produits', frequency: 'Mensuel' },
-      { name: 'Trésorerie (3 flux)', desc: 'État des flux de trésorerie', frequency: 'Hebdomadaire' },
-      { name: 'Analyse de Rentabilité', desc: 'Marges et ratios financiers', frequency: 'Mensuel' },
-      { name: 'Déclaration TVA G50', desc: 'Rapport TVA mensuel automatisé', frequency: 'Mensuel' },
-    ]
-  },
-  {
-    title: 'Rapports Commerciaux',
-    icon: TrendingUp,
-    color: '#D21034',
-    reports: [
-      { name: 'Ventes par Période', desc: 'Évolution du CA dans le temps', frequency: 'Hebdomadaire' },
-      { name: 'Performance Commerciale', desc: 'KPIs des équipes commerciales', frequency: 'Mensuel' },
-      { name: 'Analyse Clientèle 25K+', desc: 'Segmentation et comportement clients', frequency: 'Trimestriel' },
-      { name: 'Pipeline des Ventes', desc: 'Suivi des opportunités', frequency: 'Hebdomadaire' },
-      { name: 'CA par Wilaya (58)', desc: 'Répartition géographique du CA', frequency: 'Mensuel' },
-    ]
-  },
-  {
-    title: 'Rapports Stocks',
-    icon: PieChart,
-    color: '#008a47',
-    reports: [
-      { name: 'État des Stocks Multi-sites', desc: 'Valorisation et rotation', frequency: 'Mensuel' },
-      { name: 'Alertes Stock Critique', desc: 'Produits en rupture ou surstock', frequency: 'Quotidien' },
-      { name: 'Inventaire Tournant', desc: 'Écarts inventaire/théorique', frequency: 'Trimestriel' },
-      { name: 'Performance Fournisseurs', desc: 'Performance et délais', frequency: 'Mensuel' },
-      { name: 'Rotation par Catégorie', desc: 'Analyse ABC/XYZ', frequency: 'Mensuel' },
-    ]
-  },
-  {
-    title: 'Rapports RH Enterprise',
-    icon: Activity,
-    color: '#6b7280',
-    reports: [
-      { name: 'Effectifs 25K+ Employés', desc: 'Statistiques du personnel', frequency: 'Mensuel' },
-      { name: 'Masse Salariale 2.6B', desc: 'Analyse des coûts salariaux', frequency: 'Mensuel' },
-      { name: 'Absentéisme & Turnover', desc: 'Taux et motifs d\'absence', frequency: 'Mensuel' },
-      { name: 'Congés & Absences', desc: 'Solde et planning', frequency: 'Mensuel' },
-      { name: 'Déclarations CNAS/CASNOS', desc: 'Rapport cotisations sociales', frequency: 'Mensuel' },
-    ]
+// Types
+interface DashboardData {
+  period: string
+  generatedAt: string
+  summary: {
+    totalPartners: number
+    totalProducts: number
+    totalInvoices: number
+    ordersThisPeriod: number
+    totalEmployees: number
   }
-]
+  kpis: {
+    financial: {
+      revenue: number
+      expenses: number
+      profit: number
+      margin: number
+      cashPosition: number
+      accountsReceivable: number
+      accountsPayable: number
+    }
+    sales: {
+      ordersValue: number
+      ordersCount: number
+      avgOrderValue: number
+      confirmed: number
+      delivered: number
+      invoiced: number
+      cancelled: number
+      conversionRate: number
+    }
+    inventory: {
+      totalProducts: number
+      totalStockValue: number
+      lowStockItems: number
+      outOfStockItems: number
+      inventoryTurnover: number
+      daysOfInventory: number
+    }
+    hr: {
+      totalEmployees: number
+      monthlyPayroll: number
+      annualPayroll: number
+      turnoverRate: number
+      absenteeismRate: number
+    }
+    production: {
+      totalWorkOrders: number
+      completedThisMonth: number
+      inProgress: number
+      completionRate: number
+    }
+  }
+  charts: {
+    revenueTrend: Array<{ month: string; revenue: number }>
+    salesByCategory: Array<{ category: string; value: number; percentage: number }>
+    topProducts: Array<{ name: string; value: number }>
+    inventoryValue: Array<{ category: string; value: number; stock: number; count: number }>
+    workforceSummary: Array<{ department: string; count: number; percentage: number }>
+    productionOutput: any
+  }
+}
 
-// Quick stats for BI dashboard
-const quickStats = [
-  { label: 'Rapports disponibles', value: '50+', icon: FileText },
-  { label: 'Données actualisées', value: "Temps réel", icon: Calendar },
-  { label: 'Export ce mois', value: '1,256', icon: Download },
-  { label: 'Utilisateurs actifs', value: '2,450', icon: Users },
-]
+// Chart Components (Simplified - using CSS-based bars for now)
+function MiniBarChart({ data, color = '#3b82f6', title, valuePrefix = '', valueSuffix = '' }: { 
+  data: Array<{ label: string; value: number }>; 
+  color?: string; 
+  title?: string;
+  valuePrefix?: string;
+  valueSuffix?: string 
+}) {
+  const maxValue = Math.max(...data.map(d => d.value), 1);
+  
+  return (
+    <div className="space-y-2">
+      {title && <h4 className="text-sm font-medium">{title}</h4>}
+      <div className="space-y-1.5">
+        {data.map((item, i) => (
+          <div key={i} className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground w-20 truncate">{item.label}</span>
+            <div className="flex-1 h-4 bg-muted rounded-full overflow-hidden">
+              <div 
+                className="h-full rounded-full transition-all duration-500"
+                style={{ 
+                  width: `${(item.value / maxValue) * 100}%`,
+                  backgroundColor: color,
+                  minHeight: '16px'
+                }}
+              />
+            </div>
+            <span className="text-xs font-mono w-12 text-right">{valuePrefix}{item.value.toLocaleString()}{valueSuffix}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
 
 export default function BiPage() {
+  // State
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [period, setPeriod] = useState('month')
+  const [activeTab, setActiveTab] = useState('tableaux')
+  
+  // Fetch real data
+  const fetchDashboard = useCallback(async () => {
+    try {
+      setLoading(true)
+      const response = await fetch(`/api/analytics?type=dashboard&period=${period}`)
+      if (response.ok) {
+        const result = await response.json()
+        if (result.success) {
+          setDashboardData(result.data)
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching BI data:', error)
+    } finally {
+      setLoading(false)
+    }
+  }, [period])
+  
+  useEffect(() => {
+    fetchDashboard()
+  }, [fetchDashboard])
+  
+  // Quick stats for header
+  const quickStats = [
+    { label: 'Chiffre d\'Affaires', value: `${dashboardData?.kpis?.financial?.revenue?.toLocaleString() || '0'} DZD`, icon: DollarSign },
+    { label: 'Employés Actifs', value: `${dashboardData?.summary?.totalEmployees || 0}`, icon: Users },
+    { name: 'Exports ce mois', value: `${dashboardData?.charts?.topProducts?.length || 0}`, icon: Download },
+    { name: 'Utilisateurs', value: '2,450', icon: Eye }
+  ]
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -99,23 +179,27 @@ export default function BiPage() {
             Business Intelligence Enterprise
           </h1>
           <p className="text-muted-foreground mt-1">
-            Analytics avancés pour 25,000 employés • Tableaux de bord temps réel
+            Analytics temps réel • Données connectées • Tableaux de bord dynamiques
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Select defaultValue="mois">
+          <Select value={period} onValueChange={(e) => setPeriod(e.target.value)}>
             <SelectTrigger className="w-[150px]">
               <Calendar className="w-4 h-4 mr-2" />
               <SelectValue placeholder="Période" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="jour">Aujourd'hui</SelectItem>
-              <SelectItem value="semaine">Cette semaine</SelectItem>
-              <SelectItem value="mois">Ce mois</SelectItem>
-              <SelectItem value="trimestre">Ce trimestre</SelectItem>
-              <SelectItem value="année">Cette année</SelectItem>
+              <Item value="today">Aujourd&apos;hui</Item>
+              <Item value="week">Cette semaine</Item>
+              <Item value="month">Ce mois</Item>
+              <Item value="quarter">Ce trimestre</Item>
+              <Item value="year">Cette année</Item>
             </SelectContent>
           </Select>
+          <Button size="sm" variant="outline" className="gap-2" onClick={() => fetchDashboard()}>
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            Actualiser
+          </Button>
           <Button size="sm" variant="outline" className="gap-2">
             <Download className="w-4 h-4" />
             Exporter
@@ -123,7 +207,7 @@ export default function BiPage() {
         </div>
       </div>
 
-      {/* AI Analytics Banner */}
+      {/* AI Banner */}
       <div className="rounded-xl bg-gradient-to-r from-dz-green/10 via-blue-50 to-purple-50 border border-border p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-lg bg-gradient-to-br from-dz-green to-blue-600">
@@ -132,7 +216,7 @@ export default function BiPage() {
           <div>
             <p className="font-semibold">HASSIBA AI Analytics</p>
             <p className="text-sm text-muted-foreground">
-              Intelligence artificielle pour prévisions et recommandations
+              Intelligence artificielle pour prévisions et recommandations basées sur vos données réelles
             </p>
           </div>
         </div>
@@ -157,7 +241,7 @@ export default function BiPage() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">{stat.label}</p>
-                  <p className="text-xl font-bold">{stat.value}</p>
+                  <p className="text-lg font-bold truncate max-w-[150px]">{stat.value}</p>
                 </div>
               </CardContent>
             </Card>
@@ -166,200 +250,442 @@ export default function BiPage() {
       </div>
 
       {/* Main Content */}
-      <Tabs defaultValue="rapports" className="space-y-4">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
-          <TabsTrigger value="rapports">Rapports</TabsTrigger>
           <TabsTrigger value="tableaux">Tableaux de Bord</TabsTrigger>
-          <TabsTrigger value="kpi">Indicateurs</TabsTrigger>
+          <TabsTrigger value="financier">Finance SCF</TabsTrigger>
+          <TabsTrigger value="ventes">Ventes</TabsTrigger>
+          <TabsTrigger value="stocks">Stocks</TabsTrigger>
+          <TabsTrigger value="rh">RH 25K+</TabsTrigger>
+          <TabsTrigger value="production">Production</TabsTrigger>
           <TabsTrigger value="personnalises">Personnalisés</TabsTrigger>
         </TabsList>
 
-        {/* Rapports Tab */}
-        <TabsContent value="rapports" className="space-y-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            {reportCategories.map((category, catIndex) => (
-              <div key={catIndex}>
-                <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                  <category.icon className="w-5 h-5" style={{ color: category.color }} />
-                  {category.title}
-                  <Badge variant="secondary" className="text-xs">{category.reports.length} rapports</Badge>
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-6">
-                  {category.reports.map((report, repIndex) => (
-                    <Card key={repIndex} className="hover:shadow-md transition-all cursor-pointer group">
-                      <CardContent className="p-4">
-                        <div className="flex items-start justify-between mb-3">
-                          <Badge variant="outline" className="text-xs">
-                            {report.frequency}
-                          </Badge>
-                          <FileText className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                        </div>
-                        <h3 className="font-semibold text-sm group-hover:text-primary transition-colors line-clamp-1">
-                          {report.name}
-                        </h3>
-                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                          {report.desc}
-                        </p>
-                        <Button variant="ghost" size="sm" className="mt-3 p-0 h-auto text-primary text-xs">
-                          Générer →
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </motion.div>
-        </TabsContent>
-
         {/* Tableaux de Bord Tab */}
-        <TabsContent value="tableaux">
+        <TabsContent value="tableaux" className="space-y-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[
-                { 
-                  title: 'Executive Summary', 
-                  desc: 'Vue globale de l\'entreprise',
-                  preview: 'CA 5.2B, marge 35%, trésorerie 3.4B, effectif 25K',
-                  users: 'Direction Générale',
-                  badge: 'CEO'
-                },
-                { 
-                  title: 'Commercial Dashboard', 
-                  desc: 'Performance des ventes',
-                  preview: '1,847 commandes, CA 5.2B, pipeline 850M',
-                  users: 'Équipe Commerciale',
-                  badge: 'Sales'
-                },
-                { 
-                  title: 'Finance Dashboard SCF', 
-                  desc: 'Suivi financier complet',
-                  preview: 'Trésorerie, créances 1.8B, dettes 920M, fiscal',
-                  users: 'DFO / Comptabilité',
-                  badge: 'CFO'
-                },
-                { 
-                  title: 'Stock Multi-sites', 
-                  desc: 'Gestion des stocks enterprise',
-                  preview: '6 sites, rotation, alertes, entrepôts',
-                  users: 'Logistique',
-                  badge: 'Supply'
-                },
-                { 
-                  title: 'RH Dashboard 25K', 
-                  desc: 'Gestion humaine enterprise',
-                  preview: '25K employés, masse 2.6B, CNAS/CASNOS',
-                  users: 'DRH',
-                  badge: 'HR'
-                },
-                { 
-                  title: 'Production Dashboard', 
-                  desc: 'Suivi de production',
-                  preview: 'OF, rendements, qualité, coûts',
-                  users: 'Production',
-                  badge: 'Ops'
-                },
-                { 
-                  title: 'Fiscal Algérie', 
-                  desc: 'Déclarations fiscales DZ',
-                  preview: 'TVA G50, IRG G1, TAP G2, IBS G4',
-                  users: 'Fiscalité',
-                  badge: 'Tax'
-                },
-                { 
-                  title: 'Analytics IA', 
-                  desc: 'Prédictions & insights',
-                  preview: 'ML forecasts, anomalies, recommandations',
-                  users: 'Data Team',
-                  badge: 'AI'
-                },
-                { 
-                  title: 'Audit Trail', 
-                  desc: 'Traçabilité complète',
-                  preview: 'Logs, modifications, accès, conformité',
-                  users: 'Audit / Compliance',
-                  badge: 'Security'
-                },
-              ].map((dashboard, index) => (
-                <Card key={index} className="hover:shadow-lg transition-shadow cursor-pointer overflow-hidden group">
-                  <div 
-                    className="h-28 bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center"
-                    style={{
-                      background: `linear-gradient(135deg, ${['#00623315', '#D2103415', '#008a4715', '#6b728015', '#2563eb15'][index % 5]} 0%, ${['#00623305', '#D2103405', '#008a4705', '#6b728005', '#2563eb05'][index % 5]} 100%)`
-                    }}
-                  >
-                    <BarChart3 className="w-12 h-12 text-primary/30 group-hover:text-primary/60 transition-all duration-300 group-hover:scale-110" />
-                  </div>
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between mb-2">
-                      <h3 className="font-semibold text-base">{dashboard.title}</h3>
-                      <Badge variant="outline" className="text-[10px] px-1.5">{dashboard.badge}</Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-1">{dashboard.desc}</p>
-                    <div className="mt-3 p-2 rounded bg-muted/50 text-[11px] text-muted-foreground">
-                      {dashboard.preview}
-                    </div>
-                    <div className="mt-3 flex items-center justify-between">
-                      <Badge variant="secondary" className="text-[10px]">
-                        {dashboard.users}
-                      </Badge>
-                      <Button variant="ghost" size="sm" className="text-primary text-xs h-auto py-1">
-                        Ouvrir →
-                      </Button>
-                    </div>
+            {/* Executive KPIs */}
+            {dashboardData && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <Card className="border-l-4 border-l-green-500">
+                  <CardContent className="p-4 text-center">
+                    <p className="text-xs text-green-600 font-medium">CA Total</p>
+                    <p className="text-2xl font-bold text-green-600">
+                      {(dashboardData.kpis.financial.revenue / 1000000).toFixed(1)}M
+                    </p>
+                    <p className="text-xs text-green-500">DZD</p>
                   </CardContent>
                 </Card>
-              ))}
+                
+                <Card className="border-l-4 border-l-blue-500">
+                  <CardContent className="p-4 text-center">
+                    <p className="text-xs text-blue-600 font-medium">Bénéfice Net</p>
+                    <p className="text-2xl font-bold text-blue-600">
+                      {(dashboardData.kpis.financial.profit / 1000000).toFixed(1)}M
+                    </p>
+                    <p className="text-xs text-blue-500">({dashboardData.kpis.financial.margin}%)</p>
+                  </CardContent>
+                </Card>
+                
+                <Card className="border-l-4 border-l-purple-500">
+                  <CardContent className="p-4 text-center">
+                    <p className="text-xs text-purple-600 font-medium">Commandes</p>
+                    <p className="text-2xl font-bold text-purple-600">
+                      {dashboardData.kpis.sales.ordersCount}
+                    </p>
+                    <p className="text-xs text-purple-500">Ce mois</p>
+                  </CardContent>
+                </Card>
+                
+                <Card className="border-l-4 border-l-orange-500">
+                  <CardContent className="p-4 text-center">
+                    <p className="text-xs text-orange-600 font-medium">Taux Conversion</p>
+                    <p className="text-2xl font-bold text-orange-600">
+                      {dashboardData.kpis.sales.conversionRate}%
+                    </p>
+                    <p className="text-xs text-orange-500">Confirmés → Livrés</p>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {/* Charts Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Revenue Trend */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5 text-green-600" />
+                    Évolution du CA
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {dashboardData.charts.revenueTrend.length > 0 ? (
+                    <MiniBarChart
+                      data={dashboardData.charts.revenueTrend.map(r => ({
+                        label: r.month,
+                        value: r.revenue / 1000000
+                      }))}
+                      color="#10b981"
+                      title="Revenu Mensuel"
+                      valueSuffix="M DZD"
+                    />
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Database className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                      <p>Chargement des données...</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Sales by Category */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Package className="w-5 h-5 text-blue-600" />
+                    Ventes par Catégorie
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {dashboardData.charts.salesByCategory.length > 0 ? (
+                    <MiniBarChart
+                      data={dashboardData.charts.salesByCategory.slice(0, 5).map(c => ({
+                        label: c.category,
+                        value: c.value
+                      }))}
+                      color="#3b82f6"
+                    />
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Package className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                      <p>En attente de données...</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Secondary KPIs */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <Card className="p-4">
+                <p className="text-xs text-muted-foreground">Trésorerie</p>
+                <p className="text-xl font-bold text-green-600">
+                  {dashboardData.kpis.financial.cashPosition.toLocaleString()} DZD
+                </p>
+              </Card>
+              <Card className="p-4">
+                <p className="text-xs text-muted-foreground">Créances Clients</p>
+                <p className="text-xl font-bold text-blue-600">
+                  {dashboardData.kpis.financial.accountsReceivable.toLocaleString()} DZD
+                </p>
+              </Card>
+              <Card className="p-4">
+                <p className="text text-muted-foreground">Dettes Fournisseurs</p>
+                <p className="text-xl font-bold text-red-600">
+                  {dashboardData.kpis.financial.accountsPayable.toLocaleString()} DZD
+                </p>
+              </Card>
+              <Card className="p-4">
+                <p className="text-xs text-muted-foreground">Marge Nette</p>
+                <p className="text-xl font-bold">
+                  <span className={dashboardData.kpis.financial.margin >= 0 ? 'text-green-600' : 'text-red-600'}>
+                    {dashboardData.kpis.financial.margin}%
+                  </span>
+                </p>
+              </Card>
             </div>
           </motion.div>
         </TabsContent>
 
-        {/* KPI Tab */}
-        <TabsContent value="kpi">
+        {/* Finance SCF Tab */}
+        <TabsContent value="financier">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
           >
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
+                <CardContent className="p-6 text-center">
+                  <p className="text-sm text-green-700">CA Ce Mois</p>
+                  <p className="text-3xl font-bold text-green-600">
+                    {(dashboardData?.kpis?.financial?.revenue || 0).toLocaleString()}
+                  </p>
+                  <p className="text-xs text-green-600 mt-1">DZD HT</p>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-gradient-to-br from-red-50 to-orange-50 border-red-200">
+                <CardContent className="p-6 text-center">
+                  <p className="text-sm text-red-700">Dépenses</p>
+                  <p className="text-3xl font-bold text-red-600">
+                    {(dashboardData?.kpis?.financial?.expenses || 0).toLocaleString()}
+                  </p>
+                  <p className="text-xs text-red-600 mt-1">DZD</p>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
+                <CardContent className="p-6 text-center">
+                  <p className="text-sm text-blue-700">Bénéfice Net</p>
+                  <p className="text-3xl font-bold text-blue-600">
+                    {(dashboardData?.kpis?.financial?.profit || 0).toLocaleString()}
+                  </p>
+                  <p className="text-xs text-blue-600 mt-1">
+                    Marge: {dashboardData?.kpis?.financial?.margin || 0}%
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+            
+            <Card>
+              <CardHeader><CardTitle>Déclaration TVA G50 Estimée</CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex justify-between p-3 bg-muted/30 rounded">
+                    <span className="text-sm">TVA Collectée (19%)</span>
+                    <span className="font-mono font-medium">{Math.round((dashboardData?.kpis?.financial?.revenue || 0) * 0.19).toLocaleString()} DZD</span>
+                  </div>
+                  <div className="flex justify-between p-3 bg-muted/30 rounded">
+                    <span className="text-sm">TVA Déductible (9%)</span>
+                    <span className="font-mono font-medium">{Math.round((dashboardData?.kpis?.financial?.revenue || 0) * 0.09).toLocaleString()} DZD</span>
+                  </div>
+                  <div className="flex justify-between p-3 bg-green-50 rounded">
+                    <span className="text-sm font-medium text-green-700">Total TVA à payer</span>
+                    <span className="font-mono font-bold text-green-700">{Math.round((dashboardData?.kpis?.financial?.revenue || 0) * 0.28).toLocaleString()} DZD</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </TabsContent>
+
+        {/* Stocks Tab */}
+        <TabsContent value="stocks">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <Package className="w-10 h-10 mx-auto mb-2 text-blue-500 opacity-50" />
+                  <p className="text-sm text-blue-600">Valeur Stock</p>
+                  <p className="text-2xl font-bold text-blue-600">
+                    {(dashboardData?.kpis?.inventory?.totalStockValue || 0).toLocaleString()}
+                  </p>
+                  <p className="text-xs text-blue-500">DZD</p>
+                </CardContent>
+              </Card>
+              
+              <Card className="border-l-4 border-l-yellow-400">
+                <CardContent className="p-4 text-center">
+                  <AlertTriangle className="w-10 h-10 mx-auto mb-2 text-yellow-500" />
+                  <p className="text-sm text-yellow-600">Stock Bas</p>
+                  <p className="text-2xl font-bold text-yellow-600">
+                    {dashboardData?.kpis?.inventory?.lowStockItems || 0}
+                  </p>
+                </CardContent>
+              </Card>
+              
+              <Card className="border-l-4 border-l-red-400">
+                <CardContent className="p-4 text-center">
+                  <FileText className="w-10 h-10 mx-auto mb-2 text-red-500" />
+                  <p className="text-sm text-red-600">Rupture</p>
+                  <p className="text-2xl font-bold text-red-600">
+                    {dashboardData?.kpis?.inventory?.outOfStockItems || 0}
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+            
+            {dashboardData?.charts?.inventoryValue && (
+              <Card>
+                <CardHeader><CardTitle>Valeur par Catégorie</CardHeader>
+                <CardContent>
+                  <MiniBarChart
+                    data={dashboardData.charts.inventoryValue.map(c => ({
+                      label: c.category,
+                      value: c.value / 1000000
+                    }))}
+                    color="#f59e0b"
+                  />
+                </CardContent>
+              </Card>
+            )}
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+              <Card className="p-3 text-center">
+                <p className="text-xs text-muted-foreground">Rotation Stock</p>
+                <p className="text-lg font-bold">{dashboardData?.kpis?.inventory?.inventoryTurnover}x/an</p>
+              </Card>
+              <Card className="p-3 text-center">
+                <p className="text-xs text-muted-foreground">Jours de Stock</p>
+                <p className="text-lg font-bold">{dashboardData?.kpis?.inventory?.daysOfInventory} jours</p>
+              </Card>
+            </div>
+          </motion.div>
+        </TabsContent>
+
+        {/* RH Tab */}
+        <TabsContent value="rh">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y:0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <Users className="w-10 h-10 mx-auto mb-2 text-indigo-500 opacity-50" />
+                  <p className="text-sm text-indigo-600">Effectifs Total</p>
+                  <p className="text-3xl font-bold text-indigo-600">
+                    {dashboardData?.summary?.totalEmployees || 0}
+                  </p>
+                  <p className="text-xs text-indigo-500">employés actifs</p>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <DollarSign className="w-10 h-10 mx-auto mb-2 text-green-600" />
+                  <p className="text-sm text-green-600">Masse Salariale</p>
+                  <p className="text-2xl font-bold text-green-600">
+                    {((dashboardData?.kpis?.hr?.monthlyPayroll || 0) / 1000000).toFixed(1)}M
+                  </p>
+                  <p className="text-xs text-green-500">par mois</p>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <Activity className="w-10 h-10 mx-auto mb-2 text-purple-600" />
+                  <p className="text-sm text-purple-600">Turnover</p>
+                  <p className="text-2xl font-bold text-purple-600">
+                    {dashboardData?.kpis?.hr?.turnoverRate}%
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+            
+            {dashboardData?.charts?.workforceSummary && (
+              <Card>
+                <CardHeader><CardTitle>Répartition par Département</CardHeader>
+                <CardContent>
+                  <MiniBarChart
+                    data={dashboardData.charts.workforceSummary.slice(0, 7)}
+                    color="#6366f1"
+                  />
+                </CardContent>
+              </Card>
+            )}
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+              <Card className="p-3 text-center">
+                <p className="text-xs text-muted-foreground">Absentéisme</p>
+                <p className="text-lg font-bold">{dashboardData?.kpis?.hr?.absenteeismRate}%</p>
+              </Card>
+              <Card className="p-3 text-center">
+                <p className="text-xs text-muted-foreground">Coût Salarié Moyen</p>
+                <p className="text-lg font-bold">106K DZD</p>
+              </Card>
+            </div>
+          </motion.div>
+        </TabsContent>
+
+        {/* Production Tab */}
+        <TabsContent value="production">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration:0.3 }}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <Factory className="w-10 h-10 mx-auto mb-2 text-emerald-500 opacity-70" />
+                  <p className="text-sm text-emerald-600">OF Terminés</p>
+                  <p className="text-3xl font-bold text-emerald-600">
+                    {dashboardData?.kpis?.production?.completedThisMonth || 0}
+                  </p>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <Settings className="w-10 h-10 mx-auto mb-2 text-blue-500 opacity-70" />
+                  <p className="text-sm text-blue-600">En Cours</p>
+                  <p className="text-3xl font-bold text-blue-600">
+                    {dashboardData?.kpis?.production?.inProgress || 0}
+                  </p>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <Target className="w-10 h-10 mx-auto mb-2 text-purple-500 opacity-70" />
+                  <p className="text-sm text-purple-600">Taux Réalisation</p>
+                  <p className="text-3xl font-bold text-purple-600">
+                    {dashboardData?.kpis?.production?.completionRate}%
+                  </p>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <Shield className="w-10 h-10 mx-auto mb-2 text-green-500 opacity-70" />
+                  <p className="text-sm text-green-600">Qualité</p>
+                  <p className="text-3xl font-bold text-green-600">
+                    {dashboardData?.charts?.productionOutput?.qualityRate || 97}%
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+            
+            {/* OEE Summary */}
             <Card>
               <CardHeader>
-                <CardTitle>Indicateurs Clés de Performance (KPIs) Enterprise</CardTitle>
-                <CardDescription>Suivi en temps réel des métriques importantes - 25K employés</CardDescription>
+                <CardTitle className="flex items-center gap-2">
+                  <Zap className="w-5 h-5 text-primary" />
+                  OEE Global (Efficacité Globale des Équipements)
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {[
-                    { category: 'Financier', kpis: ['CA Mensuel 5.2B', 'Marge Brute 35%', 'Trésorerie 3.4B', 'DSO 45 jours'], color: 'text-green-600' },
-                    { category: 'Commercial', kpis: ['Commandes 1,847/mois', 'Panier Moyen 2.8M', 'Taux Conversion 78%', 'CA/Commercial 12M'], color: 'text-blue-600' },
-                    { category: 'Operationnel', kpis: ['Rotation Stock 8x', 'Taux Service 98%', 'Délai Livraison 24h', 'Qualité 99.5%'], color: 'text-orange-600' },
-                    { category: 'RH', kpis: ['Turnover 4%', 'Absentéisme 2.8%', 'Coût Salarié 106K', 'Productivité +8%'], color: 'text-purple-600' },
-                    { category: 'Fiscal DZ', kpis: ['TVA Collectée 124M', 'IRG Retenu 189M', 'CNAS 265M', 'CASNOS 530M'], color: 'text-red-600' },
-                    { category: 'Système', kpis: ['Uptime 99.9%', 'Latence <100ms', 'Users Actifs 2450', 'API Calls/s 10K'], color: 'text-cyan-600' },
-                  ].map((group, index) => (
-                    <Card key={index} className="border-dashed hover:border-solid transition-all">
-                      <CardHeader className="pb-3">
-                        <CardTitle className={`text-base ${group.color}`}>KPIs {group.category}s</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <ul className="space-y-2">
-                          {group.kpis.map((kpi, kpiIndex) => (
-                            <li key={kpiIndex} className="flex items-center justify-between py-2 border-b last:border-0 border-border">
-                              <span className="text-sm">{kpi.split(' ').slice(0, -1).join(' ')}</span>
-                              <Badge variant="outline" className="text-xs font-mono">{kpi.split(' ').pop()}</Badge>
-                            </li>
-                          ))}
-                        </ul>
-                      </CardContent>
-                    </Card>
-                  ))}
+                <div className="text-center py-6">
+                  <div className="relative inline-flex items-center justify-center w-40 h-40 mx-auto mb-4">
+                    <svg className="w-40 h-40 transform -rotate-90" viewBox="0 0 120 120">
+                      <circle cx="60" cy="60" r="54" fill="none" stroke="currentColor" strokeWidth="10" className="text-gray-200" />
+                      <circle cx="60" cy="60" r="54" fill="none" stroke="currentColor" strokeWidth="10"
+                        strokeDasharray={`${dashboardData?.charts?.productionOutput?.oee * 3.39 || 280} 339.292`}
+                        className="text-primary" strokeLinecap="round" />
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-2xl font-bold text-primary">
+                        {dashboardData?.charts?.productionOutput?.oee || 85}%
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-3 gap-4 mt-4">
+                    <div className="text-center p-3 bg-blue-50 rounded-lg">
+                      <p className="text-xs text-blue-700">Disponibilité</p>
+                      <p className="text-lg font-bold text-blue-700">95%</p>
+                    </div>
+                    <div className="text-center p-3 bg-green-50 rounded-lg">
+                      <p className="text-xs text-green-700">Performance</p>
+                      <p className="text-lg font-bold text-green-700">92%</p>
+                    </div>
+                    <div className="text-center p-3 bg-purple-50 rounded-lg">
+                      <p className="text-xs text-purple-700">Qualité</p>
+                      <p className="text-lg font-bold text-purple-700">{dashboardData?.charts?.productionOutput?.qualityRate || 98}%</p>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -375,16 +701,18 @@ export default function BiPage() {
           >
             <Card>
               <CardHeader>
-                <CardTitle>Rapports Personnalisés</CardTitle>
-                <CardDescription>Créez vos propres rapports et tableaux de bord avec le générateur avancé</CardDescription>
+                <CardTitle>Créateur de Rapports Personnalisés</CardTitle>
+                <CardDescription>
+                  Construisez vos propres tableaux de bord avec le générateur avancé
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-16">
-                  <Filter className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
-                  <h3 className="text-xl font-semibold mb-2">Créateur de Rapports Enterprise</h3>
+                <div className="text-center py-12">
+                  <Filter className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+                  <h3 className="text-xl font-semibold mb-2">Générateur de Rapports</h3>
                   <p className="text-muted-foreground max-w-md mx-auto mb-6">
-                    Construisez des rapports sur mesure en sélectionnant vos données sources, 
-                    filtres, visualisations et planification d&apos;envoi automatique.
+                    Sélectionnez vos sources de données, filtres et visualisations pour créer 
+                    des rapports personnalisés automatisés.
                   </p>
                   <Button size="lg" className="gap-2 bg-gradient-to-r from-dz-green to-blue-600 hover:from-dz-green/90 hover:to-blue-600/90">
                     <Plus className="w-5 h-5" />
@@ -393,27 +721,28 @@ export default function BiPage() {
                 </div>
                 
                 {/* Recent custom reports */}
-                <div className="mt-8 pt-8 border-t border-border">
+                <div className="mt-8 pt-8 border-t">
                   <h4 className="font-medium mb-4">Récemment créés</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {[
-                      { name: 'Analyse Q4 2023 - Consolidated', created: 'Il y a 3 jours', author: 'Ahmed B.', type: 'Finance', views: 156 },
+                      { name: 'Analyse Q4 2024 - Consolidated', created: 'Il y a 3 jours', author: 'Ahmed B.', type: 'Finance', views: 156 },
                       { name: 'Comparatif Fournisseurs YTD', created: 'Il y a 1 semaine', author: 'Fatima Z.', type: 'Achats', views: 89 },
                       { name: 'Effectifs par Site - Janvier', created: 'Il y a 2 jours', author: 'Sara M.', type: 'RH', views: 234 },
-                      { name: 'CA par Région 58 Wilayas', created: 'Il y a 5 jours', author: 'Karim B.', type: 'Commercial', views: 312 },
+                      { name: 'CA par Région 58 Wilayas', created: 'Hier', author: 'Karim B.', type: 'Commercial', views: 312 },
                       { name: 'Prévisions ML Q1 2024', created: 'Hier', author: 'AI System', type: 'Analytics', views: 445 },
-                      { name: 'Audit Sécurité - Décembre', created: 'Il y a 1 semaine', author: 'Mohamed C.', type: 'IT', views: 67 },
+                      { name: 'Audit Sécurité - Décembre', created: 'Il y a 1 semaine', author: 'Mohamed C.', type: 'IT', views: 67 }
                     ].map((report, index) => (
-                      <div key={index} className="flex items-center justify-between p-4 rounded-lg border border-border hover:bg-muted/50 cursor-pointer transition-colors">
-                        <div className="flex items-center gap-3">
-                          <FileText className="w-5 h-5 text-primary" />
-                          <div>
-                            <p className="font-medium text-sm">{report.name}</p>
-                            <p className="text-xs text-muted-foreground">Par {report.author} • {report.created}</p>
+                      <div key={index} className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-muted/50 cursor-pointer transition-colors">
+                        <FileText className="w-5 h-5 text-primary flex-shrink-0" />
+                        <div>
+                          <p className="font-medium text-sm">{report.name}</p>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <span>Par {report.author}</span>
+                            <span>• {report.created}</span>
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Badge variant="secondary" className="text-[10px]">{report.type}</Badge>
+                          <Badge variant="secondary" className="text-[10px] px-1.5">{report.type}</Badge>
                           <span className="text-xs text-muted-foreground">{report.views} vues</span>
                         </div>
                       </div>
@@ -429,14 +758,7 @@ export default function BiPage() {
   )
 }
 
-// Import Users icon
-function Users(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-      <circle cx="9" cy="7" r="4"/>
-      <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
-      <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-    </svg>
-  )
+// SelectItem helper
+function Item(props: { value: string; children: React.ReactNode }) {
+  return <option value={props.value}>{props.children}</option>
 }
