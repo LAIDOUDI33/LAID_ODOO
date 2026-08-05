@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <data noupdate="1">
+        <!-- ================================================== -->
+        <!-- CNAS RATE CONFIGURATIONS                            -->
+        <!-- Caisse Nationale de Sécurité Sociale                -->
+        <!-- ================================================== -->
+
+        <!-- CNAS Categories Configuration -->
+        <record id="cnas_cat_a" model="dz.cnas.category">
+            <field name="name">Catégorie A - Personnel de Direction</field>
+            <field name="code">A</field>
+            <field name="description">Cadres supérieurs et personnel de direction</field>
+            <field name="taux_accident_min">0.8</field>
+            <field name="taux_accident_max">0.8</field>
+        </record>
+
+        <record id="cnas_cat_b" model="dz.cnas.category">
+            <field name="name">Catégorie B - Personnel Tampon</field>
+            <field name="code">B</field>
+            <field name="description">Employés administratifs et techniciens</field>
+            <field name="taux_accident_min">1.5</field>
+            <field name="taux_accident_max">2.5</field>
+        </record>
+
+        <record id="cnas_cat_c" model="dz.cnas.category">
+            <field name="name">Catégorie C - Ouvriers Qualifiés</field>
+            <field name="code">C</field>
+            <field name="description">Ouvriers qualifiés et agents de maîtrise</field>
+            <field name="taux_accident_min">2.5</field>
+            <field name="taux_accident_max">3.5</field>
+        </record>
+
+        <record id="cnas_cat_d" model="dz.cnas.category">
+            <field name="name">Catégorie D - Ouvriers Non-Qualifiés</field>
+            <field name="code">D</field>
+            <field name="description">Manœuvres et ouvriers non qualifiés</field>
+            <field name="taux_accident_min">3.5</field>
+            <field name="taux_accident_max">5.0</field>
+        </record>
+
+        <!-- Accident Work Rates by Sector -->
+        <record id="accident_secteur_admin" model="dz.accident.rate">
+            <field name="name">Administration / Bureau</field>
+            <field name="taux">0.8</field>
+        </record>
+
+        <record id="accident_secteur_commerce" model="dz.accident.rate">
+            <field name="name">Commerce / Distribution</field>
+            <field name="taux">1.5</field>
+        </record>
+
+        <record id="accident_secteur_industrie_legere" model="dz.accident.rate">
+            <field name="name">Industrie Légère</field>
+            <field name="taux">2.0</field>
+        </record>
+
+        <record id="accident_secteur_industrie_lourde" model="dz.accident.rate">
+            <field name="name">Industrie Lourde / BTP</field>
+            <field name="taux">3.5</field>
+        </record>
+
+        <record id="accident_secteur_mines" model="dz.accident.rate">
+            <field name="name">Mines / Carrières / Pétrole</field>
+            <field name="taux">5.0</field>
+        </record>
+
+        <!-- Family Allocations Barème (per child) -->
+        <record id="alloc_fam_enfant1" model="dz.alloc.familiale">
+            <field name="name">1er enfant</field>
+            <field name="rang">1</field>
+            <field name="montant">300</field>
+        </record>
+
+        <record id="alloc_fam_enfant2" model="dz.alloc.familiale">
+            <field name="name">2ème enfant</field>
+            <field name="rang">2</field>
+            <field name="montant">600</field>
+        </record>
+
+        <record id="alloc_fam_enfant3" model="dz.alloc.familiale">
+            <field name="name">3ème enfant</field>
+            <field name="rang">3</field>
+            <field name="montant">900</field>
+        </record>
+
+        <record id="alloc_fam_enfant4_plus" model="dz.alloc.familiale">
+            <field name="name">4ème enfant et plus</field>
+            <field name="rang">4</field>
+            <field name="montant">1050</field>
+        </record>
+
+    </data>
+</odoo>

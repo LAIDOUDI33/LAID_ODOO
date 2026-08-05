@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!-- ================================================== -->
+    <!-- ACCOUNT/INVOICE VIEWS - TVA G50 Extensions          -->
+    <!-- ================================================== -->
+
+    <!-- Invoice Form View Extension -->
+    <record id="view_invoice_form_dz" model="ir.ui.view">
+        <field name="name">account.move.form.dz</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Document Type -->
+            <xpath expr="//field[@name='move_type']" position="after">
+                <field name="regime_facture"/>
+                <field name="facture_accompte"/>
+                <field name="pourcentage_accompte" 
+                        attrs="{'invisible': [('facture_accompte', '=', False)],
+                                'required': [('facture_accompte', '=', True)]}"/>
+            </xpath>
+
+            <!-- TVA Mentions -->
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="mention_tva" readonly="1"/>
+                <field name="timbre_fiscal"/>
+            </xpath>
+
+            <!-- G50 Declaration Status -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="%(action_tva_declaration_wizard)d" 
+                        type="action"
+                        class="oe_stat_button"
+                        icon="fa-file-alt"
+                        attrs="{'invisible': [('declare_g50', '=', True)]}"
+                        string="Déclarer G50"/>
+                <button name="%(action_tax_period)d" 
+                        type="action"
+                        class="oe_stat_button fa fa-check-circle"
+                        attrs="{'invisible': [('declare_g50', '=', False)]}"
+                        string="G50 Déclarée"/>
+            </xpath>
+
+            <xpath expr="//field[@name='invoice_date']" position="after">
+                <field name="periode_declaration_id"/>
+                <field name="declare_g50"/>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- Tax Period List View -->
+    <record id="view_tax_period_tree" model="ir.ui.view">
+        <field name="name">account.tax.period.tree</field>
+        <field name="model">account.tax.period</field>
+        <field name="arch" type="xml">
+            <tree decoration-success="state=='closed'" 
+                  decoration-warning="state=='declared'"
+                  decoration-info="state=='open'"
+                  decoration-muted="state=='draft'">
+                <field name="name"/>
+                <field name="month"/>
+                <field name="year"/>
+                <field name="tva_collectee" sum="Total Collectée"/>
+                <field name="tva_deductible" sum="Total Déductible"/>
+                <field name="solde_tva" sum="Solde"/>
+                <field name="nb_invoices"/>
+                <field name="state"/>
+                <widget name="list_activity" title="Actions"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Tax Period Form View -->
+    <record id="view_tax_period_form" model="ir.ui.view">
+        <field name="name">account.tax.period.form</field>
+        <field name="model">account.tax.period</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_open_period" string="Ouvrir" type="object" states="draft,closed" class="btn-primary"/>
+                    <button name="action_close_period" string="Clôturer" type="object" states="open,declared" class="btn-warning"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,open,declared,closed"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="month"/>
+                            <field name="year"/>
+                            <field name="company_id"/>
+                        </group>
+                        <group>
+                            <field name="nb_invoices"/>
+                        </group>
+                    </group>
+                    <group string="Récapitulatif TVA">
+                        <group>
+                            <field name="tva_collectee" widget="monetary"/>
+                            <field name="tva_deductible" widget="monetary"/>
+                        </group>
+                        <group>
+                            <field name="solde_tva" widget="monetary"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Factures Associées">
+                            <field name="invoice_ids">
+                                <tree>
+                                    <field name="name"/>
+                                    <field name="partner_id"/>
+                                    <field name="amount_total"/>
+                                    <field name="amount_tax"/>
+                                    <field name="state"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Tax Period Action -->
+    <record id="action_tax_period" model="ir.actions.act_window">
+        <field name="name">Périodes Fiscales TVA</field>
+        <field name="res_model">account.tax.period</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créer une nouvelle période fiscale
+            </p>
+            <p>
+                Les périodes fiscales permettent de suivre les déclarations TVA (G50)
+                et de calculer automatiquement la TVA collectée et déductible.
+            </p>
+        </field>
+    </record>
+
+</odoo>

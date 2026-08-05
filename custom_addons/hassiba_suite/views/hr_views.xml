@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!-- ================================================== -->
+    <!-- HR / EMPLOYEE VIEWS - Algerian Extensions           -->
+    <!-- ================================================== -->
+
+    <!-- Employee Form View Extension -->
+    <record id="view_employee_form_dz" model="ir.ui.view">
+        <field name="name">hr.employee.form.dz</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            
+            <!-- CNAS & Social Security Section -->
+            <xpath expr="//field[@name='identification_id']" position="after">
+                <group string="Sécurité Sociale Algérie" name="dz_social_security">
+                    <group>
+                        <field name="cnas_number" placeholder="Numéro CNAS"/>
+                        <field name="casnos_number" placeholder="Numéro CASNOS (gérants)"/>
+                    </group>
+                    <group>
+                        <field name="category_professionnelle"/>
+                    </group>
+                </group>
+            </xpath>
+
+            <!-- Family Situation for IRG -->
+            <xpath expr="//field[@name='gender']" position="after">
+                <group string="Situation Familiale (IRG)" name="dz_family_situation">
+                    <group>
+                        <field name="family_situation"/>
+                        <field name="nb_children"/>
+                        <field name="nb_spouse_employees"/>
+                        <field name="handicap"/>
+                    </group>
+                    <group>
+                        <field name="total_charges_famille" readonly="1"/>
+                    </group>
+                </group>
+            </xpath>
+
+            <!-- Bank Details for Salary -->
+            <xpath expr="//field[@name='bank_account_id']" position="after">
+                <field name="salary_bank_name" placeholder="Banque de virement salarial"/>
+                <field name="salary_account_rib" placeholder="RIB Salaire"/>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- Employee Tree View Extension -->
+    <record id="view_employee_tree_dz" model="ir.ui.view">
+        <field name="name">hr.employee.tree.dz</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='job_title']" position="after">
+                <field name="cnas_number"/>
+                <field name="category_professionnelle"/>
+                <field name="total_charges_famille"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ================================================== -->
+    <!-- CONTRACT VIEWS - Algerian Extensions                -->
+    <!-- ================================================== -->
+
+    <!-- Contract Form View Extension -->
+    <record id="view_contract_form_dz" model="ir.ui.view">
+        <field name="name">hr.contract.form.dz</field>
+        <field name="model">hr.contract</field>
+        <field name="inherit_id" ref="hr_contract.hr_contract_view_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Contract Type DZ -->
+            <xpath expr="//field[@name='contract_type']" position="after">
+                <field name="type_contrat_dz"/>
+                <field name="date_fin_contrat" 
+                        attrs="{'required': [('type_contrat_dz', '=', 'cdd')],
+                                'invisible': [('type_contrat_dz', 'not in', ['cdd', 'cdt'])]}"/>
+            </xpath>
+
+            <!-- Salary Structure Algeria -->
+            <xpath expr="//field[@name='wage']" position="replace">
+                <field name="salaire_de_base"/>
+                <field name="prime_anciennete" readonly="1"/>
+            </xpath>
+
+            <!-- Salary Details Group -->
+            <xpath expr="//group[@name='salary_info']" position="after">
+                <group string="Détail des Primes et Indemnités" name="dz_salary_details">
+                    <group>
+                        <field name="prime_resultat"/>
+                        <field name="prime_logement"/>
+                        <field name="prime_transport"/>
+                        <field name="prime_responsabilite"/>
+                        <field name="prime_zone_geographique"/>
+                        <field name="prime_nuisance"/>
+                    </group>
+                    <group>
+                        <field name="indemnite_repas"/>
+                        <field name="indemnite_kilometrique"/>
+                        <field name="allocation_familiale_patronale"/>
+                        <field name="autres_primes"/>
+                    </group>
+                </group>
+
+                <group string="Configuration CNAS" name="dz_cnass_config">
+                    <group>
+                        <field name="cnas_category"/>
+                        <field name="heures_semaine"/>
+                    </group>
+                    <group>
+                        <button name="get_total_brut" string="Calculer Total Brut" type="object" class="btn-primary"/>
+                        <button name="get_assiette_cnas" string="Assiette CNAS" type="object" class="btn-secondary"/>
+                        <button name="get_assiette_irg" string="Assiette IRG" type="object" class="btn-secondary"/>
+                    </group>
+                </group>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- Contract Tree View Extension -->
+    <record id="view_contract_tree_dz" model="ir.ui.view">
+        <field name="name">hr.contract.tree.dz</field>
+        <field name="model">hr.contract</field>
+        <field name="inherit_id" ref="hr_contract.hr_contract_view_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='wage']" position="after">
+                <field name="type_contrat_dz"/>
+                <field name="salaire_de_base"/>
+                <field name="prime_anciennete"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

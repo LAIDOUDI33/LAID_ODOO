@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!-- ================================================== -->
+    <!-- MENU ITEMS - HASSIBA Suite ERP                      -->
+    <!-- ================================================== -->
+
+    <!-- Main Menu for HASSIBA Suite -->
+    <menuitem id="menu_hassiba_root"
+              name="HASSIBA Suite"
+              web_icon="hassiba_suite,static/images/hassiba_banner.png"
+              sequence="10"/>
+
+    <!-- === ALGERIAN DATA SUBMENU === -->
+    <menuitem id="menu_hassiba_data"
+              name="Données Algériennes"
+              parent="menu_hassiba_root"
+              sequence="10"/>
+
+    <menuitem id="menu_wilayas"
+              action="dz_wilaya_action"
+              parent="menu_hassiba_data"
+              name="Wilayas"
+              sequence="10"/>
+
+    <menuitem id="menu_communes"
+              action="dz_commune_action"
+              parent="menu_hassiba_data"
+              name="Communes"
+              sequence="20"/>
+
+    <!-- === PAYROLL SUBMENU === -->
+    <menuitem id="menu_hassiba_payroll"
+              name="Paie Algérie"
+              parent="menu_hassiba_root"
+              sequence="20"/>
+
+    <menuitem id="menu_bulletins_paie"
+              action="hr_payroll.action_hr_payslip_run_tree"
+              parent="menu_hassiba_payroll"
+              name="Bulletins de Paie"
+              sequence="10"/>
+
+    <menuitem id="menu_generate_payroll"
+              action="action_generate_payroll_wizard"
+              parent="menu_hassiba_payroll"
+              name="Générer Paie en Masse"
+              sequence="20"/>
+
+    <menuitem id="menu_irg_config"
+              parent="menu_hassiba_payroll"
+              name="Configuration IRG"
+              sequence="90"/>
+
+    <menuitem id="menu_irg_tranches"
+              action="dz_irg_tranche_action"
+              parent="menu_irg_config"
+              name="Barème IRG"
+              sequence="10"/>
+
+    <menuitem id="menu_cnass_config"
+              parent="menu_hassiba_payroll"
+              name="Configuration CNAS/CASNOS"
+              sequence="91"/>
+
+    <menuitem id="menu_cnass_categories"
+              action="dz_cnass_category_action"
+              parent="menu_cnass_config"
+              name="Catégories CNAS"
+              sequence="10"/>
+
+    <menuitem id="menu_accident_rates"
+              action="dz_accident_rate_action"
+              parent="menu_cnass_config"
+              name="Taux Accidents Travail"
+              sequence="20"/>
+
+    <!-- === TAX/TVA SUBMENU === -->
+    <menuitem id="menu_hassiba_tax"
+              name="Fiscalité TVA"
+              parent="menu_hassiba_root"
+              sequence="30"/>
+
+    <menuitem id="menu_tax_periods"
+              action="action_tax_period"
+              parent="menu_hassiba_tax"
+              name="Périodes Fiscales"
+              sequence="10"/>
+
+    <menuitem id="menu_g50_declarations"
+              parent="menu_hassiba_tax"
+              name="Déclarations G50"
+              sequence="20"/>
+
+    <menuitem id="menu_tva_declaration_wizard"
+              action="action_tva_declaration_wizard"
+              parent="menu_hassiba_tax"
+              name="Nouvelle Déclaration G50"
+              sequence="21"/>
+
+    <!-- === CONFIGURATION SUBMENU === -->
+    <menuitem id="menu_hassiba_config"
+              name="Configuration"
+              parent="menu_hassiba_root"
+              sequence="99"/>
+
+    <menuitem id="menu_company_config"
+              parent="menu_hassiba_config"
+              name="Paramètres Entreprise"
+              action="base.action_res_company_form"
+              sequence="10"/>
+
+    <menuitem id="menu_system_params"
+              parent="menu_hassiba_config"
+              name="Paramètres Système"
+              action="base.action_ir_config_form"
+              sequence="20"/>
+
+
+    <!-- ================================================== -->
+    <!-- ACTIONS FOR WILAYAS AND COMMUNES                   -->
+    <!-- ================================================== -->
+
+    <!-- Wilaya Action -->
+    <record id="dz_wilaya_action" model="ir.actions.act_window">
+        <field name="name">Wilayas Algériennes</field>
+        <field name="res_model">dz.wilaya</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Aucune wilaya configurée
+            </p>
+            <p>
+                Les 58 wilayas algériennes sont pré-chargées.
+                Chaque wilaya contient ses communes.
+            </p>
+        </field>
+    </record>
+
+    <!-- Wilaya Tree View -->
+    <record id="dz_wilaya_tree" model="ir.ui.view">
+        <field name="name">dz.wilaya.tree</field>
+        <field name="model">dz.wilaya</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="chef_lieu"/>
+                <field name="superficie_km2"/>
+                <field name="population"/>
+                <field name="nb_communes"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Wilaya Form View -->
+    <record id="dz_wilaya_form" model="ir.ui.view">
+        <field name="name">dz.wilaya.form</field>
+        <field name="model">dz.wilaya</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="name"/>
+                            <field name="chef_lieu"/>
+                            <field name="code_ons"/>
+                        </group>
+                        <group>
+                            <field name="superficie_km2"/>
+                            <field name="population"/>
+                            <field name="latitude"/>
+                            <field name="longitude"/>
+                            <field name="nb_communes"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Communes">
+                            <field name="commune_ids">
+                                <tree editable="bottom">
+                                    <field name="code"/>
+                                    <field name="name"/>
+                                    <field name="chef_lieu_wilaya"/>
+                                    <field name="population"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Commune Action -->
+    <record id="dz_commune_action" model="ir.actions.act_window">
+        <field name="name">Communes Algériennes</field>
+        <field name="res_model">dz.commune</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Commune Tree View -->
+    <record id="dz_commune_tree" model="ir.ui.view">
+        <field name="name">dz.commune.tree</field>
+        <field name="model">dz.commune</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="wilaya_id"/>
+                <field name="code_ons"/>
+                <field name="chef_lieu_wilaya"/>
+                <field name="population"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Commune Form View -->
+    <record id="dz_commune_form" model="ir.ui.view">
+        <field name="name">dz.commune.form</field>
+        <field name="model">dz.commune</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="wilaya_id"/>
+                            <field name="code"/>
+                            <field name="name"/>
+                            <field name="code_ons"/>
+                        </group>
+                        <group>
+                            <field name="chef_lieu_wilaya"/>
+                            <field name="population"/>
+                            <field name="superficie_km2"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- IRG Tranche Action -->
+    <record id="dz_irg_tranche_action" model="ir.actions.act_window">
+        <field name="name">Barème IRG</field>
+        <field name="res_model">dz.irg.tranche</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- CNAS Category Action -->
+    <record id="dz_cnass_category_action" model="ir.actions.act_window">
+        <field name="name">Catégories CNAS</field>
+        <field name="res_model">dz.cnas.category</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Accident Rate Action -->
+    <record id="dz_accident_rate_action" model="ir.actions.act_window">
+        <field name="name">Taux Accidents Travail</field>
+        <field name="res_model">dz.accident.rate</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+</odoo>

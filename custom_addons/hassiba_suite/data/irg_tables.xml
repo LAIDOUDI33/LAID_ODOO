@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <data noupdate="1">
+        <!-- ================================================== -->
+        <!-- IRG TAX BRACKETS - Barème IRG 2024                   -->
+        <!-- Impôt sur Revenu Global                              -->
+        <!-- Source: Loi de Finances 2024                         -->
+        <!-- ================================================== -->
+
+        <!-- Tranche 0: 0 - 30,000 DZD = 0% -->
+        <record id="irg_tranche_0" model="dz.irg.tranche">
+            <field name="name">Tranche 0 - Exonérée</field>
+            <field name="limite_basse">0</field>
+            <field name="limite_haute">30000</field>
+            <field name="taux">0</field>
+            <field name="deduction_fixe">0</field>
+            <field name="ordre">1</field>
+        </record>
+
+        <!-- Tranche 1: 30,001 - 50,000 DZD = 20% -->
+        <record id="irg_tranche_1" model="dz.irg.tranche">
+            <field name="name">Tranche 1 - 20%</field>
+            <field name="limite_basse">30001</field>
+            <field name="limite_haute">50000</field>
+            <field name="taux">20</field>
+            <field name="deduction_fixe">6000</field>
+            <field name="ordre">2</field>
+        </record>
+
+        <!-- Tranche 2: 50,001 - 120,000 DZD = 30% -->
+        <record id="irg_tranche_2" model="dz.irg.tranche">
+            <field name="name">Tranche 2 - 30%</field>
+            <field name="limite_basse">50001</field>
+            <field name="limite_haute">120000</field>
+            <field name="taux">30</field>
+            <field name="deduction_fixe">11000</field>
+            <field name="ordre">3</field>
+        </record>
+
+        <!-- Tranche 3: 120,001 - 170,000 DZD = 35% -->
+        <record id="irg_tranche_3" model="dz.irg.tranche">
+            <field name="name">Tranche 3 - 35%</field>
+            <field name="limite_basse">120001</field>
+            <field name="limite_haute">170000</field>
+            <field name="taux">35</field>
+            <field name="deduction_fixe">17000</field>
+            <field name="ordre">4</field>
+        </record>
+
+        <!-- Tranche 4: 170,001 - 250,000 DZD = 40% -->
+        <record id="irg_tranche_4" model="dz.irg.tranche">
+            <field name="name">Tranche 4 - 40%</field>
+            <field name="limite_basse">170001</field>
+            <field name="limite_haute">250000</field>
+            <field name="taux">40</field>
+            <field name="deduction_fixe">25500</field>
+            <field name="ordre">5</field>
+        </record>
+
+        <!-- Tranche 5: > 250,001 DZD = 35% effective -->
+        <record id="irg_tranche_5" model="dz.irg.tranche">
+            <field name="name">Tranche 5 - 35% effectif</field>
+            <field name="limite_basse">250001</field>
+            <field name="limite_haute">999999999</field>
+            <field name="taux">35</field>
+            <field name="deduction_fixe">29500</field>
+            <field name="ordre">6</field>
+        </record>
+
+    </data>
+</odoo>

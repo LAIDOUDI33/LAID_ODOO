@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!-- ================================================== -->
+    <!-- PARTNER VIEWS - Algerian Extensions                 -->
+    <!-- ================================================== -->
+
+    <!-- Partner Form View Extension -->
+    <record id="view_partner_form_dz" model="ir.ui.view">
+        <field name="name">res.partner.form.dz</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet/group" position="before">
+                <group string="Identification Fiscale Algérie" 
+                       name="dz_fiscal_info"
+                       attrs="{'invisible': [('country_id.code', '!=', 'DZ')]}">
+                    <group>
+                        <field name="nif" placeholder="15 chiffres"/>
+                        <field name="nis"/>
+                        <field name="rc" placeholder="XX/NNNNNNNN/AAXX"/>
+                        <field name="ai"/>
+                    </group>
+                    <group>
+                        <field name="tva_assujetti"/>
+                        <field name="regime_tva" attrs="{'invisible': [('tva_assujetti', '=', False)]}"/>
+                        <field name="wilaya_id"/>
+                        <field name="commune_id" domain="[('wilaya_id', '=', wilaya_id)]"/>
+                    </group>
+                </group>
+            </xpath>
+
+            <!-- Add Bank Details Algeria -->
+            <xpath expr="//page[@name='sales_purchases']//group[@name='bank']" position="inside">
+                <field name="bank_name_dz" placeholder="Nom de la banque algérienne"/>
+                <field name="bank_account_dz" placeholder="RIB (20-24 chiffres)"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Partner Search View - Search by fiscal codes -->
+    <record id="view_res_partner_search_dz" model="ir.ui.view">
+        <field name="name">res.partner.search.dz</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_res_partner_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="nif" string="NIF"/>
+                <field name="nis" string="NIS"/>
+                <field name="rc" string="RC"/>
+                <field name="wilaya_id"/>
+                <field name="commune_id"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

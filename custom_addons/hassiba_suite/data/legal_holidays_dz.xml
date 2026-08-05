@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <data noupdate="1">
+        <!-- ================================================== -->
+        <!-- ALGERIAN PUBLIC HOLIDAYS                             -->
+        <!-- Jours Fériés Officiels en Algérie                    -->
+        <!-- ================================================== -->
+
+        <!-- Fixed Date Holidays -->
+
+        <!-- Nouvel Année - 1er Janvier -->
+        <record id="holiday_nouvel_an" model="hr.holidays.public">
+            <field name="year">2024</field>
+            <field name="country_id" ref="base.dz"/>
+        </record>
+        <record id="holiday_nouvel_an_line" model="hr.holidays.public.line">
+            <field name="name">Nouvel An</field>
+            <field name="date">2024-01-01</field>
+            <field name="variable">False</field>
+            <field name="parent_id" ref="holiday_nouvel_an"/>
+        </record>
+
+        <!-- Berber New Year - Yennayer 12 (Fixed: January 12) -->
+        <record id="holiday_yennayer" model="hr.holidays.public">
+            <field name="year">2024</field>
+            <field name="country_id" ref="base.dz"/>
+        </record>
+        <record id="holiday_yennayer_line" model="hr.holidays.public.line">
+            <field name="name">Yennayer (Nouvel An Amazigh)</field>
+            <field name="date">2024-01-12</field>
+            <field name="variable">False</field>
+            <field name="parent_id" ref="holiday_yennayer"/>
+        </record>
+
+        <!-- Fête du Travail - 1er Mai -->
+        <record id="holiday_travail" model="hr.holidays.public">
+            <field name="year">2024</field>
+            <field name="country_id" ref="base.dz"/>
+        </record>
+        <record id="holiday_travail_line" model="hr.holidays.public.line">
+            <field name="name">Fête du Travail</field>
+            <field name="date">2024-05-01</field>
+            <field name="variable">False</field>
+            <field name="parent_id" ref="holiday_travail"/>
+        </record>
+
+        <!-- Fête de l'Indépendance - 5 Juillet -->
+        <record id="holiday_independance" model="hr.holidays.public">
+            <field name="year">2024</field>
+            <field name="country_id" ref="base.dz"/>
+        </record>
+        <record id="holiday_independance_line" model="hr.holidays.public.line">
+            <field name="name">Fête de l'Indépendance</field>
+            <field name="date">2024-07-05</field>
+            <field name="variable">False</field>
+            <field name="parent_id" ref="holiday_independance"/>
+        </record>
+
+        <!-- Fête de la Révolution - 5 Août -->
+        <record id="holiday_revolution" model="hr.holidays.public">
+            <field name="year">2024</field>
+            <field name="country_id" ref="base.dz"/>
+        </record>
+        <record id="holiday_revolution_line" model="hr.holidays.public.line">
+            <field name="name">Fête de la Révolution</field>
+            <field name="date">2024-08-05</field>
+            <field name="variable">False</field>
+            <field name="parent_id" ref="holiday_revolution"/>
+        </record>
+
+        <!-- Fête de la République - 3 Novembre -->
+        <record id="holiday_republique" model="hr.holidays.public">
+            <field name="year">2024</field>
+            <field name="country_id" ref="base.dz"/>
+        </record>
+        <record id="holiday_republique_line" model="hr.holidays.public.line">
+            <field name="name">Anniversaire de la République</field>
+            <field name="date">2024-11-03</field>
+            <field name="variable">False</field>
+            <field name="parent_id" ref="holiday_republique"/>
+        </record>
+
+        <!-- Note: Islamic holidays (Eid al-Fitr, Eid al-Adha, Mawlid, Awal Muharram)
+             are variable and should be updated annually.
+             These are calculated based on lunar calendar.
+             
+             For 2024:
+             - Awal Muharram: ~July 7
+             - Ashura: ~July 16  
+             - Mawlid: ~September 16
+             - Eid al-Fitr: ~April 10
+             - Eid al-Adha: ~June 17
+        -->
+
+    </data>
+</odoo>

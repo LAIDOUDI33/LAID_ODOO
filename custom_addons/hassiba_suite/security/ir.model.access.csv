@@ -1,0 +1,13 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_dz_wilaya_user,dz.wilaya.user,model_dz_wilaya,hr.user_hr,1,0,0,0
+access_dz_wilaya_manager,dz.wilaya.manager,model_dz_wilaya,hr.group_hr_manager,1,1,1,0
+access_dz_commune_user,dz.commune.user,model_dz_commune,hr.user_hr,1,0,0,0
+access_dz_commune_manager,dz.commune.manager,model_dz_commune,hr.group_hr_manager,1,1,1,0
+access_dz_irg_tranche_user,dz.irg.tranche.user,model_dz_irg_tranche,hr.group_hr_manager,1,1,1,0
+access_dz_cnass_category_user,dz.cnas.category.user,model_dz_cnass_category,hr.group_hr_manager,1,1,1,0
+access_dz_accident_rate_user,dz.accident.rate.user,model_dz_accident_rate,hr.group_hr_manager,1,1,1,0
+access_dz_alloc_familiale_user,dz.alloc.familiale.user,model_dz_alloc_familiale,hr.group_hr_manager,1,1,1,0
+access_hr_payslip_gains_line_user,hr.payslip.gains.line.user,model_hr_payslip_gains_line,hr.group_hr_user,1,1,1,1
+access_hr_payslip_retenues_line_user,hr.payslip.retenues.line.user,model_hr_payslip_retenues_line,hr.group_hr_user,1,1,1,1
+access_account_tax_period_user,account.tax.period.user,model_account_tax_period,account.group_account_user,1,1,1,0
+access_account_tax_period_manager,account.tax.period.manager,model_account_tax_period,account.group_account_manager,1,1,1,1

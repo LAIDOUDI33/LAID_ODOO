@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <data noupdate="1">
+        <!-- ================================================== -->
+        <!-- TAX CONFIGURATION FOR ALGERIA                       -->
+        <!-- Stored in ir.config_parameter for easy modification -->
+        <!-- ================================================== -->
+
+        <!-- === SNMG - Salaire National Minimum Garanti === -->
+        <function model="ir.config_parameter" name="create_or_update">
+            <value eval="[{'key': 'hassiba.snmg_value', 'value': '20000'}]"/>
+        </function>
+
+        <!-- === CNAS RATES - Part Salariale === -->
+        <function model="ir.config_parameter" name="create_or_update">
+            <value eval="[{'key': 'hassiba.cnas_vieillesce_sal', 'value': '5'}]"/>
+        </function>
+        <function model="ir.config_parameter" name="create_or_update">
+            <value eval="[{'key': 'hassiba.cnas_survivorat_sal', 'value': '2'}]"/>
+        </function>
+        <function model="ir.config_parameter" name="create_or_update">
+            <value eval="[{'key': 'hassiba.cnas_maladie_sal', 'value': '1.5'}]"/>
+        </function>
+        <function model="ir.config_parameter" name="create_or_update">
+            <value eval="[{'key': 'hassiba.cnas_chomage_sal', 'value': '1'}]"/>
+        </function>
+
+        <!-- === CNAS RATES - Part Patronale === -->
+        <function model="ir.config_parameter" name="create_or_update">
+            <value eval="[{'key': 'hassiba.cnas_vieillesque_pat', 'value': '7.5'}]"/>
+        </function>
+        <function model="ir.config_parameter" name="create_or_update">
+            <value eval="[{'key': 'hassiba.cnas_survivorat_pat', 'value': '3'}]"/>
+        </function>
+        <function model="ir.config_parameter" name="create_or_update">
+            <value eval="[{'key': 'hassiba.cnas_maladie_pat', 'value': '6.5'}]"/>
+        </function>
+        <function model="ir.config_parameter" name="create_or_update">
+            <value eval="[{'key': 'hassiba.cnas_accident', 'value': '1'}]"/>
+        </function>
+        <function model="ir.config_parameter" name="create_or_update">
+            <value eval="[{'key': 'hassiba.cnas_alloc_famille', 'value': '5'}]"/>
+        </function>
+
+        <!-- === CASNOS RATES (for gérants) === -->
+        <function model="ir.config_parameter" name="create_or_update">
+            <value eval="[{'key': 'hassiba.casnos_rate', 'value': '15'}]"/>
+        </function>
+        <function model="ir.config_parameter" name="create_or_update">
+            <value eval="[{'key': 'hassiba.casnos_minimum', 'value': '15000'}]"/>
+        </function>
+        <function model="ir.config_parameter" name="create_or_update">
+            <value eval="[{'key': 'hassiba.casnos_maximum', 'value': '500000'}]"/>
+        </function>
+
+        <!-- === IRG FAMILY CHARGES (Art 104 CIDTA) === -->
+        <function model="ir.config_parameter" name="create_or_update">
+            <value eval="[{'key': 'hassiba.irg_charge_conjoint', 'value': '2500'}]"/>
+        </function>
+        <function model="ir.config_parameter" name="create_or_update">
+            <value eval="[{'key': 'hassiba.irg_charge_enfant', 'value': '1250'}]"/>
+        </function>
+        <function model="ir.config_parameter" name="create_or_update">
+            <value eval="[{'key': 'hassiba.irg_max_enfants', 'value': '4'}]"/>
+        </function>
+        <function model="ir.config_parameter" name="create_or_update">
+            <value eval="[{'key': 'hassiba.irg_charge_handicap', 'value': '3750'}]"/>
+        </function>
+
+        <!-- ================================================== -->
+        <!-- TVA TAX DEFINITIONS                                  -->
+        <!-- ================================================== -->
+
+        <!-- TVA Normal Rate 19% -->
+        <record id="tva_normal_19" model="account.tax">
+            <field name="name">TVA Normal 19%</field>
+            <field name="type_tax_use">sale</field>
+            <field name="amount_type">percent</field>
+            <field name="amount">19</field>
+            <field name="price_included">false</field>
+            <field name="include_base_amount">true</field>
+            <field name="description">TVA 19%</field>
+            <field name="country_id" ref="base.dz"/>
+            <field name="sequence">10</field>
+        </record>
+
+        <!-- TVA Reduced Rate 9% -->
+        <record id="tva_reduit_9" model="account.tax">
+            <field name="name">TVA Réduit 9%</field>
+            <field name="type_tax_use">sale</field>
+            <field name="amount_type">percent</field>
+            <field name="amount">9</field>
+            <field name="price_included">false</field>
+            <field name="include_base_amount">true</field>
+            <field name="description">TVA 9%</field>
+            <field name="country_id" ref="base.dz"/>
+            <field name="sequence">20</field>
+        </record>
+
+        <!-- TVA Exonéré 0% -->
+        <record id="tva_exonere" model="account.tax">
+            <field name="name">TVA Exonéré 0%</field>
+            <field name="type_tax_use">sale</field>
+            <field name="amount_type">percent</field>
+            <field name="amount">0</field>
+            <field name="price_included">false</field>
+            <field name="include_base_amount">true</field>
+            <field name="description">Exonéré</field>
+            <field name="country_id" ref="base.dz"/>
+            <field name="sequence">30</field>
+        </record>
+
+        <!-- TVA Achats (Deductible) 19% -->
+        <record id="tva_achat_19" model="account.tax">
+            <field name="name">TVA Achetable 19%</field>
+            <field name="type_tax_use">purchase</field>
+            <field name="amount_type">percent</field>
+            <field name="amount">19</field>
+            <field name="price_included">false</field>
+            <field name="include_base_amount">true</field>
+            <field name="description">TVA Déductible 19%</field>
+            <field name="country_id" ref="base.dz"/>
+            <field name="sequence">10</field>
+        </record>
+
+        <!-- TVA Achats (Deductible) 9% -->
+        <record id="tva_achat_9" model="account.tax">
+            <field name="name">TVA Achetable 9%</field>
+            <field name="type_tax_use">purchase</field>
+            <field name="amount_type">percent</field>
+            <field name="amount">9</field>
+            <field name="price_included">false</field>
+            <field name="include_base_amount">true</field>
+            <field name="description">TVA Déductible 9%</field>
+            <field name="country_id" ref="base.dz"/>
+            <field name="sequence">20</field>
+        </record>
+
+    </data>
+</odoo>

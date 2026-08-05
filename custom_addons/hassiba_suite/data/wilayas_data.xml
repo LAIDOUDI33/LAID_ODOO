@@ -1,0 +1,592 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <data noupdate="0">
+        <!-- ============================================ -->
+        <!-- 58 WILAYAS OF ALGERIA (Official Data 2019)   -->
+        <!-- Including new wilayas created in 2019        -->
+        <!-- ============================================ -->
+
+        <!-- Northern/Central Wilayas -->
+        <record id="wilaya_01" model="dz.wilaya">
+            <field name="name">Adrar</field>
+            <field name="code">01</field>
+            <field name="chef_lieu">Adrar</field>
+            <field name="superficie_km2">427958</field>
+            <field name="population">402197</field>
+            <field name="latitude">27.8854</field>
+            <field name="longitude">-0.2783</field>
+        </record>
+
+        <record id="wilaya_02" model="dz.wilaya">
+            <field name="name">Chlef</field>
+            <field name="code">02</field>
+            <field name="chef_lieu">Chlef</field>
+            <field name="superficie_km2">4791</field>
+            <field name="population">1026863</field>
+            <field name="latitude">36.1667</field>
+            <field name="longitude">1.3333</field>
+        </record>
+
+        <record id="wilaya_03" model="dz.wilaya">
+            <field name="name">Laghouat</field>
+            <field name="code">03</field>
+            <field name="chef_lieu">Laghouat</field>
+            <field name="superficie_km2">25000</field>
+            <field name="population">487287</field>
+            <field name="latitude">33.8075</field>
+            <field name="longitude">2.8784</field>
+        </record>
+
+        <record id="wilaya_04" model="dz.wilaya">
+            <field name="name">Oum El Bouaghi</field>
+            <field name="code">04</field>
+            <field name="chef_lieu">Oum El Bouaghi</field>
+            <field name="superficie_km2">7638</field>
+            <field name="population">659614</field>
+            <field name="latitude">35.6911</field>
+            <field name="longitude">7.1108</field>
+        </record>
+
+        <record id="wilaya_05" model="dz.wilaya">
+            <field name="name">Batna</field>
+            <field name="code">05</field>
+            <field name="chef_lieu">Batna</field>
+            <field name="superficie_km2">12755</field>
+            <field name="population">1077745</field>
+            <field name="latitude">35.5061</field>
+            <field name="longitude">6.1789</field>
+        </record>
+
+        <record id="wilaya_06" model="dz.wilaya">
+            <field name="name">Béjaïa</field>
+            <field name="code">06</field>
+            <field name="chef_lieu">Béjaïa</field>
+            <field name="superficie_km2">3268</field>
+            <field name="population">913075</field>
+            <field name="latitude">36.7167</field>
+            <field name="longitude">5.0667</field>
+        </record>
+
+        <record id="wilaya_07" model="dz.wilaya">
+            <field name="name">Biskra</field>
+            <field name="code">07</field>
+            <field name="chef_lieu">Biskra</field>
+            <field name="superficie_km2">20686</field>
+            <field name="population">793702</field>
+            <field name="latitude">34.8081</field>
+            <field name="longitude">5.7111</field>
+        </record>
+
+        <record id="wilaya_08" model="dz.wilaya">
+            <field name="name">Béchar</field>
+            <field name="code">08</field>
+            <field name="chef_lieu">Béchar</field>
+            <field name="superficie_km2">161400</field>
+            <field name="population">294750</field>
+            <field name="latitude">31.6167</field>
+            <field name="longitude">-2.2333</field>
+        </record>
+
+        <record id="wilaya_09" model="dz.wilaya">
+            <field name="name">Blida</field>
+            <field name="code">09</field>
+            <field name="chef_lieu">Blida</field>
+            <field name="superficie_km2">1696</field>
+            <field name="population">1012006</field>
+            <field name="latitude">36.4761</field>
+            <field name="longitude">2.8247</field>
+        </record>
+
+        <record id="wilaya_10" model="dz.wilaya">
+            <field name="name">Bouira</field>
+            <field name="code">10</field>
+            <field name="chef_lieu">Bouira</field>
+            <field name="superficie_km2">4447</field>
+            <field name="population">694752</field>
+            <field name="latitude">36.3833</field>
+            <field name="longitude">3.9000</field>
+        </record>
+
+        <record id="wilaya_11" model="dz.wilaya">
+            <field name="name">Tamanrasset</field>
+            <field name="code">11</field>
+            <field name="chef_lieu">Tamanrasset</field>
+            <field name="superficie_km2">228419</field>
+            <field name="population">191315</field>
+            <field name="latitude">22.7854</field>
+            <field name="longitude">5.5228</field>
+        </record>
+
+        <record id="wilaya_12" model="dz.wilaya">
+            <field name="name">Tébessa</field>
+            <field name="code">12</field>
+            <field name="chef_lieu">Tébessa</field>
+            <field name="superficie_km2">13878</field>
+            <field name="population">669535</field>
+            <field name="latitude">35.4086</field>
+            <field name="longitude">8.1225</field>
+        </record>
+
+        <record id="wilaya_13" model="dz.wilaya">
+            <field name="name">Tlemcen</field>
+            <field name="code">13</field>
+            <field name="chef_lieu">Tlemcen</field>
+            <field name="superficie_km2">9061</field>
+            <field name="population">945967</field>
+            <field name="latitude">34.8881</field>
+            <field name="longitude">-1.3167</field>
+        </record>
+
+        <record id="wilaya_14" model="dz.wilaya">
+            <field name="name">Tiaret</field>
+            <field name="code">14</field>
+            <field name="chef_lieu">Tiaret</field>
+            <field name="superficie_km2">13853</field>
+            <field name="population">842002</field>
+            <field name="latitude">35.2572</field>
+            <field name="longitude">1.3167</field>
+        </record>
+
+        <record id="wilaya_15" model="dz.wilaya">
+            <field name="name">Tizi Ouzou</field>
+            <field name="code">15</field>
+            <field name="chef_lieu">Tizi Ouzou</field>
+            <field name="superficie_km2">2986</field>
+            <field name="population">1118946</field>
+            <field name="latitude">36.7167</field>
+            <field name="longitude">4.0667</field>
+        </record>
+
+        <record id="wilaya_16" model="dz.wilaya">
+            <field name="name">Alger</field>
+            <field name="code">16</field>
+            <field name="chef_lieu">Alger</field>
+            <field name="superficie_km2">1632</field>
+            <field name="population">2947006</field>
+            <field name="latitude">36.7538</field>
+            <field name="longitude">3.0588</field>
+        </record>
+
+        <record id="wilaya_17" model="dz.wilaya">
+            <field name="name">Djelfa</field>
+            <field name="code">17</field>
+            <field name="chef_lieu">Djelfa</field>
+            <field name="superficie_km2">32415</field>
+            <field name="population">1093273</field>
+            <field name="latitude">34.7333</field>
+            <field name="longitude">3.2500</field>
+        </record>
+
+        <record id="wilaya_18" model="dz.wilaya">
+            <field name="name">Jijel</field>
+            <field name="code">18</field>
+            <field name="chef_lieu">Jijel</field>
+            <field name="superficie_km2">2396</field>
+            <field name="population">641912</field>
+            <field name="latitude">36.8000</field>
+            <field name="longitude">5.7667</field>
+        </record>
+
+        <record id="wilaya_19" model="dz.wilaya">
+            <field name="name">Sétif</field>
+            <field name="code">19</field>
+            <field name="chef_lieu">Sétif</field>
+            <field name="superficie_km2">6503</field>
+            <field name="population">1492228</field>
+            <field name="latitude">36.1833</field>
+            <field name="longitude">5.4083</field>
+        </record>
+
+        <record id="wilaya_20" model="dz.wilaya">
+            <field name="name">Saïda</field>
+            <field name="code">20</field>
+            <field name="chef_lieu">Saïda</field>
+            <field name="superficie_km2">7642</field>
+            <field name="population">330561</field>
+            <field name="latitude">34.8333</field>
+            <field name="longitude">0.1500</field>
+        </record>
+
+        <record id="wilaya_21" model="dz.wilaya">
+            <field name="name">Skikda</field>
+            <field name="code">21</field>
+            <field name="chef_lieu">Skikda</field>
+            <field name="superficie_km2">4220</field>
+            <field name="population">920289</field>
+            <field name="latitude">36.8500</field>
+            <field name="longitude">6.9167</field>
+        </record>
+
+        <record id="wilaya_22" model="dz.wilaya">
+            <field name="name">Sidi Bel Abbès</field>
+            <field name="code">22</field>
+            <field name="chef_lieu">Sidi Bel Abbès</field>
+            <field name="superficie_km2">9061</field>
+            <field name="population">618445</field>
+            <field name="latitude">34.6833</field>
+            <field name="longitude">0.6500</field>
+        </record>
+
+        <record id="wilaya_23" model="dz.wilaya">
+            <field name="name">Annaba</field>
+            <field name="code">23</field>
+            <field name="chef_lieu">Annaba</field>
+            <field name="superficie_km2">1439</field>
+            <field name="population">625001</field>
+            <field name="latitude">36.9167</field>
+            <field name="longitude">7.7667</field>
+        </record>
+
+        <record id="wilaya_24" model="dz.wilaya">
+            <field name="name">Guelma</field>
+            <field name="code">24</field>
+            <field name="chef_lieu">Guelma</field>
+            <field name="superficie_km2">4570</field>
+            <field name="population">494401</field>
+            <field name="latitude">36.4611</field>
+            <field name="longitude">7.4667</field>
+        </record>
+
+        <record id="wilaya_25" model="dz.wilaya">
+            <field name="name">Constantine</field>
+            <field name="code">25</field>
+            <field name="chef_lieu">Constantine</field>
+            <field name="superficie_km2">2281</field>
+            <field name="population">956900</field>
+            <field name="latitude">36.3650</field>
+            <field name="longitude">6.6147</field>
+        </record>
+
+        <record id="wilaya_26" model="dz.wilaya">
+            <field name="name">Médéa</field>
+            <field name="code">26</field>
+            <field name="chef_lieu">Médéa</field>
+            <field name="superficie_km2">8787</field>
+            <field name="population">837428</field>
+            <field name="latitude">36.2667</field>
+            <field name="longitude">2.7500</field>
+        </record>
+
+        <record id="wilaya_27" model="dz.wilaya">
+            <field name="name">Mostaganem</field>
+            <field name="code">27</field>
+            <field name="chef_lieu">Mostaganem</field>
+            <field name="superficie_km2">2279</field>
+            <field name="population">770856</field>
+            <field name="latitude">35.9333</field>
+            <field name="longitude">0.0833</field>
+        </record>
+
+        <record id="wilaya_28" model="dz.wilaya">
+            <field name="name">M'Sila</field>
+            <field name="code">28</field>
+            <field name="chef_lieu">M'Sila</field>
+            <field name="superficie_km2">18418</field>
+            <field name="population">991352</field>
+            <field name="latitude">35.7083</field>
+            <field name="longitude">4.5500</field>
+        </record>
+
+        <record id="wilaya_29" model="dz.wilaya">
+            <field name="name">Mascara</field>
+            <field name="code">29</field>
+            <field name="chef_lieu">Mascara</field>
+            <field name="superficie_km2">5904</field>
+            <field name="population">778153</field>
+            <field name="latitude">35.3917</field>
+            <field name="longitude">0.1417</field>
+        </record>
+
+        <record id="wilaya_30" model="dz.wilaya">
+            <field name="name">Ouargla</field>
+            <field name="code">30</field>
+            <field name="chef_lieu">Ouargla</field>
+            <field name="superficie_km2">163333</field>
+            <field name="population">592144</field>
+            <field name="latitude">33.5000</field>
+            <field name="longitude">5.9167</field>
+        </record>
+
+        <record id="wilaya_31" model="dz.wilaya">
+            <field name="name">Oran</field>
+            <field name="code">31</field>
+            <field name="chef_lieu">Oran</field>
+            <field name="superficie_km2">2121</field>
+            <field name="population">1584560</field>
+            <field name="latitude">35.6911</field>
+            <field name="longitude">-0.6141</field>
+        </record>
+
+        <record id="wilaya_32" model="dz.wilaya">
+            <field name="name">El Bayadh</field>
+            <field name="code">32</field>
+            <field name="chef_lieu">El Bayadh</field>
+            <field name="superficie_km2">78838</field>
+            <field name="population">261874</field>
+            <field name="latitude">33.6833</field>
+            <field name="longitude">0.9833</field>
+        </record>
+
+        <record id="wilaya_33" model="dz.wilaya">
+            <field name="name">Illizi</field>
+            <field name="code">33</field>
+            <field name="chef_lieu">Illizi</field>
+            <field name="superficie_km2">285000</field>
+            <field name="population">53389</field>
+            <field name="latitude">26.5000</field>
+            <field name="longitude">8.4500</field>
+        </record>
+
+        <record id="wilaya_34" model="dz.wilaya">
+            <field name="name">Bordj Bou Arréridj</field>
+            <field name="code">34</field>
+            <field name="chef_lieu">Bordj Bou Arréridj</field>
+            <field name="superficie_km2">4115</field>
+            <field name="population">636148</field>
+            <field name="latitude">36.0667</field>
+            <field name="longitude">4.7500</field>
+        </record>
+
+        <record id="wilaya_35" model="dz.wilaya">
+            <field name="name">Boumerdès</field>
+            <field name="code">35</field>
+            <field name="chef_lieu">Boumerdès</field>
+            <field name="superficie_km2">1591</field>
+            <field name="population">799595</field>
+            <field name="latitude">36.7667</field>
+            <field name="longitude">3.4667</field>
+        </record>
+
+        <record id="wilaya_36" model="dz.wilaya">
+            <field name="name">Tarf</field>
+            <field name="code">36</field>
+            <field name="chef_lieu">Tarf</field>
+            <field name="superficie_km2">3374</field>
+            <field name="population">531198</field>
+            <field name="latitude">36.7500</field>
+            <field name="longitude">8.3167</field>
+        </record>
+
+        <record id="wilaya_37" model="dz.wilaya">
+            <field name="name">Tindouf</field>
+            <field name="code">37</field>
+            <field name="chef_lieu">Tindouf</field>
+            <field name="superficie_km2">158874</field>
+            <field name="population">58193</field>
+            <field name="latitude">27.6667</field>
+            <field name="longitude">-8.1333</field>
+        </record>
+
+        <record id="wilaya_38" model="dz.wilaya">
+            <field name="name">Tissemsilt</field>
+            <field name="code">38</field>
+            <field name="chef_lieu">Tissemsilt</field>
+            <field name="superficie_km2">3152</field>
+            <field name="population">304981</field>
+            <field name="latitude">35.6083</field>
+            <field name="longitude">1.8167</field>
+        </record>
+
+        <record id="wilaya_39" model="dz.wilaya">
+            <field name="name">El Oued</field>
+            <field name="code">39</field>
+            <field name="chef_lieu">El Oued</field>
+            <field name="superficie_km2">54573</field>
+            <field name="population">673936</field>
+            <field name="latitude">33.4667</field>
+            <field name="longitude">7.3500</field>
+        </record>
+
+        <record id="wilaya_40" model="dz.wilaya">
+            <field name="name">Khenchela</field>
+            <field name="code">40</field>
+            <field name="chef_lieu">Khenchela</field>
+            <field name="superficie_km2">9711</field>
+            <field name="population">384268</field>
+            <field name="latitude">35.4333</field>
+            <field name="longitude">7.1500</field>
+        </record>
+
+        <record id="wilaya_41" model="dz.wilaya">
+            <field name="name">Souk Ahras</field>
+            <field name="code">41</field>
+            <field name="chef_lieu">Souk Ahras</field>
+            <field name="superficie_km2">4536</field>
+            <field name="population">440299</field>
+            <field name="latitude">36.2833</field>
+            <field name="longitude">7.9500</field>
+        </record>
+
+        <record id="wilaya_42" model="dz.wilaya">
+            <field name="name">Tipaza</field>
+            <field name="code">42</field>
+            <field name="chef_lieu">Tipaza</field>
+            <field name="superficie_km2">2176</field>
+            <field name="population">606655</field>
+            <field name="latitude">36.7167</field>
+            <field name="longitude">2.8667</field>
+        </record>
+
+        <record id="wilaya_43" model="dz.wilaya">
+            <field name="name">Mila</field>
+            <field name="code">43</field>
+            <field name="chef_lieu">Mila</field>
+            <field name="superficie_km2">3587</field>
+            <field name="population">768419</field>
+            <field name="latitude">36.4500</field>
+            <field name="longitude">6.2667</field>
+        </record>
+
+        <record id="wilaya_44" model="dz.wilaya">
+            <field name="name">Aïn Defla</field>
+            <field name="code">44</field>
+            <field name="chef_lieu">Aïn Defla</field>
+            <field name="superficie_km2">4891</field>
+            <field name="population">771390</field>
+            <field name="latitude">36.2500</field>
+            <field name="longitude">2.1167</field>
+        </record>
+
+        <record id="wilaya_45" model="dz.wilaya">
+            <field name="name">Naâma</field>
+            <field name="code">45</field>
+            <field name="chef_lieu">Naâma</field>
+            <field name="superficie_km2">29514</field>
+            <field name="population">209181</field>
+            <field name="latitude">33.2667</field>
+            <field name="longitude">0.3167</field>
+        </record>
+
+        <record id="wilaya_46" model="dz.wilaya">
+            <field name="name">Aïn Témouchent</field>
+            <field name="code">46</field>
+            <field name="chef_lieu">Aïn Témouchent</field>
+            <field name="superficie_km2">2376</field>
+            <field name="population">377299</field>
+            <field name="latitude">35.3000</field>
+            <field name="longitude">-1.0833</field>
+        </record>
+
+        <record id="wilaya_47" model="dz.wilaya">
+            <field name="name">Ghardaïa</field>
+            <field name="code">47</field>
+            <field name="chef_lieu">Ghardaïa</field>
+            <field name="superficie_km2">18800</field>
+            <field name="population">378288</field>
+            <field name="latitude">32.4833</field>
+            <field name="longitude">3.6667</field>
+        </record>
+
+        <record id="wilaya_48" model="dz.wilaya">
+            <field name="name">Relizane</field>
+            <field name="code">48</field>
+            <field name="chef_lieu">Relizane</field>
+            <field name="superficie_km2">4870</field>
+            <field name="population">723162</field>
+            <field name="latitude">35.8000</field>
+            <field name="longitude">0.5500</field>
+        </record>
+
+        <!-- New Wilayas created in 2019 -->
+        <record id="wilaya_49" model="dz.wilaya">
+            <field name="name">El M'Ghair</field>
+            <field name="code">49</field>
+            <field name="chef_lieu">El M'Ghair</field>
+            <field name="superficie_km2">15700</field>
+            <field name="population">156660</field>
+            <field name="latitude">33.4083</field>
+            <field name="longitude">6.8250</field>
+        </record>
+
+        <record id="wilaya_50" model="dz.wilaya">
+            <field name="name">El Meniaa</field>
+            <field name="code">50</field>
+            <field name="chef_lieu">El Meniaa</field>
+            <field name="superficie_km2">31445</field>
+            <field name="population">50994</field>
+            <field name="latitude">32.8500</field>
+            <field name="longitude">2.3000</field>
+        </record>
+
+        <record id="wilaya_51" model="dz.wilaya">
+            <field name="name">Ouled Djellal</field>
+            <field name="code">51</field>
+            <field name="chef_lieu">Ouled Djellal</field>
+            <field name="superficie_km2">11987</field>
+            <field name="population">174861</field>
+            <field name="latitude">35.1806</field>
+            <field name="longitude">5.9000</field>
+        </record>
+
+        <record id="wilaya_52" model="dz.wilaya">
+            <field name="name">Bordj Badji Mokhtar</field>
+            <field name="code">52</field>
+            <field name="chef_lieu">Bordj Badji Mokhtar</field>
+            <field name="superficie_km2">88127</field>
+            <field name="population">30519</field>
+            <field name="latitude">21.3333</field>
+            <field name="longitude">0.9500</field>
+        </record>
+
+        <record id="wilaya_53" model="dz.wilaya">
+            <field name="name">Béni Abbès</field>
+            <field name="code">53</field>
+            <field name="chef_lieu">Béni Abbès</field>
+            <field name="superficie_km2">129492</field>
+            <field name="population">31991</field>
+            <field name="latitude">30.7167</field>
+            <field name="longitude">-2.8667</field>
+        </record>
+
+        <record id="wilaya_54" model="dz.wilaya">
+            <field name="name">Timimoun</field>
+            <field name="code">54</field>
+            <field name="chef_lieu">Timimoun</field>
+            <field name="superficie_km2">131220</field>
+            <field name="population">122420</field>
+            <field name="latitude">29.2833</field>
+            <field name="longitude">0.2167</field>
+        </record>
+
+        <record id="wilaya_55" model="dz.wilaya">
+            <field name="name">Touggourt</field>
+            <field name="code">55</field>
+            <field name="chef_lieu">Touggourt</field>
+            <field name="superficie_km2">17143</field>
+            <field name="population">195004</field>
+            <field name="latitude">33.1000</field>
+            <field name="longitude">6.0667</field>
+        </record>
+
+        <record id="wilaya_56" model="dz.wilaya">
+            <field name="name">Djanet</field>
+            <field name="code">56</field>
+            <field name="chef_lieu">Djanet</field>
+            <field name="superficie_km2">23864</field>
+            <field name="population">17962</field>
+            <field name="latitude">24.5500</field>
+            <field name="longitude">9.4833</field>
+        </record>
+
+        <record id="wilaya_57" model="dz.wilaya">
+            <field name="name">In Salah</field>
+            <field name="code">57</field>
+            <field name="chef_lieu">In Salah</field>
+            <field name="superficie_km2">202013</field>
+            <field name="population">38209</field>
+            <field name="latitude">27.2833</field>
+            <field name="longitude">2.4667</field>
+        </record>
+
+        <record id="wilaya_58" model="dz.wilaya">
+            <field name="name">In Guezzam</field>
+            <field name="code">58</field>
+            <field name="chef_lieu">In Guezzam</field>
+            <field name="superficie_km2">49920</field>
+            <field name="population">11845</field>
+            <field name="latitude">23.0000</field>
+            <field name="longitude">5.7333</field>
+        </record>
+
+    </data>
+</odoo>
