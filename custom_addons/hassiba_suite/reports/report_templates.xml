@@ -1,0 +1,380 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!-- ================================================== -->
+    <!-- REPORT TEMPLATES - HASSIBA Suite ERP               -->
+    <!-- ================================================== -->
+
+    <!-- ============================================== -->
+    <!-- BULLETIN DE PAIE ALGÉRIEN (QWeb Template)      -->
+    <!-- ============================================== -->
+    <template id="report_bulletin_paie_dz_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="payslip">
+                <t t-call="hassiba_suite.external_layout_dz_bulletin">
+                    <div class="page">
+                        
+                        <!-- Header Section -->
+                        <div class="row mb-4">
+                            <div class="col-6">
+                                <h3 class="text-center font-weight-bold">
+                                    REPUBLIQUE ALGERIENNE DEMOCRATIQUE ET POPULAIRE
+                                </h3>
+                                <h4 class="text-center">BULLETIN DE PAIE</h4>
+                            </div>
+                            <div class="col-6 text-right">
+                                <strong>N° Bulletin:</strong> <span t-field="payslip.numero_bulletin"/><br/>
+                                <strong>Période:</strong> <span t-field="payslip.mois_paie"/> / <span t-field="payslip.annee_paie"/><br/>
+                                <strong>Date:</strong> <span t-field="payslip.date_to" t-options='{"widget": "date"}'/>
+                            </div>
+                        </div>
+
+                        <!-- Employee Information -->
+                        <table class="table table-sm table-bordered mb-4">
+                            <tr>
+                                <td><strong>Nom &amp; Prénom:</strong></td>
+                                <td><span t-field="payslip.employee_id.name"/></td>
+                                <td><strong>Matricule:</strong></td>
+                                <td><span t-field="payslip.employee_id.registration_number"/></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Fonction:</strong></td>
+                                <td><span t-field="payslip.employee_id.job_title"/></td>
+                                <td><strong>Département:</strong></td>
+                                <td><span t-field="payslip.employee_id.department_id.name"/></td>
+                            </tr>
+                            <tr>
+                                <td><strong>N° CNAS:</strong></td>
+                                <td><span t-field="payslip.employee_id.cnas_number"/></td>
+                                <td><strong>Cat. Prof.:</strong></td>
+                                <td><span t-field="payslip.employee_id.category_professionnelle"/></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Type Contrat:</strong></td>
+                                <td colspan="3"><span t-field="payslip.contract_id.type_contrat_dz"/></td>
+                            </tr>
+                        </table>
+
+                        <!-- Gains Table (Earnings) -->
+                        <h5 class="font-weight-bold bg-light p-2">A - GAINS</h5>
+                        <table class="table table-sm table-bordered">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th style="width: 5%">N°</th>
+                                    <th style="width: 55%">Désignation</th>
+                                    <th style="width: 20%">Nombre</th>
+                                    <th style="width: 20%" class="text-right">Montant</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="payslip.gains_line_ids" t-as="line" t-index="line_index">
+                                    <tr>
+                                        <td class="text-center"><span t-esc="line_index + 1"/></td>
+                                        <td><span t-field="line.libelle"/></td>
+                                        <td>-</td>
+                                        <td class="text-right"><span t-field="line.montant" t-options='{"widget": "monetary", "display_currency": payslip.currency_id}'/></td>
+                                    </tr>
+                                </t>
+                                <tr class="font-weight-bold">
+                                    <td colspan="3" class="text-right">TOTAL DES GAINS (A)</td>
+                                    <td class="text-right"><span t-field="payslip.montant_brut" t-options='{"widget": "monetary", "display_currency": payslip.currency_id}'/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Retenues Table (Deductions) -->
+                        <h5 class="font-weight-bold bg-light p-2 mt-3">B - RETENUES</h5>
+                        <table class="table table-sm table-bordered">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th style="width: 5%">N°</th>
+                                    <th style="width: 60%">Désignation</th>
+                                    <th style="width: 15%">Taux/Parts</th>
+                                    <th style="width: 20%" class="text-right">Montant</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="payslip.retenues_line_ids" t-as="retenue" t-as="ret_index">
+                                    <tr>
+                                        <td class="text-center"><span t-esc="ret_index + 1"/></td>
+                                        <td><span t-field="retenue.libelle"/></td>
+                                        <td>-</td>
+                                        <td class="text-right"><span t-field="retenue.montant" t-options='{"widget": "monetary", "display_currency": payslip.currency_id}'/></td>
+                                    </tr>
+                                </t>
+                                <tr>
+                                    <td colspan="2" rowspan="2"></td>
+                                    <td>CNAS Part Salariale:</td>
+                                    <td class="text-right"><span t-field="payslip.montant_cnas_salarial" t-options='{"widget": "monetary", "display_currency": payslip.currency_id}'/></td>
+                                </tr>
+                                <tr>
+                                    <td>IRG:</td>
+                                    <td class="text-right"><span t-field="payslip.montant_irg" t-options='{"widget": "monetary", "display_currency": payslip.currency_id}'/></td>
+                                </tr>
+                                <tr class="font-weight-bold">
+                                    <td colspan="3" class="text-right">TOTAL DES RETENUES (B)</td>
+                                    <td class="text-right"><span t-value="payslip.montant_cnas_salarial + payslip.montant_irg" t-options='{"widget": "monetary", "display_currency": payslip.currency_id}'/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Net à Payer -->
+                        <table class="table table-bordered mt-4">
+                            <tr class="bg-primary text-white font-weight-bold">
+                                <td class="text-center h4 mb-0 py-2">
+                                    NET À PAYER (A - B) = 
+                                    <span t-field="payslip.montant_net" t-options='{"widget": "monetary", "display_currency": payslip.currency_id}'/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="text-center">
+                                    <em>Arrêté le présent bulletin à la somme de : <strong><span t-field="payslip.net_en_lettres"/></strong></em>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- Signatures -->
+                        <div class="row mt-5">
+                            <div class="col-6 text-center border-top pt-2">
+                                <p>L'Employé</p>
+                                <p class="mt-4">(Signature)</p>
+                            </div>
+                            <div class="col-6 text-center border-top pt-2">
+                                <p>Le Service Paie</p>
+                                <p class="mt-4">(Signature &amp; Cachet)</p>
+                            </div>
+                        </div>
+
+                        <!-- Footer Note -->
+                        <div class="mt-4 small text-muted text-center">
+                            <p>Bulletin généré par HASSIBA Suite ERP - Document strictement confidentiel</p>
+                            <p>Conformément à la législation algérienne du travail</p>
+                        </div>
+
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- External Layout for Algerian Documents -->
+    <template id="external_layout_dz_bulletin">
+        <div t-attf-class="header o_company_#{company.id}_layout o_algerian_header" t-att-data-o-language-code="code and code.replace('_', '-')">
+            <div class="row">
+                <div class="col-3 mb-4">
+                    <img t-if="company.logo" t-att-src="image_data_uri(company.logo)" 
+                         alt="Logo" style="max-height: 80px;"/>
+                </div>
+                <div class="col-9 text-center mb-4">
+                    <h3 t-field="company.partner_id.name" t-options="{'widget': 'contact'}"/>
+                    <div t-field="company.partner_id"/>
+                    <div t-if="company.street"><span t-field="company.street"/>, <span t-field="company.city"/></div>
+                    <div t-if="company.vat">NIF: <span t-field="company.vat"/></div>
+                    <div t-if="company.company_registry">RC: <span t-field="company.company_registry"/></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="article o_report_layout_clean">
+            <t t-call="t-call-content"/>
+        </div>
+        
+        <div t-attf-class="footer o_company_#{company.id}_layout o_algerian_footer">
+            <div class="row mt-4 text-center small text-muted">
+                <div class="col-12">
+                    <ul class="list-inline mb-0">
+                        <li class="list-inline-item"><span t-field="company.phone"/></li>
+                        <li class="list-inline-item">|</li>
+                        <li class="list-inline-item"><span t-field="company.email"/></li>
+                        <li class="list-inline-item">|</li>
+                        <li class="list-inline-item"><span t-field="company.website"/></li>
+                    </ul>
+                    <p class="mb-0">
+                        Page <span class="page"/> / <span class="topage"/> | 
+                        Généré par HASSIBA Suite ERP v19.3
+                    </p>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- ============================================== -->
+    <!-- G50 DECLARATION TVA TEMPLATE                   -->
+    <!-- ============================================== -->
+    <template id="report_g50_declaration_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="declaration">
+                <t t-call="hassiba_suite.external_layout_dz_g50">
+                    <div class="page">
+                        
+                        <!-- Header -->
+                        <div class="text-center mb-4">
+                            <h3>DIRECTION GÉNÉRALE DES IMPÔTS</h3>
+                            <h4>DÉCLARATION DE LA TAXE SUR LA VALEUR AJOUTÉE</h4>
+                            <h5 class="font-weight-bold">MODÈLE G50</h5>
+                        </div>
+
+                        <!-- Company Info -->
+                        <table class="table table-bordered mb-4">
+                            <tr>
+                                <td><strong>Raison Sociale:</strong></td>
+                                <td colspan="3"><span t-field="declaration.company_id.name"/></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Article d'imposition:</strong></td>
+                                <td><span t-field="declaration.article_imposition"/></td>
+                                <td><strong>NIF:</strong></td>
+                                <td><span t-field="declaration.nif"/></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Période:</strong></td>
+                                <td><span t-field="declaration.month"/> / <span t-field="declaration.year"/></td>
+                                <td><strong>Date Déclaration:</strong></td>
+                                <td><span t-field="declaration.date_declaration" t-options='{"widget": "date"}'/></td>
+                            </tr>
+                        </table>
+
+                        <!-- TVA Details -->
+                        <h5 class="font-weight-bold bg-light p-2">DÉTAILS TVA</h5>
+                        <table class="table table-bordered">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th colspan="2">RUBRIQUE</th>
+                                    <th class="text-right">MONTANT (DZD)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>A.</td>
+                                    <td>TVA Collectée (Ventes/Services)</td>
+                                    <td class="text-right"><span t-field="declaration.tva_collectee" t-options='{"widget": "monetary"}'/></td>
+                                </tr>
+                                <tr>
+                                    <td>B.</td>
+                                    <td>TVA Déductible (Achats)</td>
+                                    <td class="text-right"><span t-field="declaration.tva_deductible" t-options='{"widget": "monetary"}'/></td>
+                                </tr>
+                                <tr class="table-active font-weight-bold">
+                                    <td>C.</td>
+                                    <td>SOLDE TVA (A - B) = TVA À PAYER / CRÉDIT</td>
+                                    <td class="text-right"><span t-field="declaration.solde_tva" t-options='{"widget": "monetary"}'/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Breakdown by Rate -->
+                        <h5 class="font-weight-bold bg-light p-2 mt-3">DÉCOMPOSITION PAR TAUX</h5>
+                        <table class="table table-bordered">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>Taux TVA</th>
+                                    <th class="text-right">Base Imposable</th>
+                                    <th class="text-right">TVA Collectée</th>
+                                    <th class="text-right">TVA Déductible</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>TVA 19%</td>
+                                    <td class="text-right"><span t-field="declaration.base_19" t-options='{"widget": "monetary"}'/></td>
+                                    <td class="text-right"><span t-field="declaration.tva_19_collecte" t-options='{"widget": "monetary"}'/></td>
+                                    <td class="text-right"><span t-field="declaration.tva_19_deduct" t-options='{"widget": "monetary"}'/></td>
+                                </tr>
+                                <tr>
+                                    <td>TVA 9%</td>
+                                    <td class="text-right"><span t-field="declaration.base_09" t-options='{"widget": "monetary"}'/></td>
+                                    <td class="text-right"><span t-field="declaration.tva_09_collecte" t-options='{"widget": "monetary"}'/></td>
+                                    <td class="text-right"><span t-field="declaration.tva_09_deduct" t-options='{"widget": "monetary"}'/></td>
+                                </tr>
+                                <tr>
+                                    <td>Exonéré</td>
+                                    <td class="text-right"><span t-field="declaration.base_exonere" t-options='{"widget": "monetary"}'/></td>
+                                    <td class="text-right">-</td>
+                                    <td class="text-right">-</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Summary Box -->
+                        <div class="alert alert-info mt-4">
+                            <div class="row">
+                                <div class="col-6">
+                                    <strong>Nombre de factures déclarées:</strong> 
+                                    <span t-field="declaration.nb_invoices"/>
+                                </div>
+                                <div class="col-6 text-right">
+                                    <strong>État:</strong> 
+                                    <span t-field="declaration.state" class="badge badge-success"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Signature -->
+                        <div class="row mt-5">
+                            <div class="col-6 text-center border-top pt-2">
+                                <p>Signature du Contribuable</p>
+                                <p class="mt-4">(Cachet de l'entreprise)</p>
+                            </div>
+                            <div class="col-6 text-center border-top pt-2">
+                                <p>Service des Impôts</p>
+                                <p class="mt-4">(Cachet et Visa)</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- External Layout for G50 Declaration -->
+    <template id="external_layout_dz_g50">
+        <div t-attf-class="header o_company_#{company.id}_layout o_g50_header">
+            <div class="text-center">
+                <h4 class="mb-0">REPUBLIQUE ALGERIENNE DEMOCRATIQUE ET POPULAIRE</h4>
+                <h5 class="mb-0">MINISTÈRE DES FINANCES</h5>
+                <h5 class="mb-0">DIRECTION GÉNÉRALE DES IMPÔTS</h5>
+            </div>
+        </div>
+        
+        <div class="article o_report_layout_clean">
+            <t t-call="t-call-content"/>
+        </div>
+        
+        <div t-attf-class="footer o_company_#{company.id}_layout o_g50_footer">
+            <div class="text-center small text-muted">
+                <p>G50 - Déclaration TVA | Page <span class="page"/> / <span class="topage"/></p>
+                <p>HASSIBA Suite ERP - Conforme réglementation fiscale algérienne</p>
+            </div>
+        </div>
+    </template>
+
+    <!-- Report Actions Registration -->
+    <record id="paperformat_bulletin_dz" model="report.paperformat">
+        <field name="name">Format Bulletin Algérien A4</field>
+        <field name="default" eval="True"/>
+        <field name="format">A4</field>
+        <field name="page_height">297</field>
+        <field name="page_width">210</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">15</field>
+        <field name="margin_bottom">15</field>
+        <field name="margin_left">10</field>
+        <field name="margin_right">10</field>
+        <field name="header_line" eval="False"/>
+    </record>
+
+    <record id="paperformat_g50_dz" model="report.paperformat">
+        <field name="name">Format Déclaration G50 A4</field>
+        <field name="default" eval="False"/>
+        <field name="format">A4</field>
+        <field name="page_height">297</field>
+        <field name="page_width">210</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">20</field>
+        <field name="margin_bottom">20</field>
+        <field name="margin_left">15</field>
+        <field name="margin_right">15</field>
+        <field name="header_line" eval="True"/>
+    </record>
+
+</odoo>

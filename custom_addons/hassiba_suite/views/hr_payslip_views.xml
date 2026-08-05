@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!-- ================================================== -->
+    <!-- PAYSLIP VIEWS - Algerian Bulletin de Paie            -->
+    <!-- ================================================== -->
+
+    <!-- Payslip Form View Extension - Algerian Layout -->
+    <record id="view_payslip_form_dz" model="ir.ui.view">
+        <field name="name">hr.payslip.form.dz</field>
+        <field name="model">hr.payslip</field>
+        <field name="inherit_id" ref="hr_payroll.view_hr_payslip_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Algerian Bulletin Header -->
+            <xpath expr="//sheet/group[1]" position="before">
+                <group string="Bulletin Algérien" name="dz_bulletin_header">
+                    <group>
+                        <field name="numero_bulletin"/>
+                        <field name="mois_paie"/>
+                        <field name="annee_paie"/>
+                    </group>
+                    <group>
+                        <field name="montant_brut" widget="monetary"/>
+                        <field name="montant_irg" widget="monetary"/>
+                        <field name="montant_net" widget="monetary" class="text-success font-bold"/>
+                    </group>
+                </group>
+            </xpath>
+
+            <!-- Add Gains/Lines Notebook -->
+            <xpath expr="//notebook[@name='payslip_details']" position="inside">
+                <page string="Gains (DZ)" name="dz_gains">
+                    <field name="gains_line_ids">
+                        <tree editable="bottom" create="true" delete="true">
+                            <field name="sequence" widget="handle"/>
+                            <field name="libelle"/>
+                            <field name="montant" widget="monetary" sum="Total Gains"/>
+                        </tree>
+                    </field>
+                </page>
+
+                <page string="Retenues (DZ)" name="dz_retenues">
+                    <field name="retenues_line_ids">
+                        <tree editable="bottom" create="true" delete="true">
+                            <field name="sequence" widget="handle"/>
+                            <field name="libelle"/>
+                            <field name="montant" widget="monetary" sum="Total Retenues"/>
+                        </tree>
+                    </field>
+                </page>
+
+                <page string="Récapitulatif CNAS/IRG" name="dz_recap_cnass">
+                    <group>
+                        <group string="CNAS Sécurité Sociale">
+                            <field name="montant_cnas_salarial" widget="monetary"/>
+                            <field name="montant_cnas_patronal" widget="monetary"/>
+                            <field name="montant_irg" widget="monetary"/>
+                        </group>
+                        <group string="Net à Payer">
+                            <field name="montant_net" widget="monetary" class="text-primary"/>
+                            <field name="net_en_lettres" readonly="1" class="text-italic"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+
+            <!-- Print Button for Algerian Bulletin -->
+            <xpath expr="//button[@name='action_payslip_sent']" position="after">
+                <button name="%(action_print_bulletin_dz)d" 
+                        type="action"
+                        string="Imprimer Bulletin DZ"
+                        class="btn-primary"
+                        icon="fa-print"/>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- Payslip Tree View Extension -->
+    <record id="view_payslip_tree_dz" model="ir.ui.view">
+        <field name="name">hr.payslip.tree.dz</field>
+        <field name="model">hr.payslip</field>
+        <field name="inherit_id" ref="hr_payroll.view_hr_payslip_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='number_of_days']" position="after">
+                <field name="numero_bulletin"/>
+                <field name="mois_paie"/>
+                <field name="annee_paie"/>
+                <field name="montant_brut" widget="monetary" sum="Total Brut"/>
+                <field name="montant_net" widget="monetary" sum="Total Net"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Payslip Search View Extension -->
+    <record id="view_payslip_search_dz" model="ir.ui.view">
+        <field name="name">hr.payslip.search.dz</field>
+        <field name="model">hr.payslip</field>
+        <field name="inherit_id" ref="hr_payroll.view_hr_payslip_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='employee_id']" position="after">
+                <field name="numero_bulletin" string="N° Bulletin"/>
+                <field name="mois_paie"/>
+                <field name="annee_paie"/>
+            </xpath>
+            <xpath expr="//group" position="inside">
+                <filter string="Ce Mois" name="this_month" 
+                        domain="[('mois_paie', '=', str(context_today().month).zfill(2)), ('annee_paie', '=', str(context_today().year))]"/>
+                <separator/>
+                <filter string="À Calculer" name="draft" domain="[('state', '=', 'draft')]"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Kanban View for Payslips -->
+    <record id="view_payslip_kanban_dz" model="ir.ui.view">
+        <field name="name">hr.payslip.kanban.dz</field>
+        <field name="model">hr.payslip</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="mois_paie">
+                <field name="employee_id"/>
+                <field name="montant_net"/>
+                <field name="montant_brut"/>
+                <field name="state"/>
+                <field name="numero_bulletin"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="oe_kanban_card oe_kanban_global_click">
+                            <div class="oe_kanban_content">
+                                <strong><field name="employee_id"/></strong>
+                                <div class="text-muted"><field name="numero_bulletin"/></div>
+                                <div class="mt-2">
+                                    <span class="badge badge-primary">
+                                        Net: <field name="montant_net" widget="monetary"/>
+                                    </span>
+                                </div>
+                                <div class="mt-1">
+                                    <field name="state" widget="label_selection" options="{'classes': {'draft': 'warning', 'verify': 'info', 'done': 'success', 'cancel': 'danger'}}"/>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Action: Print Bulletin DZ -->
+    <record id="action_print_bulletin_dz" model="ir.actions.report">
+        <field name="name">Bulletin de Paie Algérien</field>
+        <field name="model">hr.payslip</field>
+        <field name="report_name">hassiba_suite.bulletin_paie_dz</field>
+        <field name="report_file">hassiba_suite.bulletin_paie_dz</field>
+        <field name="print_report_name">'Bulletin_Paie_' + object.numero_bulletin + '_' + (object.employee_id.name or '').replace(' ', '_')</field>
+        <field name="binding_model_id" ref="hr_payroll.model_hr_payslip"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- Gains Line Tree View -->
+    <record id="view_gains_line_tree" model="ir.ui.view">
+        <field name="name">hr.payslip.gains.line.tree</field>
+        <field name="model">hr.payslip.gains.line</field>
+        <field name="arch" type="xml">
+            <tree editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="libelle"/>
+                <field name="montant" widget="monetary" sum="Total"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Retenues Line Tree View -->
+    <record id="view_retenues_line_tree" model="ir.ui.view">
+        <field name="name">hr.payslip.retenues.line.tree</field>
+        <field name="model">hr.payslip.retenues.line</field>
+        <field name="arch" type="xml">
+            <tree editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="libelle"/>
+                <field name="montant" widget="monetary" sum="Total"/>
+            </tree>
+        </field>
+    </record>
+
+</odoo>

@@ -80,7 +80,7 @@ class HRPayslipDZ(models.Model):
         string='Lignes de Gains'
     )
     retenues_line_ids = fields.One2many(
-        ' 'hr.payslip.retenues.line',
+        'hr.payslip.retenues.line',
         'payslip_id',
         string='Lignes de Retenues'
     )

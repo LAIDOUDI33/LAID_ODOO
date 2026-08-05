@@ -61,15 +61,23 @@ Conformité: Législation du travail algérienne + Normes SCF appliquées
     ],
     
     'data': [
+        # Data Files - Algerian Localization
         'data/wilayas_data.xml',
+        'data/communes_data.xml',
         'data/tax_configuration.xml',
         'data/irg_tables.xml',
         'data/cnas_rates.xml',
         'data/legal_holidays_dz.xml',
+        # View Files - UI Extensions
+        'views/menu_items.xml',
         'views/res_partner_views.xml',
         'views/hr_views.xml',
+        'views/hr_payslip_views.xml',
         'views/account_views.xml',
-        'views/menu_items.xml',
+        'views/dashboard_views.xml',
+        # Report Templates (QWeb PDF)
+        'reports/report_templates.xml',
+        # Security Configuration
         'security/ir.model.access.csv',
         'security/security.xml',
     ],

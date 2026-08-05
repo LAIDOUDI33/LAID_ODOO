@@ -1,0 +1,1115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    HASSIBA Suite - Algeria Communes Data
+    Copyright (C) 2024-2025 HASSIBA Solutions
+    License: LGPL-3
+    
+    This file contains commune (municipality) data for all 58 wilayas (provinces)
+    in Algeria. Each wilaya has its chef-lieu (capital commune) and other 
+    important communes.
+-->
+<odoo>
+    <data noupdate="1">
+        
+        <!-- ================================================================== -->
+        <!-- WILAYA 01 - ADRAR (أدرار)                                          -->
+        <!-- ================================================================== -->
+        <record id="commune_adrar" model="res.commune.dz">
+            <field name="name">Adrar</field>
+            <field name="code">0101</field>
+            <field name="wilaya_id" ref="dz_wilaya_01"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+        <record id="commune_timimoun" model="res.commune.dz">
+            <field name="name">Timimoun</field>
+            <field name="code">0102</field>
+            <field name="wilaya_id" ref="dz_wilaya_01"/>
+        </record>
+        <record id="commune_aoulef" model="res.commune.dz">
+            <field name="name">Aoulef</field>
+            <field name="code">0103</field>
+            <field name="wilaya_id" ref="dz_wilaya_01"/>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 02 - CHLEF (الشلف)                                          -->
+        <!-- ================================================================== -->
+        <record id="commune_chlef" model="res.commune.dz">
+            <field name="name">Chlef</field>
+            <field name="code">0201</field>
+            <field name="wilaya_id" ref="dz_wilaya_02"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+        <record id="commune_oued_fodda" model="res.commune.dz">
+            <field name="name">Oued Fodda</field>
+            <field name="code">0202</field>
+            <field name="wilaya_id" ref="dz_wilaya_02"/>
+        </record>
+        <record id="commune_ouazzane" model="res.commune.dz">
+            <field name="name">Ouzzane</field>
+            <field name="code">0203</field>
+            <field name="wilaya_id" ref="dz_wilaya_02"/>
+        </record>
+        <record id="commune_boukadir" model="res.commune.dz">
+            <field name="name">Boukadir</field>
+            <field name="code">0204</field>
+            <field name="wilaya_id" ref="dz_wilaya_02"/>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 03 - LAGHOUAT (الأغواط)                                      -->
+        <!-- ================================================================== -->
+        <record id="commune_laghouat" model="res.commune.dz">
+            <field name="name">Laghouat</field>
+            <field name="code">0301</field>
+            <field name="wilaya_id" ref="dz_wilaya_03"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+        <record id="commune_aflou" model="res.commune.dz">
+            <field name="name">Aflou</field>
+            <field name="code">0302</field>
+            <field name="wilaya_id" ref="dz_wilaya_03"/>
+        </record>
+        <record id="commune_ksar_el_hirane" model="res.commune.dz">
+            <field name="name">Ksar El Hirane</field>
+            <field name="code">0303</field>
+            <field name="wilaya_id" ref="dz_wilaya_03"/>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 04 - OUM EL BOUAGHI (أم البواقي)                              -->
+        <!-- ================================================================== -->
+        <record id="commune_oum_el_bouaghi" model="res.commune.dz">
+            <field name="name">Oum El Bouaghi</field>
+            <field name="code">0401</field>
+            <field name="wilaya_id" ref="dz_wilaya_04"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+        <record id="commune_ain_beida" model="res.commune.dz">
+            <field name="name">Ain Beida</field>
+            <field name="code">0402</field>
+            <field name="wilaya_id" ref="dz_wilaya_04"/>
+        </record>
+        <record id="commune_ain_m'lila" model="res.commune.dz">
+            <field name="name">Ain M'lila</field>
+            <field name="code">0403</field>
+            <field name="wilaya_id" ref="dz_wilaya_04"/>
+        </record>
+        <record id="commune_ain_zitoun" model="res.commune.dz">
+            <field name="name">Ain Zitoun</field>
+            <field name="code">0404</field>
+            <field name="wilaya_id" ref="dz_wilaya_04"/>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 05 - BATNA (باتنة)                                           -->
+        <!-- ================================================================== -->
+        <record id="commune_batna" model="res.commune.dz">
+            <field name="name">Batna</field>
+            <field name="code">0501</field>
+            <field name="wilaya_id" ref="dz_wilaya_05"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+        <record id="commune_arris" model="res.commune.dz">
+            <field name="name">Arris</field>
+            <field name="code">0502</field>
+            <field name="wilaya_id" ref="dz_wilaya_05"/>
+        </record>
+        <record id="commune_barika" model="res.commune.dz">
+            <field name="name">Barika</field>
+            <field name="code">0503</field>
+            <field name="wilaya_id" ref="dz_wilaya_05"/>
+        </record>
+        <record id="commune_tazoult" model="res.commune.dz">
+            <field name="name">Tazoult</field>
+            <field name="code">0504</field>
+            <field name="wilaya_id" ref="dz_wilaya_05"/>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 06 - BEJAIA (بجاية)                                          -->
+        <!-- ================================================================== -->
+        <record id="commune_bejaia" model="res.commune.dz">
+            <field name="name">Bejaia</field>
+            <field name="code">0601</field>
+            <field name="wilaya_id" ref="dz_wilaya_06"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+        <record id="commune_akbou" model="res.commune.dz">
+            <field name="name">Akbou</field>
+            <field name="code">0602</field>
+            <field name="wilaya_id" ref="dz_wilaya_06"/>
+        </record>
+        <record id="commune_seddouk" model="res.commune.dz">
+            <field name="name">Seddouk</field>
+            <field name="code">0603</field>
+            <field name="wilaya_id" ref="dz_wilaya_06"/>
+        </record>
+        <record id="commune_amizour" model="res.commune.dz">
+            <field name="name">Amizour</field>
+            <field name="code">0604</field>
+            <field name="wilaya_id" ref="dz_wilaya_06"/>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 07 - BISKRA (بسكرة)                                          -->
+        <!-- ================================================================== -->
+        <record id="commune_biskra" model="res.commune.dz">
+            <field name="name">Biskra</field>
+            <field name="code">0701</field>
+            <field name="wilaya_id" ref="dz_wilaya_07"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+        <record id="commune_tolga" model="res.commune.dz">
+            <field name="name">Tolga</field>
+            <field name="code">0702</field>
+            <field name="wilaya_id" ref="dz_wilaya_07"/>
+        </record>
+        <record id="commune_oumache" model="res.commune.dz">
+            <field name="name">Oumache</field>
+            <field name="code">0703</field>
+            <field name="wilaya_id" ref="dz_wilaya_07"/>
+        </record>
+        <record id="commune_sidi_okba" model="res.commune.dz">
+            <field name="name">Sidi Okba</field>
+            <field name="code">0704</field>
+            <field name="wilaya_id" ref="dz_wilaya_07"/>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 08 - BECHAR (بشار)                                           -->
+        <!-- ================================================================== -->
+        <record id="commune_bechar" model="res.commune.dz">
+            <field name="name">Bechar</field>
+            <field name="code">0801</field>
+            <field name="wilaya_id" ref="dz_wilaya_08"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+        <record id="commune_kenadsa" model="res.commune.dz">
+            <field name="name">Kenadsa</field>
+            <field name="code">0802</field>
+            <field name="wilaya_id" ref="dz_wilaya_08"/>
+        </record>
+        <record id="commune_taghit" model="res.commune.dz">
+            <field name="name">Taghit</field>
+            <field name="code">0803</field>
+            <field name="wilaya_id" ref="dz_wilaya_08"/>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 9 - BLIDA (البليدة)                                          -->
+        <!-- ================================================================== -->
+        <record id="commune_blida" model="res.commune.dz">
+            <field name="name">Blida</field>
+            <field name="code">0901</field>
+            <field name="wilaya_id" ref="dz_wilaya_09"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+        <record id="commune_boufarik" model="res.commune.dz">
+            <field name="name">Boufarik</field>
+            <field name="code">0902</field>
+            <field name="wilaya_id" ref="dz_wilaya_09"/>
+        </record>
+        <record id="commune_bouira" model="res.commune.dz">
+            <field name="name">Bouira</field>
+            <field name="code">0903</field>
+            <field name="wilaya_id" ref="dz_wilaya_09"/>
+        </record>
+        <record id="commune_medeaa" model="res.commune.dz">
+            <field name="name">Medea</field>
+            <field name="code">0904</field>
+            <field name="wilaya_id" ref="dz_wilaya_09"/>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 10 - BOUIRA (البويرة)                                         -->
+        <!-- ================================================================== -->
+        <record id="commune_bouira_main" model="res.commune.dz">
+            <field name="name">Bouira</field>
+            <field name="code">1001</field>
+            <field name="wilaya_id" ref="dz_wilaya_10"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+        <record id="commune_draa_el_mizan" model="res.commune.dz">
+            <field name="name">Draa El Mizan</field>
+            <field name="code">1002</field>
+            <field name="wilaya_id" ref="dz_wilaya_10"/>
+        </record>
+        <record id="commune_bouzeguenne" model="res.commune.dz">
+            <field name="name">Bouzeguenne Khenchela</field>
+            <field name="code">1003</field>
+            <field name="wilaya_id" ref="dz_wilaya_10"/>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 11 - TAMANRASSET (تمنراست)                                    -->
+        <!-- ================================================================== -->
+        <record id="commune_tamanrasset" model="res.commune.dz">
+            <field name="name">Tamanrasset</field>
+            <field name="code">1101</field>
+            <field name="wilaya_id" ref="dz_wilaya_11"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+        <record id="commune_abylesse" model="res.commune.dz">
+            <field name="name">Abylesse</field>
+            <field name="code">1102</field>
+            <field name="wilaya_id" ref="dz_wilaya_11"/>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 12 - TEBESSA (تبسة)                                          -->
+        <!-- ================================================================== -->
+        <record id="commune_tebessa" model="res.commune.dz">
+            <field name="name">Tebessa</field>
+            <field name="code">1201</field>
+            <field name="wilaya_id" ref="dz_wilaya_12"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+        <record id="commune_el_oued" model="res.commune.dz">
+            <field name="name">El Oued</field>
+            <field name="code">1202</field>
+            <field name="wilaya_id" ref="dz_wilaya_12"/>
+        </record>
+        <record id="commune_el_menia" model="res.commune.dz">
+            <field name="name">El Menia</field>
+            <field name="code">1203</field>
+            <field name="wilaya_id" ref="dz_wilaya_12"/>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 13 - TLEMCEN (تلمسان)                                         -->
+        <!-- ================================================================== -->
+        <record id="commune_tlemcen" model="res.commune.dz">
+            <field name="name">Tlemcen</field>
+            <field name="code">1301</field>
+            <field name="wilaya_id" ref="dz_wilaya_13"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+        <record id="commune_nedroma" model="res.commune.dz">
+            <field name="name">Nedroma</field>
+            <field name="code">1302</field>
+            <field name="wilaya_id" ref="dz_wilaya_13"/>
+        </record>
+        <record id="commune_ghazaouet" model="res.commune.dz">
+            <field name="name">Ghazaouet</field>
+            <field name="code">1303</field>
+            <field name="wilaya_id" ref="dz_wilaya_13"/>
+        </record>
+        <record id="commune_mansourah" model="res.commune.dz">
+            <field name="name">Mansourah</field>
+            <field name="code">1304</field>
+            <field name="wilaya_id" ref="dz_wilaya_13"/>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 14 - TIARET (تيارت)                                          -->
+        <!-- ================================================================== -->
+        <record id="commune_tiaret" model="res.commune.dz">
+            <field name="name">Tiaret</field>
+            <field name="code">1401</field>
+            <field name="wilaya_id" ref="dz_wilaya_14"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+        <record id="commune_frenda" model="res.commune.dz">
+            <field name="name">Frenda</field>
+            <field name="code">1402</field>
+            <field name="wilaya_id" ref="dz_wilaya_14"/>
+        </record>
+        <record id="commune_mahdia" model="res.commune.dz">
+            <field name="name">Mahdia</field>
+            <field name="code">1403</field>
+            <field name="wilaya_id" ref="dz_wilaya_14"/>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 15 - TIZI OUZU (تيزي وزو)                                     -->
+        <!-- ================================================================== -->
+        <record id="commune_tizi_ouzu" model="res.commune.dz">
+            <field name="name">Tizi Ouzu</field>
+            <field name="code">1501</field>
+            <field name="wilaya_id" ref="dz_wilaya_15"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+        <record id="commune_bejaa" model="res.commune.dz">
+            <field name="name">Bejaia</field>
+            <field name="code">1502</field>
+            <field name="wilaya_id" ref="dz_wilaya_15"/>
+        </record>
+        <record id="commune_ouadhias" model="res.commune.dz">
+            <field name="name">Ouadhias</field>
+            <field name="code">1503</field>
+            <field name="wilaya_id" ref="dz_wilaya_15"/>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 16 - ALGER (الجزائر العاصمة)                                   -->
+        <!-- ================================================================== -->
+        <record id="commune_alger_centre" model="res.commune.dz">
+            <field name="name">Alger Centre</field>
+            <field name="code">1601</field>
+            <field name="wilaya_id" ref="dz_wilaya_16"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+        <record id="commune_bab_el_oued" model="res.commune.dz">
+            <field name="name">Bab El Oued</field>
+            <field name="code">1602</field>
+            <field name="wilaya_id" ref="dz_wilaya_16"/>
+        </record>
+        <record id="commune_hussein_dey" model="res.commune.dz">
+            <field name="name">Hussein Dey</field>
+            <field name="code">1603</field>
+            <field name="wilaya_id" ref="dz_wilaya_16"/>
+        </record>
+        <record id="commune_kouba" model="res.commune.dz">
+            <field name="name">Kouba</field>
+            <field name="code">1604</field>
+            <field name="wilaya_id" ref="dz_wilaya_16"/>
+        </record>
+        <record id="commune_dar_el_beida" model="res.commune.dz">
+            <field name="name">Dar El Beida</field>
+            <field name="code">1605</field>
+            <field name="wilaya_id" ref="dz_wilaya_16"/>
+        </record>
+        <record id="commune_rouiba" model="res.commune.dz">
+            <field name="name">Rouiba</field>
+            <field name="code">1606</field>
+            <field name="wilaya_id" ref="dz_wilaya_16"/>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 17 - DJELFA (الجلفة)                                          -->
+        <!-- ================================================================== -->
+        <record id="commune_djelfa" model="res.commune.dz">
+            <field name="name">Djelfa</field>
+            <field name="code">1701</field>
+            <field name="wilaya_id" ref="dz_wilaya_17"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+        <record id="commune_ain_oussera" model="res.commune.dz">
+            <field name="name">Ain Oussera</field>
+            <field name="code">1702</field>
+            <field name="wilaya_id" ref="dz_wilaya_17"/>
+        </record>
+        <record id="commune_messaad" model="res.commune.dz">
+            <field name="name">Messaad</field>
+            <field name="code">1703</field>
+            <field name="wilaya_id" ref="dz_wilaya_17"/>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 18 - JIJEL (جيجل)                                            -->
+        <!-- ================================================================== -->
+        <record id="commune_jijel" model="res.commune.dz">
+            <field name="name">Jijel</field>
+            <field name="code">1801</field>
+            <field name="wilaya_id" ref="dz_wilaya_18"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+        <record id="commune_el_eulma" model="res.commune.dz">
+            <field name="name">El Eulma</field>
+            <field name="code">1802</field>
+            <field name="wilaya_id" ref="dz_wilaya_18"/>
+        </record>
+        <record id="commune_skikda" model="res.commune.dz">
+            <field name="name">Skikda</field>
+            <field name="code">1803</field>
+            <field name="wilaya_id" ref="dz_wilaya_18"/>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 19 - SETIF (سطيف)                                            -->
+        <!-- ================================================================== -->
+        <record id="commune_setif" model="res.commune.dz">
+            <field name="name">Setif</field>
+            <field name="code">1901</field>
+            <field name="wilaya_id" ref="dz_wilaya_19"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+        <record id="commune_el_eulma_setif" model="res.commune.dz">
+            <field name="name">El Eulma</field>
+            <field name="code">1902</field>
+            <field name="wilaya_id" ref="dz_wilaya_19"/>
+        </record>
+        <record id="commune_ain_azel" model="res.commune.dz">
+            <field name="name">Ain Azel</field>
+            <field name="code">1903</field>
+            <field name="wilaya_id" ref="dz_wilaya_19"/>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 20 - SAIDA (سعيدة)                                           -->
+        <!-- ================================================================== -->
+        <record id="commune_saida" model="res.commune.dz">
+            <field name="name">Saida</field>
+            <field name="code">2001</field>
+            <field name="wilaya_id" ref="dz_wilaya_20"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+        <record id="commune_yellel" model="res.commune.dz">
+            <field name="name">Yellel</field>
+            <field name="code">2002</field>
+            <field name="wilaya_id" ref="dz_wilaya_20"/>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 21 - SKIKDA (عنابة) - Note: Also in wilaya 18                 -->
+        <!-- ================================================================== -->
+        <record id="commune_skikda_main" model="res.commune.dz">
+            <field name="name">Skikda</field>
+            <field name="code">2101</field>
+            <field name="wilaya_id" ref="dz_wilaya_21"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+        <record id="commune_annaba_skikda" model="res.commune.dz">
+            <field name="name">Annaba</field>
+            <field name="code">2102</field>
+            <field name="wilaya_id" ref="dz_wilaya_21"/>
+        </record>
+        <record id="commune_el_harrouch" model="res.commune.dz">
+            <field name="name">El Harrouch</field>
+            <field name="code">2103</field>
+            <field name="wilaya_id" ref="dz_wilaya_21"/>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 22 - SIDI BEL ABBES (سيدي بلعباس)                             -->
+        <!-- ================================================================== -->
+        <record id="commune_sidi_bel_abbes" model="res.commune.dz">
+            <field name="name">Sidi Bel Abbes</field>
+            <field name="code">2201</field>
+            <field name="wilaya_id" ref="dz_wilaya_22"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+        <record id="commune_tlemcen_sba" model="res.commune.dz">
+            <field name="name">Tlemcen</field>
+            <field name="code">2202</field>
+            <field name="wilaya_id" ref="dz_wilaya_22"/>
+        </record>
+        <record id="commune_aïn_temouchent" model="res.commune.dz">
+            <field name="name">Ain Temouchent</field>
+            <field name="code">2203</field>
+            <field name="wilaya_id" ref="dz_wilaya_22"/>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 23 - ANABA (عنابة)                                            -->
+        <!-- ================================================================== -->
+        <record id="commune_annaba" model="res.commune.dz">
+            <field name="name">Annaba</field>
+            <field name="code">2301</field>
+            <field name="wilaya_id" ref="dz_wilaya_23"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+        <record id="commune_el_bouni" model="res.commune.dz">
+            <field name="name">El Bouni</field>
+            <field name="code">2302</field>
+            <field name="wilaya_id" ref="dz_wilaya_23"/>
+        </record>
+        <record id="commune_azerrou" model="res.commune.dz">
+            <field name="name">Azerrou</field>
+            <field name="code">2303</field>
+            <field name="wilaya_id" ref="dz_wilaya_23"/>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 24 - GUELMA (قالمة)                                          -->
+        <!-- ================================================================== -->
+        <record id="commune_guelma" model="res.commune.dz">
+            <field name="name">Guelma</field>
+            <field name="code">2401</field>
+            <field name="wilaya_id" ref="dz_wilaya_24"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+        <record id="commune_ouzenag" model="res.commune.dz">
+            <field name="name">Ouenza</field>
+            <field name="code">2402</field>
+            <field name="wilaya_id" ref="dz_wilaya_24"/>
+        </record>
+        <record id="commune_bouchegouf" model="res.commune.dz">
+            <field name="name">Bouchegouf</field>
+            <field name="code">2403</field>
+            <field name="wilaya_id" ref="dz_wilaya_24"/>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 25 - CONSTANTINE (قسنطينة)                                    -->
+        <!-- ================================================================== -->
+        <record id="commune_constantine" model="res.commune.dz">
+            <field name="name">Constantine</field>
+            <field name="code">2501</field>
+            <field name="wilaya_id" ref="dz_wilaya_25"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+        <record id="commune_el_khroub" model="res.commune.dz">
+            <field name="name">El Khroub</field>
+            <field name="code">2502</field>
+            <field name="wilaya_id" ref="dz_wilaya_25"/>
+        </record>
+        <record id="commune_ain_smara" model="res.commune.dz">
+            <field name="name">Ain Smara</field>
+            <field name="code">2503</field>
+            <field name="wilaya_id" ref="dz_wilaya_25"/>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 26 - MEDEA (المديعة)                                          -->
+        <!-- ================================================================== -->
+        <record id="commune_medea" model="res.commune.dz">
+            <field name="name">Medea</field>
+            <field name="code">2601</field>
+            <field name="wilaya_id" ref="dz_wilaya_26"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+        <record id="commune_berrouaghia" model="res.commune.dz">
+            <field name="name">Berrouaghia</field>
+            <field name="code">2602</field>
+            <field name="wilaya_id" ref="dz_wilaya_26"/>
+        </record>
+        <record id="commune_chahbounia" model="res.commune.dz">
+            <field name="name">Chahbounia</field>
+            <field name="code">2603</field>
+            <field name="wilaya_id" ref="dz_wilaya_26"/>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 27 - MOSTAGANEM (مستغانم)                                     -->
+        <!-- ================================================================== -->
+        <record id="commune_mostaganem" model="res.commune.dz">
+            <field name="name">Mostaganem</field>
+            <field name="code">2701</field>
+            <field name="wilaya_id" ref="dz_wilaya_27"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+        <record id="commune_sidi_lakhdar" model="res.commune.dz">
+            <field name="name">Sidi Lakhdar</field>
+            <field name="code">2702</field>
+            <field name="wilaya_id" ref="dz_wilaya_27"/>
+        </record>
+        <record id="commune_mazagran" model="res.commune.dz">
+            <field name="name">Mazagran</field>
+            <field name="code">2703</field>
+            <field name="wilaya_id" ref="dz_wilaya_27"/>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 28 - M'SILA (المسيلة)                                         -->
+        <!-- ================================================================== -->
+        <record id="commune_msila" model="res.commune.dz">
+            <field name="name">M'Sila</field>
+            <field name="code">2801</field>
+            <field name="wilaya_id" ref="dz_wilaya_28"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+        <record id="commune_bou_saada" model="res.commune.dz">
+            <field name="name">Bou Saada</field>
+            <field name="code">2802</field>
+            <field name="wilaya_id" ref="dz_wilaya_28"/>
+        </record>
+        <record id="commune_magra" model="res.commune.dz">
+            <field name="name">Magra</field>
+            <field name="code">2803</field>
+            <field name="wilaya_id" ref="dz_wilaya_28"/>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 29 - MASKARA (معسكر)                                          -->
+        <!-- ================================================================== -->
+        <record id="commune_maskara" model="res.commune.dz">
+            <field name="name">Maskara</field>
+            <field name="code">2901</field>
+            <field name="wilaya_id" ref="dz_wilaya_29"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+        <record id="commune_sig" model="res.commune.dz">
+            <field name="name">Sig</field>
+            <field name="code">2902</field>
+            <field name="wilaya_id" ref="dz_wilaya_29"/>
+        </record>
+        <record id="commune_abbas" model="res.commune.dz">
+            <field name="name">Abbas</field>
+            <field name="code">2903</field>
+            <field name="wilaya_id" ref="dz_wilaya_29"/>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 30 - OARGLA (ورقلة)                                           -->
+        <!-- ================================================================== -->
+        <record id="commune_oargla" model="res.commune.dz">
+            <field name="name">Oargla</field>
+            <field name="code">3001</field>
+            <field name="wilaya_id" ref="dz_wilaya_30"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+        <record id="commune_hassi_messaud" model="res.commune.dz">
+            <field name="name">Hassi Messaoud</field>
+            <field name="code">3002</field>
+            <field name="wilaya_id" ref="dz_wilaya_30"/>
+        </record>
+        <record id="commune_touggourt" model="res.commune.dz">
+            <field name="name">Touggourt</field>
+            <field name="code">3003</field>
+            <field name="wilaya_id" ref="dz_wilaya_30"/>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 31 - ORAN (وهران)                                             -->
+        <!-- ================================================================== -->
+        <record id="commune_oran" model="res.commune.dz">
+            <field name="name">Oran</field>
+            <field name="code">3101</field>
+            <field name="wilaya_id" ref="dz_wilaya_31"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+        <record id="commune_es_senia" model="res.commune.dz">
+            <field name="name">Es Senia</field>
+            <field name="code">3102</field>
+            <field name="wilaya_id" ref="dz_wilaya_31"/>
+        </record>
+        <record id="commune_bir_el_djir" model="res.commune.dz">
+            <field name="name">Bir El Djir</field>
+            <field name="code">3103</field>
+            <field name="wilaya_id" ref="dz_wilaya_31"/>
+        </record>
+        <record id="commune_ain_el_turck" model="res.commune.dz">
+            <field name="name">Ain El Turk</field>
+            <field name="code">3104</field>
+            <field name="wilaya_id" ref="dz_wilaya_31"/>
+        </record>
+        <record id="commune_arzew" model="res.commune.dz">
+            <field name="name">Arzew</field>
+            <field name="code">3105</field>
+            <field name="wilaya_id" ref="dz_wilaya_31"/>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 32 - EL BAYADH ( البيض)                                       -->
+        <!-- ================================================================== -->
+        <record id="commune_el_bayadh" model="res.commune.dz">
+            <field name="name">El Bayadh</field>
+            <field name="code">3201</field>
+            <field name="wilaya_id" ref="dz_wilaya_32"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+        <record id="commune_brezina" model="res.commune.dz">
+            <field name="name">Brezina</field>
+            <field name="code">3202</field>
+            <field name="wilaya_id" ref="dz_wilaya_32"/>
+        </record>
+        <record id="commune_stitten" model="res.commune.dz">
+            <field name="name">Stitten</field>
+            <field name="code">3203</field>
+            <field name="wilaya_id" ref="dz_wilaya_32"/>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 33 - ILLIZI (إيليزي)                                          -->
+        <!-- ================================================================== -->
+        <record id="commune_illizi" model="res.commune.dz">
+            <field name="name">Illizi</field>
+            <field name="code">3301</field>
+            <field name="wilaya_id" ref="dz_wilaya_33"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+        <record id="commune_djanet" model="res.commune.dz">
+            <field name="name">Djanet</field>
+            <field name="code">3302</field>
+            <field name="wilaya_id" ref="dz_wilaya_33"/>
+        </record>
+        <record id="commune_in_amenas" model="res.commune.dz">
+            <field name="name">In Amenas</field>
+            <field name="code">3303</field>
+            <field name="wilaya_id" ref="dz_wilaya_33"/>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 34 - BORDJ BOU ARRERIDJ (برج بوعريريج)                        -->
+        <!-- ================================================================== -->
+        <record id="commune_bordj_bou_arreridj" model="res.commune.dz">
+            <field name="name">Bordj Bou Arreridj</field>
+            <field name="code">3401</field>
+            <field name="wilaya_id" ref="dz_wilaya_34"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+        <record id="commune_mansoura_bba" model="res.commune.dz">
+            <field name="name">Mansoura</field>
+            <field name="code">3402</field>
+            <field name="wilaya_id" ref="dz_wilaya_34"/>
+        </record>
+        <record id="commune_bir_ghbalou" model="res.commune.dz">
+            <field name="name">Bir Ghbalou</field>
+            <field name="code">3403</field>
+            <field name="wilaya_id" ref="dz_wilaya_34"/>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 35 - BOUMERDES (بومرداس)                                      -->
+        <!-- ================================================================== -->
+        <record id="commune_boumerdes" model="res.commune.dz">
+            <field name="name">Boumerdes</field>
+            <field name="code">3501</field>
+            <field name="wilaya_id" ref="dz_wilaya_35"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+        <record id="commune_dellys" model="res.commune.dz">
+            <field name="name">Dellys</field>
+            <field name="code">3502</field>
+            <field name="wilaya_id" ref="dz_wilaya_35"/>
+        </record>
+        <record id="commune_bouzeguene_khenchela" model="res.commune.dz">
+            <field name="name">Bou Ismail</field>
+            <field name="code">3503</field>
+            <field name="wilaya_id" ref="dz_wilaya_35"/>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 36 - EL TARF (الطارف)                                         -->
+        <!-- ================================================================== -->
+        <record id="commune_el_tarf" model="res.commune.dz">
+            <field name="name">El Tarf</field>
+            <field name="code">3601</field>
+            <field name="wilaya_id" ref="dz_wilaya_36"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+        <record id="commune_ben_m'hidi" model="res.commune.dz">
+            <field name="name">Ben M'hidi</field>
+            <field name="code">3602</field>
+            <field name="wilaya_id" ref="dz_wilaya_36"/>
+        </record>
+        <record id="commune_el_aioun" model="res.commune.dz">
+            <field name="name">El Aioun</field>
+            <field name="code">3603</field>
+            <field name="wilaya_id" ref="dz_wilaya_36"/>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 37 - TINDOUF (تندوف)                                          -->
+        <!-- ================================================================== -->
+        <record id="commune_tindouf" model="res.commune.dz">
+            <field name="name">Tindouf</field>
+            <field name="code">3701</field>
+            <field name="wilaya_id" ref="dz_wilaya_37"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 38 - TISSEMSILT (تيسمسيلت)                                    -->
+        <!-- ================================================================== -->
+        <record id="commune_tissemsilt" model="res.commune.dz">
+            <field name="name">Tissemsilt</field>
+            <field name="code">3801</field>
+            <field name="wilaya_id" ref="dz_wilaya_38"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+        <record id="commune_lazharia" model="res.commune.dz">
+            <field name="name">Lazharia</field>
+            <field name="code">3802</field>
+            <field name="wilaya_id" ref="dz_wilaya_38"/>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 39 - EL OUED (الوادي)                                         -->
+        <!-- ================================================================== -->
+        <record id="commune_el_oued_main" model="res.commune.dz">
+            <field name="name">El Oued</field>
+            <field name="code">3901</field>
+            <field name="wilaya_id" ref="dz_wilaya_39"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+        <record id="commune_guemar" model="res.commune.dz">
+            <field name="name">Guemar</field>
+            <field name="code">3902</field>
+            <field name="wilaya_id" ref="dz_wilaya_39"/>
+        </record>
+        <record id="commune_debila" model="res.commune.dz">
+            <field name="name">Debila</field>
+            <field name="code">3903</field>
+            <field name="wilaya_id" ref="dz_wilaya_39"/>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 40 - KHENCHELA (خنشلة)                                        -->
+        <!-- ================================================================== -->
+        <record id="commune_khenchela" model="res.commune.dz">
+            <field name="name">Khenchela</field>
+            <field name="code">4001</field>
+            <field name="wilaya_id" ref="dz_wilaya_40"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+        <record id="commune_chechar" model="res.commune.dz">
+            <field name="name">Chechar</field>
+            <field name="code">4002</field>
+            <field name="wilaya_id" ref="dz_wilaya_40"/>
+        </record>
+        <record id="commune_ouled_recheam" model="res.commune.dz">
+            <field name="name">Ouled Recheam</field>
+            <field name="code">4003</field>
+            <field name="wilaya_id" ref="dz_wilaya_40"/>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 41 - SOUK AHRAS (سوق أهراس)                                   -->
+        <!-- ================================================================== -->
+        <record id="commune_souk_ahras" model="res.commune.dz">
+            <field name="name">Souk Ahras</field>
+            <field name="code">4101</field>
+            <field name="wilaya_id" ref="dz_wilaya_41"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+        <record id="commune_sedrata" model="res.commune.dz">
+            <field name="name">Sedrata</field>
+            <field name="code">4102</field>
+            <field name="wilaya_id" ref="dz_wilaya_41"/>
+        </record>
+        <record id="commune_merdja" model="res.commune.dz">
+            <field name="name">Merdeja</field>
+            <field name="code">4103</field>
+            <field name="wilaya_id" ref="dz_wilaya_41"/>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 42 - TIPAZA (تيبازة)                                          -->
+        <!-- ================================================================== -->
+        <record id="commune_tipaza" model="res.commune.dz">
+            <field name="name">Tipaza</field>
+            <field name="code">4201</field>
+            <field name="wilaya_id" ref="dz_wilaya_42"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+        <record id="commune_cheraga" model="res.commune.dz">
+            <field name="name">Cheraga</field>
+            <field name="code">4202</field>
+            <field name="wilaya_id" ref="dz_wilaya_42"/>
+        </record>
+        <record id="commune_bou_ismail" model="res.commune.dz">
+            <field name="name">Bou Ismail</field>
+            <field name="code">4203</field>
+            <field name="wilaya_id" ref="dz_wilaya_42"/>
+        </record>
+        <record id="commune_hammamet" model="res.commune.dz">
+            <field name="name">Hammamet</field>
+            <field name="code">4204</field>
+            <field name="wilaya_id" ref="dz_wilaya_42"/>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 43 - MILA (ميلة)                                              -->
+        <!-- ================================================================== -->
+        <record id="commune_mila" model="res.commune.dz">
+            <field name="name">Mila</field>
+            <field name="code">4301</field>
+            <field name="wilaya_id" ref="dz_wilaya_43"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+        <record id="commune_telerghma" model="res.commune.dz">
+            <field name="name">Telerghma</field>
+            <field name="code">4302</field>
+            <field name="wilaya_id" ref="dz_wilaya_43"/>
+        </record>
+        <record id="commune_chateaudun_du_rhumel" model="res.commune.dz">
+            <field name="Name">Chateaudun du Rhumel</field>
+            <field name="code">4303</field>
+            <field name="wilaya_id" ref="dz_wilaya_43"/>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 44 - AIN DEFLA (عين الدفلى)                                    -->
+        <!-- ================================================================== -->
+        <record id="commune_ain_defla" model="res.commune.dz">
+            <field name="name">Ain Defla</field>
+            <field name="code">4401</field>
+            <field name="wilaya_id" ref="dz_wilaya_44"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+        <record id="commune_khemis_miliana" model="res.commune.dz">
+            <field name="name">Khemis Miliana</field>
+            <field name="code">4402</field>
+            <field name="wilaya_id" ref="dz_wilaya_44"/>
+        </record>
+        <record id="commune_hammam_righa" model="res.commune.dz">
+            <field name="name">Hammam Righa</field>
+            <field name="code">4403</field>
+            <field name="wilaya_id" ref="dz_wilaya_44"/>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 45 - NAAMA (نعامة)                                            -->
+        <!-- ================================================================== -->
+        <record id="commune_naama" model="res.commune.dz">
+            <field name="name">Naama</field>
+            <field name="code">4501</field>
+            <field name="wilaya_id" ref="dz_wilaya_45"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+        <record id="commune_ain_ben_khelil" model="res.commune.dz">
+            <field name="name">Ain Ben Khelil</field>
+            <field name="code">4502</field>
+            <field name="wilaya_id" ref="dz_wilaya_45"/>
+        </record>
+        <record id="commune_mecheria" model="res.commune.dz">
+            <field name="name">Mecheria</field>
+            <field name="code">4503</field>
+            <field name="wilaya_id" ref="dz_wilaya_45"/>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 46 - AIN TEMOUCHENT (عين تموشنت)                               -->
+        <!-- ================================================================== -->
+        <record id="commune_ain_temouchent_main" model="res.commune.dz">
+            <field name="name">Ain Temouchent</field>
+            <field name="code">4601</field>
+            <field name="wilaya_id" ref="dz_wilaya_46"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+        <record id="commune_hammam_bou_hadjar" model="res.commune.dz">
+            <field name="name">Hammam Bou Hadjar</field>
+            <field name="code">4602</field>
+            <field name="wilaya_id" ref="dz_wilaya_46"/>
+        </record>
+        <record id="commune_beni_saf" model="res.commune.dz">
+            <field name="name">Beni Saf</field>
+            <field name="code">4603</field>
+            <field name="wilaya_id" ref="dz_wilaya_46"/>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 47 - Ghardaïa (غرداية)                                        -->
+        <!-- ================================================================== -->
+        <record id="commune_ghardaia" model="res.commune.dz">
+            <field name="name">Ghardaia</field>
+            <field name="code">4701</field>
+            <field name="wilaya_id" ref="dz_wilaya_47"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+        <record id="commune_berriane" model="res.commune.dz">
+            <field name="name">Berriane</field>
+            <field name="code">4702</field>
+            <field name="wilaya_id" ref="dz_wilaya_47"/>
+        </record>
+        <record id="commune_menaa" model="res.commune.dz">
+            <field name="name">Menaa</field>
+            <field name="code">4703</field>
+            <field name="wilaya_id" ref="dz_wilaya_47"/>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 48 - RELIZANE (Relizane) (غليزان)                             -->
+        <!-- ================================================================== -->
+        <record id="commune_relizane" model="res.commune.dz">
+            <field name="name">Relizane</field>
+            <field name="code">4801</field>
+            <field name="wilaya_id" ref="dz_wilaya_48"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+        <record id="commune_zemmoura" model="res.commune.dz">
+            <field name="name">Zemmoura</field>
+            <field name="code">4802</field>
+            <field name="wilaya_id" ref="dz_wilaya_48"/>
+        </record>
+        <record id="commune_oued_rhiou" model="res.commune.dz">
+            <field name="name">Oued Rhiou</field>
+            <field name="code">4803</field>
+            <field name="wilaya_id" ref="dz_wilaya_48"/>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 49 - TIMIMOUN (تيميمون) - Also in wilaya 01                   -->
+        <!-- ================================================================== -->
+        <record id="commune_timimoun_49" model="res.commune.dz">
+            <field name="name">Timimoun</field>
+            <field name="code">4901</field>
+            <field name="wilaya_id" ref="dz_wilaya_49"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 50 - Bordj Badji Mokhtar (برج باجي مختار)                     -->
+        <!-- ================================================================== -->
+        <record id="commune_bordj_badji_mokhtar" model="res.commune.dz">
+            <field name="name">Bordj Badji Mokhtar</field>
+            <field name="code">5001</field>
+            <field name="wilaya_id" ref="dz_wilaya_50"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 51 - Ouled Djellal (أولاد جلال)                                -->
+        <!-- ================================================================== -->
+        <record id="commune_ouled_djellal" model="res.commune.dz">
+            <field name="name">Ouled Djellal</field>
+            <field name="code">5101</field>
+            <field name="wilaya_id" ref="dz_wilaya_51"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 52 - Béni Abbès (بي عباس)                                     -->
+        <!-- ================================================================== -->
+        <record id="commune_beni_abbas" model="res.commune.dz">
+            <field name="name">Beni Abbas</field>
+            <field name="code">5201</field>
+            <field name="wilaya_id" ref="dz_wilaya_52"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 53 - In Salah (إن صلاح)                                       -->
+        <!-- ================================================================== -->
+        <record id="commune_in_salah" model="res.commune.dz">
+            <field name="name">In Salah</field>
+            <field name="code">5301</field>
+            <field name="wilaya_id" ref="dz_wilaya_53"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 54 - In Guezzam (إن قزام)                                     -->
+        <!-- ================================================================== -->
+        <record id="commune_in_guezzam" model="res.commune.dz">
+            <field name="name">In Guezzam</field>
+            <field name="code">5401</field>
+            <field name="wilaya_id" ref="dz_wilaya_54"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 55 - Touggourt (تقرت) - Also in wilaya 30                      -->
+        <!-- ================================================================== -->
+        <record id="commune_touggourt_55" model="res.commune.dz">
+            <field name="name">Touggourt</field>
+            <field name="code">5501</field>
+            <field name="wilaya_id" ref="dz_wilaya_55"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 56 - Djanet (جانت) - Also in wilaya 33                        -->
+        <!-- ================================================================== -->
+        <record id="commune_djanet_56" model="res.commune.dz">
+            <field name="name">Djanet</field>
+            <field name="code">5601</field>
+            <field name="wilaya_id" ref="dz_wilaya_56"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 57 - El M'Ghair (المغير)                                      -->
+        <!-- ================================================================== -->
+        <record id="commune_el_mghair" model="res.commune.dz">
+            <field name="name">El M'Ghair</field>
+            <field name="code">5701</field>
+            <field name="wilaya_id" ref="dz_wilaya_57"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+
+        <!-- ================================================================== -->
+        <!-- WILAYA 58 - El Meniaa (المنيعة) - Also in wilaya 12                  -->
+        <!-- ================================================================== -->
+        <record id="commune_el_meniaa_58" model="res.commune.dz">
+            <field name="name">El Meniaa</field>
+            <field name="code">5801</field>
+            <field name="wilaya_id" ref="dz_wilaya_58"/>
+            <field name="is_chef_lieu">True</field>
+        </record>
+
+    </data>
+</odoo>

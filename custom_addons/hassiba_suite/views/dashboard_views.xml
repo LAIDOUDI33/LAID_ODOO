@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!-- ================================================== -->
+    <!-- DASHBOARD VIEWS - HASSIBA Suite KPIs                -->
+    <!-- ================================================== -->
+
+    <!-- Main Dashboard Action -->
+    <record id="action_hassiba_dashboard" model="ir.actions.act_window">
+        <field name="name">Tableau de Bord HASSIBA</field>
+        <field name="res_model">hassiba.dashboard</field>
+        <field name="view_mode">dashboard</field>
+        <field name="target">current</field>
+    </record>
+
+    <!-- Dashboard Menu Item -->
+    <menuitem id="menu_hassiba_dashboard"
+              name="Tableau de Bord"
+              parent="menu_hassiba_root"
+              action="action_hassiba_dashboard"
+              sequence="5"/>
+
+    <!-- Dashboard View Definition -->
+    <record id="view_hassiba_dashboard" model="ir.ui.view">
+        <field name="name">hassiba.dashboard</field>
+        <field name="model">hassiba.dashboard</field>
+        <field name="arch" type="xml">
+            <dashboard>
+                
+                <!-- Row 1: Key HR Metrics -->
+                <group string="Ressources Humaines">
+                    <aggregate name="total_employees" 
+                               string="Employés Actifs" 
+                               model="hr.employee" 
+                               measure="__count" 
+                               domain="[('active', '=', True)]"
+                               groupby="department_id"/>
+                    
+                    <aggregate name="avg_salary" 
+                               string="Salaire Moyen (Brut)" 
+                               model="hr.contract" 
+                               measure="wage"/>
+                    
+                    <graph string="Répartition par Département" type="bar">
+                        <field name="department_id"/>
+                        <field name="__count" type="measure"/>
+                        <field name="job_id" group="true"/>
+                    </graph>
+                </group>
+
+                <!-- Row 2: Payroll Summary -->
+                <group string="Paie du Mois">
+                    <aggregate name="this_month_payroll" 
+                               string="Masse Salariale Mois" 
+                               model="hr.payslip" 
+                               sum="montant_brut"
+                               domain="[('state', '=', 'done')]"/>
+                    
+                    <aggregate name="cnas_total" 
+                               string="Total CNAS Patronal" 
+                               model="hr.payslip" 
+                               sum="montant_cnas_patronal"
+                               domain="[('state', '=', 'done')]"/>
+                    
+                    <aggregate name="irg_total" 
+                               string="Total IRG Retenu" 
+                               model="hr.payslip" 
+                               sum="montant_irg"
+                               domain="[('state', '=', 'done')]"/>
+
+                    <chart string="Évolution Mensuelle" type="line">
+                        <field name="annee_paie" interval="month"/>
+                        <field name="montant_net" type="measure"/>
+                        <field name="mois_paie" group="true"/>
+                    </chart>
+                </group>
+
+                <!-- Row 3: Tax/Fiscal Overview -->
+                <group string="Fiscalité TVA">
+                    <aggregate name="tva_collectee" 
+                               string="TVA Collectée (Période)" 
+                               model="account.tax.period" 
+                               sum="tva_collectee"/>
+                    
+                    <aggregate name="tva_deductible" 
+                               string="TVA Déductible (Période)" 
+                               model="account.tax.period" 
+                               sum="tva_deductible"/>
+                    
+                    <aggregate name="solde_tva" 
+                               string="Solde TVA à Payer" 
+                               model="account.tax.period" 
+                               sum="solde_tva"/>
+
+                    <pie string="Répartition par Wilaya">
+                        <field name="wilaya_id"/>
+                        <field name="__count" type="measure"/>
+                    </pie>
+                </group>
+
+                <!-- Row 4: Geographic Distribution -->
+                <group string="Données Géographiques DZ">
+                    <aggregate name="total_wilayas" 
+                               string="Wilayas Configurées" 
+                               model="dz.wilaya" 
+                               measure="__count"/>
+                    
+                    <aggregate name="total_partners_dz" 
+                               string="Partenaires Algériens" 
+                               model="res.partner" 
+                               measure="__count"
+                               domain="[('country_id.code', '=', 'DZ'), ('is_company', '=', True)]"/>
+
+                    <graph string="Partenaires par Wilaya" type="bar">
+                        <field name="wilaya_id"/>
+                        <field name="__count" type="measure"/>
+                    </graph>
+                </group>
+
+            </dashboard>
+        </field>
+    </record>
+
+    <!-- Dashboard Wizard/Model for Custom KPIs -->
+    <record id="view_kpi_summary_form" model="ir.ui.view">
+        <field name="name">hassiba.kpi.summary.form</field>
+        <field name="model">hassiba.kpi.summary</field>
+        <field name="arch" type="xml">
+            <form create="false" edit="false" delete="false">
+                <sheet>
+                    <div class="bg-primary text-white text-center p-4 rounded mb-4">
+                        <h2 class="mb-0">📊 Tableau de Bord HASSIBA Suite ERP</h2>
+                        <small>Solution de Gestion Intégrée - Algérie</small>
+                    </div>
+
+                    <group string="KPIs RH &amp; Paie">
+                        <group>
+                            <span class="badge badge-primary">Employés Actifs</span>
+                            <field name="kpi_employees" readonly="1" class="text-center h2 mb-0"/>
+                        </group>
+                        <group>
+                            <span class="badge badge-success">Masse Salariale</span>
+                            <field name="kpi_masse_salariale" readonly="1" widget="monetary" class="text-center h2 mb-0"/>
+                        </group>
+                        <group>
+                            <span class="badge badge-warning">Total CNAS</span>
+                            <field name="kpi_total_cnas" readonly="1" widget="monetary" class="text-center h2 mb-0"/>
+                        </group>
+                        <group>
+                            <span class="badge badge-danger">Total IRG</span>
+                            <field name="kpi_total_irg" readonly="1" widget="monetary" class="text-center h2 mb-0"/>
+                        </group>
+                    </group>
+
+                    <group string="KPIs Fiscaux">
+                        <group>
+                            <span class="badge badge-info">TVA Collectée</span>
+                            <field name="kpi_tva_collectee" readonly="1" widget="monetary" class="text-center h2 mb-0"/>
+                        </group>
+                        <group>
+                            <span class="badge badge-secondary">Solde TVA</span>
+                            <field name="kpi_solde_tva" readonly="1" widget="monetary" class="text-center h2 mb-0"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Derniers Bulletins">
+                            <field name="last_payslips_ids" readonly="1">
+                                <tree>
+                                    <field name="employee_id"/>
+                                    <field name="numero_bulletin"/>
+                                    <field name="mois_paie"/>
+                                    <field name="montant_net" widget="monetary"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Périodes Fiscales">
+                            <field name="tax_period_ids" readonly="1">
+                                <tree decoration-success="state=='closed'" decoration-warning="state=='declared'">
+                                    <field name="name"/>
+                                    <field name="state"/>
+                                    <field name="solde_tva" widget="monetary"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- KPI Summary Action -->
+    <record id="action_kpi_summary" model="ir.actions.act_window">
+        <field name="name">Résumé KPIs HASSIBA</field>
+        <field name="res_model">hassiba.kpi.summary</field>
+        <field name="view_mode">form,tree</field>
+        <field name="target">current</field>
+        <limit>1</limit>
+    </record>
+
+</odoo>
