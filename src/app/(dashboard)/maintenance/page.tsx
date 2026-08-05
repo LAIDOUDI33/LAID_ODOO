@@ -453,7 +453,7 @@ export default function MaintenancePage() {
                         <TableHead>Nom</TableHead>
                         <TableHead>Catégorie</TableHead>
                         <TableHead>Statut</TableHead>
-                        <TableHe>d&apos;opération</TableHe>
+                        <TableHead>Heures d'opération</TableHead>
                         <TableHead>Dernière Maint.</TableHead>
                         <TableHead>Prochaine Maint.</TableHead>
                         <TableHead className="text-right">Actions</TableHead>

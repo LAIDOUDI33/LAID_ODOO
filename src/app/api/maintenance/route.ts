@@ -98,10 +98,10 @@ async function getMaintenanceKPIs() {
   
   // Equipment stats
   const [totalEquipment, operationalEquipment, brokenEquipment, underMaintenance] = await Promise.all([
-    db.equipment.count({ where: { isActive: true } }),
-    db.equipment.count({ where: { isActive: true, status: { in: ['operational', 'in_operation'] } } }),
-    db.equipment.count({ where: { isActive: true, status: 'broken' } }),
-    db.equipment.count({ where: { isActive: true, status: 'under_maintenance' } })
+    db.equipment.count(),
+    db.equipment.count({ where: { status: { in: ['operational', 'in_operation'] } } }),
+    db.equipment.count({ where: { status: 'broken' } }),
+    db.equipment.count({ where: { status: 'under_maintenance' } })
   ]);
   
   // Orders stats
@@ -193,7 +193,7 @@ async function getEquipment(searchParams: URLSearchParams) {
   const page = parseInt(searchParams.get('page') || '1');
   const limit = parseInt(searchParams.get('limit') || '20');
   
-  const whereClause: any = { isActive: true };
+  const whereClause: any = {};
   if (category && category !== 'all') {
     whereClause.category = category;
   }
@@ -351,7 +351,6 @@ async function getDashboardData() {
       }
     }),
     db.equipment.findMany({
-      where: { isActive: true },
       take: 10,
       orderBy: { code: 'asc' },
       include: { workCenter: { select: { id: true, name: true } } }

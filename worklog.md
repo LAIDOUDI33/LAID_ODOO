@@ -1314,3 +1314,36 @@ Stage Summary:
 - All CRUD operations available via /api/production endpoint
 - Dashboard KPIs calculated from live database queries
 - Ready to proceed to Maintenance Module (Task 2)
+
+---
+Task ID: 2
+Agent: Main Developer
+Task: Build Complete Maintenance Module with Equipment Registry, Work Orders, and OEE
+
+Work Log:
+- Verified Maintenance API routes already exist (/api/maintenance) - comprehensive CRUD for equipment, orders, plans, spare parts, OEE
+- Verified Maintenance page already exists at /maintenance route with 5 tabs (Dashboard, Équipements, Interventions, Plans PM, OEE)
+- Fixed typo in maintenance page.tsx (TableHe → TableHead)
+- Fixed API queries to remove non-existent isActive field from Equipment model
+- Created comprehensive seed script (src/lib/seed-maintenance.ts) for sample data
+- Fixed enum mismatch (priority: 'medium' → 'normal' for MaintenancePriority)
+- Fixed field name (notes → symptoms for MaintenanceOrder)
+- Successfully seeded 11 Equipment items across categories:
+  - Production: Tour CNC Haas, Centre DMG Mori, Presse Hydraulique, Robot KUKA
+  - Auxiliary: Compresseur Atlas Copco
+  - Utility: Groupe Électrogène Caterpillar, CTA Climatisation (BROKEN)
+  - Measurement: MMT Zeiss
+  - Transport: Chariot Toyota, Pont Roulant Demag
+  - IT: Serveur Dell PowerEdge
+- Seeded 6 Maintenance Plans (PM) including 1 overdue plan
+- Seeded 12 Maintenance Orders (OT) with various types and statuses
+- Seeded 8 Spare Parts including critical stock shortages (Roulement SKF out of stock!)
+- Seeded 20 OEE records for CNC machine and Robot over last 30 days
+
+Stage Summary:
+- **Maintenance Module is now FULLY FUNCTIONAL** with real database integration
+- Database contains: 11 equipment, 6 PM plans, 12 work orders, 8 spare parts, 20 OEE records
+- All CRUD operations available via /api/maintenance endpoint
+- Dashboard KPIs calculated from live database queries
+- Active alerts showing: 1 broken equipment, 1 overdue plan, 6 critical stock shortages
+- Ready to proceed to Task 3: Real BI Analytics
