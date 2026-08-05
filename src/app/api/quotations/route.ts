@@ -76,12 +76,12 @@ export async function GET(request: Request) {
             select: { id: true, name: true, email: true }
           },
           opportunity: {
-            select: { id: true, title: true, status: true }
+            select: { id: true, name: true, status: true }
           },
           lines: {
             include: {
               product: {
-                select: { id: true, name: true, reference: true, unit: true }
+                select: { id: true, name: true, code: true, unitOfMeasure: true }
               }
             }
           },
@@ -103,10 +103,10 @@ export async function GET(request: Request) {
         pages: Math.ceil(total / limit)
       }
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Quotations GET Error:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch quotations' },
+      { success: false, error: 'Failed to fetch quotations', details: error?.message?.substring(0, 500) },
       { status: 500 }
     );
   }
@@ -297,12 +297,12 @@ export async function POST(request: Request) {
           select: { id: true, name: true, email: true }
         },
         opportunity: {
-          select: { id: true, title: true, status: true }
+          select: { id: true, name: true, status: true }
         },
         lines: {
           include: {
             product: {
-              select: { id: true, name: true, reference: true, unit: true }
+              select: { id: true, name: true, code: true, unitOfMeasure: true }
             }
           }
         }
