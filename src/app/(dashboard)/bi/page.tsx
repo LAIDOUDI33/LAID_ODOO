@@ -24,7 +24,8 @@ import {
   AlertTriangle,
   Settings,
   Target,
-  Zap
+  Zap,
+  ShoppingCart
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -59,9 +60,10 @@ import {
   ComposedChart
 } from 'recharts'
 
-// Types
+// Types - Matches our API response structure
 interface DashboardData {
   period: string
+  periodLabel?: string
   generatedAt: string
   summary: {
     totalPartners: number
@@ -118,126 +120,140 @@ interface DashboardData {
     topProducts: Array<{ name: string; value: number }>
     inventoryValue: Array<{ category: string; value: number; stock: number; count: number }>
     workforceSummary: Array<{ department: string; count: number; percentage: number }>
-    productionOutput: any
+    productionOutput: {
+      oee: number
+      availability: number
+      performance: number
+      qualityRate: number
+    }
   }
 }
 
-// Fallback data when API is not available
+// Fallback data when API is not available (realistic Algerian enterprise data)
 const FALLBACK_DATA: DashboardData = {
   period: 'month',
+  periodLabel: 'Ce mois',
   generatedAt: new Date().toISOString(),
   summary: {
-    totalPartners: 156,
-    totalProducts: 428,
-    totalInvoices: 1245,
-    ordersThisPeriod: 89,
-    totalEmployees: 2450
+    totalPartners: 46,
+    totalProducts: 37,
+    totalInvoices: 85,
+    ordersThisPeriod: 15,
+    totalEmployees: 35
   },
   kpis: {
     financial: {
-      revenue: 485000000,
-      expenses: 315250000,
-      profit: 169750000,
+      revenue: 48500000,
+      expenses: 31525000,
+      profit: 16975000,
       margin: 35,
-      cashPosition: 145500000,
-      accountsReceivable: 72750000,
-      accountsPayable: 48500000
+      cashPosition: 14550000,
+      accountsReceivable: 7275000,
+      accountsPayable: 4850000
     },
     sales: {
-      ordersValue: 485000000,
-      ordersCount: 89,
-      avgOrderValue: 5449438,
-      confirmed: 76,
-      delivered: 67,
-      invoiced: 89,
+      ordersValue: 48500000,
+      ordersCount: 85,
+      avgOrderValue: 570588,
+      confirmed: 72,
+      delivered: 65,
+      invoiced: 85,
       cancelled: 4,
       conversionRate: 78
     },
     inventory: {
-      totalProducts: 428,
-      totalStockValue: 325000000,
-      lowStockItems: 42,
-      outOfStockItems: 12,
+      totalProducts: 37,
+      totalStockValue: 32500000,
+      lowStockItems: 8,
+      outOfStockItems: 2,
       inventoryTurnover: 4.2,
       daysOfInventory: 87
     },
     hr: {
-      totalEmployees: 2450,
-      monthlyPayroll: 208250000,
-      annualPayroll: 2499000000,
-      turnoverRate: 3.5,
+      totalEmployees: 35,
+      monthlyPayroll: 2850000,
+      annualPayroll: 34200000,
+      turnoverRate: 8.5,
       absenteeismRate: 4.2
     },
     production: {
-      totalWorkOrders: 156,
-      completedThisMonth: 109,
-      inProgress: 31,
-      completionRate: 70
+      totalWorkOrders: 15,
+      completedThisMonth: 10,
+      inProgress: 4,
+      completionRate: 67
     }
   },
   charts: {
     revenueTrend: [
-      { month: 'Sep', revenue: 380000000 },
-      { month: 'Oct', revenue: 420000000 },
-      { month: 'Nov', revenue: 395000000 },
-      { month: 'Déc', revenue: 450000000 },
-      { month: 'Jan', revenue: 485000000 },
-      { month: 'Fév', revenue: 435000000 },
-      { month: 'Mar', revenue: 470000000 },
-      { month: 'Avr', revenue: 510000000 },
-      { month: 'Mai', revenue: 495000000 },
-      { month: 'Jun', revenue: 520000000 },
-      { month: 'Jul', revenue: 480000000 },
-      { month: 'Aoû', revenue: 505000000 }
+      { month: 'Sep', revenue: 38000000 },
+      { month: 'Oct', revenue: 42000000 },
+      { month: 'Nov', revenue: 39500000 },
+      { month: 'Déc', revenue: 45000000 },
+      { month: 'Jan', revenue: 48500000 },
+      { month: 'Fév', revenue: 43500000 },
+      { month: 'Mar', revenue: 47000000 },
+      { month: 'Avr', revenue: 51000000 },
+      { month: 'Mai', revenue: 49500000 },
+      { month: 'Jun', revenue: 52000000 },
+      { month: 'Jul', revenue: 48000000 },
+      { month: 'Aoû', revenue: 50500000 }
     ],
     salesByCategory: [
-      { category: 'Électronique', value: 145500000, percentage: 30 },
-      { category: 'Mécanique', value: 121250000, percentage: 25 },
-      { category: 'Textile', value: 97000000, percentage: 20 },
-      { category: 'Alimentaire', value: 72750000, percentage: 15 },
-      { category: 'Autre', value: 48500000, percentage: 10 }
+      { category: 'Électronique', value: 14550000, percentage: 30 },
+      { category: 'Mécanique', value: 12125000, percentage: 25 },
+      { category: 'Textile', value: 9700000, percentage: 20 },
+      { category: 'Alimentaire', value: 7275000, percentage: 15 },
+      { category: 'Chimie/Emballage', value: 4850000, percentage: 10 }
     ],
     topProducts: [
-      { name: 'Produit A', value: 150 },
-      { name: 'Produit B', value: 120 },
-      { name: 'Produit C', value: 95 },
-      { name: 'Produit D', value: 80 },
-      { name: 'Produit E', value: 65 }
+      { name: 'Smartphone Pro Max', value: 150 },
+      { name: 'Tablette Android 10"', value: 120 },
+      { name: 'Pompe Hydraulique', value: 95 },
+      { name: 'Jean Denim Classic', value: 80 },
+      { name: 'Moteur Électrique 5CV', value: 65 },
+      { name: 'Huile d\'Olive Extra', value: 55 },
+      { name: 'Écran LED 24"', value: 45 },
+      { name: 'Lessive Liquide 5L', value: 38 }
     ],
     inventoryValue: [
-      { category: 'Électronique', value: 162500000, stock: 500, count: 25 },
-      { category: 'Mécanique', value: 97500000, stock: 350, count: 18 },
-      { category: 'Textile', value: 48750000, stock: 200, count: 12 }
+      { category: 'Électronique', value: 16250000, stock: 500, count: 6 },
+      { category: 'Mécanique', value: 9750000, stock: 350, count: 5 },
+      { category: 'Textile', value: 4875000, stock: 200, count: 5 },
+      { category: 'Alimentaire', value: 1625000, stock: 180, count: 5 }
     ],
     workforceSummary: [
-      { department: 'Production', count: 980, percentage: 40 },
-      { department: 'Commercial', count: 490, percentage: 20 },
-      { department: 'Administration', count: 368, percentage: 15 },
-      { department: 'IT', count: 245, percentage: 10 },
-      { department: 'RH', count: 196, percentage: 8 },
-      { department: 'Finance', count: 171, percentage: 7 }
+      { department: 'Production', count: 12, percentage: 34 },
+      { department: 'Commercial', count: 7, percentage: 20 },
+      { department: 'Administration', count: 5, percentage: 14 },
+      { department: 'IT', count: 4, percentage: 11 },
+      { department: 'RH', count: 3, percentage: 9 },
+      { department: 'Finance', count: 2, percentage: 6 },
+      { department: 'Qualité', count: 1, percentage: 3 },
+      { department: 'Logistique', count: 1, percentage: 3 }
     ],
     productionOutput: { oee: 85, availability: 95, performance: 92, qualityRate: 97 }
   }
 }
 
-// Color palette
+// Color palette for charts
 const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16']
 
-// Format currency
+// Format currency in DZD
 const formatDZD = (value: number): string => {
+  if (!value && value !== 0) return '0 DZD'
   if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M DZD`
   if (value >= 1000) return `${(value / 1000).toFixed(0)}K DZD`
-  return `${value.toLocaleString('fr-DZ')} DZD`
+  return `${Math.round(value).toLocaleString('fr-DZ')} DZD`
 }
 
 const formatCompact = (value: number): string => {
+  if (!value && value !== 0) return '0'
   if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`
   if (value >= 1000) return `${(value / 1000).toFixed(0)}K`
   return value.toString()
 }
 
-// Custom tooltip component
+// Custom tooltip component for charts
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
@@ -270,7 +286,7 @@ function KpiCard({ title, value, subtitle, icon: Icon, color, trend, trendValue 
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <Card className="relative overflow-hidden">
+      <Card className="relative overflow-hidden hover:shadow-lg transition-shadow">
         <CardContent className="p-6">
           <div className="flex items-start justify-between">
             <div className="space-y-2">
@@ -298,23 +314,25 @@ function KpiCard({ title, value, subtitle, icon: Icon, color, trend, trendValue 
 
 // Main BI Page Component
 export default function BiPage() {
-  // State
+  // State management
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [period, setPeriod] = useState('month')
   const [activeTab, setActiveTab] = useState('tableaux')
   const [exporting, setExporting] = useState(false)
   const [usingFallback, setUsingFallback] = useState(false)
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
   
-  // Fetch data with fallback
+  // Fetch data from API with fallback support
   const fetchDashboard = useCallback(async () => {
     try {
       setLoading(true)
+      setError(null)
       setUsingFallback(false)
       
-      // Try to fetch from API with timeout
       const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 10000) // 10s timeout
+      const timeoutId = setTimeout(() => controller.abort(), 15000)
       
       const response = await fetch(`/api/analytics?type=dashboard&period=${period}`, {
         signal: controller.signal
@@ -323,48 +341,56 @@ export default function BiPage() {
       
       if (response.ok) {
         const result = await response.json()
-        if (result.success) {
+        if (result.success && result.data) {
           setDashboardData(result.data)
+          setLastUpdated(new Date())
+          console.log('✅ BI Analytics data loaded from API')
           return
         }
       }
       
-      // If API fails, use fallback data
-      throw new Error('API failed')
-    } catch (error) {
-      console.log('Using fallback data for BI dashboard')
+      // If API fails or returns invalid data, use fallback
+      throw new Error('API returned invalid data')
+    } catch (err) {
+      console.log('📊 Using fallback data for BI dashboard:', err instanceof Error ? err.message : err)
       setUsingFallback(true)
       setDashboardData(FALLBACK_DATA)
+      setLastUpdated(new Date())
     } finally {
       setLoading(false)
     }
   }, [period])
   
+  // Initial load and period change effect
   useEffect(() => {
     fetchDashboard()
   }, [fetchDashboard])
 
-  // Export handler
+  // Export handler (placeholder for future implementation)
   const handleExport = async (format: 'pdf' | 'excel') => {
     setExporting(true)
     try {
+      // Simulate export processing time
       await new Promise(resolve => setTimeout(resolve, 1500))
-      alert(`Export ${format.toUpperCase()} initié! Le fichier sera téléchargé.`)
+      
+      // In a real implementation, this would call an export API
+      alert(`Export ${format.toUpperCase()} initié!\nLe fichier sera téléchargé avec les données en temps réel.`)
     } finally {
       setExporting(false)
     }
   }
 
-  // Use fallback data if no data loaded yet
+  // Use loaded data or fallback
   const data = dashboardData || FALLBACK_DATA
 
-  // Loading skeleton
+  // Loading skeleton state
   if (loading && !dashboardData) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6 min-h-screen">
+        {/* Header Skeleton */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <div className="h-8 w-64 bg-muted rounded animate-pulse" />
+            <div className="h-8 w-72 bg-muted rounded animate-pulse" />
             <div className="h-4 w-96 bg-muted rounded animate-pulse mt-2" />
           </div>
           <div className="flex gap-2">
@@ -372,18 +398,22 @@ export default function BiPage() {
             <div className="h-10 w-24 bg-muted rounded animate-pulse" />
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map(i => (
+        
+        {/* KPI Cards Skeleton */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          {[1, 2, 3, 4, 5].map(i => (
             <div key={i} className="h-32 bg-muted rounded-lg animate-pulse" />
           ))}
         </div>
+        
+        {/* Chart Skeleton */}
         <div className="h-96 bg-muted rounded-lg animate-pulse" />
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 min-h-screen flex flex-col">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -391,12 +421,20 @@ export default function BiPage() {
             <BarChart3 className="w-8 h-8 text-primary" />
             Business Intelligence Enterprise
           </h1>
-          <p className="text-muted-foreground mt-1">
+          <p className="text-muted-foreground mt-1 flex items-center gap-2">
             Analytics temps réel • Données connectées • Tableaux de bord dynamiques
             {usingFallback && (
               <Badge variant="secondary" className="ml-2">Mode Démo</Badge>
             )}
+            {!usingFallback && (
+              <Badge variant="default" className="bg-green-600 ml-2">Live Data</Badge>
+            )}
           </p>
+          {lastUpdated && (
+            <p className="text-xs text-muted-foreground mt-1">
+              Dernière mise à jour: {lastUpdated.toLocaleTimeString('fr-DZ')}
+            </p>
+          )}
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <Select value={period} onValueChange={(v) => setPeriod(v)}>
@@ -449,10 +487,10 @@ export default function BiPage() {
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="rounded-xl bg-gradient-to-r from-dz-green/10 via-blue-50 to-purple-50 dark:from-dz-green/5 dark:via-blue-950/30 dark:to-purple-950/30 border border-border p-4 flex flex-col md:flex-row md:items-center justify-between gap-4"
+        className="rounded-xl bg-gradient-to-r from-emerald-50 via-blue-50 to-purple-50 dark:from-emerald-950/30 dark:via-blue-950/30 dark:to-purple-950/30 border border-border p-4 flex flex-col md:flex-row md:items-center justify-between gap-4"
       >
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-gradient-to-br from-dz-green to-blue-600">
+          <div className="p-2 rounded-lg bg-gradient-to-br from-emerald-500 to-blue-600">
             <Brain className="w-6 h-6 text-white" />
           </div>
           <div>
@@ -462,7 +500,7 @@ export default function BiPage() {
             </p>
           </div>
         </div>
-        <Badge className="bg-gradient-to-r from-dz-green to-blue-600 text-white border-0 shrink-0">
+        <Badge className="bg-gradient-to-r from-emerald-500 to-blue-600 text-white border-0 shrink-0">
           AI Powered
         </Badge>
       </motion.div>
@@ -473,7 +511,7 @@ export default function BiPage() {
           title="Chiffre d'Affaires"
           value={formatDZD(data.kpis.financial.revenue)}
           icon={DollarSign}
-          color="bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400"
+          color="bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400"
           trend="up"
           trendValue="+12.5%"
         />
@@ -486,11 +524,11 @@ export default function BiPage() {
           trendValue={`${data.kpis.financial.margin}% marge`}
         />
         <KpiCard
-          title="Commandes"
-          value={data.kpis.sales.ordersCount}
+          title="Factures"
+          value={data.summary.totalInvoices}
           icon={Package}
           color="bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400"
-          subtitle="Ce mois"
+          subtitle={data.periodLabel || 'Cette période'}
         />
         <KpiCard
           title="Employés Actifs"
@@ -501,16 +539,16 @@ export default function BiPage() {
           trendValue="+4.2%"
         />
         <KpiCard
-          title="Taux Production"
+          title="Production"
           value={`${data.kpis.production.completionRate}%`}
           icon={Factory}
-          color="bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400"
-          subtitle={`${data.kpis.production.inProgress} en cours`}
+          color="bg-teal-100 text-teal-600 dark:bg-teal-900/30 dark:text-teal-400"
+          subtitle={`${data.kpis.production.inProgress} OF en cours`}
         />
       </div>
 
       {/* Main Content Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 flex-1">
         <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid lg:flex-wrap gap-1">
           <TabsTrigger value="tableaux" className="gap-2">
             <BarChart3 className="w-4 h-4" />
@@ -554,7 +592,7 @@ export default function BiPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-green-600" />
+                  <TrendingUp className="w-5 h-5 text-emerald-600" />
                   Évolution du Chiffre d&apos;Affaires
                 </CardTitle>
                 <CardDescription>Revenu mensuel sur les 12 derniers mois</CardDescription>
@@ -593,7 +631,7 @@ export default function BiPage() {
                     <BarChart data={data.charts.salesByCategory.slice(0, 7)} layout="vertical">
                       <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                       <XAxis type="number" tickFormatter={(v) => formatCompact(v)} tick={{ fontSize: 11 }} />
-                      <YAxis type="category" dataKey="category" tick={{ fontSize: 11 }} width={100} />
+                      <YAxis type="category" dataKey="category" tick={{ fontSize: 11 }} width={110} />
                       <Tooltip content={<CustomTooltip />} formatter={(value: number) => [formatDZD(value), 'Valeur']} />
                       <Bar dataKey="value" name="Ventes" fill="#3b82f6" radius={[0, 4, 4, 0]} />
                     </BarChart>
@@ -605,14 +643,14 @@ export default function BiPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Target className="w-5 h-5 text-purple-600" />
-                    Top Produits
+                    Top Produits Vendus
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={300}>
                     <BarChart data={data.charts.topProducts.slice(0, 8)}>
                       <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                      <XAxis dataKey="name" tick={{ fontSize: 10 }} angle={-45} textAnchor="end" height={70} />
+                      <XAxis dataKey="name" tick={{ fontSize: 9 }} angle={-45} textAnchor="end" height={70} />
                       <YAxis tick={{ fontSize: 11 }} />
                       <Tooltip content={<CustomTooltip />} />
                       <Bar dataKey="value" name="Quantité vendue" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
@@ -624,9 +662,9 @@ export default function BiPage() {
 
             {/* Secondary Metrics */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Card className="p-4 border-l-4 border-l-green-500">
+              <Card className="p-4 border-l-4 border-l-emerald-500">
                 <p className="text-xs text-muted-foreground">Trésorerie</p>
-                <p className="text-xl font-bold text-green-600">{formatDZD(data.kpis.financial.cashPosition)}</p>
+                <p className="text-xl font-bold text-emerald-600">{formatDZD(data.kpis.financial.cashPosition)}</p>
               </Card>
               <Card className="p-4 border-l-4 border-l-blue-500">
                 <p className="text-xs text-muted-foreground">Créances Clients</p>
@@ -638,7 +676,7 @@ export default function BiPage() {
               </Card>
               <Card className="p-4 border-l-4 border-l-purple-500">
                 <p className="text-xs text-muted-foreground">Marge Nette</p>
-                <p className={`text-xl font-bold ${data.kpis.financial.margin >= 0 ? 'text-green-600' : 'text-red-600'}`}>{data.kpis.financial.margin}%</p>
+                <p className={`text-xl font-bold ${data.kpis.financial.margin >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>{data.kpis.financial.margin}%</p>
               </Card>
             </div>
           </motion.div>
@@ -648,12 +686,12 @@ export default function BiPage() {
         <TabsContent value="financier" className="space-y-4">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Card className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-green-200 dark:border-green-800">
+              <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 border-emerald-200 dark:border-emerald-800">
                 <CardContent className="p-6 text-center">
-                  <DollarSign className="w-10 h-10 mx-auto mb-2 text-green-600" />
-                  <p className="text-sm text-green-700 dark:text-green-300">CA Ce Mois</p>
-                  <p className="text-3xl font-bold text-green-600">{formatCompact(data.kpis.financial.revenue)}</p>
-                  <p className="text-xs text-green-600/70 mt-1">DZD HT</p>
+                  <DollarSign className="w-10 h-10 mx-auto mb-2 text-emerald-600" />
+                  <p className="text-sm text-emerald-700 dark:text-emerald-300">CA Ce Mois</p>
+                  <p className="text-3xl font-bold text-emerald-600">{formatCompact(data.kpis.financial.revenue)}</p>
+                  <p className="text-xs text-emerald-600/70 mt-1">DZD HT</p>
                 </CardContent>
               </Card>
               <Card className="bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 border-red-200 dark:border-red-800">
@@ -683,12 +721,37 @@ export default function BiPage() {
                     <p className="text-xl font-bold text-blue-600">{Math.round(data.kpis.financial.revenue * 0.19).toLocaleString('fr-DZ')} DZD</p>
                   </div>
                   <div className="p-4 rounded-lg bg-muted/50">
-                    <p className="text-sm text-muted-foreground">TVA Déductible (9%)</p>
+                    <p className="text-sm text-muted-foreground">TVA Déductible (~9%)</p>
                     <p className="text-xl font-bold text-orange-600">{Math.round(data.kpis.financial.expenses * 0.09).toLocaleString('fr-DZ')} DZD</p>
                   </div>
-                  <div className="p-4 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
-                    <p className="text-sm text-green-700 dark:text-green-300 font-medium">TVA à Payer</p>
-                    <p className="text-xl font-bold text-green-600">{Math.round(data.kpis.financial.revenue * 0.19 - data.kpis.financial.expenses * 0.09).toLocaleString('fr-DZ')} DZD</p>
+                  <div className="p-4 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
+                    <p className="text-sm text-emerald-700 dark:text-emerald-300 font-medium">TVA à Payer</p>
+                    <p className="text-xl font-bold text-emerald-600">{Math.round(data.kpis.financial.revenue * 0.19 - data.kpis.financial.expenses * 0.09).toLocaleString('fr-DZ')} DZD</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Financial Ratios */}
+            <Card>
+              <CardHeader><CardTitle>Ratios Financiers Clés</CardTitle></CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="text-center p-4">
+                    <p className="text-3xl font-bold text-primary">{data.kpis.financial.margin}%</p>
+                    <p className="text-sm text-muted-foreground">Marge Nette</p>
+                  </div>
+                  <div className="text-center p-4">
+                    <p className="text-3xl font-bold text-emerald-600">{data.kpis.inventory.inventoryTurnover}x</p>
+                    <p className="text-sm text-muted-foreground">Rotation Stock</p>
+                  </div>
+                  <div className="text-center p-4">
+                    <p className="text-3xl font-bold text-blue-600">{data.kpis.sales.conversionRate}%</p>
+                    <p className="text-sm text-muted-foreground">Taux Conversion</p>
+                  </div>
+                  <div className="text-center p-4">
+                    <p className="text-3xl font-bold text-purple-600">{data.kpis.hr.turnoverRate}%</p>
+                    <p className="text-sm text-muted-foreground">Turnover RH</p>
                   </div>
                 </div>
               </CardContent>
@@ -704,25 +767,25 @@ export default function BiPage() {
                 <ShoppingCart className="w-8 h-8 mx-auto mb-2 text-blue-500" />
                 <p className="text-sm text-muted-foreground">Commandes</p>
                 <p className="text-2xl font-bold">{data.kpis.sales.ordersCount}</p>
-                <p className="text-xs text-green-600">+8.3%</p>
+                <p className="text-xs text-emerald-600">+8.3%</p>
               </Card>
               <Card className="p-4 text-center">
-                <DollarSign className="w-8 h-8 mx-auto mb-2 text-green-500" />
+                <DollarSign className="w-8 h-8 mx-auto mb-2 text-emerald-500" />
                 <p className="text-sm text-muted-foreground">Panier Moyen</p>
                 <p className="text-2xl font-bold">{formatDZD(data.kpis.sales.avgOrderValue)}</p>
-                <p className="text-xs text-green-600">+5.2%</p>
+                <p className="text-xs text-emerald-600">+5.2%</p>
               </Card>
               <Card className="p-4 text-center">
                 <Eye className="w-8 h-8 mx-auto mb-2 text-purple-500" />
                 <p className="text-sm text-muted-foreground">Conversion</p>
                 <p className="text-2xl font-bold">{data.kpis.sales.conversionRate}%</p>
-                <p className="text-xs text-muted-foreground">Confirmés → Livrés</p>
+                <p className="text-xs text-muted-foreground">Confirmés → Facturés</p>
               </Card>
               <Card className="p-4 text-center">
                 <Users className="w-8 h-8 mx-auto mb-2 text-orange-500" />
                 <p className="text-sm text-muted-foreground">Clients Actifs</p>
                 <p className="text-2xl font-bold">{data.summary.totalPartners}</p>
-                <p className="text-xs text-green-600">+12 ce mois</p>
+                <p className="text-xs text-emerald-600">+12 ce mois</p>
               </Card>
             </div>
 
@@ -733,12 +796,12 @@ export default function BiPage() {
                   <ResponsiveContainer width="100%" height={300}>
                     <RePieChart>
                       <Pie data={[
-                        { name: 'Payée', value: data.kpis.sales.invoiced, color: '#10b981' },
+                        { name: 'Payée', value: data.kpis.sales.delivered, color: '#10b981' },
                         { name: 'Envoyée', value: data.kpis.sales.confirmed, color: '#3b82f6' },
-                        { name: 'Livrée', value: data.kpis.sales.delivered, color: '#8b5cf6' },
+                        { name: 'En attente', value: Math.max(0, data.kpis.sales.invoiced - data.kpis.sales.delivered - data.kpis.sales.confirmed), color: '#f59e0b' },
                         { name: 'Annulée', value: data.kpis.sales.cancelled, color: '#ef4444' }
                       ].filter(d => d.value > 0)} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={5} dataKey="value">
-                        {['#10b981', '#3b82f6', '#8b5cf6', '#ef4444'].map((color, i) => (
+                        {['#10b981', '#3b82f6', '#f59e0b', '#ef4444'].map((color, i) => (
                           <Cell key={i} fill={color} />
                         ))}
                       </Pie>
@@ -787,9 +850,9 @@ export default function BiPage() {
                 <p className="text-2xl font-bold text-red-600">{data.kpis.inventory.outOfStockItems}</p>
               </Card>
               <Card className="p-4 text-center">
-                <Activity className="w-10 h-10 mx-auto mb-2 text-green-500" />
-                <p className="text-sm text-green-600">Rotation Stock</p>
-                <p className="text-2xl font-bold text-green-600">{data.kpis.inventory.inventoryTurnover}x</p>
+                <Activity className="w-10 h-10 mx-auto mb-2 text-emerald-500" />
+                <p className="text-sm text-emerald-600">Rotation Stock</p>
+                <p className="text-2xl font-bold text-emerald-600">{data.kpis.inventory.inventoryTurnover}x</p>
               </Card>
             </div>
 
@@ -821,10 +884,10 @@ export default function BiPage() {
                 <p className="text-xs text-indigo-500">employés actifs</p>
               </Card>
               <Card className="p-4 text-center">
-                <DollarSign className="w-10 h-10 mx-auto mb-2 text-green-500" />
-                <p className="text-sm text-green-600">Masse Salariale</p>
-                <p className="text-2xl font-bold text-green-600">{formatCompact(data.kpis.hr.monthlyPayroll)}</p>
-                <p className="text-xs text-green-500">par mois</p>
+                <DollarSign className="w-10 h-10 mx-auto mb-2 text-emerald-500" />
+                <p className="text-sm text-emerald-600">Masse Salariale</p>
+                <p className="text-2xl font-bold text-emerald-600">{formatCompact(data.kpis.hr.monthlyPayroll)}</p>
+                <p className="text-xs text-emerald-500">par mois</p>
               </Card>
               <Card className="p-4 text-center">
                 <Activity className="w-10 h-10 mx-auto mb-2 text-purple-500" />
@@ -891,16 +954,16 @@ export default function BiPage() {
                 <p className="text-3xl font-bold text-purple-600">{data.kpis.production.completionRate}%</p>
               </Card>
               <Card className="p-4 text-center">
-                <Shield className="w-10 h-10 mx-auto mb-2 text-green-500" />
-                <p className="text-sm text-green-600">Qualité</p>
-                <p className="text-3xl font-bold text-green-600">{data.charts.productionOutput?.qualityRate || 97}%</p>
+                <Shield className="w-10 h-10 mx-auto mb-2 text-emerald-500" />
+                <p className="text-sm text-emerald-600">Qualité</p>
+                <p className="text-3xl font-bold text-emerald-600">{data.charts.productionOutput?.qualityRate || 97}%</p>
               </Card>
             </div>
 
             {/* OEE Gauge */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Zap className="w-5 h-5 text-primary" /> OEE Global</CardTitle>
+                <CardTitle className="flex items-center gap-2"><Zap className="w-5 h-5 text-primary" /> OEE Global (Efficacité Globale)</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -925,7 +988,7 @@ export default function BiPage() {
                   <div className="space-y-4">
                     {[
                       { label: 'Disponibilité', value: data.charts.productionOutput?.availability || 95, color: 'bg-blue-500' },
-                      { label: 'Performance', value: data.charts.productionOutput?.performance || 92, color: 'bg-green-500' },
+                      { label: 'Performance', value: data.charts.productionOutput?.performance || 92, color: 'bg-emerald-500' },
                       { label: 'Qualité', value: data.charts.productionOutput?.qualityRate || 97, color: 'bg-purple-500' }
                     ].map((item, i) => (
                       <div key={i} className="space-y-2">
@@ -960,7 +1023,7 @@ export default function BiPage() {
                   <p className="text-muted-foreground max-w-md mx-auto mb-6">
                     Sélectionnez vos sources de données, filtres et visualisations pour créer des rapports personnalisés.
                   </p>
-                  <Button size="lg" className="gap-2 bg-gradient-to-r from-dz-green to-blue-600">
+                  <Button size="lg" className="gap-2 bg-gradient-to-r from-emerald-500 to-blue-600">
                     <Plus className="w-5 h-5" /> Créer un Nouveau Rapport
                   </Button>
                 </div>
@@ -992,18 +1055,18 @@ export default function BiPage() {
       </Tabs>
 
       {/* Footer */}
-      <Card className="border-dz-green/20 bg-dz-green/5 dark:bg-dz-green/10">
+      <Card className="border-emerald-200 bg-emerald-50/50 dark:bg-emerald-950/20 mt-auto">
         <CardContent className="py-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <Brain className="w-6 h-6 text-dz-green" />
+              <Brain className="w-6 h-6 text-emerald-600" />
               <div>
-                <p className="font-semibold text-dz-green">HASSIBA Suite ERP - BI Analytics</p>
+                <p className="font-semibold text-emerald-700 dark:text-emerald-300">HASSIBA Suite ERP - BI Analytics v2.0.0</p>
                 <p className="text-sm text-muted-foreground">Données en temps réel • Recharts Visualizations • Export PDF/Excel • SCF Compliant</p>
               </div>
             </div>
             <div className="flex items-center gap-4 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" /> Live Data</span>
+              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /> {usingFallback ? 'Demo Data' : 'Live Data'}</span>
               <span>Recharts Pro</span>
               <span>Algérie Ready</span>
             </div>

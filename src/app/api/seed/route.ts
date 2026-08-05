@@ -3,6 +3,7 @@ import { seedDatabase } from '@/lib/seed';
 import { seedAuthAndWorkflows } from '@/lib/seed-auth-workflow';
 import { seedProductionData } from '@/lib/seed-production';
 import { seedMaintenanceData } from '@/lib/seed-maintenance';
+import { seedAnalyticsData } from '@/lib/seed-analytics';
 
 // POST /api/seed - Seed the database with demo data
 export async function POST(request: Request) {
@@ -25,6 +26,12 @@ export async function POST(request: Request) {
     if (type === 'maintenance') {
       // Seed only maintenance data
       const result = await seedMaintenanceData();
+      return NextResponse.json(result);
+    }
+    
+    if (type === 'analytics') {
+      // Seed only analytics data
+      const result = await seedAnalyticsData();
       return NextResponse.json(result);
     }
     
