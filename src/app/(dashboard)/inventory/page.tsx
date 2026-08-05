@@ -1644,11 +1644,18 @@ export default function InventoryPage() {
         </div>
       </div>
 
-      {/* KPI Cards */}
+      {/* KPI Cards - with error boundary */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {kpiData.map((kpi, index) => (
+        {kpiData.length > 0 ? kpiData.map((kpi, index) => (
           <KpiCard key={kpi.title} {...kpi} delay={index * 0.05} />
-        ))}
+        )) : (
+          <>
+            <KpiCard title="Articles en Stock" value={0} icon={Package} iconColor="text-emerald-600" iconBg="bg-emerald-100" format="number" />
+            <KpiCard title="Valeur du Stock (DZD)" value={0} icon={DollarSign} iconColor="text-blue-600" iconBg="bg-blue-100" format="currency" />
+            <KpiCard title="Alertes Stock" value={0} icon={AlertTriangle} iconColor="text-red-600" iconBg="bg-red-100" format="number" />
+            <KpiCard title="Total Produits" value={0} icon={Boxes} iconColor="text-purple-600" iconBg="bg-purple-100" format="number" />
+          </>
+        )}
       </div>
 
       {/* Main Content */}
