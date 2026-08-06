@@ -11,3 +11,22 @@ access_hr_payslip_gains_line_user,hr.payslip.gains.line.user,model_hr_payslip_ga
 access_hr_payslip_retenues_line_user,hr.payslip.retenues.line.user,model_hr_payslip_retenues_line,hr.group_hr_user,1,1,1,1
 access_account_tax_period_user,account.tax.period.user,model_account_tax_period,account.group_account_user,1,1,1,0
 access_account_tax_period_manager,account.tax.period.manager,model_account_tax_period,account.group_account_manager,1,1,1,1
+# NEW: Maintenance Module Access
+access_maintenance_equipment_user,maintenance.equipment.dz.user,model_maintenance_equipment_dz,hr.group_hr_user,1,0,0,0
+access_maintenance_equipment_manager,maintenance.equipment.dz.manager,model_maintenance_equipment_dz,hr.group_hr_manager,1,1,1,0
+access_maintenance_intervention_user,maintenance.intervention.dz.user,model_maintenance_intervention_dz,hr.group_hr_user,1,1,1,0
+access_maintenance_intervention_manager,maintenance.intervention.dz.manager,model_maintenance_intervention_dz,hr.group_hr_manager,1,1,1,1
+access_piece_rechange_user,maintenance.piece.rechange.dz.user,model_maintenance_piece_rechange_dz,stock.group_stock_user,1,1,1,0
+access_preventive_plan_user,maintenance.preventive.plan.dz.user,model_maintenance_preventive_plan_dz,hr.group_hr_manager,1,1,1,0
+# NEW: BI Module Access
+access_bi_dashboard_config_user,bi.dashboard.config.dz.user,model_bi_dashboard_config_dz,hr.group_hr_manager,1,1,1,0
+access_bi_kpi_widget_user,bi.kpi.widget.dz.user,model_bi_kpi_widget_dz,hr.group_hr_manager,1,1,1,0
+access_bi_report_generator_user,bi.report.generator.dz.user,model_bi_report_generator_dz,hr.group_hr_manager,1,1,1,0
+access_bi_report_record_user,bi.report.record.dz.user,model_bi_report_record_dz,hr.group_hr_manager,1,1,1,0
+access_bi_sales_analytics_user,bi.sales.analytics.dz.user,model_bi_sales_analytics_dz,sales_team.group_sale_manager,1,1,1,0
+# NEW: CRM Module Access
+access_crm_opportunity_analysis_user,crm.opportunity.analysis.dz.user,model_crm_opportunity_analysis_dz,sales_team.group_sale_salesman,1,1,1,0
+access_crm_commission_user,crm.commission.dz.user,model_crm_commission_dz,sales_team.group_sale_manager,1,1,1,0
+access_commercial_pipeline_user,commercial.pipeline.dz.user,model_commercial_pipeline_dz,sales_team.group_sale_manager,1,1,1,0
+access_pipeline_stage_user,commercial.pipeline.stage.dz.user,model_commercial_pipeline_stage_dz,sales_team.group_sale_manager,1,1,1,0
+access_visite_commerciale_user,visite.commerciale.dz.user,model_visite_commerciale_dz,sales_team.group_sale_salesman,1,1,1,0

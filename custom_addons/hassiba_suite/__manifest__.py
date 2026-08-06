@@ -3,7 +3,7 @@
 
 {
     'name': 'HASSIBA Suite ERP Algeria',
-    'version': '19.3.1.0.0',
+    'version': '19.3.2.0.0',
     'summary': 'ERP complet adapté au contexte algérien - Paie CNAS/CASNOS/IRG, TVA SCF',
     'description': """
 HASSIBA Suite ERP - Solution ERP complète pour entreprises algériennes
@@ -75,6 +75,14 @@ Conformité: Législation du travail algérienne + Normes SCF appliquées
         'views/hr_payslip_views.xml',
         'views/account_views.xml',
         'views/dashboard_views.xml',
+        # NEW: MRP Production Views
+        'views/mrp_views.xml',
+        # NEW: Maintenance Views
+        'views/maintenance_views.xml',
+        # NEW: BI Analytics Views
+        'views/bi_views.xml',
+        # NEW: CRM Enhanced Views
+        'views/crm_views.xml',
         # Report Templates (QWeb PDF)
         'reports/report_templates.xml',
         # Security Configuration

@@ -1,0 +1,465 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!-- ================================================== -->
+    <!-- BI DASHBOARD VIEWS - Business Intelligence Algeria   -->
+    <!-- ================================================== -->
+
+    <!-- ============================== -->
+    <!-- BI REPORT GENERATOR VIEWS      -->
+    <!-- ============================== -->
+
+    <record id="view_bi_report_generator_form" model="ir.ui.view">
+        <field name="name">bi.report.generator.dz.form</field>
+        <field name="model">bi.report.generator.dz</field>
+        <field name="arch" type="xml">
+            <form string="Générer un Rapport BI">
+                <sheet>
+                    <group string="Configuration du Rapport">
+                        <group>
+                            <field name="type_rapport"/>
+                            <field name="format_export"/>
+                        </group>
+                        <group>
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                            <field name="company_id"/>
+                        </group>
+                    </group>
+
+                    <group string="Options">
+                        <group>
+                            <field name="include_graphiques"/>
+                            <field name="include_details"/>
+                        </group>
+                    </group>
+
+                    <group string="Aperçu des Données" states="draft">
+                        <field name="data_resume" readonly="1"/>
+                    </group>
+                </sheet>
+                
+                <footer>
+                    <button name="action_generer_rapport" string="Générer le Rapport" 
+                            type="object" class="btn-primary"/>
+                    <button string="Annuler" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- BI Report Record View -->
+    <record id="view_bi_report_record_form" model="ir.ui.view">
+        <field name="name">bi.report.record.dz.form</field>
+        <field name="model">bi.report.record.dz</field>
+        <field name="arch" type="xml">
+            <form string="Rapport Généré" create="false" delete="false">
+                <header>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+
+                    <group string="Informations Rapport">
+                        <group>
+                            <field name="type_rapport"/>
+                            <field name="company_id"/>
+                        </group>
+                        <group>
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                            <field name="create_date" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Données Brutes (JSON)">
+                            <field name="data_json" widget="text" readonly="1"/>
+                        </page>
+                        
+                        <page string="Graphiques">
+                            <div class="row">
+                                <div class="col-6">
+                                    <h4>Ventes par Période</h4>
+                                    <p>Graphique à implémenter avec les données JSON</p>
+                                </div>
+                                <div class="col-6">
+                                    <h4>Répartition par Wilaya</h4>
+                                    <p>Graphique circulaire</p>
+                                </div>
+                            </div>
+                        </page>
+                    </notebook>
+                </sheet>
+                
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- ============================== -->
+    <!-- KPI WIDGET VIEWS              -->
+    <!-- ============================== -->
+
+    <record id="view_kpi_widget_tree" model="ir.ui.view">
+        <field name="name">bi.kpi.widget.dz.tree</field>
+        <field name="model">bi.kpi.widget.dz</field>
+        <field name="arch" type="xml">
+            <tree string="Widgets KPI">
+                <field name="name"/>
+                <field name="widget_type"/>
+                <field name="model_source"/>
+                <field name="kpi_label"/>
+                <field name="current_value"/>
+                <field name="valeur_cible"/>
+                <field name="couleur"/>
+                <field name="sequence"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_kpi_widget_form" model="ir.ui.view">
+        <field name="name">bi.kpi.widget.dz.form</field>
+        <field name="model">bi.kpi.widget.dz</field>
+        <field name="arch" type="xml">
+            <form string="Widget KPI">
+                <sheet>
+                    <group string="Configuration Widget">
+                        <group>
+                            <field name="name"/>
+                            <field name="widget_type"/>
+                            <field name="couleur"/>
+                            <field name="sequence"/>
+                        </group>
+                        <group>
+                            <field name="kpi_label"/>
+                            <field name="prefixe"/>
+                            <field name="suffixe"/>
+                            <field name="valeur_cible"/>
+                        </group>
+                    </group>
+
+                    <group string="Source de Données">
+                        <group>
+                            <field name="model_source"/>
+                            <field name="field_measure"/>
+                            <field name="field_aggregation"/>
+                        </group>
+                        <group>
+                            <field name="domain_filter"
+                                   placeholder="[('state', '=', 'done')]"/>
+                        </group>
+                    </group>
+
+                    <group string="Valeurs Calculées">
+                        <group>
+                            <field name="current_value" readonly="1"/>
+                            <field name="variation_pct" readonly="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ============================== -->
+    <!-- DASHBOARD CONFIG VIEWS         -->
+    <!-- ============================== -->
+
+    <record id="view_dashboard_config_form" model="ir.ui.view">
+        <field name="name">bi.dashboard.config.dz.form</field>
+        <field name="model">bi.dashboard.config.dz</field>
+        <field name="arch" type="xml">
+            <form string="Tableau de Bord Personnalisé">
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+
+                    <group string="Configuration">
+                        <group>
+                            <field name="layout"/>
+                            <field name="refresh_interval"/>
+                            <field name="active"/>
+                            <field name="is_default"/>
+                        </group>
+                        <group>
+                            <field name="nb_widgets" readonly="1"/>
+                            <field name="description"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Widgets">
+                            <field name="widget_ids">
+                                <tree editable="bottom">
+                                    <field name="name"/>
+                                    <field name="widget_type"/>
+                                    <field name="kpi_label"/>
+                                    <field name="current_value" readonly="1"/>
+                                    <field name="couleur"/>
+                                    <field name="sequence"/>
+                                </tree>
+                            </field>
+                        </page>
+                        
+                        <page string="Utilisateurs Autorisés">
+                            <field name="user_ids"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- ============================== -->
+    <!-- SALES ANALYTICS VIEWS         -->
+    <!-- ============================== -->
+
+    <record id="view_sales_analytics_pivot" model="ir.ui.view">
+        <field name="name">bi.sales.analytics.dz.pivot</field>
+        <field name="model">bi.sales.analytics.dz</field>
+        <field name="arch" type="xml">
+            <pivot string="Analyse des Ventes par Wilaya">
+                <field name="wilaya_id" type="row"/>
+                <field name="month" type="col"/>
+                <field name="chiffre_affaires" type="measure"/>
+                <field name="nb_factures" type="measure"/>
+                <field name="montant_tva" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_sales_analytics_graph" model="ir.ui.view">
+        <field name="name">bi.sales.analytics.dz.graph</field>
+        <field name="model">bi.sales.analytics.dz</field>
+        <field name="arch" type="xml">
+            <graph string="Évolution des Ventes" type="bar">
+                <field name="month"/>
+                <field name="chiffre_affaires" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_sales_analytics_tree" model="ir.ui.view">
+        <field name="name">bi.sales.analytics.dz.tree</field>
+        <field name="model">bi.sales.analytics.dz</field>
+        <field name="arch" type="xml">
+            <tree string="Analyse des Ventes">
+                <field name="name"/>
+                <field name="wilaya_id"/>
+                <field name="month"/>
+                <field name="year"/>
+                <field name="nb_factures"/>
+                <field name="chiffre_affaires" sum="Total CA"/>
+                <field name="montant_tva" sum="Total TVA"/>
+                <field name="panier_moyen" avg="Panier Moyen"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ============================== -->
+    <!-- ADVANCED DASHBOARD VIEW       -->
+    <!-- ============================== -->
+
+    <record id="view_bi_dashboard_advanced" model="ir.ui.view">
+        <field name="name">bi.dashboard.advanced.dz</field>
+        <field name="model">bi.dashboard.config.dz</field>
+        <field name="arch" type="xml">
+            <dashboard string="Tableau de Bord BI Avancé">
+                
+                <!-- Row 1: Key Financial KPIs -->
+                <group string="Indicateurs Financiers">
+                    <aggregate name="ca_mensuel" 
+                               string="CA du Mois (DZD)" 
+                               model="account.move" 
+                               measure="amount_total"
+                               domain="[('move_type', '=', 'out_invoice'), ('state', '=', 'posted')]"
+                               date_field="invoice_date"
+                               interval="month"/>
+                    
+                    <aggregate name="tva_collectee_bi" 
+                               string="TVA Collectée (DZD)" 
+                               model="account.move" 
+                               measure="amount_tax"
+                               domain="[('move_type', '=', 'out_invoice'), ('state', '=', 'posted')]"/>
+                    
+                    <aggregate name="marge_nette" 
+                               string="Marge Nette Estimée (%)" 
+                               model="account.move" 
+                               measure="amount_untaxed"
+                               domain="[('move_type', '=', 'out_invoice'), ('state', '=', 'posted')]"/>
+                </group>
+
+                <!-- Row 2: HR KPIs -->
+                <group string="Ressources Humaines">
+                    <aggregate name="total_employees_bi" 
+                               string="Effectif Total" 
+                               model="hr.employee" 
+                               measure="__count"
+                               domain="[('active', '=', True)]"/>
+                    
+                    <aggregate name="masse_salariale_bi" 
+                               string="Masse Salariale (DZD)" 
+                               model="hr.payslip" 
+                               sum="wage"
+                               domain="[('state', '=', 'done')]"/>
+                    
+                    <chart string="Répartition par Département" type="pie">
+                        <field name="department_id"/>
+                        <field name="__count" type="measure"/>
+                    </chart>
+                </group>
+
+                <!-- Row 3: Sales by Region -->
+                <group string="Ventes par Région (Wilaya)">
+                    <graph string="CA par Wilaya" type="bar">
+                        <field name="wilaya_id"/>
+                        <field name="__count" type="measure"/>
+                    </graph>
+                    
+                    <aggregate name="top_wilaya" 
+                               string="Top Wilaya (Nb Clients)" 
+                               model="res.partner" 
+                               measure="__count"
+                               domain="[('country_id.code', '=', 'DZ'), ('is_company', '=', True), ('wilaya_id', '!=', False)]"
+                               groupby="wilaya_id"/>
+                </group>
+
+                <!-- Row 4: Production & Maintenance -->
+                <group string="Production &amp; Maintenance">
+                    <aggregate name="production_orders" 
+                               string="OF en Cours" 
+                               model="mrp.production" 
+                               measure="__count"
+                               domain="[('state', 'in', ['confirmed', 'progress'])]"/>
+                    
+                    <aggregate name="equipements_actifs" 
+                               string="Équipements Actifs" 
+                               model="maintenance.equipment.dz" 
+                               measure="__count"
+                               domain="[('etat', '=', 'operationnel')]"/>
+                    
+                    <aggregate name="interventions_mois" 
+                               string="Interventions Mois" 
+                               model="maintenance.intervention.dz" 
+                               measure="__count"/>
+                </group>
+
+                <!-- Row 5: Trends -->
+                <group string="Tendances Mensuelles">
+                    <chart string="Évolution CA" type="line">
+                        <field name="create_date" interval="month"/>
+                        <field name="amount_total" type="measure" model="account.move"
+                               domain="[('move_type', '=', 'out_invoice'), ('state', '=', 'posted')]"/>
+                    </chart>
+                    
+                    <chart string="Évolution Paie" type="line">
+                        <field name="date_to" interval="month"/>
+                        <field name="wage" type="measure" model="hr.payslip"
+                               domain="[('state', '=', 'done')]"/>
+                    </chart>
+                </group>
+
+            </dashboard>
+        </field>
+    </record>
+
+    <!-- ============================== -->
+    <!-- ACTIONS                         -->
+    <!-- ============================== -->
+
+    <record id="action_bi_report_generator" model="ir.actions.act_window">
+        <field name="name">Générateur de Rapports BI</field>
+        <field name="res_model">bi.report.generator.dz</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <record id="action_bi_dashboard_config" model="ir.actions.act_window">
+        <field name="name">Tableaux de Bord Personnalisés</field>
+        <field name="res_model">bi.dashboard.config.dz</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="action_bi_reports_history" model="ir.actions.act_window">
+        <field name="name">Historique des Rapports</field>
+        <field name="res_model">bi.report.record.dz</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="action_bi_sales_analytics" model="ir.actions.act_window">
+        <field name="name">Analyse des Ventes par Région</field>
+        <field name="res_model">bi.sales.analytics.dz</field>
+        <field name="view_mode">pivot_graph,tree</field>
+        <help type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Cliquez sur "Rafrîchir" pour charger les données
+            </p>
+            <p>Analyse des ventes par wilaya et période.</p>
+        </help>
+    </record>
+
+    <record id="action_bi_advanced_dashboard" model="ir.actions.act_window">
+        <field name="name">Tableau de Bord BI Avancé</field>
+        <field name="res_model">bi.dashboard.config.dz</field>
+        <field name="view_mode">dashboard</field>
+        <field name='view_id' ref="view_bi_dashboard_advanced"/>
+        <field name="target">current</field>
+    </record>
+
+    <!-- ============================== -->
+    <!-- MENUS                           -->
+    <!-- ============================== -->
+
+    <menuitem id="menu_bi_root"
+              name="📈 Business Intelligence"
+              sequence="50"
+              web_icon="fa-chart-line"/>
+
+    <menuitem id="menu_bi_dashboard"
+              name="Tableaux de Bord"
+              parent="menu_bi_root"
+              action="action_bi_advanced_dashboard"
+              sequence="10"/>
+
+    <menuitem id="menu_bi_reports"
+              name="Rapports BI"
+              parent="menu_bi_root"
+              sequence="20"/>
+
+    <menuitem id="menu_bi_generate_report"
+              name="Générer un Rapport"
+              parent="menu_bi_reports"
+              action="action_bi_report_generator"
+              sequence="10"/>
+
+    <menuitem id="menu_bi_report_history"
+              name="Historique Rapports"
+              parent="menu_bi_reports"
+              action="action_bi_reports_history"
+              sequence="20"/>
+
+    <menuitem id="menu_bi_analytics"
+              name="Analyses"
+              parent="menu_bi_root"
+              action="action_bi_sales_analytics"
+              sequence="30"/>
+
+    <menuitem id="menu_bi_dashboards_custom"
+              name="Tableaux de Bord Perso."
+              parent="menu_bi_root"
+              action="action_bi_dashboard_config"
+              sequence="40"/>
+
+</odoo>

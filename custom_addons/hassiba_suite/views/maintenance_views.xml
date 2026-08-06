@@ -1,0 +1,549 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!-- ================================================== -->
+    <!-- MAINTENANCE VIEWS - Module Maintenance Algérie       -->
+    <!-- ================================================== -->
+
+    <!-- ============================== -->
+    <!-- EQUIPMENT VIEWS                -->
+    <!-- ============================== -->
+
+    <record id="view_maintenance_equipment_tree" model="ir.ui.view">
+        <field name="name">maintenance.equipment.dz.tree</field>
+        <field name="model">maintenance.equipment.dz</field>
+        <field name="arch" type="xml">
+            <tree decoration-success="etat=='operationnel'" 
+                  decoration-danger="etat=='hors_service'"
+                  decoration-warning="etat=='en_panne' or etat=='en_maintenance'"
+                  string="Équipements">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="categorie_equipement"/>
+                <field name="marque"/>
+                <field name="modele"/>
+                <field name="etat" widget="badge"/>
+                <field name="criticite" widget="badge"/>
+                <field name="responsable"/>
+                <field name="prochaine_maintenance"/>
+                <field name="cout_total_maintenance" sum="Total Coûts"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_maintenance_equipment_form" model="ir.ui.view">
+        <field name="name">maintenance.equipment.dz.form</field>
+        <field name="model">maintenance.equipment.dz</field>
+        <field name="arch" type="xml">
+            <form string="Fiche Équipement">
+                <header>
+                    <button name="action_planifier_maintenance" string="Planifier Maintenance" 
+                            type="object" class="btn-primary"/>
+                    <button name="action_voir_historique" string="Voir Historique" 
+                            type="object" class="btn-secondary"/>
+                    <field name="etat" widget="statusbar" statusbar_visible="operationnel,en_panne,en_maintenance,hors_service"/>
+                </header>
+                
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                        <h2><field name="code"/></h2>
+                    </div>
+
+                    <div class="row mt16 mb16">
+                        <div class="col-3 text-center">
+                            <span class="stat-text"><strong>Interventions:</strong></span><br/>
+                            <span class="stat-number"><field name="nb_interventions" readonly="1"/></span>
+                        </div>
+                        <div class="col-3 text-center">
+                            <span class="stat-text"><strong>Pannes:</strong></span><br/>
+                            <span class="stat-number text-danger"><field name="nb_pannes" readonly="1"/></span>
+                        </div>
+                        <div class="col-3 text-center">
+                            <span class="stat-text"><strong>Temps Arrêt:</strong></span><br/>
+                            <span class="stat-number"><field name="temps_arret_heures" readonly="1"/> h</span>
+                        </div>
+                        <div class="col-3 text-center">
+                            <span class="stat-text"><strong>Coût Total:</strong></span><br/>
+                            <span class="stat-number"><field name="cout_total_maintenance" widget="monetary" readonly="1"/> DZD</span>
+                        </div>
+                    </div>
+
+                    <group string="Informations Générales">
+                        <group>
+                            <field name="categorie_equipement"/>
+                            <field name="sous_categorie"/>
+                            <field name="criticite"/>
+                            <field name="niveau_usure"/>
+                        </group>
+                        <group>
+                            <field name="marque"/>
+                            <field name="modele"/>
+                            <field name="numero_serie"/>
+                            <field name="image_equipement" widget="image" class="float-end"/>
+                        </group>
+                    </group>
+
+                    <group string="Localisation">
+                        <group>
+                            <field name="wilaya_id"/>
+                            <field name="site_location"/>
+                        </group>
+                        <group>
+                            <field name="batiment"/>
+                            <field name="etage_zone"/>
+                        </group>
+                    </group>
+
+                    <group string="Valeur &amp; Amortissement">
+                        <group>
+                            <field name="date_acquisition"/>
+                            <field name="date_mise_en_service"/>
+                            <field name="valeur_acquisition_dzd"/>
+                        </group>
+                        <group>
+                            <field name="duree_vie_estimee"/>
+                            <field name="sous_garantie"/>
+                            <field name="date_fin_garantie" attrs="{'invisible': [('sous_garantie', '=', False)]}"/>
+                        </group>
+                    </group>
+
+                    <group string="Responsables">
+                        <group>
+                            <field name="responsable"/>
+                            <field name="fournisseur_id"/>
+                        </group>
+                        <group>
+                            <field name="certificat_conformite"/>
+                            <field name="numero_certificat" attrs="{'invisible': [('certificat_conformite', '=', False)]}"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Maintenance Planifiée">
+                            <group>
+                                <group>
+                                    <field name="frequence_maintenance_jours"/>
+                                    <field name="derniere_maintenance"/>
+                                    <field name="prochaine_maintenance"/>
+                                </group>
+                            </group>
+                            
+                            <div class="alert alert-warning" role="alert" 
+                                 attrs="{'invisible': [('prochaine_maintenance', '&gt;', context_today().strftime('%Y-%m-%d'))]}">
+                                ⚠️ <strong>Maintenance requise!</strong> La date de maintenance prévue est dépassée ou proche.
+                            </div>
+                        </page>
+
+                        <page string="Pièces de Rechange">
+                            <field name="piece_rechange_ids">
+                                <tree decoration-danger="en_rupture==True">
+                                    <field name="code"/>
+                                    <field name="name"/>
+                                    <field name="stock_actuel"/>
+                                    <field name="stock_minimum"/>
+                                    <field name="en_rupture"/>
+                                    <field name="prix_unitaire_dzd"/>
+                                    <button name="action_commander" type="object" 
+                                            string="Commander" icon="fa-shopping-cart"
+                                            attrs="{'invisible': [('en_rupture', '=', False)]}"/>
+                                </tree>
+                            </field>
+                        </page>
+
+                        <page string="Historique Interventions">
+                            <field name="intervention_ids">
+                                <tree decoration-success="state=='valide'" 
+                                      decoration-info="state=='en_cours'"
+                                      decoration-warning="state=='en_attente'">
+                                    <field name="name"/>
+                                    <field name="type_intervention"/>
+                                    <field name="priorite"/>
+                                    <field name="date_creation"/>
+                                    <field name="state"/>
+                                    <field name="cout_total"/>
+                                </tree>
+                            </field>
+                        </page>
+
+                        <page string="Documents">
+                            <group>
+                                <field name="notice_technique" filename="notice_technique_name"/>
+                                <field name="plan_maintenance" filename="plan_maintenance_name"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- ============================== -->
+    <!-- INTERVENTION VIEWS             -->
+    <!-- ============================== -->
+
+    <record id="view_maintenance_intervention_tree" model="ir.ui.view">
+        <field name="name">maintenance.intervention.dz.tree</field>
+        <field name="model">maintenance.intervention.dz</field>
+        <field name="arch" type="xml">
+            <tree decoration-success="state=='valide'" 
+                  decoration-primary="state=='en_cours'"
+                  decoration-warning="state=='en_attente'"
+                  decoration-muted="state=='annule'"
+                  string="Interventions">
+                <field name="name"/>
+                <field name="equipment_id"/>
+                <field name="type_intervention"/>
+                <field name="priorite"/>
+                <field name="symptome"/>
+                <field name="technicien_principal"/>
+                <field name="debut_intervention"/>
+                <field name="state" widget="badge"/>
+                <field name="cout_total" sum="Total"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_maintenance_intervention_form" model="ir.ui.view">
+        <field name="name">maintenance.intervention.dz.form</field>
+        <field name="model">maintenance.intervention.dz</field>
+        <field name="arch" type="xml">
+            <form string="Intervention de Maintenance">
+                <header>
+                    <button name="action_demarrer" string="Démarrer" type="object" 
+                            class="btn-primary" states="planifie,brouillon"/>
+                    <button name="action_terminer" string="Terminer" type="object" 
+                            class="btn-success" states="en_cours"/>
+                    <button name="action_valider" string="Valider" type="object" 
+                            class="btn-info" states="termine"/>
+                    <field name="state" widget="statusbar" 
+                           statusbar_visible="brouillon,planifie,en_cours,termine,valide"/>
+                </header>
+                
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+
+                    <group string="Information Intervention">
+                        <group>
+                            <field name="equipment_id" required="1"/>
+                            <field name="type_intervention"/>
+                            <field name="priorite"/>
+                        </group>
+                        <group>
+                            <field name="technicien_principal"/>
+                            <field name="techniciens_ids" widget="many2many_tags"/>
+                        </group>
+                    </group>
+
+                    <group string="Planning">
+                        <group>
+                            <field name="date_creation" readonly="1"/>
+                            <field name="date_planifiee"/>
+                            <field name="duree_prevue_heures"/>
+                        </group>
+                        <group>
+                            <field name="debut_intervention" readonly="1"/>
+                            <field name="fin_intervention" readonly="1"/>
+                            <field name="duree_reelle_heures"/>
+                            <field name="duree_arret_heures"/>
+                        </group>
+                    </group>
+
+                    <group string="Description Problème">
+                        <field name="symptome" placeholder="Décrire le symptôme ou problème constaté..."/>
+                    </group>
+
+                    <group string="Diagnostic &amp; Travail Effectué" states="en_cours,termine,valide">
+                        <group>
+                            <field name="diagnostic" placeholder="Analyse de la cause racine..."/>
+                        </group>
+                    </group>
+                    
+                    <group string="Travail Effectué" states="en_cours,termine,valide">
+                        <field name="travail_effectue" placeholder="Description des travaux réalisés..."/>
+                    </group>
+
+                    <group string="Pièces Utilisées" states="en_cours,termine,valide">
+                        <field name="pieces_utilisees_ids" widget="many2many_tags"/>
+                    </group>
+
+                    <group string="Coûts (DZD)" states="termine,valide">
+                        <group>
+                            <field name="cout_main_oeuvre"/>
+                            <field name="cout_pieces"/>
+                            <field name="cout_externe"/>
+                        </group>
+                        <group>
+                            <field name="cout_total" widget="monetary" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <group string="Clôture" states="termine,valide">
+                        <group>
+                            <field name="resultat"/>
+                        </group>
+                        <group>
+                            <field name="validateur" readonly="1"/>
+                            <field name="date_validation" readonly="1"/>
+                        </group>
+                    </group>
+                </sheet>
+                
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- ============================== -->
+    <!-- PIECE RECHANGE VIEWS           -->
+    <!-- ============================== -->
+
+    <record id="view_piece_rechange_tree" model="ir.ui.view">
+        <field name="name">maintenance.piece.rechange.dz.tree</field>
+        <field name="model">maintenance.piece.rechange.dz</field>
+        <field name="arch" type="xml">
+            <tree decoration-danger="en_rupture==True" string="Pièces de Rechange">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="equipment_id"/>
+                <field name="fabricant"/>
+                <field name="reference_fabricant"/>
+                <field name="stock_actuel"/>
+                <field name="stock_minimum"/>
+                <field name="en_ruptue"/>
+                <field name="prix_unitaire_dzd"/>
+                <field name="critique" widget="boolean_toggle"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_piece_rechange_form" model="ir.ui.view">
+        <field name="name">maintenance.piece.rechange.dz.form</field>
+        <field name="model">maintenance.piece.rechange.dz</field>
+        <field name="arch" type="xml">
+            <form string="Pièce de Rechange">
+                <sheet>
+                    <group string="Identification">
+                        <group>
+                            <field name="code"/>
+                            <field name="name"/>
+                            <field name="product_id"/>
+                        </group>
+                        <group>
+                            <field name="equipment_id"/>
+                            <field name="critique"/>
+                        </group>
+                    </group>
+                    
+                    <group string="Spécifications">
+                        <group>
+                            <field name="fabricant"/>
+                            <field name="reference_fabricant"/>
+                        </group>
+                        <group>
+                            <field name="prix_unitaire_dzd"/>
+                            <field name="fournisseur_id"/>
+                        </group>
+                    </group>
+
+                    <group string="Stock">
+                        <group>
+                            <field name="stock_actuel"/>
+                            <field name="stock_minimum"/>
+                            <field name="en_ruptue" widget="boolean_toggle"/>
+                        </group>
+                        <group>
+                            <field name="delai_approvisionnement_jours"/>
+                            <button name="action_commander" string="Commander Maintenant" 
+                                    type="object" class="btn-primary"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ============================== -->
+    <!-- PREVENTIVE PLAN VIEWS          -->
+    <!-- ============================== -->
+
+    <record id="view_preventive_plan_tree" model="ir.ui.view">
+        <field name="name">maintenance.preventive.plan.dz.tree</field>
+        <field name="model">maintenance.preventive.plan.dz</field>
+        <field name="arch" type="xml">
+            <tree string="Plans de Maintenance Préventive">
+                <field name="name"/>
+                <field name="equipment_id"/>
+                <field name="frequence_jours"/>
+                <field name="derniere_execution"/>
+                <field name="prochaine_execution" decoration-danger="prochaine_execution &lt; context_today()"/>
+                <field name="active" widget="boolean_toggle"/>
+                <button name="generer_intervention" string="Générer" type="object" 
+                        icon="fa-play" class="btn-primary btn-sm"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_preventive_plan_form" model="ir.ui.view">
+        <field name="name">maintenance.preventive.plan.dz.form</field>
+        <field name="model">maintenance.preventive.plan.dz</field>
+        <field name="arch" type="xml">
+            <form string="Plan de Maintenance Préventive">
+                <sheet>
+                    <group string="Plan">
+                        <group>
+                            <field name="name"/>
+                            <field name="equipment_id"/>
+                            <field name="active"/>
+                        </group>
+                        <group>
+                            <field name="frequence_jours"/>
+                            <field name="frequence_heures_usage"/>
+                        </group>
+                    </group>
+
+                    <group string="Estimations">
+                        <group>
+                            <field name="duree_estimee_heures"/>
+                            <field name="cout_estime_dzd"/>
+                        </group>
+                        <group>
+                            <field name="derniere_execution"/>
+                            <field name="prochaine_execution"/>
+                        </group>
+                    </group>
+
+                    <group string="Tâches à Effectuer">
+                        <field name="description_taches"/>
+                    </group>
+
+                    <group string="Pièces Nécessaires">
+                        <field name="pieces_necessaires_ids" widget="many2many_tags"/>
+                    </group>
+
+                    <group string="Historique Exécutions">
+                        <field name="intervention_ids">
+                            <tree>
+                                <field name="name"/>
+                                <field name="date_creation"/>
+                                <field name="state"/>
+                                <field name="cout_total"/>
+                            </tree>
+                        </field>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ============================== -->
+    <!-- ACTIONS                         -->
+    <!-- ============================== -->
+
+    <record id="action_maintenance_equipment" model="ir.actions.act_window">
+        <field name="name">Équipements</field>
+        <field name="res_model">maintenance.equipment.dz</field>
+        <field name="view_mode">tree,form,pivot_graph</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créer un nouvel équipement
+            </p>
+            <p>Gérez votre parc d'équipements avec suivi de maintenance.</p>
+        </field>
+    </record>
+
+    <record id="action_maintenance_interventions" model="ir.actions.act_window">
+        <field name="name">Interventions</field>
+        <field name="res_model">maintenance.intervention.dz</field>
+        <field name="view_mode">tree,form,calendar,pivot_graph</field>
+        <field name="context">{'search_default_en_cours': True}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Aucune intervention en cours
+            </p>
+        </field>
+    </record>
+
+    <record id="action_pieces_rechange" model="ir.actions.act_window">
+        <field name="name">Pièces de Rechange</field>
+        <field name="res_model">maintenance.piece.rechange.dz</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="action_preventive_plans" model="ir.actions.act_window">
+        <field name="name">Plans Préventifs</field>
+        <field name="res_model">maintenance.preventive.plan.dz</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- ============================== -->
+    <!-- MENUS                           -->
+    <!-- ============================== -->
+
+    <menuitem id="menu_maintenance_root"
+              name="🔧 Maintenance DZ"
+              sequence="45"
+              web_icon="fa-wrench"/>
+
+    <menuitem id="menu_maintenance_equipment"
+              name="Équipements"
+              parent="menu_maintenance_root"
+              action="action_maintenance_equipment"
+              sequence="10"/>
+
+    <menuitem id="menu_maintenance_interventions"
+              name="Interventions"
+              parent="menu_maintenance_root"
+              action="action_maintenance_interventions"
+              sequence="20"/>
+
+    <menuitem id="menu_maintenance_pieces"
+              name="Pièces de Rechange"
+              parent="menu_maintenance_root"
+              action="action_pieces_rechange"
+              sequence="30"/>
+
+    <menuitem id="menu_maintenance_preventive"
+              name="Plans Préventifs"
+              parent="menu_maintenance_root"
+              action="action_preventive_plans"
+              sequence="40"/>
+
+    <!-- Search Views -->
+    <record id="search_maintenance_intervention" model="ir.ui.view">
+        <field name="name">maintenance.intervention.dz.search</field>
+        <field name="model">maintenance.intervention.dz</field>
+        <field name="arch" type="xml">
+            <search string="Rechercher Interventions">
+                <field name="name"/>
+                <field name="equipment_id"/>
+                <field name="technicien_principal"/>
+                <filter name="en_cours" string="En Cours" domain="[('state', '=', 'en_cours')]"/>
+                <filter name="planifie" string="Planifiés" domain="[('state', '=', 'planifie')]"/>
+                <filter name="this_week" string="Cette Semaine" 
+                        domain="[('date_creation', '&gt;=', context_today().strftime('%Y-%m-%d')), ('date_creation', '&lt;=', (context_today() + datetime.timedelta(days=7)).strftime('%Y-%m-%d'))]"/>
+                <separator/>
+                <filter name="my_interventions" string="Mes Interventions" 
+                        domain="[('techniciens_ids', '=', uid)]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_type" string="Type" context="{'group_by': 'type_intervention'}"/>
+                    <filter name="group_state" string="État" context="{'group_by': 'state'}"/>
+                    <filter name="group_priority" string="Priorité" context="{'group_by': 'priorite'}"/>
+                    <filter name="group_equipment" string="Équipement" context="{'group_by': 'equipment_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+</odoo>

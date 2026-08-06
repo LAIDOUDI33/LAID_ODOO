@@ -9,3 +9,9 @@ from . import wilaya_commune
 from . import account_move_dz
 from . import res_company_dz
 from . import tax_models
+
+# New modules - MRP, Maintenance, BI, CRM
+from . import mrp_production_dz
+from . import maintenance_dz
+from . import bi_analytics_dz
+from . import crm_dz

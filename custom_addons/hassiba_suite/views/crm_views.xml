@@ -1,0 +1,474 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!-- ================================================== -->
+    <!-- CRM VIEWS - Enhanced CRM for Algeria                  -->
+    <!-- ================================================== -->
+
+    <!-- ============================== -->
+    <!-- LEAD/OPPORTUNITY EXTENSIONS   -->
+    <!-- ============================== -->
+
+    <record id="view_crm_lead_form_dz" model="ir.ui.view">
+        <field name="name">crm.lead.form.dz</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Client Type Section -->
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <group string="Classification Client DZ" name="dz_client_info">
+                    <group>
+                        <field name="type_client"/>
+                        <field name="secteur_activite"/>
+                        <field name="origine_contact"/>
+                    </group>
+                    <group>
+                        <field name="wilaya_projet"/>
+                        <field name="commune_projet" domain="[('wilaya_id', '=', wilaya_projet)]"/>
+                    </group>
+                </group>
+            </xpath>
+
+            <!-- Budget & Decision Info -->
+            <xpath expr="//field[@name='planned_revenue']" position="after">
+                <field name="budget_estime_dzd"/>
+                <field name="delai_decision_jours"/>
+                <field name="date_prevue_signature"/>
+            </xpath>
+
+            <!-- Competition & Probability -->
+            <xpath expr="//notebook" position="inside">
+                <page string="Analyse Concurrence (DZ)">
+                    <group string="Concurrence">
+                        <group>
+                            <field name="concurrence"/>
+                            <field name="probabilite_calculee" widget="progressbar"/>
+                        </group>
+                        <group>
+                            <field name="facteurs_differenciation"/>
+                        </group>
+                    </group>
+                    
+                    <group string="Marché Public (si applicable)">
+                        <group>
+                            <field name="besoin_appel_offres"/>
+                            <field name="type_marche" 
+                                   attrs="{'invisible': [('besoin_appel_offres', '=', False)],
+                                           'required': [('besoin_appel_offres', '=', True)]}"/>
+                        </group>
+                    </group>
+
+                    <group string="Décideurs">
+                        <group>
+                            <field name="decisionnaire_nom"/>
+                            <field name="decisionnaire_fonction"/>
+                        </group>
+                        <group>
+                            <field name="decisionnaire_tel"/>
+                            <field name="decisionnaire_email"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- Lead Tree View Extension -->
+    <record id="view_crm_lead_tree_dz" model="ir.ui.view">
+        <field name="name">crm.lead.tree.dz</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_tree_forecast"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="type_client"/>
+                <field name="wilaya_projet"/>
+                <field name="concurrence"/>
+                <field name="probabilite_calculee"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ============================== -->
+    <!-- COMMISSION VIEWS               -->
+    <!-- ============================== -->
+
+    <record id="view_crm_commission_tree" model="ir.ui.view">
+        <field name="name">crm.commission.dz.tree</field>
+        <field name="model">crm.commission.dz</field>
+        <field name="arch" type="xml">
+            <tree decoration-success="state=='payee'" 
+                  decoration-warning="state=='valide'"
+                  decoration-info="state=='calcul'"
+                  string="Commissions Commerciales">
+                <field name="name"/>
+                <field name="commercial_id"/>
+                <field name="periode_debut"/>
+                <field name="periode_fin"/>
+                <field name="ca_realise" sum="Total CA"/>
+                <field name="objectif_ca"/>
+                <field name="taux_atteinte"/>
+                <field name="commission_brute" sum="Commission Brute"/>
+                <field name="irg_commission" sum="IRG"/>
+                <field name="commission_net" sum="Commission Net"/>
+                <field name="total_a_payer" sum="Total à Payer"/>
+                <field name="state" widget="badge"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_crm_commission_form" model="ir.ui.view">
+        <field name="name">crm.commission.dz.form</field>
+        <field name="model">crm.commission.dz</field>
+        <field name="arch" type="xml">
+            <form string="Fiche Commission Commerciale">
+                <header>
+                    <button name="action_valider" string="Valider" type="object" 
+                            class="btn-primary" states="calcul"/>
+                    <button name="action_marquer_payee" string="Marquer Payée" type="object" 
+                            class="btn-success" states="valide"/>
+                    <field name="state" widget="statusbar" statusbar_visible="calcul,valide,payee"/>
+                </header>
+                
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+
+                    <group string="Informations Générales">
+                        <group>
+                            <field name="commercial_id"/>
+                            <field name="taux_commission_base"/>
+                        </group>
+                        <group>
+                            <field name="periode_debut"/>
+                            <field name="periode_fin"/>
+                        </group>
+                    </group>
+
+                    <group string="Performance Commerciale">
+                        <group>
+                            <field name="ca_realise" widget="monetary"/>
+                            <field name="objectif_ca" widget="monetary"/>
+                            <field name="taux_atteinte" widget="progressbar"/>
+                        </group>
+                        <group>
+                            <field name="nb_opportunities_gagnees"/>
+                            <field name="nb_opportunities_perdues"/>
+                        </group>
+                    </group>
+
+                    <group string="Calcul de la Commission (DZD)">
+                        <group>
+                            <field name="commission_brute" widget="monetary"/>
+                            <field name="irg_commission" widget="monetary"/>
+                        </group>
+                        <group>
+                            <field name="commission_net" widget="monetary"/>
+                            <div class="alert alert-info" role="alert">
+                                <strong>💡 IRG sur commission calculé selon barème algérien</strong>
+                            </div>
+                        </group>
+                    </group>
+
+                    <group string="Bonus &amp; Malus">
+                        <group>
+                            <field name="bonus_objectif" widget="monetary"/>
+                            <field name="bonus_exceptionnel" widget="monetary"/>
+                        </group>
+                        <group>
+                            <field name="total_a_payer" widget="monetary"
+                                   style="font-size: 1.5em; font-weight: bold; color: green;"/>
+                        </group>
+                    </group>
+                </sheet>
+                
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- ============================== -->
+    <!-- VISITE COMMERCIALE VIEWS      -->
+    <!-- ============================== -->
+
+    <record id="view_visite_commerciale_tree" model="ir.ui.view">
+        <field name="name">visite.commerciale.dz.tree</field>
+        <field name="model">visite.commerciale.dz</field>
+        <field name="arch" type="xml">
+            <tree decoration-success="state=='realisee'"
+                  decoration-danger="state=='annulee'"
+                  decoration-primary="state=='planifie'"
+                  string="Visites Commerciales">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="commercial_id"/>
+                <field name="type_visite"/>
+                <field name="date_visite"/>
+                <field name="wilaya_id"/>
+                <field name="resultats"/>
+                <field name="state" widget="badge"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_visite_commerciale_form" model="ir.ui.view">
+        <field name="name">visite.commerciale.dz.form</field>
+        <field name="model">visite.commerciale.dz</field>
+        <field name="arch" type="xml">
+            <form string="Visite Commerciale">
+                <header>
+                    <button name="action_realiser" string="Marquer Réalisée" type="object" 
+                            class="btn-success" states="planifie"/>
+                    <button name="action_annuler" string="Annuler" type="object" 
+                            class="btn-danger" states="planifie"/>
+                    <field name="state" widget="statusbar" statusbar_visible="planifie,realisee,annulee"/>
+                </header>
+                
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+
+                    <group string="Informations Visite">
+                        <group>
+                            <field name="partner_id"/>
+                            <field name="lead_id"/>
+                            <field name="commercial_id"/>
+                        </group>
+                        <group>
+                            <field name="type_visite"/>
+                            <field name="date_visite"/>
+                            <field name="duree_prevue_heures"/>
+                            <field name="duree_reelle_heures" attrs="{'readonly': [('state', '=', 'planifie')]}"/>
+                        </group>
+                    </group>
+
+                    <group string="Localisation">
+                        <group>
+                            <field name="adresse_visite"/>
+                            <field name="wilaya_id"/>
+                        </group>
+                        <group>
+                            <field name="contact_nom"/>
+                            <field name="contact_telephone"/>
+                        </group>
+                    </group>
+
+                    <group string="Objectifs" states="planifie">
+                        <field name="objectifs"/>
+                    </group>
+
+                    <group string="Résultats" states="realisee,annulee">
+                        <group>
+                            <field name="resultats"/>
+                            <field name="compte_rendu"/>
+                        </group>
+                        <group>
+                            <field name="prochaines_actions"/>
+                            <field name="date_prochaine_visite"/>
+                        </group>
+                    </group>
+
+                    <group string="Documents">
+                        <field name="documents_ids" widget="many2many_binary"/>
+                    </group>
+                </sheet>
+                
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Calendar View for Visits -->
+    <record id="view_visite_commerciale_calendar" model="ir.ui.view">
+        <field name="name">visite.commerciale.dz.calendar</field>
+        <field name="model">visite.commerciale.dz</field>
+        <field name="arch" type="xml">
+            <calendar string="Calendrier Visites" date_start="date_visite" color="commercial_id">
+                <field name="partner_id"/>
+                <field name="type_visite"/>
+                <field name="wilaya_id"/>
+            </calendar>
+        </field>
+    </record>
+
+    <!-- ============================== -->
+    <!-- PIPELINE VIEWS                 -->
+    <!-- ============================== -->
+
+    <record id="view_commercial_pipeline_form" model="ir.ui.view">
+        <field name="name">commercial.pipeline.dz.form</field>
+        <field name="model">commercial.pipeline.dz</field>
+        <field name="arch" type="xml">
+            <form string="Pipeline Commercial">
+                <sheet>
+                    <group string="Pipeline">
+                        <group>
+                            <field name="name"/>
+                            <field name="commercial_id"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+
+                    <group string="Statistiques Pipeline">
+                        <group>
+                            <field name="nb_opportunities" readonly="1"/>
+                            <field name="total_valeur_pipeline" readonly="1" widget="monetary"/>
+                        </group>
+                        <group>
+                            <field name="taux_conversion_global" readonly="1" widget="progressbar"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Étapes du Pipeline">
+                            <field name="stage_ids">
+                                <tree editable="bottom">
+                                    <field name="sequence"/>
+                                    <field name="name"/>
+                                    <field name="type"/>
+                                    <field name="expected_duration_days"/>
+                                    <field name="nb_opportunities" readonly="1"/>
+                                    <field name="valeur_totale" readonly="1"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ============================== -->
+    <!-- OPPORTUNITY ANALYSIS VIEWS     -->
+    <!-- ============================== -->
+
+    <record id="view_opportunity_analysis_tree" model="ir.ui.view">
+        <field name="name">crm.opportunity.analysis.dz.tree</field>
+        <field name="model">crm.opportunity.analysis.dz</field>
+        <field name="arch" type="xml">
+            <tree string="Analyse des Opportunités">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="wilaya_id"/>
+                <field name="montant_gagne" sum="Total Gagné"/>
+                <field name="marge_reelle_pct" avg="Marge Moy."/>
+                <field name="duree_conversion" avg="Durée Conv."/>
+                <field name="canal_acquisition"/>
+                <field name="date_cloture"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ============================== -->
+    <!-- ACTIONS                         -->
+    <!-- ============================== -->
+
+    <record id="action_crm_commissions" model="ir.actions.act_window">
+        <field name="name">Commissions Commerciales</field>
+        <field name="res_model">crm.commission.dz</field>
+        <field name="view_mode">tree,form,pivot_graph</field>
+        <help type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Aucune commission calculée
+            </p>
+            <p>Gérez les commissions de votre équipe commerciale avec calcul IRG intégré.</p>
+        </help>
+    </record>
+
+    <record id="action_visites_commerciales" model="ir.actions.act_window">
+        <field name="name">Visites Commerciales</field>
+        <field name="res_model">visite.commerciale.dz</field>
+        <field name="view_mode">tree,form,calendar</field>
+    </record>
+
+    <record id="action_pipelines_commerciaux" model="ir.actions.act_window">
+        <field name="name">Pipelines Commerciaux</field>
+        <field name="res_model">commercial.pipeline.dz</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="action_opportunity_analysis" model="ir.actions.act_window">
+        <field name="name">Analyse des Opportunités</field>
+        <field name="res_model">crm.opportunity.analysis.dz</field>
+        <field name="view_mode">tree,pivot_graph</field>
+    </record>
+
+    <!-- Wizard: Calculate Commission -->
+    <record id="action_calculate_commission_wizard" model="ir.actions.act_window">
+        <field name="name">Calculer les Commissions</field>
+        <field name="res_model">crm.commission.dz</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{'default_commercial_id': env.user.employee_id.id}</field>
+    </record>
+
+    <!-- ============================== -->
+    <!-- MENUS                           -->
+    <!-- ============================== -->
+
+    <menuitem id="menu_crm_dz_root"
+              name="💬 CRM Algérie"
+              sequence="40"
+              web_icon="fa-handshake"/>
+
+    <menuitem id="menu_crm_pipelines"
+              name="Pipelines Commerciaux"
+              parent="menu_crm_dz_root"
+              action="action_pipelines_commerciaux"
+              sequence="10"/>
+
+    <menuitem id="menu_crm_visites"
+              name="Visites Commerciales"
+              parent="menu_crm_dz_root"
+              action="action_visites_commerciales"
+              sequence="20"/>
+
+    <menuitem id="menu_crm_commissions"
+              name="Commissions"
+              parent="menu_crm_dz_root"
+              action="action_crm_commissions"
+              sequence="30"/>
+
+    <menuitem id="menu_crm_analytics"
+              name="Analyses Commerciales"
+              parent="menu_crm_dz_root"
+              action="action_opportunity_analysis"
+              sequence="40"/>
+
+    <!-- Search View for Leads with DZ fields -->
+    <record id="search_crm_lead_dz" model="ir.ui.view">
+        <field name="name">crm.lead.search.dz</field>
+        <field name="model">crm.lead</field>
+        <field name="arch" type="xml">
+            <search string="Rechercher Opportunités">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="wilaya_projet"/>
+                <field name="type_client"/>
+                <filter name="my_opportunities" string="Mes Opportunités" 
+                        domain="[('user_id', '=', uid)]"/>
+                <filter name="won" string="Gagnées" domain="[('stage_id.is_won', '=', True)]"/>
+                <filter name="this_month" string="Ce Mois" 
+                        domain="[('create_date', '&gt;=', context_today().strftime('%Y-%m-01'))]"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter name="group_type" string="Type Client" context="{'group_by': 'type_client'}"/>
+                    <filter name="group_wilaya" string="Wilaya" context="{'group_by': 'wilaya_projet'}"/>
+                    <filter name="group_stage" string="Étape" context="{'group_by': 'stage_id'}"/>
+                    <filter name="group_commercial" string="Commercial" context="{'group_by': 'user_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!-- ================================================== -->
+    <!-- MRP PRODUCTION VIEWS - Algerian Extensions           -->
+    <!-- ================================================== -->
+
+    <!-- Production Order Form Extension -->
+    <record id="view_mrp_production_form_dz" model="ir.ui.view">
+        <field name="name">mrp.production.form.dz</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+        <field name="arch" type="xml">
+
+            <!-- Origin & Customs Info -->
+            <xpath expr="//group[@name='reference']" position="after">
+                <group string="Informations Algérie" name="dz_production_info">
+                    <group>
+                        <field name="origine_produit"/>
+                        <field name="code_nomenclature_douaniere"/>
+                    </group>
+                    <group>
+                        <field name="responsable_production"/>
+                        <field name="equipe_production"/>
+                    </group>
+                </group>
+            </xpath>
+
+            <!-- Costing Section -->
+            <xpath expr="//notebook" position="inside">
+                <page string="Coûts &amp; Prix (DZD)" name="dz_costing">
+                    <group string="Analyse des Coûts">
+                        <group>
+                            <field name="cout_revient_unitaire_dzd" widget="monetary"/>
+                            <field name="marge_beneficiaire_pct"/>
+                        </group>
+                        <group>
+                            <field name="prix_vente_suggere_dzd" widget="monetary"/>
+                            <field name="poste_travail"/>
+                        </group>
+                    </group>
+                    
+                    <div class="alert alert-info" role="alert">
+                        <strong>💡 Analyse:</strong> 
+                        Coût de revient: <span t-esc="cout_revient_unitaire_dzd"/> DZD | 
+                        Prix suggéré: <span t-esc="prix_vente_suggere_dzd"/> DZD
+                    </div>
+                </page>
+
+                <page string="Contrôle Qualité" name="dz_quality">
+                    <group string="Certifications &amp; Normes">
+                        <group>
+                            <field name="conforme_norme_algerienne"/>
+                            <field name="numero_certification_ianor"
+                                   attrs="{'invisible': [('conforme_norme_algerienne', '=', False)],
+                                           'required': [('conforme_norme_algerienne', '=', True)]}"/>
+                            <field name="date_certification"/>
+                        </group>
+                        <group>
+                            <field name="conforme_hygiene_securite"/>
+                            <field name="date_controle_qualite"/>
+                            <field name="inspecteur_qualite"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- Production Order Tree View Extension -->
+    <record id="view_mrp_production_tree_dz" model="ir.ui.view">
+        <field name="name">mrp.production.tree.dz</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.mrp_production_tree_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='state']" position="before">
+                <field name="origine_produit"/>
+                <field name="cout_revient_unitaire_dzd" sum="Total Coût"/>
+                <field name="conforme_norme_algerienne" string="IANOR"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Product Template Form - SCF Classification -->
+    <record id="view_product_template_form_dz" model="ir.ui.view">
+        <field name="name">product.template.form.dz.scf</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_only_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='general_data']" position="after">
+                <group string="Comptabilité SCF (Algérie)" name="dz_scf_info">
+                    <group>
+                        <field name="classement_comptable_scf"/>
+                        <field name="taux_amortissement"/>
+                    </group>
+                    <group>
+                        <field name="duree_vie_utile"/>
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Work Center Form Extension -->
+    <record id="view_workcenter_form_dz" model="ir.ui.view">
+        <field name="name">mrp.workcenter.form.dz</field>
+        <field name="model">mrp.workcenter</field>
+        <field name="inherit_id" ref="mrp.mrp_workcenter_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='general']" position="inside">
+                <field name="zone_usine"/>
+                <field name="responsable_poste"/>
+            </xpath>
+            <xpath expr="//group[@name='costs']" position="after">
+                <group string="Énergie &amp; Certification">
+                    <group>
+                        <field name="consommation_energie_kw"/>
+                    </group>
+                    <group>
+                        <field name="certificat_qualification"/>
+                        <field name="date_derniere_inspection"/>
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- BOM Form Extension -->
+    <record id="view_bom_form_dz" model="ir.ui.view">
+        <field name="name">mrp.bom.form.dz</field>
+        <field name="model">mrp.bom</field>
+        <field name="inherit_id" ref="mrp.mrp_bom_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='type']" position="after">
+                <field name="rendement_pourcent"/>
+                <field name="pertes_estimees_pct"/>
+            </xpath>
+            
+            <!-- Add cost breakdown button -->
+            <xpath expr="//header" position="inside">
+                <button name="%(action_bom_cost_breakdown)d" 
+                        type="action" 
+                        string="Analyse des Coûts DZ" 
+                        class="btn-primary"
+                        attrs="{'invisible': [('id', '=', False)]}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Production Report Action -->
+    <record id="action_production_report_dz" model="ir.actions.report">
+        <field name="name">Fiche de Production DZ</field>
+        <field name="model">mrp.production</field>
+        <field name="report_name">mrp.production.report.dz</field>
+        <field name="report_file">hassiba_suite.mrp_production_report_dz</field>
+        <field name="print_report_name">'Production-%s' % (object.name)</field>
+        <field name="binding_model_id" ref="mrp.model_mrp_production"/>
+        <field name="report_type">qweb-pdf</field>
+    </record>
+
+    <!-- Menu Items -->
+    <menuitem id="menu_mrp_reports_dz"
+              name="Rapports Production DZ"
+              parent="mrp.menu_mrp_reporting"
+              sequence="10"/>
+
+    <menuitem id="menu_production_cost_report"
+              name="Analyse des Coûts"
+              action="action_production_report_dz"
+              parent="menu_mrp_reports_dz"
+              sequence="1"/>
+
+</odoo>
