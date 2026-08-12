@@ -17,7 +17,8 @@ import {
   Building2,
   CalendarDays,
   FileText,
-  Home
+  Home,
+  Upload
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -89,6 +90,12 @@ const navItems: NavItem[] = [
     title: 'Paramètres',
     href: '/settings',
     icon: Settings,
+  },
+  {
+    title: 'Import de Données',
+    href: '/import',
+    icon: Upload,
+    badge: 'NEW',
   },
 ]
 
