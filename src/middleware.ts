@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const RATE_LIMIT_MAP = new Map();
 const RATE_WINDOW = 15 * 60 * 1000; // 15 minutes
-const RATE_MAX = 100;
+const RATE_MAX = process.env.NODE_ENV === 'development' ? 10000 : 100; // Higher limit for dev
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -27,7 +27,10 @@ export function middleware(request: NextRequest) {
     
     if (record && now < record.resetTime) {
       if (record.count >= RATE_MAX) {
-        return new NextResponse('Too Many Requests', { status: 429 });
+        return new NextResponse(JSON.stringify({ error: 'Too Many Requests', retryAfter: Math.ceil((record.resetTime - now) / 1000) }), { 
+          status: 429,
+          headers: { 'Content-Type': 'application/json' }
+        });
       }
       record.count++;
     } else {

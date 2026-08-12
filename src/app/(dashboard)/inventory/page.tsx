@@ -17,6 +17,7 @@ import {
   X,
   ChevronDown,
   ChevronUp,
+  ChevronRight,
   MinusCircle,
   PlusCircle,
   Save,
