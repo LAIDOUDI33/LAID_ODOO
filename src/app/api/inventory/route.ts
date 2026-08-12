@@ -1,8 +1,13 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
 
 // GET /api/inventory - Get inventory/stock data
 export async function GET(request: Request) {
+  // SECURITY: Require authentication for inventory data
+  const authError = await requireAuth(request);
+  if (authError) return authError;
+  
   try {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search');
@@ -142,6 +147,12 @@ export async function GET(request: Request) {
 
 // POST /api/inventory - Stock adjustment
 export async function POST(request: Request) {
+  // SECURITY: Require Warehouse Manager role for stock adjustments
+  const authError = await requireRole(request, ['admin', 'manager', 'warehouse_manager']);
+  if (authError) return authError;
+  
+  const user = await getAuthenticatedUser();
+  
   try {
     const body = await request.json();
     

@@ -1,8 +1,13 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
 
 // GET /api/products - List products
 export async function GET(request: Request) {
+  // SECURITY: Require authentication for product data
+  const authError = await requireAuth(request);
+  if (authError) return authError;
+  
   try {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search');
@@ -58,6 +63,10 @@ export async function GET(request: Request) {
 
 // POST /api/products - Create product
 export async function POST(request: Request) {
+  // SECURITY: Require role to create products
+  const authError = await requireRole(request, ['admin', 'manager', 'accountant', 'sales_manager', 'warehouse_manager']);
+  if (authError) return authError;
+  
   try {
     const body = await request.json();
     

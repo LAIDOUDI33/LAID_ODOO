@@ -1,8 +1,13 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
 
 // GET /api/bank-accounts - List bank accounts with treasury info
 export async function GET(request: Request) {
+  // SECURITY: Require authentication for banking data
+  const authError = await requireAuth(request);
+  if (authError) return authError;
+  
   try {
     const { searchParams } = new URL(request.url);
     const includeStats = searchParams.get('stats') === 'true';
@@ -76,6 +81,10 @@ export async function GET(request: Request) {
 
 // POST /api/bank-accounts - Create bank account
 export async function POST(request: Request) {
+  // SECURITY: Require Admin or Accountant role for bank account creation
+  const authError = await requireRole(request, ['admin', 'manager', 'accountant']);
+  if (authError) return authError;
+  
   try {
     const body = await request.json();
     

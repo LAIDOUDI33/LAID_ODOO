@@ -481,7 +481,7 @@ export default function DashboardPage() {
           </TabsContent>
 
           {/* AI Tab */}
-          <TabsContent value="tasks">
+          <TabsContent value="ai">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">

@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { calculateTVA, TVA_RATES } from '@/lib/algerian-taxes';
+import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
 
 // ============================================================
 // Types & Interfaces
@@ -144,6 +145,10 @@ function calculateOrderTotals(lines: Array<{
 // ============================================================
 
 export async function GET(request: NextRequest) {
+  // SECURITY: Require authentication for purchase data
+  const authError = await requireAuth(request);
+  if (authError) return authError;
+  
   try {
     const { searchParams } = new URL(request.url);
     
@@ -280,6 +285,12 @@ export async function GET(request: NextRequest) {
 // ============================================================
 
 export async function POST(request: NextRequest) {
+  // SECURITY: Require role to create purchase orders
+  const authError = await requireRole(request, ['admin', 'manager', 'accountant', 'warehouse_manager']);
+  if (authError) return authError;
+  
+  const user = await getAuthenticatedUser();
+  
   try {
     const body: CreatePurchaseOrderInput = await request.json();
     

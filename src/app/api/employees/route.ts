@@ -1,8 +1,16 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
 
 // GET /api/employees - List employees
 export async function GET(request: Request) {
+  // SECURITY: Require authentication for employee PII data
+  const authError = await requireAuth(request);
+  if (authError) return authError;
+  
+  // Get user for company scoping
+  const user = await getAuthenticatedUser();
+  
   try {
     const { searchParams } = new URL(request.url);
     const department = searchParams.get('department');
@@ -58,6 +66,12 @@ export async function GET(request: Request) {
 
 // POST /api/employees - Create employee
 export async function POST(request: Request) {
+  // SECURITY: Require HR or Admin role to create employees
+  const authError = await requireRole(request, ['admin', 'manager', 'hr_manager', 'hr_staff']);
+  if (authError) return authError;
+  
+  const user = await getAuthenticatedUser();
+  
   try {
     const body = await request.json();
     

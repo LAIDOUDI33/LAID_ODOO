@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils'
 
 // ============================================================
 // Types
@@ -63,6 +64,10 @@ interface AccountingFilters {
 // ============================================================
 
 export async function GET(request: NextRequest) {
+  // SECURITY: Require authentication for accounting data
+  const authError = await requireAuth(request);
+  if (authError) return authError;
+  
   try {
     const { searchParams } = new URL(request.url)
     
@@ -184,6 +189,12 @@ export async function GET(request: NextRequest) {
 // ============================================================
 
 export async function POST(request: NextRequest) {
+  // SECURITY: Require Accountant or Admin role for journal entries
+  const authError = await requireRole(request, ['admin', 'manager', 'accountant']);
+  if (authError) return authError;
+  
+  const user = await getAuthenticatedUser();
+  
   try {
     const body = await request.json()
     const { 

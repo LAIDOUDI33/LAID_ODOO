@@ -6,9 +6,14 @@ import {
   calculatePrimeAncienete,
   getAllocationsFamiliales
 } from '@/lib/algerian-taxes';
+import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
 
 // GET /api/payroll - List payrolls
 export async function GET(request: Request) {
+  // SECURITY: Require authentication for payroll data (HIGHLY SENSITIVE)
+  const authError = await requireAuth(request);
+  if (authError) return authError;
+  
   try {
     const { searchParams } = new URL(request.url);
     const period = searchParams.get('period'); // YYYY-MM format
@@ -59,6 +64,13 @@ export async function GET(request: Request) {
 
 // POST /api/payroll - Generate payroll for an employee
 export async function POST(request: Request) {
+  // SECURITY: Require HR Manager or Admin role to generate payroll
+  const authError = await requireRole(request, ['admin', 'manager', 'hr_manager', 'accountant']);
+  if (authError) return authError;
+  
+  // Get user for audit logging
+  const user = await getAuthenticatedUser();
+  
   try {
     const body = await request.json();
     

@@ -1,8 +1,13 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
 
 // GET /api/partners - List partners
 export async function GET(request: Request) {
+  // SECURITY: Require authentication for partner data
+  const authError = await requireAuth(request);
+  if (authError) return authError;
+  
   try {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type'); // customer, supplier, both
@@ -46,6 +51,10 @@ export async function GET(request: Request) {
 
 // POST /api/partners - Create partner
 export async function POST(request: Request) {
+  // SECURITY: Require authentication to create partners
+  const authError = await requireRole(request, ['admin', 'manager', 'sales_manager', 'salesperson', 'accountant']);
+  if (authError) return authError;
+  
   try {
     const body = await request.json();
     

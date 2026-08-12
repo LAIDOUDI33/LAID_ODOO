@@ -13,7 +13,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     
     const action = searchParams.get("action") as AuditAction | null;
-    const module = searchParams.get("module") as AuditModule | null;
+    const auditModule = searchParams.get("module") as AuditModule | null;
     const entityName = searchParams.get("entityName");
     const entityId = searchParams.get("entityId");
     const userId = searchParams.get("userId");
@@ -35,7 +35,7 @@ export async function GET(request: Request) {
     // Récupérer les logs avec filtres
     const result = await getAuditLogs({
       action: action || undefined,
-      module: module || undefined,
+      module: auditModule || undefined,
       entityName: entityName || undefined,
       entityId: entityId || undefined,
       userId: userId || undefined,
