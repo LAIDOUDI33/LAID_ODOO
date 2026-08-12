@@ -396,7 +396,7 @@ export function usePWAInstallStatus() {
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
                          (window.navigator as unknown as { standalone?: boolean }).standalone === true
     
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- reading browser API
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- PWA detection
     setIsInstalled(isStandalone)
     
     // Check iOS
@@ -404,7 +404,7 @@ export function usePWAInstallStatus() {
     const isIPad = /ipad/.test(userAgent) || 
                   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
     const isIPhone = /iphone/.test(userAgent)
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- reading userAgent
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- iOS detection
     setIsIOS(isIPad || isIPhone)
 
     // Listen for beforeinstallprompt

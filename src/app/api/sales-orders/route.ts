@@ -119,7 +119,7 @@ export async function GET(request: Request) {
   } catch (error: any) {
     console.error('SalesOrders GET Error:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch sales orders', details: error?.message?.substring(0, 500) },
+      { success: false, error: 'Failed to fetch sales orders', code: 'INTERNAL_ERROR' },
       { status: 500 }
     );
   }

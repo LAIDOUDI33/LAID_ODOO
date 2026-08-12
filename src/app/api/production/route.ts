@@ -35,7 +35,7 @@ export async function GET(request: Request) {
   } catch (error: any) {
     console.error('Production API Error:', error);
     return NextResponse.json(
-      { success: false, error: error.message || 'Failed to fetch production data' },
+      { success: false, error: 'Erreur lors de la récupération des données de production', code: 'INTERNAL_ERROR' },
       { status: 500 }
     );
   }
@@ -78,7 +78,7 @@ export async function POST(request: Request) {
   } catch (error: any) {
     console.error('Production POST Error:', error);
     return NextResponse.json(
-      { success: false, error: error.message || 'Failed to process request' },
+      { success: false, error: 'Erreur lors du traitement de la requête', code: 'INTERNAL_ERROR' },
       { status: 500 }
     );
   }

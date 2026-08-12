@@ -778,7 +778,6 @@ function ContractModal({
         // eslint-disable-next-line react-hooks/set-state-in-effect -- form initialization from prop
         setFormData(contract)
       } else {
-        // eslint-disable-next-line react-hooks/set-state-in-effect -- form reset
         setFormData({
           type: 'CDI',
           status: 'draft',
@@ -1172,7 +1171,6 @@ function LeaveRequestModal({
         // eslint-disable-next-line react-hooks/set-state-in-effect -- form initialization from prop
         setFormData(leave)
       } else {
-        // eslint-disable-next-line react-hooks/set-state-in-effect -- form reset
         setFormData({
           type: 'annual',
           isHalfDay: false,

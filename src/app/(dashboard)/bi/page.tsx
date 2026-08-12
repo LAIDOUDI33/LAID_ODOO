@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useCallback } from 'react'
+import { logger } from '@/lib/logger'
 import { 
   BarChart3, 
   TrendingUp, 
@@ -358,7 +359,7 @@ export default function BiPage() {
         if (result.success && result.data) {
           setDashboardData(result.data)
           setLastUpdated(new Date())
-          console.log('✅ BI Analytics data loaded from API')
+          logger.debug('BI Analytics data loaded from API', { context: 'BI' })
           return
         }
       }
@@ -366,7 +367,7 @@ export default function BiPage() {
       // If API fails or returns invalid data, use fallback
       throw new Error('API returned invalid data')
     } catch (err) {
-      console.log('📊 Using fallback data for BI dashboard:', err instanceof Error ? err.message : err)
+      logger.warn('Using fallback data for BI dashboard:', err instanceof Error ? err.message : err, { context: 'BI' })
       setUsingFallback(true)
       setDashboardData(FALLBACK_DATA)
       setLastUpdated(new Date())

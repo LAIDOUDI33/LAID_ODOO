@@ -7,6 +7,74 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ZodError } from 'zod';
 
 // ============================================================
+// Request Body Size Limit Configuration (H-05 FIX)
+// ============================================================
+
+const BODY_SIZE_LIMITS: Record<string, number> = {
+  default: 1024 * 1024,        // 1MB default
+  upload: 50 * 1024 * 1024,    // 50MB for file uploads
+  document: 10 * 1024 * 1024,  // 10MB for documents
+  import: 5 * 1024 * 1024,     // 5MB for data imports
+};
+
+/**
+ * Validate request body size
+ * Returns error response if body exceeds limit
+ */
+export function validateBodySize(
+  request: Request, 
+  category: keyof typeof BODY_SIZE_LIMITS = 'default'
+): NextResponse | null {
+  const contentLength = parseInt(request.headers.get('content-length') || '0');
+  const maxSize = BODY_SIZE_LIMITS[category] || BODY_SIZE_LIMITS.default;
+  
+  if (contentLength > maxSize) {
+    const maxSizeMB = Math.round(maxSize / (1024 * 1024));
+    return NextResponse.json(
+      {
+        success: false,
+        error: `Corps de la requête trop volumineux. Taille maximale: ${maxSizeMB}MB`,
+        code: 'PAYLOAD_TOO_LARGE',
+      },
+      { status: 413 }
+    );
+  }
+  
+  return null;
+}
+
+/**
+ * Read and validate request JSON with size limit
+ */
+export async function safeReadBody<T = any>(
+  request: Request,
+  category: keyof typeof BODY_SIZE_LIMITS = 'default'
+): Promise<{ success: true; data: T } | { success: false; error: NextResponse }> {
+  // Check content length first
+  const sizeError = validateBodySize(request, category);
+  if (sizeError) {
+    return { success: false, error: sizeError };
+  }
+  
+  try {
+    const data = await request.json();
+    return { success: true, data };
+  } catch (error) {
+    return {
+      success: false,
+      error: NextResponse.json(
+        {
+          success: false,
+          error: 'JSON invalide dans le corps de la requête',
+          code: 'INVALID_JSON',
+        },
+        { status: 400 }
+      )
+    };
+  }
+}
+
+// ============================================================
 // Security Headers Configuration
 // ============================================================
 
@@ -283,4 +351,105 @@ export function formatZodError(error: ZodError): {
       message: e.message,
     })),
   };
+}
+
+// ============================================================
+// Safe Error Handler (H-04 FIX - Prevent Stack Trace Leaks)
+// ============================================================
+
+/**
+ * Safe error handler that never exposes internal details
+ * Use this in ALL catch blocks instead of returning error.message
+ */
+export function safeErrorHandler(error: unknown, context?: string): NextResponse {
+  // Log the full error server-side for debugging (but don't expose to client)
+  console.error(`[API Error${context ? ` - ${context}` : ''}]:`, error);
+  
+  // Determine if this is a known error type we can safely share
+  let userMessage = 'Une erreur est survenue. Veuillez réessayer.';
+  let statusCode = 500;
+  
+  if (error instanceof Error) {
+    // Check for specific error types we can provide better messages for
+    const errorMessage = error.message.toLowerCase();
+    
+    if (errorMessage.includes('not found') || errorMessage.includes('found')) {
+      userMessage = 'Ressource non trouvée.';
+      statusCode = 404;
+    } else if (errorMessage.includes('unique') || errorMessage.includes('duplicate')) {
+      userMessage = 'Cette entrée existe déjà.';
+      statusCode = 409;
+    } else if (errorMessage.includes('foreign key') || errorMessage.includes('constraint')) {
+      userMessage = 'Impossible de supprimer cette ressource car elle est utilisée ailleurs.';
+      statusCode = 409;
+    } else if (errorMessage.includes('timeout') || errorMessage.includes('aborted')) {
+      userMessage = 'Le serveur met trop temps à répondre. Veuillez réessayer.';
+      statusCode = 504;
+    } else if (errorMessage.includes('validation') || errorMessage.includes('invalid')) {
+      userMessage = 'Données invalides. Veuillez vérifier votre saisie.';
+      statusCode = 400;
+    }
+    
+    // In development, include slightly more info but still no stack traces
+    if (process.env.NODE_ENV === 'development' && statusCode === 500) {
+      // Only show error name, not message (which might contain sensitive data)
+      console.error(`[Debug] Error type: ${error.name}, Message preview: ${error.message.substring(0, 100)}`);
+    }
+  }
+  
+  return errorResponse(userMessage, statusCode);
+}
+
+/**
+ * Wrap an async handler with standardized error handling
+ * Usage: export const GET = withErrorHandler(async (request) => { ... });
+ */
+export function withErrorHandler(
+  handler: (request: Request, ...args: any[]) => Promise<NextResponse>,
+  context?: string
+) {
+  return async (request: Request, ...args: any[]): Promise<NextResponse> => {
+    try {
+      return await handler(request, ...args);
+    } catch (error) {
+      return safeErrorHandler(error, context);
+    }
+  };
+}
+
+/**
+ * Create a not found response (standardized)
+ */
+export function notFoundResponse(resource: string = 'Ressource'): NextResponse {
+  return errorResponse(`${resource} non trouvée.`, 404, 'NOT_FOUND');
+}
+
+/**
+ * Create an unauthorized response (standardized)
+ */
+export function unauthorizedResponse(message?: string): NextResponse {
+  return errorResponse(message || 'Non autorisé. Veuillez vous connecter.', 401, 'UNAUTHORIZED');
+}
+
+/**
+ * Create a forbidden response (standardized) 
+ */
+export function forbiddenResponse(message?: string): NextResponse {
+  return errorResponse(message || 'Accès refusé. Permissions insuffisantes.', 403, 'FORBIDDEN');
+}
+
+/**
+ * Create a validation error response (standardized)
+ */
+export function validationErrorResponse(details: Array<{ field: string; message: string }>): NextResponse {
+  return NextResponse.json(
+    {
+      success: false,
+      error: 'Erreur de validation des données',
+      code: 'VALIDATION_ERROR',
+      details,
+      timestamp: new Date().toISOString(),
+    },
+    { status: 422 }
+  );
 }

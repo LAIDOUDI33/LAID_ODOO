@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback, useRef, useEffect } from 'react'
+import { logger } from '@/lib/logger'
 
 // Types for the chat system
 export interface ChatMessage {
@@ -231,11 +232,11 @@ export function useAIChat(options: UseAIChatOptions = {}) {
       })
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
-        console.log('Request aborted')
+        logger.debug('Request aborted', { context: 'AIChat' })
         return
       }
 
-      console.error('AI Chat error:', error)
+      logger.error('AI Chat error:', error, { context: 'AIChat' })
       
       const errorMessage = error instanceof Error 
         ? error.message 

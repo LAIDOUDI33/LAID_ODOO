@@ -8,6 +8,111 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
 import { db } from "./db";
 
+// ============================================================
+// Account Lockout Configuration (H-08 FIX)
+// ============================================================
+
+interface LoginAttempt {
+  count: number;
+  lastAttempt: Date;
+  lockedUntil?: Date;
+}
+
+// In-memory store for login attempts (production should use Redis)
+const loginAttempts = new Map<string, LoginAttempt>();
+
+const LOCKOUT_CONFIG = {
+  maxAttempts: 5,           // Max failed attempts before lockout
+  lockoutDuration: 15 * 60 * 1000, // 15 minutes lockout
+  attemptWindow: 15 * 60 * 1000,   // 15 minutes window for counting attempts
+};
+
+/**
+ * Check if account is locked out
+ */
+export function isAccountLocked(email: string): { locked: boolean; remainingTime?: number } {
+  const attempts = loginAttempts.get(email.toLowerCase());
+  
+  if (!attempts?.lockedUntil) return { locked: false };
+  
+  if (new Date() < attempts.lockedUntil) {
+    const remainingMs = attempts.lockedUntil.getTime() - Date.now();
+    return { 
+      locked: true, 
+      remainingTime: Math.ceil(remainingMs / 1000) // seconds remaining
+    };
+  }
+  
+  // Lockout expired, reset
+  loginAttempts.delete(email.toLowerCase());
+  return { locked: false };
+}
+
+/**
+ * Record a failed login attempt
+ */
+export function recordFailedAttempt(email: string): { attemptsRemaining: number; locked: boolean } {
+  const normalizedEmail = email.toLowerCase();
+  const now = new Date();
+  const attempts = loginAttempts.get(normalizedEmail);
+  
+  if (!attempts || now.getTime() - attempts.lastAttempt.getTime() > LOCKOUT_CONFIG.attemptWindow) {
+    // Reset window or first attempt
+    loginAttempts.set(normalizedEmail, {
+      count: 1,
+      lastAttempt: now,
+    });
+    
+    return { 
+      attemptsRemaining: LOCKOUT_CONFIG.maxAttempts - 1, 
+      locked: false 
+    };
+  }
+  
+  // Increment attempts
+  const newCount = attempts.count + 1;
+  attempts.count = newCount;
+  attempts.lastAttempt = now;
+  
+  if (newCount >= LOCKOUT_CONFIG.maxAttempts) {
+    // Lock the account
+    const lockUntil = new Date(Date.now() + LOCKOUT_CONFIG.lockoutDuration);
+    attempts.lockedUntil = lockUntil;
+    
+    return { 
+      attemptsRemaining: 0, 
+      locked: true 
+    };
+  }
+  
+  return { 
+    attemptsRemaining: LOCKOUT_CONFIG.maxAttempts - newCount, 
+    locked: false 
+  };
+}
+
+/**
+ * Clear login attempts after successful login
+ */
+export function clearLoginAttempts(email: string): void {
+  loginAttempts.delete(email.toLowerCase());
+}
+
+/**
+ * Get current login attempt status (for UI feedback)
+ */
+export function getLoginStatus(email: string): { attempts: number; maxAttempts: number; locked: boolean; lockedUntil?: Date } {
+  const attempts = loginAttempts.get(email.toLowerCase());
+  const lockCheck = isAccountLocked(email);
+  
+  return {
+    attempts: attempts?.count || 0,
+    maxAttempts: LOCKOUT_CONFIG.maxAttempts,
+    locked: lockCheck.locked,
+    lockedUntil: attempts?.lockedUntil,
+  };
+}
+
 export const authOptions: NextAuthOptions = {
   // Configuration de base
   // CRITICAL: NEXTAUTH_SECRET must be set in environment variables
@@ -40,6 +145,14 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Email et mot de passe requis");
         }
 
+        const email = credentials.email.toLowerCase();
+
+        // H-08: Check if account is locked out
+        const lockStatus = isAccountLocked(email);
+        if (lockStatus.locked) {
+          throw new Error(`Compte temporairement bloqué. Réessayez dans ${lockStatus.remainingTime} secondes ou contactez l'administrateur.`);
+        }
+
         // Rechercher l'utilisateur
         const user = await db.user.findUnique({
           where: { email: credentials.email },
@@ -47,7 +160,9 @@ export const authOptions: NextAuthOptions = {
         });
 
         if (!user) {
-          throw new Error("Aucun utilisateur trouvé avec cet email");
+          // Record failed attempt for security (don't reveal if email exists)
+          const attemptStatus = recordFailedAttempt(credentials.email);
+          throw new Error(`Email ou mot de passe incorrect. ${attemptStatus.attemptsRemaining > 0 ? `${attemptStatus.attemptsRemaining} tentative(s) restante(s).` : 'Compte temporairement bloqué.'}`);
         }
 
         if (!user.isActive) {
@@ -62,12 +177,17 @@ export const authOptions: NextAuthOptions = {
           );
 
           if (!isPasswordValid) {
-            throw new Error("Mot de passe incorrect");
+            // H-08: Record failed attempt
+            const attemptStatus = recordFailedAttempt(credentials.email);
+            throw new Error(`Mot de passe incorrect. ${attemptStatus.attemptsRemaining > 0 ? `${attemptStatus.attemptsRemaining} tentative(s) restante(s).` : 'Compte temporairement bloqué.'}`);
           }
         } else {
           // Pour les utilisateurs sans mot de passe (OAuth)
           throw new Error("Veuillez vous connecter via un autre méthode");
         }
+
+        // H-08: Clear login attempts on successful login
+        clearLoginAttempts(credentials.email);
 
         // Mettre à jour lastLoginAt
         await db.user.update({

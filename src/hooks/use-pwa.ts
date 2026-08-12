@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { logger } from '@/lib/logger'
 
 // Types for PWA state
 interface BeforeInstallPromptEvent extends Event {
@@ -68,7 +69,7 @@ export function usePWA(): UsePWAReturn {
 
     // Listen for app installed event
     const handleAppInstalled = () => {
-      console.log('[usePWA] App was installed')
+      logger.debug('App was installed', { context: 'PWA' })
       localStorage.setItem(INSTALL_STATUS_KEY, 'installed')
       deferredPromptRef.current = null
       setState(prev => ({
@@ -81,18 +82,18 @@ export function usePWA(): UsePWAReturn {
 
     // Listen for online/offline events
     const handleOnline = () => {
-      console.log('[usePWA] Went online')
+      logger.debug('Went online', { context: 'PWA' })
       setState(prev => ({ ...prev, isOffline: false }))
       
       // Trigger sync when coming back online
       if (swRegistrationRef.current?.sync) {
         swRegistrationRef.current.sync.register('sync-pending-forms')
-          .catch(err => console.log('[usePWA] Sync registration failed:', err))
+          .catch(err => logger.debug('Sync registration failed:', err, { context: 'PWA' }))
       }
     }
 
     const handleOffline = () => {
-      console.log('[usePWA] Went offline')
+      logger.debug('Went offline', { context: 'PWA' })
       setState(prev => ({ ...prev, isOffline: true }))
     }
 
@@ -144,10 +145,10 @@ export function usePWA(): UsePWAReturn {
       const { outcome } = await promptEvent.userChoice
       
       if (outcome === 'accepted') {
-        console.log('[usePWA] User accepted install')
+        logger.debug('User accepted install', { context: 'PWA' })
         return true
       } else {
-        console.log('[usePWA] User dismissed install')
+        logger.debug('User dismissed install', { context: 'PWA' })
         return false
       }
     } catch (error) {
@@ -178,7 +179,7 @@ export function usePWA(): UsePWAReturn {
       swRegistrationRef.current = registration
       setState(prev => ({ ...prev, swRegistered: true }))
 
-      console.log('[usePWA] SW registered with scope:', registration.scope)
+      logger.debug('SW registered with scope:', registration.scope, { context: 'PWA' })
 
       // Listen for updates
       registration.addEventListener('updatefound', () => {
@@ -188,7 +189,7 @@ export function usePWA(): UsePWAReturn {
           newWorker.addEventListener('statechange', () => {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
               setState(prev => ({ ...prev, swUpdateAvailable: true }))
-              console.log('[usePWA] New SW version available')
+              logger.debug('New SW version available', { context: 'PWA' })
             }
           })
         }
@@ -198,10 +199,10 @@ export function usePWA(): UsePWAReturn {
       navigator.serviceWorker.addEventListener('message', (event) => {
         switch (event.data?.type) {
           case 'SYNC_START':
-            console.log('[usePWA] Background sync started')
+            logger.debug('Background sync started', { context: 'PWA' })
             break
           case 'SYNC_COMPLETE':
-            console.log('[usePWA] Background sync completed')
+            logger.debug('Background sync completed', { context: 'PWA' })
             break
           case 'ONLINE_STATUS_CHANGE':
             setState(prev => ({ ...prev, isOffline: !event.data.online }))
@@ -244,7 +245,7 @@ export function usePWA(): UsePWAReturn {
 
     try {
       const permission = await Notification.requestPermission()
-      console.log('[usePWA] Notification permission:', permission)
+      logger.debug('Notification permission:', permission, { context: 'PWA' })
       return permission
     } catch (error) {
       console.error('[usePWA] Notification permission error:', error)

@@ -124,7 +124,7 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error("CRM GET Error:", error);
     return NextResponse.json(
-      { success: false, error: "Failed to fetch CRM data" },
+      { success: false, error: "Failed to fetch CRM data", code: 'INTERNAL_ERROR' },
       { status: 500 }
     );
   }
@@ -274,7 +274,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("CRM POST Error:", error);
     return NextResponse.json(
-      { success: false, error: "Failed to process CRM request" },
+      { success: false, error: "Failed to process CRM request", code: 'INTERNAL_ERROR' },
       { status: 500 }
     );
   }

@@ -420,7 +420,6 @@ function ProductModal({
           canBePurchased: product.canBePurchased ?? true
         })
       } else {
-        // eslint-disable-next-line react-hooks/set-state-in-effect -- form reset
         setForm({
           code: '',
           name: '',
@@ -690,7 +689,6 @@ function StockAdjustModal({
           notes: ''
         })
       } else if (warehouses.length > 0 && products.length > 0) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect -- form reset with defaults
         setForm({
           warehouseId: warehouses[0]?.id || '',
           productId: products[0]?.id || '',
