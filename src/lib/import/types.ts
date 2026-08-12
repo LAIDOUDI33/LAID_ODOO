@@ -175,22 +175,25 @@ export interface ImportProgress {
 export interface EmployeeImportData {
   firstName: string;
   lastName: string;
-  email?: string;
+  workEmail?: string;
+  personalEmail?: string;
   phone?: string;
   gender?: string;
-  birthDate?: string;
+  dateOfBirth?: string;
   hireDate: string;
-  employeeId?: string;
+  matricule?: string;
   department?: string;
-  position?: string;
+  jobPosition?: string;
+  jobTitle?: string;
   contractType?: string;
-  salary?: number;
+  baseSalary?: number;
   bankAccount?: string;
   bankName?: string;
   address?: string;
   city?: string;
   wilayaCode?: string;
-  status?: string;
+  employeeStatus?: string;
+  isActive?: boolean;
 }
 
 export interface ChartAccountImportData {
@@ -198,45 +201,72 @@ export interface ChartAccountImportData {
   name: string;
   nameAr?: string;
   type: string;
-  category?: string;
+  class?: string;           // Classe 1-8 du PCN
   parentCode?: string;
-  balance?: number;
-  currency?: string;
-  taxDeductible?: boolean;
-  isActive?: boolean;
+  nature?: string;          // detail, header, view
+  isLeaf?: boolean;
+  isTaxAccount?: boolean;
+  taxType?: string;         // tva_collectee, tva_deductible, tap, irg, ibs
+  reconcileable?: boolean;
 }
 
 export interface ProductImportData {
   name: string;
-  sku?: string;
-  barcode?: string;
-  type: string;
-  category?: string;
-  unit?: string;
+  code?: string;              // Code produit unique (SKU)
+  description?: string;
+  nameAr?: string;
+  type: string;               // stockable, service, consumable
+  category?: string;          // Category name (will lookup categoryId)
+  unitOfMeasure?: string;     // U, KG, L, m², m³, ML
   purchasePrice?: number;
   salePrice?: number;
-  taxRate?: number;
-  stockQuantity?: number;
-  minStock?: number;
-  warehouse?: string;
+  costPrice?: number;
+  tvaRate?: number;
+  trackStock?: boolean;
+  canBeSold?: boolean;
+  canBePurchased?: boolean;
   isActive?: boolean;
 }
 
 export interface PartnerImportData {
   name: string;
-  type: string;
+  displayName?: string;
+  type: string;               // customer, supplier, both
+  isCompany?: boolean;
+  isTaxPayer?: boolean;
+  
+  // Identifiants Algériens
+  rc?: string;                // Registre Commerce
+  nif?: string;               // NIF
+  nis?: string;               // NIS
+  ai?: string;                // Article d'imposition
+  numArticleImpot?: string;
+  
+  // Contact
+  contactName?: string;
   email?: string;
   phone?: string;
+  mobile?: string;
+  website?: string;
+  
+  // Adresse
   address?: string;
   city?: string;
+  postalCode?: string;
   wilayaCode?: string;
-  nif?: string;
-  nis?: string;
-  rc?: string;
-  contactPerson?: string;
-  paymentTerms?: number;
+  
+  // Financier
+  paymentTerms?: string;      // Délai en jours (ex: "30")
+  paymentMode?: string;       // virement, cheque, espece, traite
   creditLimit?: number;
+  bankAccount?: string;       // RIB
+  
+  // Catégorisation
+  category?: string;
+  
+  // Statut
   isActive?: boolean;
+  notes?: string;
 }
 
 export interface InvoiceImportData {
@@ -289,14 +319,14 @@ export interface BillItemImportData {
 }
 
 export interface AttendanceImportData {
-  employeeId: string;
-  date: string;
-  checkIn?: string;
-  checkOut?: string;
-  breakMinutes?: number;
-  workHours?: number;
-  status?: string;
-  overtimeHours?: number;
+  employeeId: string;       // Matricule or employee ID
+  date: string;             // Date YYYY-MM-DD
+  clockIn?: string;         // Heure d'arrivée HH:MM
+  clockOut?: string;        // Heure de départ HH:MM
+  breakDuration?: number;   // Durée pause (minutes)
+  workedHours?: number;     // Heures travaillées
+  status?: string;          // present, absent, late, half_day, leave, holiday
+  overtimeHours?: number;   // Heures supplémentaires
   notes?: string;
 }
 
@@ -320,19 +350,21 @@ export interface JournalLineImportData {
 // Inventory Module Types
 export interface WarehouseImportData {
   name: string;
-  code?: string;
+  code: string;              // Required - unique identifier
   address?: string;
-  city?: string;
   type?: 'principal' | 'secondaire' | 'magasin' | 'depot';
   isActive?: boolean;
 }
 
 export interface StockMovementImportData {
-  sku: string;
-  productName?: string;
-  warehouse: string;
-  quantity: number;
-  unitCost?: number;
-  location?: string;
+  sku: string;               // Product reference (required)
+  productName?: string;      // For display/validation
+  warehouse: string;         // Warehouse name (required)
+  quantity: number;          // Movement quantity (required)
+  unitCost?: number;         // Cost per unit
+  date?: string;             // Movement date YYYY-MM-DD
+  type?: string;             // in, out, adjustment, initial
+  location?: string;        // Bin location
+  reference?: string;        // Movement reference number
   notes?: string;
 }

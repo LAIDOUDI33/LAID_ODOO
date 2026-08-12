@@ -173,30 +173,33 @@ async function importEmployee(
     const employeeData: EmployeeImportData = {
       firstName: String(data.firstName || data['Prénom'] || data.first_name || ''),
       lastName: String(data.lastName || data.Nom || data.last_name || ''),
-      email: data.email || data.Email || undefined,
+      workEmail: data.workEmail || data['Email professionnel'] || data.email || undefined,
+      personalEmail: data.personalEmail || data['Email personnel'] || undefined,
       phone: data.phone || data.Téléphone || data.phone_number || undefined,
       gender: data.gender || data.Sexe || undefined,
-      birthDate: convertFieldValue(data.birthDate || data['Date de naissance'], { type: 'date', key: 'birthDate' }),
-      hireDate: convertFieldValue(data.hireDate || data['Date d\'embauche'] || data.date_embauche, { type: 'date', key: 'hireDate' }),
-      employeeId: data.employeeId || data.Matricule || data.matricule || undefined,
+      dateOfBirth: convertFieldValue(data.dateOfBirth || data['Date de naissance'] || data.birthDate, { type: 'date', key: 'dateOfBirth' }),
+      hireDate: convertFieldValue(data.hireDate || data["Date d'embauche"] || data.date_embauche, { type: 'date', key: 'hireDate' }),
+      matricule: data.matricule || data.Matricule || data.employeeId || undefined,
       department: data.department || data.Département || data.service || undefined,
-      position: data.position || data.Poste || undefined,
+      jobTitle: data.jobTitle || data.Poste || data.position || undefined,
+      jobPosition: data.jobPosition || data.Fonction || undefined,
       contractType: data.contractType || data['Type de contrat'] || data.type_contrat || undefined,
-      salary: convertFieldValue(data.salary || data.Salaire || data.salaire, { type: 'number', key: 'salary' }),
+      baseSalary: convertFieldValue(data.baseSalary || data['Salaire de base'] || data.salary, { type: 'number', key: 'baseSalary' }),
       bankAccount: data.bankAccount || data['Compte bancaire'] || undefined,
       bankName: data.bankName || data.Banque || undefined,
       address: data.address || data.Adresse || undefined,
       city: data.city || data.Ville || undefined,
       wilayaCode: data.wilayaCode || data.Wilaya || data.wilaya || undefined,
-      status: data.status || data.Statut || 'active'
+      employeeStatus: data.employeeStatus || data.Statut || data.status || 'active',
+      isActive: data.isActive !== false && data.isActive !== 'false' && data.isActive !== '0'
     };
     
     // Check for existing employee
-    const existingByMatricule = employeeData.employeeId 
-      ? await db.employee.findFirst({ where: { companyId, employeeId: employeeData.employeeId } })
+    const existingByMatricule = employeeData.matricule 
+      ? await db.employee.findFirst({ where: { companyId, matricule: employeeData.matricule } })
       : null;
-    const existingByEmail = employeeData.email
-      ? await db.employee.findFirst({ where: { companyId, email: employeeData.email } })
+    const existingByEmail = employeeData.workEmail
+      ? await db.employee.findFirst({ where: { companyId, workEmail: employeeData.workEmail } })
       : null;
     
     const existing = existingByMatricule || existingByEmail;
@@ -207,7 +210,7 @@ async function importEmployee(
         entityId: existing.id,
         entityType: 'Employee',
         action: 'skipped',
-        warnings: [`Employee already exists: ${employeeData.employeeId || employeeData.email}`]
+        warnings: [`Employee already exists: ${employeeData.matricule || employeeData.workEmail}`]
       };
     }
     
@@ -217,22 +220,25 @@ async function importEmployee(
         data: {
           firstName: employeeData.firstName,
           lastName: employeeData.lastName,
-          email: employeeData.email,
+          workEmail: employeeData.workEmail,
+          personalEmail: employeeData.personalEmail,
           phone: employeeData.phone,
           gender: employeeData.gender,
-          birthDate: employeeData.birthDate,
+          dateOfBirth: employeeData.dateOfBirth,
           hireDate: employeeData.hireDate,
-          employeeId: employeeData.employeeId,
+          matricule: employeeData.matricule,
           department: employeeData.department,
-          position: employeeData.position,
+          jobTitle: employeeData.jobTitle,
+          jobPosition: employeeData.jobPosition,
           contractType: employeeData.contractType,
-          salary: employeeData.salary,
+          baseSalary: employeeData.baseSalary,
           bankAccount: employeeData.bankAccount,
           bankName: employeeData.bankName,
           address: employeeData.address,
           city: employeeData.city,
           wilayaCode: employeeData.wilayaCode,
-          status: employeeData.status
+          employeeStatus: employeeData.employeeStatus as any,
+          isActive: employeeData.isActive
         }
       });
       
@@ -249,22 +255,25 @@ async function importEmployee(
       data: {
         firstName: employeeData.firstName,
         lastName: employeeData.lastName,
-        email: employeeData.email,
+        workEmail: employeeData.workEmail,
+        personalEmail: employeeData.personalEmail,
         phone: employeeData.phone,
         gender: employeeData.gender,
-        birthDate: employeeData.birthDate,
+        dateOfBirth: employeeData.dateOfBirth,
         hireDate: employeeData.hireDate,
-        employeeId: employeeData.employeeId,
+        matricule: employeeData.matricule,
         department: employeeData.department,
-        position: employeeData.position,
-        contractType: employeeData.contractType,
-        salary: employeeData.salary,
+        jobTitle: employeeData.jobTitle,
+        jobPosition: employeeData.jobPosition,
+        contractType: employeeData.contractType as any,
+        baseSalary: employeeData.baseSalary,
         bankAccount: employeeData.bankAccount,
         bankName: employeeData.bankName,
         address: employeeData.address,
         city: employeeData.city,
         wilayaCode: employeeData.wilayaCode,
-        status: employeeData.status,
+        employeeStatus: employeeData.employeeStatus as any,
+        isActive: employeeData.isActive,
         companyId
       }
     });
@@ -300,12 +309,13 @@ async function importChartAccount(
       name: String(data.name || data.Libellé || data.name_ar || ''),
       nameAr: data.nameAr || data['Nom arabe'] || undefined,
       type: String(data.type || data.Type || data.account_type || 'asset'),
-      category: data.category || data.Catégorie || undefined,
+      class: data.class || data.Classe || data.account_class || undefined,
       parentCode: data.parentCode || data['Compte parent'] || undefined,
-      balance: convertFieldValue(data.balance || data['Solde initial'] || data.opening_balance, { type: 'number', key: 'balance' }),
-      currency: data.currency || data.Devise || 'DZD',
-      taxDeductible: data.taxDeductible === true || data.taxDeductible === 'true' || data.taxDeductible === '1',
-      isActive: data.isActive !== false && data.isActive !== 'false' && data.isActive !== '0'
+      nature: data.nature || data.Nature || 'detail',
+      isLeaf: data.isLeaf !== false && data.isLeaf !== 'false' && data.isLeaf !== '0',
+      isTaxAccount: data.isTaxAccount === true || data.isTaxAccount === 'true' || data.isTaxAccount === '1',
+      taxType: data.taxType || data['Type fiscal'] || undefined,
+      reconcileable: data.reconciliable === true || data.reconciliable === 'true'
     };
     
     // Check required fields
@@ -339,10 +349,13 @@ async function importChartAccount(
           name: accountData.name,
           nameAr: accountData.nameAr,
           type: accountData.type,
-          category: accountData.category,
+          class: accountData.class,
           parentCode: accountData.parentCode,
-          taxDeductible: accountData.taxDeductible,
-          isActive: accountData.isActive
+          nature: accountData.nature,
+          isLeaf: accountData.isLeaf,
+          isTaxAccount: accountData.isTaxAccount,
+          taxType: accountData.taxType,
+          reconcileable: accountData.reconciliable
         }
       });
       
@@ -374,18 +387,16 @@ async function importChartAccount(
         name: accountData.name,
         nameAr: accountData.nameAr,
         type: accountData.type,
-        category: accountData.category,
+        class: accountData.class,
         parentCode: accountData.parentCode,
-        taxDeductible: accountData.taxDeductible,
-        isActive: accountData.isActive,
+        nature: accountData.nature,
+        isLeaf: accountData.isLeaf,
+        isTaxAccount: accountData.isTaxAccount,
+        taxType: accountData.taxType,
+        reconcileable: accountData.reconciliable,
         companyId
       }
     });
-    
-    // If opening balance provided, create journal entry
-    if (accountData.balance && accountData.balance !== 0) {
-      // TODO: Create opening balance journal entry
-    }
     
     return {
       success: true,
@@ -415,17 +426,18 @@ async function importProduct(
   try {
     const productData: ProductImportData = {
       name: String(data.name || data.Désignation || data.product_name || ''),
-      sku: data.sku || data.Référence || data.reference || undefined,
-      barcode: data.barcode || data['Code barre'] || undefined,
-      type: String(data.type || data.Type || data.product_type || 'product'),
+      code: data.code || data.Référence || data.reference || data.sku || undefined,
+      description: data.description || data.Description || undefined,
+      type: String(data.type || data.Type || data.product_type || 'stockable'),
       category: data.category || data.Catégorie || undefined,
-      unit: data.unit || data.Unité || data.unité || 'unité',
+      unitOfMeasure: data.unitOfMeasure || data['Unité de mesure'] || data.unit || 'U',
       purchasePrice: convertFieldValue(data.purchasePrice || data["Prix d'achat"] || data.purchase_price, { type: 'number', key: 'purchasePrice' }),
       salePrice: convertFieldValue(data.salePrice || data['Prix de vente'] || data.sale_price, { type: 'number', key: 'salePrice' }),
-      taxRate: convertFieldValue(data.taxRate || data.TVA || data.tva || data.tax_rate, { type: 'number', key: 'taxRate' }),
-      stockQuantity: convertFieldValue(data.stockQuantity || data.Stock || data.stock_initial, { type: 'number', key: 'stockQuantity' }),
-      minStock: convertFieldValue(data.minStock || data['Stock min'] || data.min_stock, { type: 'number', key: 'minStock' }),
-      warehouse: data.warehouse || data.Entrepôt || undefined,
+      costPrice: convertFieldValue(data.costPrice || data['Coût de revient'] || data.cost_price, { type: 'number', key: 'costPrice' }),
+      tvaRate: convertFieldValue(data.tvaRate || data.TVA || data.tva || data.tax_rate, { type: 'number', key: 'tvaRate' }),
+      trackStock: data.trackStock !== false && data.trackStock !== 'false',
+      canBeSold: data.canBeSold !== false && data.canBeSold !== 'false',
+      canBePurchased: data.canBePurchased !== false && data.canBePurchased !== 'false',
       isActive: data.isActive !== false && data.isActive !== 'false' && data.isActive !== '0'
     };
     
@@ -437,15 +449,10 @@ async function importProduct(
       };
     }
     
-    // Check for existing product
-    const existingBySku = productData.sku
-      ? await db.product.findFirst({ where: { companyId, sku: productData.sku } })
-      : null;
-    const existingByBarcode = productData.barcode
-      ? await db.product.findFirst({ where: { companyId, barcode: productData.barcode } })
-      : null;
-    
-    const existing = existingBySku || existingByBarcode;
+    // Check for existing product by code
+    const existing = productData.code
+      ? await db.product.findFirst({ where: { companyId, code: productData.code } })
+      : await db.product.findFirst({ where: { companyId, name: productData.name } });
     
     if (existing && !options.updateExisting) {
       return {
@@ -453,8 +460,20 @@ async function importProduct(
         entityId: existing.id,
         entityType: 'Product',
         action: 'skipped',
-        warnings: [`Product already exists: ${productData.sku || productData.barcode}`]
+        warnings: [`Product already exists: ${productData.code || productData.name}`]
       };
+    }
+    
+    // Lookup category if provided by name
+    let categoryId: string | undefined = undefined;
+    if (productData.category) {
+      const cat = await db.productCategory.findFirst({
+        where: { companyId, name: productData.category }
+      });
+      if (cat) {
+        categoryId = cat.id;
+      }
+      // If category doesn't exist, we'll create without it (or could create it)
     }
     
     if (existing && options.updateExisting) {
@@ -462,23 +481,21 @@ async function importProduct(
         where: { id: existing.id },
         data: {
           name: productData.name,
-          sku: productData.sku,
-          barcode: productData.barcode,
-          type: productData.type,
-          category: productData.category,
-          unit: productData.unit,
+          code: productData.code,
+          description: productData.description,
+          type: productData.type as any,
+          categoryId: categoryId,
+          unitOfMeasure: productData.unitOfMeasure,
           purchasePrice: productData.purchasePrice,
           salePrice: productData.salePrice,
-          taxRate: productData.taxRate,
-          minStock: productData.minStock,
+          costPrice: productData.costPrice,
+          tvaRate: productData.tvaRate,
+          trackStock: productData.trackStock,
+          canBeSold: productData.canBeSold,
+          canBePurchased: productData.canBePurchased,
           isActive: productData.isActive
         }
       });
-      
-      // Update stock if provided
-      if (productData.stockQuantity !== undefined && productData.stockQuantity !== null) {
-        // Update stock in warehouse
-      }
       
       return {
         success: true,
@@ -491,39 +508,22 @@ async function importProduct(
     const created = await db.product.create({
       data: {
         name: productData.name,
-        sku: productData.sku,
-        barcode: productData.barcode,
-        type: productData.type,
-        category: productData.category,
-        unit: productData.unit,
+        code: productData.code,
+        description: productData.description,
+        type: productData.type as any,
+        categoryId: categoryId,
+        unitOfMeasure: productData.unitOfMeasure,
         purchasePrice: productData.purchasePrice,
         salePrice: productData.salePrice,
-        taxRate: productData.taxRate,
+        costPrice: productData.costPrice,
+        tvaRate: productData.tvaRate,
+        trackStock: productData.trackStock,
+        canBeSold: productData.canBeSold,
+        canBePurchased: productData.canBePurchased,
         isActive: productData.isActive,
         companyId
       }
     });
-    
-    // Set initial stock if warehouse specified
-    if (productData.stockQuantity && productData.warehouse) {
-      const warehouse = await db.warehouse.findFirst({
-        where: { companyId, name: productData.warehouse }
-      });
-      
-      if (warehouse) {
-        await db.inventoryMovement.create({
-          data: {
-            productId: created.id,
-            warehouseId: warehouse.id,
-            type: 'in',
-            quantity: productData.stockQuantity,
-            reason: 'Initial stock import',
-            reference: `IMPORT-${Date.now()}`,
-            companyId
-          }
-        });
-      }
-    }
     
     return {
       success: true,
@@ -789,28 +789,48 @@ async function importPartner(
 ): Promise<ImportResult> {
   try {
     const partnerData: PartnerImportData = {
-      name: String(data.name || data.Raison_sociale || data.partner_name || ''),
+      name: String(data.name || data['Raison sociale'] || data.partner_name || ''),
+      displayName: data.displayName || data['Nom affiché'] || undefined,
       type: String(data.type || data.Type || data.partner_type || 'customer'),
-      email: data.email || data.Email || undefined,
-      phone: data.phone || data.Téléphone || undefined,
-      address: data.address || data.Adresse || undefined,
-      city: data.city || data.Ville || undefined,
-      wilayaCode: data.wilayaCode || data.Wilaya || undefined,
+      isCompany: data.isCompany !== false && data.isCompany !== 'false',
+      isTaxPayer: data.isTaxPayer !== false && data.isTaxPayer !== 'false',
+      
+      // Identifiants Algériens
+      rc: data.rc || data.RC || undefined,
       nif: data.nif || data.NIF || undefined,
       nis: data.nis || data.NIS || undefined,
-      rc: data.rc || data.RC || undefined,
-      contactPerson: data.contactPerson || data.Contact || data.personne_contact || undefined,
-      paymentTerms: convertFieldValue(data.paymentTerms || data['Conditions paiement'], { type: 'number', key: 'paymentTerms' }),
+      ai: data.ai || data.AI || undefined,
+      numArticleImpot: data.numArticleImpot || undefined,
+      
+      // Contact
+      contactName: data.contactName || data.Contact || data.contactPerson || undefined,
+      email: data.email || data.Email || undefined,
+      phone: data.phone || data.Téléphone || undefined,
+      mobile: data.mobile || data.Mobile || undefined,
+      website: data.website || data['Site web'] || undefined,
+      
+      // Adresse
+      address: data.address || data.Adresse || undefined,
+      city: data.city || data.Ville || undefined,
+      postalCode: data.postalCode || data['Code postal'] || undefined,
+      wilayaCode: data.wilayaCode || data.Wilaya || undefined,
+      
+      // Financier
+      paymentTerms: String(data.paymentTerms || data['Délai paiement'] || '30'),
+      paymentMode: data.paymentMode || data['Mode paiement'] || undefined,
       creditLimit: convertFieldValue(data.creditLimit || data['Limite crédit'], { type: 'number', key: 'creditLimit' }),
-      isActive: data.isActive !== false && data.isActive !== 'false' && data.isActive !== '0'
+      bankAccount: data.bankAccount || data.RIB || undefined,
+      
+      // Catégorisation
+      category: data.category || data.Catégorie || undefined,
+      
+      // Statut
+      isActive: data.isActive !== false && data.isActive !== 'false' && data.isActive !== '0',
+      notes: data.notes || data.Notes || undefined
     };
     
     if (!partnerData.name) {
-      return {
-        success: false,
-        action: 'error',
-        error: 'Partner name is required'
-      };
+      return { success: false, action: 'error', error: 'Partner name is required' };
     }
     
     // Validate partner type
@@ -831,13 +851,7 @@ async function importPartner(
     });
     
     if (existing && !options.updateExisting) {
-      return {
-        success: true,
-        entityId: existing.id,
-        entityType: 'Partner',
-        action: 'skipped',
-        warnings: [`Partner already exists: ${partnerData.name}`]
-      };
+      return { success: true, entityId: existing.id, entityType: 'Partner', action: 'skipped', warnings: [`Partner already exists: ${partnerData.name}`] };
     }
     
     if (existing && options.updateExisting) {
@@ -845,63 +859,70 @@ async function importPartner(
         where: { id: existing.id },
         data: {
           name: partnerData.name,
-          type: partnerData.type,
-          email: partnerData.email,
-          phone: partnerData.phone,
-          address: partnerData.address,
-          city: partnerData.city,
-          wilayaCode: partnerData.wilayaCode,
+          displayName: partnerData.displayName,
+          type: partnerData.type as any,
+          isCompany: partnerData.isCompany,
+          isTaxPayer: partnerData.isTaxPayer,
+          rc: partnerData.rc,
           nif: partnerData.nif,
           nis: partnerData.nis,
-          rc: partnerData.rc,
-          contactPerson: partnerData.contactPerson,
+          ai: partnerData.ai,
+          contactName: partnerData.contactName,
+          email: partnerData.email,
+          phone: partnerData.phone,
+          mobile: partnerData.mobile,
+          website: partnerData.website,
+          address: partnerData.address,
+          city: partnerData.city,
+          postalCode: partnerData.postalCode,
+          wilayaCode: partnerData.wilayaCode,
           paymentTerms: partnerData.paymentTerms,
+          paymentMode: partnerData.paymentMode,
           creditLimit: partnerData.creditLimit,
+          bankAccount: partnerData.bankAccount,
+          category: partnerData.category,
+          notes: partnerData.notes,
           isActive: partnerData.isActive
         }
       });
-      
-      return {
-        success: true,
-        entityId: updated.id,
-        entityType: 'Partner',
-        action: 'updated'
-      };
+      return { success: true, entityId: updated.id, entityType: 'Partner', action: 'updated' };
     }
     
     const created = await db.partner.create({
       data: {
         name: partnerData.name,
-        type: partnerData.type,
-        email: partnerData.email,
-        phone: partnerData.phone,
-        address: partnerData.address,
-        city: partnerData.city,
-        wilayaCode: partnerData.wilayaCode,
+        displayName: partnerData.displayName,
+        type: partnerData.type as any,
+        isCompany: partnerData.isCompany,
+        isTaxPayer: partnerData.isTaxPayer,
+        rc: partnerData.rc,
         nif: partnerData.nif,
         nis: partnerData.nis,
-        rc: partnerData.rc,
-        contactPerson: partnerData.contactPerson,
-        paymentTerms: partnerData.paymentTerms || 30,
-        creditLimit: partnerData.creditLimit || 0,
+        ai: partnerData.ai,
+        contactName: partnerData.contactName,
+        email: partnerData.email,
+        phone: partnerData.phone,
+        mobile: partnerData.mobile,
+        website: partnerData.website,
+        address: partnerData.address,
+        city: partnerData.city,
+        postalCode: partnerData.postalCode,
+        wilayaCode: partnerData.wilayaCode,
+        paymentTerms: partnerData.paymentTerms,
+        paymentMode: partnerData.paymentMode,
+        creditLimit: partnerData.creditLimit,
+        bankAccount: partnerData.bankAccount,
+        category: partnerData.category,
+        notes: partnerData.notes,
         isActive: partnerData.isActive,
         companyId
       }
     });
     
-    return {
-      success: true,
-      entityId: created.id,
-      entityType: 'Partner',
-      action: 'created'
-    };
+    return { success: true, entityId: created.id, entityType: 'Partner', action: 'created' };
     
   } catch (error) {
-    return {
-      success: false,
-      action: 'error',
-      error: `Failed to import partner: ${error instanceof Error ? error.message : 'Unknown error'}`
-    };
+    return { success: false, action: 'error', error: `Failed to import partner: ${error instanceof Error ? error.message : 'Unknown error'}` };
   }
 }
 

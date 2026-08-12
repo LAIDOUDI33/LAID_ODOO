@@ -97,25 +97,28 @@ function getEmployeeTemplate(): ImportTemplateDefinition {
     columns: [
       { key: 'firstName', label: 'Prénom', type: 'string', required: true, example: 'Mohamed', minLength: 2, maxLength: 100 },
       { key: 'lastName', label: 'Nom', type: 'string', required: true, example: 'Benali', minLength: 2, maxLength: 100 },
-      { key: 'employeeId', label: 'Matricule', type: 'string', required: false, example: 'EMP001', maxLength: 20 },
-      { key: 'email', label: 'Email', type: 'email', required: false, example: 'm.benali@company.dz' },
+      { key: 'matricule', label: 'Matricule', type: 'string', required: false, example: 'EMP001', maxLength: 20 },
+      { key: 'workEmail', label: 'Email professionnel', type: 'email', required: false, example: 'm.benali@company.dz' },
+      { key: 'personalEmail', label: 'Email personnel', type: 'email', required: false, example: 'mohamed@gmail.com' },
       { key: 'phone', label: 'Téléphone', type: 'phone', required: false, example: '0555123456' },
-      { key: 'gender', label: 'Sexe', type: 'select', required: false, options: ['M', 'F', 'Homme', 'Femme'], example: 'M' },
-      { key: 'birthDate', label: 'Date de naissance', type: 'date', required: false, format: 'YYYY-MM-DD', example: '1990-05-15' },
+      { key: 'gender', label: 'Sexe', type: 'select', required: false, options: ['M', 'F'], example: 'M' },
+      { key: 'dateOfBirth', label: 'Date de naissance', type: 'date', required: false, format: 'YYYY-MM-DD', example: '1990-05-15' },
       { key: 'hireDate', label: "Date d'embauche", type: 'date', required: true, format: 'YYYY-MM-DD', example: '2020-01-15' },
       { key: 'department', label: 'Département', type: 'string', required: false, example: 'Informatique' },
-      { key: 'position', label: 'Poste', type: 'string', required: false, example: 'Développeur Senior' },
+      { key: 'jobTitle', label: 'Poste (Titre)', type: 'string', required: false, example: 'Développeur Senior' },
+      { key: 'jobPosition', label: 'Fonction', type: 'string', required: false, example: 'Technique' },
       { key: 'contractType', label: 'Type de contrat', type: 'select', required: false, options: ['CDI', 'CDD', 'Stage', 'Temps partiel'], example: 'CDI' },
-      { key: 'salary', label: 'Salaire (DZD)', type: 'number', required: false, min: 0, example: 85000 },
+      { key: 'baseSalary', label: 'Salaire de base (DZD)', type: 'number', required: false, min: 0, example: 85000 },
       { key: 'bankName', label: 'Banque', type: 'string', required: false, example: 'BNA' },
-      { key: 'bankAccount', label: 'Compte bancaire', type: 'string', required: false, example: '000123456789' },
+      { key: 'bankAccount', label: 'Compte bancaire (RIB/CCP)', type: 'string', required: false, example: '000123456789' },
       { key: 'address', label: 'Adresse', type: 'string', required: false, example: '123 Rue Didouche Mourad' },
       { key: 'city', label: 'Ville', type: 'string', required: false, example: 'Alger' },
       { key: 'wilayaCode', label: 'Wilaya', type: 'select', required: false, options: ['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','31','32','33','34','35','36','37','38','39','40','41','42','43','44','45','46','47','48','49','50','51','52','53','54','55','56','57','58'], example: '16' },
-      { key: 'status', label: 'Statut', type: 'select', required: false, options: ['active', 'inactive', 'on_leave'], example: 'active' }
+      { key: 'employeeStatus', label: 'Statut employé', type: 'select', required: false, options: ['active', 'inactive', 'on_leave', 'terminated'], example: 'active' },
+      { key: 'isActive', label: 'Actif', type: 'boolean', required: false, example: 'true' }
     ],
     requiredColumns: ['firstName', 'lastName', 'hireDate'],
-    optionalColumns: ['employeeId', 'email', 'phone', 'gender', 'birthDate', 'department', 'position', 'contractType', 'salary'],
+    optionalColumns: ['matricule', 'workEmail', 'personalEmail', 'phone', 'gender', 'dateOfBirth', 'department', 'jobTitle', 'jobPosition', 'contractType', 'baseSalary'],
     validationRules: {
       firstName: [
         { type: 'required', message: 'Le prénom est obligatoire' },
@@ -124,10 +127,10 @@ function getEmployeeTemplate(): ImportTemplateDefinition {
       lastName: [
         { type: 'required', message: 'Le nom est obligatoire' }
       ],
-      email: [
-        { type: 'unique', message: 'Cet email est déjà utilisé' }
+      workEmail: [
+        { type: 'unique', message: 'Cet email professionnel est déjà utilisé' }
       ],
-      employeeId: [
+      matricule: [
         { type: 'unique', message: 'Ce matricule existe déjà' }
       ],
       hireDate: [
@@ -135,8 +138,8 @@ function getEmployeeTemplate(): ImportTemplateDefinition {
       ]
     },
     sampleData: [
-      { firstName: 'Mohamed', lastName: 'Benali', employeeId: 'EMP001', email: 'm.benali@company.dz', phone: '0555123456', gender: 'M', birthDate: '1990-05-15', hireDate: '2020-01-15', department: 'IT', position: 'Développeur', contractType: 'CDI', salary: 85000, bankName: 'BNA', bankAccount: '00123456789', city: 'Alger', wilayaCode: '16', status: 'active' },
-      { firstName: 'Fatima', lastName: 'Zerhouni', employeeId: 'EMP002', email: 'f.zerhouni@company.dz', phone: '0661234567', gender: 'F', birthDate: '1988-09-22', hireDate: '2019-06-01', department: 'Comptabilité', position: 'Comptable', contractType: 'CDI', salary: 70000, city: 'Oran', wilayaCode: '31', status: 'active' }
+      { firstName: 'Mohamed', lastName: 'Benali', matricule: 'EMP001', workEmail: 'm.benali@company.dz', phone: '0555123456', gender: 'M', dateOfBirth: '1990-05-15', hireDate: '2020-01-15', department: 'IT', jobTitle: 'Développeur', jobPosition: 'Technique', contractType: 'CDI', baseSalary: 85000, bankName: 'BNA', bankAccount: '00123456789', city: 'Alger', wilayaCode: '16', employeeStatus: 'active', isActive: true },
+      { firstName: 'Fatima', lastName: 'Zerhouni', matricule: 'EMP002', workEmail: 'f.zerhouni@company.dz', phone: '0661234567', gender: 'F', dateOfBirth: '1988-09-22', hireDate: '2019-06-01', department: 'Comptabilité', jobTitle: 'Comptable', contractType: 'CDI', baseSalary: 70000, city: 'Oran', wilayaCode: '31', employeeStatus: 'active', isActive: true }
     ]
   };
 }
@@ -148,18 +151,20 @@ function getChartAccountTemplate(): ImportTemplateDefinition {
     description: 'Importer le plan comptable selon le PCN (Plan Comptable National Algérien)',
     version: '1.0',
     columns: [
-      { key: 'code', label: 'Compte', type: 'string', required: true, example: '411100', maxLength: 20, pattern: '^\\d{4,}$' },
+      { key: 'code', label: 'Compte', type: 'string', required: true, example: '411100', maxLength: 20 },
       { key: 'name', label: 'Libellé (FR)', type: 'string', required: true, example: 'Clients - Compte courant', maxLength: 200 },
       { key: 'nameAr', label: 'Libellé (AR)', type: 'string', required: false, example: 'العملاء - الحساب الجاري' },
       { key: 'type', label: 'Type', type: 'select', required: true, options: ['asset', 'liability', 'equity', 'revenue', 'expense'], example: 'asset' },
-      { key: 'category', label: 'Catégorie', type: 'string', required: false, example: 'Clients' },
+      { key: 'class', label: 'Classe', type: 'select', required: false, options: ['1','2','3','4','5','6','7','8'], example: '4' },
       { key: 'parentCode', label: 'Compte parent', type: 'string', required: false, example: '4111' },
-      { key: 'balance', label: 'Solde initial', type: 'number', required: false, min: 0, example: 1500000 },
-      { key: 'taxDeductible', label: 'TVA déductible', type: 'boolean', required: false, example: 'true' },
-      { key: 'isActive', label: 'Actif', type: 'boolean', required: false, example: 'true' }
+      { key: 'nature', label: 'Nature', type: 'select', required: false, options: ['detail', 'header', 'view'], example: 'detail' },
+      { key: 'isLeaf', label: 'Compte feuille', type: 'boolean', required: false, example: 'true' },
+      { key: 'isTaxAccount', label: 'Compte TVA/Impôt', type: 'boolean', required: false, example: 'false' },
+      { key: 'taxType', label: 'Type fiscal', type: 'select', required: false, options: ['tva_collectee', 'tva_deductible', 'tap', 'irg', 'ibs'], example: '' },
+      { key: 'reconciliable', label: 'Rapprochable', type: 'boolean', required: false, example: 'false' }
     ],
     requiredColumns: ['code', 'name', 'type'],
-    optionalColumns: ['nameAr', 'category', 'parentCode', 'balance', 'taxDeductible'],
+    optionalColumns: ['nameAr', 'class', 'parentCode', 'nature', 'isTaxAccount'],
     validationRules: {
       code: [
         { type: 'required', message: 'Le numéro de compte est obligatoire' },
@@ -178,11 +183,13 @@ function getChartAccountTemplate(): ImportTemplateDefinition {
       ]
     },
     sampleData: [
-      { code: '101', name: 'Capital social', type: 'equity', category: 'Capitaux propres', isActive: true },
-      { code: '4111', name: 'Clients', type: 'asset', category: 'Créances commerciales', parentCode: '411', isActive: true },
-      { code: '411100', name: 'Clients - Compte courant', type: 'asset', category: 'Clients', parentCode: '4111', balance: 2500000, isActive: true },
-      { code: '4011', name: 'Fournisseurs', type: 'liability', category: 'Dettes commerciales', parentCode: '401', isActive: true },
-      { code: '5121', name: 'Banques', type: 'asset', category: 'Trésorerie', parentCode: '512', balance: 8500000, isActive: true }
+      { code: '101', name: 'Capital social', type: 'equity', class: '1', nature: 'detail', isLeaf: true },
+      { code: '4111', name: 'Clients', type: 'asset', class: '4', nature: 'header', isLeaf: false },
+      { code: '411100', name: 'Clients - Compte courant', type: 'asset', class: '4', parentCode: '4111', nature: 'detail', isLeaf: true, reconciliable: true },
+      { code: '4011', name: 'Fournisseurs', type: 'liability', class: '4', nature: 'header', isLeaf: false },
+      { code: '5121', name: 'Banques', type: 'asset', class: '5', parentCode: '512', nature: 'detail', isLeaf: true, reconciliable: true },
+      { code: '44571', name: 'TVA collectée', type: 'liability', class: '4', nature: 'detail', isLeaf: true, isTaxAccount: true, taxType: 'tva_collectee' },
+      { code: '4456', name: 'TVA déductible', type: 'asset', class: '4', nature: 'detail', isLeaf: true, isTaxAccount: true, taxType: 'tva_deductible' }
     ]
   };
 }
@@ -195,30 +202,32 @@ function getProductTemplate(): ImportTemplateDefinition {
     version: '1.0',
     columns: [
       { key: 'name', label: 'Désignation', type: 'string', required: true, example: 'Ordinateur Portable Dell', maxLength: 200 },
-      { key: 'sku', label: 'Référence', type: 'string', required: false, example: 'DL-LAT5550', maxLength: 50 },
-      { key: 'barcode', label: 'Code barres', type: 'string', required: false, example: '4894461201234', maxLength: 50 },
-      { key: 'type', label: 'Type', type: 'select', required: true, options: ['product', 'service', 'bundle'], example: 'product' },
+      { key: 'code', label: 'Référence (Code)', type: 'string', required: false, example: 'DL-LAT5550', maxLength: 50 },
+      { key: 'description', label: 'Description', type: 'string', required: false, example: 'Ordinateur portable professionnel' },
+      { key: 'type', label: 'Type', type: 'select', required: true, options: ['stockable', 'service', 'consumable'], example: 'stockable' },
       { key: 'category', label: 'Catégorie', type: 'string', required: false, example: 'Informatique' },
-      { key: 'unit', label: 'Unité', type: 'string', required: false, example: 'Unité', defaultValue: 'Unité' },
-      { key: "purchasePrice", label: "Prix d'achat (DZD)", type: 'number', required: false, min: 0, example: 85000 },
-      { key: 'salePrice', label: 'Prix de vente (DZD)', type: 'number', required: false, min: 0, example: 110000 },
-      { key: 'taxRate', label: 'Taux TVA (%)', type: 'number', required: false, min: 0, max: 100, example: 19 },
-      { key: 'stockQuantity', label: 'Stock initial', type: 'number', required: false, min: 0, example: 25 },
-      { key: 'minStock', label: 'Stock minimum', type: 'number', required: false, min: 0, example: 5 },
-      { key: 'warehouse', label: 'Entrepôt', type: 'string', required: false, example: 'Principal' },
+      { key: 'unitOfMeasure', label: 'Unité de mesure', type: 'select', required: false, options: ['U', 'KG', 'L', 'm²', 'm³', 'ML', 'Heure', 'Jour'], example: 'U' },
+      { key: "purchasePrice", label: "Prix d'achat HT (DZD)", type: 'number', required: false, min: 0, example: 85000 },
+      { key: 'salePrice', label: 'Prix de vente HT (DZD)', type: 'number', required: false, min: 0, example: 110000 },
+      { key: 'costPrice', label: 'Coût de revient (DZD)', type: 'number', required: false, min: 0, example: 90000 },
+      { key: 'tvaRate', label: 'Taux TVA (%)', type: 'number', required: false, min: 0, max: 100, example: 19 },
+      { key: 'trackStock', label: 'Suivi de stock', type: 'boolean', required: false, example: 'true' },
+      { key: 'canBeSold', label: 'Vendable', type: 'boolean', required: false, example: 'true' },
+      { key: 'canBePurchased', label: 'Achetable', type: 'boolean', required: false, example: 'true' },
       { key: 'isActive', label: 'Actif', type: 'boolean', required: false, example: 'true' }
     ],
     requiredColumns: ['name', 'type'],
-    optionalColumns: ['sku', 'barcode', 'category', 'unit', 'purchasePrice', 'salePrice', 'taxRate', 'stockQuantity'],
+    optionalColumns: ['code', 'description', 'category', 'unitOfMeasure', 'purchasePrice', 'salePrice', 'costPrice', 'tvaRate'],
     validationRules: {
       name: [{ type: 'required', message: 'La désignation est obligatoire' }],
-      sku: [{ type: 'unique', message: 'Cette référence existe déjà' }],
-      barcode: [{ type: 'unique', message: 'Ce code barres existe déjà' }],
-      salePrice: [{ type: 'range', message: 'Le prix doit être positif', params: { min: 0 } }]
+      code: [{ type: 'unique', message: 'Cette référence existe déjà' }],
+      salePrice: [{ type: 'range', message: 'Le prix doit être positif', params: { min: 0 } }],
+      tvaRate: [{ type: 'range', message: 'Le taux TVA doit être entre 0 et 100', params: { min: 0, max: 100 } }]
     },
     sampleData: [
-      { name: 'Ordinateur Portable Dell Latitude 5550', sku: 'DL-LAT5550', type: 'product', category: 'Informatique', unit: 'Unité', purchasePrice: 85000, salePrice: 110000, taxRate: 19, stockQuantity: 25, minStock: 5, warehouse: 'Principal', isActive: true },
-      { name: 'Licence Office 365 Annuelle', sku: 'O365-1Y', type: 'service', category: 'Logiciels', unit: 'Licence', purchasePrice: 35000, salePrice: 45000, taxRate: 19, isActive: true }
+      { name: 'Ordinateur Portable Dell Latitude 5550', code: 'DL-LAT5550', type: 'stockable', category: 'Informatique', unitOfMeasure: 'U', purchasePrice: 85000, salePrice: 110000, costPrice: 90000, tvaRate: 19, trackStock: true, canBeSold: true, canBePurchased: true, isActive: true },
+      { name: 'Licence Office 365 Annuelle', code: 'O365-1Y', type: 'service', category: 'Logiciels', unitOfMeasure: 'Licence', purchasePrice: 35000, salePrice: 45000, tvaRate: 19, trackStock: false, canBeSold: true, canBePurchased: true, isActive: true },
+      { name: 'Consulting Technique Journée', code: 'CONSULT-J', type: 'service', category: 'Services', unitOfMeasure: 'Jour', purchasePrice: 15000, salePrice: 25000, tvaRate: 19, canBeSold: true, canBePurchased: false, isActive: true }
     ]
   };
 }
@@ -231,22 +240,33 @@ function getPartnerTemplate(): ImportTemplateDefinition {
     version: '1.0',
     columns: [
       { key: 'name', label: 'Raison sociale', type: 'string', required: true, example: 'Entreprise ABC SpA', maxLength: 200 },
+      { key: 'displayName', label: 'Nom affiché', type: 'string', required: false, example: 'ABC Distribution' },
       { key: 'type', label: 'Type', type: 'select', required: true, options: ['customer', 'supplier', 'both'], example: 'customer' },
-      { key: 'contactPerson', label: 'Contact', type: 'string', required: false, example: 'M. Karim' },
+      { key: 'isCompany', label: 'Entreprise', type: 'boolean', required: false, example: 'true' },
+      { key: 'isTaxPayer', label: 'Assujetti TVA', type: 'boolean', required: false, example: 'true' },
+      { key: 'contactName', label: 'Nom du contact', type: 'string', required: false, example: 'M. Karim' },
       { key: 'email', label: 'Email', type: 'email', required: false, example: 'contact@abc.dz' },
-      { key: 'phone', label: 'Téléphone', type: 'phone', required: false, example: '021456789' },
+      { key: 'phone', label: 'Téléphone fixe', type: 'phone', required: false, example: '021456789' },
+      { key: 'mobile', label: 'Mobile', type: 'phone', required: false, example: '0555123456' },
+      { key: 'website', label: 'Site web', type: 'string', required: false, example: 'www.abc.dz' },
       { key: 'address', label: 'Adresse', type: 'string', required: false, example: '45 Rue de la Liberté' },
       { key: 'city', label: 'Ville', type: 'string', required: false, example: 'Alger' },
+      { key: 'postalCode', label: 'Code postal', type: 'string', required: false, example: '16000' },
       { key: 'wilayaCode', label: 'Wilaya', type: 'string', required: false, example: '16' },
       { key: 'nif', label: 'NIF', type: 'string', required: false, example: '000016001600001', maxLength: 15 },
       { key: 'nis', label: 'NIS', type: 'string', required: false, example: '00001616000001', maxLength: 15 },
-      { key: 'rc', label: 'RC', type: 'string', required: false, example: '16/AA-001234', maxLength: 20 },
-      { key: 'paymentTerms', label: 'Conditions paiement (jours)', type: 'number', required: false, min: 0, example: 30 },
+      { key: 'rc', label: 'RC (Registre Commerce)', type: 'string', required: false, example: '16/AA-001234', maxLength: 20 },
+      { key: 'ai', label: 'Article d\'imposition', type: 'string', required: false, example: 'AI-123456' },
+      { key: 'paymentTerms', label: 'Délai paiement (jours)', type: 'string', required: false, example: '30' },
+      { key: 'paymentMode', label: 'Mode de paiement', type: 'select', required: false, options: ['virement', 'cheque', 'espece', 'traite'], example: 'virement' },
       { key: 'creditLimit', label: 'Limite crédit (DZD)', type: 'number', required: false, min: 0, example: 500000 },
+      { key: 'bankAccount', label: 'RIB', type: 'string', required: false, example: '001000001000000000012' },
+      { key: 'category', label: 'Catégorie', type: 'string', required: false, example: 'Clients VIP' },
+      { key: 'notes', label: 'Notes', type: 'string', required: false, example: 'Client depuis 2020' },
       { key: 'isActive', label: 'Actif', type: 'boolean', required: false, example: 'true' }
     ],
     requiredColumns: ['name', 'type'],
-    optionalColumns: ['contactPerson', 'email', 'phone', 'address', 'city', 'nif', 'nis', 'rc', 'paymentTerms'],
+    optionalColumns: ['displayName', 'contactName', 'email', 'phone', 'address', 'city', 'nif', 'nis', 'rc', 'paymentTerms'],
     validationRules: {
       name: [{ type: 'required', message: 'La raison sociale est obligatoire' }],
       type: [{ type: 'enum', message: 'Type doit être: customer, supplier ou both', params: { values: ['customer', 'supplier', 'both'] } }],
@@ -254,8 +274,8 @@ function getPartnerTemplate(): ImportTemplateDefinition {
       email: [{ type: 'unique', message: 'Cet email est déjà utilisé' }]
     },
     sampleData: [
-      { name: 'ABC Distribution SpA', type: 'customer', contactPerson: 'M. Karim', email: 'contact@abc.dz', phone: '021456789', address: '45 Rue de la Liberté', city: 'Alger', wilayaCode: '16', nif: '000016001600001', nis: '00001616000001', rc: '16/AA-001234', paymentTerms: 30, creditLimit: 500000, isActive: true },
-      { name: 'TechSupply Sarl', type: 'supplier', contactPerson: 'Mme. Samira', email: 'achat@techsupply.dz', phone: '0555987654', city: 'Oran', wilayaCode: '31', nif: '000031003100003', rc: '31/BB-005678', paymentTerms: 45, isActive: true }
+      { name: 'ABC Distribution SpA', displayName: 'ABC Distribution', type: 'customer', isCompany: true, isTaxPayer: true, contactName: 'M. Karim', email: 'contact@abc.dz', phone: '021456789', mobile: '0555123456', address: '45 Rue de la Liberté', city: 'Alger', postalCode: '16000', wilayaCode: '16', nif: '000016001600001', nis: '00001616000001', rc: '16/AA-001234', paymentTerms: '30', paymentMode: 'virement', creditLimit: 500000, bankAccount: '001000001000000000012', category: 'Clients VIP', isActive: true },
+      { name: 'TechSupply Sarl', type: 'supplier', isCompany: true, isTaxPayer: true, contactName: 'Mme. Samira', email: 'achat@techsupply.dz', phone: '0555987654', city: 'Oran', wilayaCode: '31', nif: '000031003100003', rc: '31/BB-005678', paymentTerms: '45', isActive: true }
     ]
   };
 }
@@ -403,20 +423,19 @@ function getWarehouseTemplate(): ImportTemplateDefinition {
     version: '1.0',
     columns: [
       { key: 'name', label: 'Nom', type: 'string', required: true, example: 'Entrepôt Principal' },
-      { key: 'code', label: 'Code', type: 'string', required: false, example: 'ENT-01' },
-      { key: 'address', label: 'Adresse', type: 'string', required: false, example: 'Zone Industrielle' },
-      { key: 'city', label: 'Ville', type: 'string', required: false, example: 'Alger' },
-      { key: 'type', label: 'Type', type: 'select', required: false, options: ['principal', 'secondaire', 'magasin', 'depot'], example: 'principal' },
+      { key: 'code', label: 'Code', type: 'string', required: true, example: 'ENT-01' },
+      { key: 'address', label: 'Adresse complète', type: 'string', required: false, example: 'Zone Industrielle Oued Smar, Alger' },
       { key: 'isActive', label: 'Actif', type: 'boolean', required: false, example: 'true' }
     ],
-    requiredColumns: ['name'],
-    optionalColumns: ['code', 'address', 'city', 'type'],
+    requiredColumns: ['name', 'code'],
+    optionalColumns: ['address'],
     validationRules: {
-      name: [{ type: 'required', message: 'Le nom de l\'entrepôt est obligatoire' }]
+      name: [{ type: 'required', message: "Le nom de l'entrepôt est obligatoire" }],
+      code: [{ type: 'required', message: 'Le code est obligatoire' }, { type: 'unique', message: 'Ce code existe déjà' }]
     },
     sampleData: [
-      { name: 'Entrepôt Principal', code: 'ENT-01', address: 'Zone Industrielle Oued Smar', city: 'Alger', type: 'principal', isActive: true },
-      { name: 'Magasin Vente', code: 'MAG-01', address: 'Centre Ville', city: 'Alger', type: 'magasin', isActive: true }
+      { name: 'Entrepôt Principal', code: 'ENT-01', address: 'Zone Industrielle Oued Smar, Alger', isActive: true },
+      { name: 'Magasin Vente', code: 'MAG-01', address: 'Centre Ville, Alger', isActive: true }
     ]
   };
 }
@@ -425,26 +444,30 @@ function getStockMovementTemplate(): ImportTemplateDefinition {
   return {
     name: 'Template Mouvements Stock',
     module: 'stock_movements',
-    description: 'Importer l\'état du stock initial par produit et entrepôt',
+    description: "Importer l'état du stock initial par produit et entrepôt",
     version: '1.0',
     columns: [
       { key: 'sku', label: 'Référence produit', type: 'string', required: true, example: 'DL-LAT5550' },
       { key: 'productName', label: 'Produit', type: 'string', required: false, example: 'Ordinateur Dell' },
-      { key: 'warehouse', label: 'Entrepôt', type: 'string', required: true, example: 'Principal' },
+      { key: 'warehouse', label: 'Entrepôt (Code)', type: 'string', required: true, example: 'ENT-01' },
       { key: 'quantity', label: 'Quantité', type: 'number', required: true, min: 0, example: 25 },
-      { key: 'unitCost', label: 'Coût unitaire', type: 'number', required: false, min: 0, example: 85000 },
+      { key: 'unitCost', label: 'Coût unitaire (DZD)', type: 'number', required: false, min: 0, example: 85000 },
+      { key: 'date', label: 'Date mouvement', type: 'date', required: false, format: 'YYYY-MM-DD', example: '2024-01-01' },
+      { key: 'type', label: 'Type mouvement', type: 'select', required: false, options: ['in', 'out', 'adjustment', 'initial'], example: 'initial' },
       { key: 'location', label: 'Emplacement', type: 'string', required: false, example: 'A-01-03' },
+      { key: 'reference', label: 'Référence', type: 'string', required: false, example: 'STOCK-INIT-001' },
       { key: 'notes', label: 'Notes', type: 'string', required: false, example: 'Stock inventorié au 01/01/2024' }
     ],
     requiredColumns: ['sku', 'warehouse', 'quantity'],
-    optionalColumns: ['productName', 'unitCost', 'location', 'notes'],
+    optionalColumns: ['productName', 'unitCost', 'date', 'type', 'location', 'reference', 'notes'],
     validationRules: {
       sku: [{ type: 'required', message: 'La référence produit est obligatoire' }],
-      warehouse: [{ type: 'required', message: 'L\'entrepôt est obligatoire' }],
-      quantity: [{ type: 'range', message: 'La quantité doit être positive', params: { min: 0 } }]
+      warehouse: [{ type: 'required', message: "L'entrepôt est obligatoire" }],
+      quantity: [{ type: 'range', message: 'La quantité doit être positive ou nulle', params: { min: 0 } }]
     },
     sampleData: [
-      { sku: 'DL-LAT5550', productName: 'Ordinateur Dell', warehouse: 'Principal', quantity: 25, unitCost: 85000, location: 'A-01-03', notes: 'Stock initial' }
+      { sku: 'DL-LAT5550', productName: 'Ordinateur Dell Latitude', warehouse: 'ENT-01', quantity: 25, unitCost: 85000, date: '2024-01-01', type: 'initial', location: 'A-01-03', reference: 'STOCK-INIT-001', notes: 'Stock initial exercice 2024' },
+      { sku: 'O365-1Y', productName: 'Office 365 Annuel', warehouse: 'MAG-01', quantity: 100, unitCost: 35000, date: '2024-01-01', type: 'initial', notes: 'Licences logicielles' }
     ]
   };
 }
