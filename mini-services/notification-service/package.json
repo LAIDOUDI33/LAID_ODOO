@@ -1,0 +1,1 @@
+{"name": "hassiba-notification-service", "version": "1.0.0", "description": "Real-time notification WebSocket service for HASSIBA Suite ERP", "main": "index.ts", "scripts": {"dev": "bun --hot index.ts", "start": "bun index.ts"}, "dependencies": {"socket.io": "^4.8.1"}}

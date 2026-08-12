@@ -25,7 +25,9 @@ import {
   Settings,
   Target,
   Zap,
-  ShoppingCart
+  ShoppingCart,
+  Sparkles,
+  LayoutDashboard
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -59,6 +61,18 @@ import {
   ResponsiveContainer,
   ComposedChart
 } from 'recharts'
+
+// Report Builder imports
+import dynamic from 'next/dynamic'
+const ReportBuilder = dynamic(() => import('@/components/reports/report-builder'), {
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center justify-center py-20">
+      <RefreshCw className="h-8 w-8 animate-spin text-primary" />
+      <span className="ml-3 text-muted-foreground">Chargement du Report Builder...</span>
+    </div>
+  )
+})
 
 // Types - Matches our API response structure
 interface DashboardData {
@@ -578,6 +592,10 @@ export default function BiPage() {
             <Filter className="w-4 h-4" />
             Personnalisés
           </TabsTrigger>
+          <TabsTrigger value="report-builder" className="gap-2">
+            <Sparkles className="w-4 h-4" />
+            Report Builder
+          </TabsTrigger>
         </TabsList>
 
         {/* ==================== TABLEAUX DE BORD TAB ==================== */}
@@ -1050,6 +1068,18 @@ export default function BiPage() {
                 </div>
               </CardContent>
             </Card>
+          </motion.div>
+        </TabsContent>
+
+        {/* ==================== REPORT BUILDER TAB ==================== */}
+        <TabsContent value="report-builder" className="space-y-0 mt-0 -m-4">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
+            className="h-[calc(100vh-280px)] min-h-[600px]"
+          >
+            <ReportBuilder />
           </motion.div>
         </TabsContent>
       </Tabs>

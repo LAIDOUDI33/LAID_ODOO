@@ -160,3 +160,175 @@
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* ============================================
+   PWA & Mobile Optimizations
+   ============================================ */
+
+/* Safe Area Insets for iOS notch/home indicator */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .safe-area-inset-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  
+  .h-safe-area-inset-bottom {
+    height: env(safe-area-inset-bottom, 0px);
+  }
+  
+  /* Bottom nav with safe area */
+  nav.fixed.bottom-0 {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}
+
+/* Offline mode styling */
+.offline-mode {
+  position: relative;
+}
+
+.offline-mode::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(251, 191, 36, 0.03);
+  pointer-events: none;
+  z-index: 9998;
+}
+
+/* Touch feedback animations */
+@media (hover: none) and (pointer: coarse) {
+  /* Remove hover effects on touch devices */
+  button:hover,
+  a:hover,
+  [role="button"]:hover {
+    background-color: inherit;
+  }
+  
+  /* Active/press state for touch */
+  button:active,
+  a:active,
+  [role="button"]:active {
+    opacity: 0.85;
+    transform: scale(0.98);
+    transition: all 0.1s ease-out;
+  }
+  
+  /* Larger tap targets */
+  button, 
+  [role="button"],
+  a:not(.no-touch-target) {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Prevent text selection on tap */
+  .no-select {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* PWA Standalone mode adjustments */
+@media (display-mode: standalone) {
+  body {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+  }
+  
+  /* Hide scrollbars in standalone mode (optional) */
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: transparent;
+  }
+}
+
+/* iOS Safari specific fixes */
+@supports (-webkit-touch-callout: none) {
+  /* Fix iOS input zoom */
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+  
+  /* Smooth scrolling */
+  html {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Prevent bounce effect */
+  body {
+    overscroll-behavior: none;
+  }
+}
+
+/* Pull-to-refresh disable for PWA */
+html {
+  overscroll-behavior-y: contain;
+}
+
+/* Install prompt animation */
+@keyframes slideUpBanner {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.install-banner-animate {
+  animation: slideUpBanner 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Connection status pulse */
+@keyframes connectionPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.connection-pulse {
+  animation: connectionPulse 2s ease-in-out infinite;
+}
+
+/* Skeleton loading for slow connections */
+.skeleton-pulse {
+  background: linear-gradient(
+    90deg,
+    oklch(0.95 0.005 250) 25%,
+    oklch(0.98 0.005 250) 50%,
+    oklch(0.95 0.005 250) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+}
+
+@keyframes skeleton-loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Focus visible styles for keyboard navigation */
+:focus-visible {
+  outline: 2px solid #059669;
+  outline-offset: 2px;
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

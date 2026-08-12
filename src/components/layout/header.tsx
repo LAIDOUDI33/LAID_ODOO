@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Bell, Globe, User, Search, Menu } from 'lucide-react'
+import { Bell, Globe, User, Search, Menu, Download, Wifi, WifiOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
@@ -14,6 +14,8 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
+import { InstallPrompt } from '@/components/pwa/install-prompt'
+import { usePWA } from '@/hooks/use-pwa'
 
 interface HeaderProps {
   onMobileMenuToggle: () => void
@@ -29,6 +31,7 @@ const notifications = [
 export function Header({ onMobileMenuToggle }: HeaderProps) {
   const [language, setLanguage] = React.useState<'fr' | 'ar'>('fr')
   const unreadCount = notifications.filter(n => n.unread).length
+  const { isOffline, canInstall, isInstalled } = usePWA()
 
   return (
     <header className="sticky top-0 z-30 h-16 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
@@ -38,8 +41,9 @@ export function Header({ onMobileMenuToggle }: HeaderProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="lg:hidden"
+            className="lg:hidden min-h-[44px] min-w-[44px]"
             onClick={onMobileMenuToggle}
+            aria-label="Ouvrir le menu"
           >
             <Menu className="w-5 h-5" />
           </Button>
@@ -56,10 +60,37 @@ export function Header({ onMobileMenuToggle }: HeaderProps) {
 
         {/* Right Section */}
         <div className="flex items-center gap-2">
+          {/* Connection Status Indicator */}
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className={cn(
+              "hidden sm:flex items-center gap-1.5 text-xs",
+              isOffline ? "text-amber-600" : "text-muted-foreground"
+            )}
+          >
+            {isOffline ? (
+              <>
+                <WifiOff className="w-3.5 h-3.5" />
+                <span>Hors ligne</span>
+              </>
+            ) : (
+              <>
+                <Wifi className="w-3.5 h-3.5" />
+                <span>En ligne</span>
+              </>
+            )}
+          </Button>
+
+          {/* PWA Install Button - Only show if can install and not installed */}
+          {!isInstalled && canInstall && (
+            <InstallPrompt variant="button" />
+          )}
+
           {/* Language Switcher */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="gap-2">
+              <Button variant="ghost" size="sm" className="gap-2 min-h-[44px]">
                 <Globe className="w-4 h-4" />
                 <span className="hidden sm:inline">{language === 'fr' ? 'Français' : 'العربية'}</span>
               </Button>
@@ -77,16 +108,17 @@ export function Header({ onMobileMenuToggle }: HeaderProps) {
           {/* Notifications */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="relative">
+              <Button variant="ghost" size="icon" className="relative min-h-[44px] min-w-[44px]">
                 <Bell className="w-5 h-5" />
                 {unreadCount > 0 && (
                   <Badge
                     variant="destructive"
-                    className="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center p-0 text-xs"
+                    className="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center p-0 text-xs animate-pulse"
                   >
                     {unreadCount}
                   </Badge>
                 )}
+                <span className="sr-only">Notifications ({unreadCount} non lues)</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-80">
@@ -122,7 +154,7 @@ export function Header({ onMobileMenuToggle }: HeaderProps) {
           {/* User Profile */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="gap-2 pl-2 pr-3">
+              <Button variant="ghost" className="gap-2 pl-2 pr-3 min-h-[44px]">
                 <Avatar className="h-8 w-8">
                   <AvatarImage src="/avatar.png" alt="Utilisateur" />
                   <AvatarFallback className="bg-primary text-primary-foreground text-sm">
@@ -155,4 +187,9 @@ export function Header({ onMobileMenuToggle }: HeaderProps) {
       </div>
     </header>
   )
+}
+
+// Utility for conditional classes
+function cn(...classes: (string | undefined | null | false)[]): string {
+  return classes.filter(Boolean).join(' ')
 }
