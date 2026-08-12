@@ -178,6 +178,9 @@ model Company {
   spareParts        SparePart[]          @relation("CompanySpareParts")
   oeeRecords        OEERecord[]         @relation("CompanyOEE")
   
+  // Data Import Relations
+  importJobs        ImportJob[]
+  
   @@map("companies")
 }
 
@@ -3735,7 +3738,168 @@ enum ExecutionStatusType {
 }
 
 // ============================================================
-// END OF SCHEMA - HASSIBA Suite ERP v2.2.0 Enterprise
-// Total: 64+ Models with full Algerian ERP + Production + Maintenance + Report Builder + Visual Workflow Automation
+// DATA IMPORT / MIGRATION SYSTEM (Customer Onboarding)
+// ============================================================
+
+model ImportJob {
+  id                String       @id @default(cuid())
+  companyId         String
+  
+  // Job Identification
+  jobName           String       // "HR Employees Q1 2024"
+  module            String       // employees, chart_of_accounts, products, partners, invoices, bills, etc.
+  importType        String       @default("initial") // initial, incremental, migration, rollback
+  
+  // File Info
+  fileName          String
+  fileType          String       // csv, xlsx, xls
+  fileSize          Int          // in bytes
+  originalName     String?
+  
+  // Status Tracking
+  status            ImportJobStatus @default(pending)
+  progress          Float        @default(0) // 0-100 percentage
+  currentRow        Int          @default(0)
+  
+  // Statistics
+  totalRows         Int          @default(0)
+  successCount      Int          @default(0)
+  errorCount        Int          @default(0)
+  warningCount      Int          @default(0)
+  skippedCount      Int          @default(0)
+  duplicateCount    Int          @default(0)
+  
+  // Configuration
+  options           String?      // JSON: { skipDuplicates: true, updateExisting: false, ... }
+  columnMapping     String?      // JSON: { "Col A": "name", "Col B": "email", ... }
+  
+  // Execution
+  startedAt         DateTime?
+  completedAt       DateTime?
+  durationMs        Int?
+  processedAt       DateTime?    // When data was actually committed
+  
+  // Error Handling
+  hasErrors         Boolean      @default(false)
+  errorSummary      String?      // JSON array of main errors
+  validationReport  String?      // JSON detailed validation results
+  
+  // Rollback Support
+  isRolledBack      Boolean      @default(false)
+  rolledBackAt      DateTime?
+  snapshotData      String?      // JSON - pre-import state for rollback
+  
+  // Relations
+  company           Company      @relation(fields: [companyId], references: [id])
+  rows              ImportRow[]
+  
+  // Metadata
+  createdBy         String?
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  
+  @@index([companyId])
+  @@index([status])
+  @@index([module])
+  @@index([createdAt])
+  @@map("import_jobs")
+}
+
+model ImportRow {
+  id                String       @id @default(cuid())
+  jobId             String
+  rowIndex          Int          // Row number in file (1-based)
+  
+  // Original Data
+  rawData           String       // JSON - original row data from file
+  mappedData        String?      // JSON - after column mapping
+  
+  // Validation Status
+  rowStatus         RowImportStatus @default(pending)
+  validations       String?      // JSON - validation results per field
+  
+  // Processing
+  entityId          String?      // ID of created/updated entity
+  entityType        String?      // Model name (Employee, Product, etc.)
+  action            String?      // created, updated, skipped, error
+  
+  // Errors
+  errors            String?      // JSON - error messages
+  warnings          String?      // JSON - warning messages
+  
+  // Timing
+  processedAt       DateTime?
+  
+  // Relation
+  job               ImportJob    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  
+  createdAt         DateTime     @default(now())
+  
+  @@index([jobId])
+  @@index([rowStatus])
+  @@map("import_rows")
+}
+
+model ImportTemplate {
+  id                String       @id @default(cuid())
+  
+  // Template Definition
+  name              String       // "Employees Import Template"
+  module            String       // employees, products, etc.
+  description       String?
+  version           String       @default("1.0")
+  isActive          Boolean      @default(true)
+  
+  // Column Definitions
+  columns           String       // JSON array of column definitions
+  requiredColumns   String?      // JSON array of required column names
+  optionalColumns   String?      // JSON array of optional column names
+  
+  // Validation Rules
+  validationRules   String?      // JSON - field-level validation rules
+  sampleData        String?      // JSON - sample row for template download
+  
+  // Usage Stats
+  downloadCount     Int          @default(0)
+  usageCount        Int          @default(0)
+  
+  // Metadata
+  createdBy         String?
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  
+  @@index([module])
+  @@index([isActive])
+  @@map("import_templates")
+}
+
+enum ImportJobStatus {
+  pending           // Uploaded, waiting to start
+  validating        // Running validation
+  validated         // Validation complete, ready to preview
+  previewing        // User reviewing preview
+  processing        // Importing data
+  completed         // Successfully completed
+  partially_completed // Some rows failed
+  failed            // Critical error, stopped
+  cancelled         // User cancelled
+  rolling_back      // Rolling back changes
+  rolled_back       // Rollback complete
+}
+
+enum RowImportStatus {
+  pending           // Not yet processed
+  validating        // Being validated
+  valid             // Passed validation
+  warning           // Passed with warnings
+  error             // Failed validation
+  skipped           // Skipped (duplicate, etc.)
+  imported          // Successfully imported
+  failed            // Failed during import
+}
+
+// ============================================================
+// END OF SCHEMA - HASSIBA Suite ERP v2.3.0 Enterprise
+// Total: 67+ Models with full Algerian ERP + Production + Maintenance + Report Builder + Visual Workflow Automation + Data Import System
 // ============================================================
 
