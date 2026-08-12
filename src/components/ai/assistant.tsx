@@ -120,11 +120,18 @@ function MessageBubble({ message, onCopy, copiedId }: MessageBubbleProps) {
   const isUser = message.role === 'user'
   const isCopied = copiedId === message.id
 
-  // Simple markdown-like rendering
+  // Secure markdown-like rendering with XSS protection
   const renderContent = (content: string) => {
-    // Bold text
-    let processed = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    // Line breaks
+    // Escape HTML entities first to prevent XSS
+    let processed = content
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;')
+    
+    // Then apply safe markdown formatting
+    processed = processed.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
     processed = processed.replace(/\n/g, '<br/>')
     return processed
   }

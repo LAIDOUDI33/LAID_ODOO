@@ -10,7 +10,9 @@ import { db } from "./db";
 
 export const authOptions: NextAuthOptions = {
   // Configuration de base
-  secret: process.env.NEXTAUTH_SECRET || "hassiba-erp-secret-key-change-in-production",
+  // CRITICAL: NEXTAUTH_SECRET must be set in environment variables
+  // The application will fail to start if not configured properly
+  secret: process.env.NEXTAUTH_SECRET,
   session: {
     strategy: "jwt",
     maxAge: 30 * 60, // 30 minutes (sécurité renforcée)
