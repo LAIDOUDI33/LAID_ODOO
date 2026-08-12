@@ -15,7 +15,9 @@ import {
   InvoiceImportData,
   BillImportData,
   AttendanceImportData,
-  JournalEntryImportData
+  JournalEntryImportData,
+  WarehouseImportData,
+  StockMovementImportData
 } from './types';
 import { convertFieldValue } from './validation';
 
@@ -56,6 +58,10 @@ export async function importRow(
       return importAttendance(data, companyId, options);
     case 'journal_entries':
       return importJournalEntry(data, companyId, options);
+    case 'warehouses':
+      return importWarehouse(data, companyId, options);
+    case 'stock_movements':
+      return importStockMovement(data, companyId, options);
     default:
       return {
         success: false,
@@ -80,6 +86,9 @@ export async function createSnapshot(
       break;
     case 'products':
       records = await db.product.findMany({ where: { companyId } });
+      break;
+    case 'warehouses':
+      records = await db.warehouse.findMany({ where: { companyId } });
       break;
     case 'partners':
       records = await db.partner.findMany({ where: { companyId } });
@@ -133,6 +142,13 @@ export async function rollbackImport(
         deleted = await db.chartOfAccount.deleteMany({ where: { companyId } }).then(r => r.count);
         if (snapshot.length > 0) {
           await db.chartOfAccount.createMany({ data: snapshot.map((a: any) => ({ ...a, id: a.id })) });
+          restored = snapshot.length;
+        }
+        break;
+      case 'warehouses':
+        deleted = await db.warehouse.deleteMany({ where: { companyId } }).then(r => r.count);
+        if (snapshot.length > 0) {
+          await db.warehouse.createMany({ data: snapshot.map((w: any) => ({ ...w, id: w.id })) });
           restored = snapshot.length;
         }
         break;
@@ -521,6 +537,243 @@ async function importProduct(
       success: false,
       action: 'error',
       error: `Failed to import product: ${error instanceof Error ? error.message : 'Unknown error'}`
+    };
+  }
+}
+
+// ============================================================
+// Inventory Module - Warehouses
+// ============================================================
+
+async function importWarehouse(
+  data: Record<string, any>,
+  companyId: string,
+  options: ImportOptions
+): Promise<ImportResult> {
+  try {
+    const warehouseData: WarehouseImportData = {
+      name: String(data.name || data.Nom || data.name || ''),
+      code: data.code || data.Code || undefined,
+      address: data.address || data.Adresse || undefined,
+      city: data.city || data.Ville || undefined,
+      type: (data.type || data.Type || 'principal') as WarehouseImportData['type'],
+      isActive: data.isActive !== false && data.isActive !== 'false' && data.isActive !== '0'
+    };
+    
+    if (!warehouseData.name) {
+      return {
+        success: false,
+        action: 'error',
+        error: 'Warehouse name is required'
+      };
+    }
+    
+    // Check for existing warehouse (by name or code)
+    const existingByName = await db.warehouse.findFirst({
+      where: { companyId, name: warehouseData.name }
+    });
+    
+    const existingByCode = warehouseData.code
+      ? await db.warehouse.findFirst({
+          where: { companyId, code: warehouseData.code }
+        })
+      : null;
+    
+    const existing = existingByName || existingByCode;
+    
+    if (existing && !options.updateExisting) {
+      return {
+        success: true,
+        entityId: existing.id,
+        entityType: 'Warehouse',
+        action: 'skipped',
+        warnings: [`Warehouse already exists: ${warehouseData.name}${warehouseData.code ? ` (${warehouseData.code})` : ''}`]
+      };
+    }
+    
+    if (existing && options.updateExisting) {
+      const updated = await db.warehouse.update({
+        where: { id: existing.id },
+        data: {
+          name: warehouseData.name,
+          code: warehouseData.code,
+          address: warehouseData.address,
+          city: warehouseData.city,
+          type: warehouseData.type,
+          isActive: warehouseData.isActive
+        }
+      });
+      
+      return {
+        success: true,
+        entityId: updated.id,
+        entityType: 'Warehouse',
+        action: 'updated'
+      };
+    }
+    
+    const created = await db.warehouse.create({
+      data: {
+        name: warehouseData.name,
+        code: warehouseData.code,
+        address: warehouseData.address,
+        city: warehouseData.city,
+        type: warehouseData.type,
+        isActive: warehouseData.isActive,
+        companyId
+      }
+    });
+    
+    return {
+      success: true,
+      entityId: created.id,
+      entityType: 'Warehouse',
+      action: 'created'
+    };
+    
+  } catch (error) {
+    return {
+      success: false,
+      action: 'error',
+      error: `Failed to import warehouse: ${error instanceof Error ? error.message : 'Unknown error'}`
+    };
+  }
+}
+
+// ============================================================
+// Inventory Module - Stock Movements
+// ============================================================
+
+async function importStockMovement(
+  data: Record<string, any>,
+  companyId: string,
+  options: ImportOptions
+): Promise<ImportResult> {
+  try {
+    const movementData: StockMovementImportData = {
+      sku: String(data.sku || data.Référence || data.reference || data.product_sku || ''),
+      productName: data.productName || data.Produit || data.product_name || undefined,
+      warehouse: String(data.warehouse || data.Entrepôt || data.warehouse_name || ''),
+      quantity: convertFieldValue(data.quantity || data.Quantité || data.qty, { type: 'number', key: 'quantity' }) || 0,
+      unitCost: convertFieldValue(data.unitCost || data['Coût unitaire'] || data.unit_cost, { type: 'number', key: 'unitCost' }),
+      location: data.location || data.Emplacement || undefined,
+      notes: data.notes || data.Notes || undefined
+    };
+    
+    if (!movementData.sku) {
+      return {
+        success: false,
+        action: 'error',
+        error: 'Product SKU is required for stock movement'
+      };
+    }
+    
+    if (!movementData.warehouse) {
+      return {
+        success: false,
+        action: 'error',
+        error: 'Warehouse is required for stock movement'
+      };
+    }
+    
+    // Find the product by SKU
+    const product = await db.product.findFirst({
+      where: { companyId, sku: movementData.sku }
+    });
+    
+    if (!product) {
+      return {
+        success: false,
+        action: 'error',
+        error: `Product not found with SKU: ${movementData.sku}`
+      };
+    }
+    
+    // Find the warehouse by name
+    const warehouse = await db.warehouse.findFirst({
+      where: { companyId, name: movementData.warehouse }
+    });
+    
+    if (!warehouse) {
+      return {
+        success: false,
+        action: 'error',
+        error: `Warehouse not found: ${movementData.warehouse}`
+      };
+    }
+    
+    // Check for existing stock movement for this product/warehouse
+    const existingMovement = await db.inventoryMovement.findFirst({
+      where: {
+        productId: product.id,
+        warehouseId: warehouse.id,
+        reason: 'Initial stock import'
+      }
+    });
+    
+    if (existingMovement && !options.updateExisting) {
+      return {
+        success: true,
+        entityId: existingMovement.id,
+        entityType: 'InventoryMovement',
+        action: 'skipped',
+        warnings: [`Stock already initialized for ${movementData.sku} in ${movementData.warehouse}`]
+      };
+    }
+    
+    // Determine movement type based on quantity
+    const movementType = movementData.quantity >= 0 ? 'in' : 'out';
+    const absQuantity = Math.abs(movementData.quantity);
+    
+    if (existingMovement && options.updateExisting) {
+      // Update existing initial stock
+      const updated = await db.inventoryMovement.update({
+        where: { id: existingMovement.id },
+        data: {
+          quantity: absQuantity,
+          type: movementType,
+          unitCost: movementData.unitCost,
+          location: movementData.location,
+          notes: movementData.notes || 'Initial stock import (updated)'
+        }
+      });
+      
+      return {
+        success: true,
+        entityId: updated.id,
+        entityType: 'InventoryMovement',
+        action: 'updated'
+      };
+    }
+    
+    // Create new inventory movement
+    const created = await db.inventoryMovement.create({
+      data: {
+        productId: product.id,
+        warehouseId: warehouse.id,
+        type: movementType,
+        quantity: absQuantity,
+        unitCost: movementData.unitCost,
+        location: movementData.location,
+        reason: movementData.notes || 'Initial stock import',
+        reference: `STOCK-INIT-${Date.now()}`,
+        companyId,
+        movementDate: new Date()
+      }
+    });
+    
+    return {
+      success: true,
+      entityId: created.id,
+      entityType: 'InventoryMovement',
+      action: 'created'
+    };
+    
+  } catch (error) {
+    return {
+      success: false,
+      action: 'error',
+      error: `Failed to import stock movement: ${error instanceof Error ? error.message : 'Unknown error'}`
     };
   }
 }

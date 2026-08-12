@@ -103,6 +103,7 @@ const statusLabels: Record<string, string> = {
 
 // Main Import Wizard Component
 export function DataImportWizard({ companyId }: { companyId: string }) {
+  
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedModule, setSelectedModule] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
@@ -129,16 +130,27 @@ export function DataImportWizard({ companyId }: { companyId: string }) {
   const [modules, setModules] = useState<ImportModule[]>([]);
   const [loadingModules, setLoadingModules] = useState(true);
   
+  // Load modules on mount
   React.useEffect(() => {
+    let isMounted = true;
+    
     fetch('/api/import?action=modules')
       .then(res => res.json())
       .then(data => {
-        if (data.success) {
+        if (isMounted && data.success && data.modules) {
           setModules(data.modules);
         }
-        setLoadingModules(false);
+        if (isMounted) {
+          setLoadingModules(false);
+        }
       })
-      .catch(() => setLoadingModules(false));
+      .catch(() => {
+        if (isMounted) {
+          setLoadingModules(false);
+        }
+      });
+    
+    return () => { isMounted = false; };
   }, []);
   
   // Poll for progress when importing

@@ -316,3 +316,23 @@ export interface JournalLineImportData {
   credit: number;
   partnerRef?: string;
 }
+
+// Inventory Module Types
+export interface WarehouseImportData {
+  name: string;
+  code?: string;
+  address?: string;
+  city?: string;
+  type?: 'principal' | 'secondaire' | 'magasin' | 'depot';
+  isActive?: boolean;
+}
+
+export interface StockMovementImportData {
+  sku: string;
+  productName?: string;
+  warehouse: string;
+  quantity: number;
+  unitCost?: number;
+  location?: string;
+  notes?: string;
+}
