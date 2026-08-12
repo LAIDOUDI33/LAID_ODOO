@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { requireAuth } from '@/lib/auth-utils'
 
 // ============================================================
 // HASSIBA Suite ERP v2.0.0 - REAL BI ANALYTICS API
@@ -7,6 +8,10 @@ import { db } from '@/lib/db'
 // ============================================================
 
 export async function GET(request: NextRequest) {
+  // SECURITY: Require authentication for sensitive business analytics
+  const authError = await requireAuth(request)
+  if (authError) return authError
+  
   try {
     const { searchParams } = new URL(request.url)
     const type = searchParams.get('type') || 'dashboard'

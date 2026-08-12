@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
 
 /**
  * GET /api/documents/[id] - Get document metadata
@@ -9,6 +10,10 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // SECURITY: Require authentication
+    const authError = await requireAuth(request);
+    if (authError) return authError;
+
     const { id } = await params;
 
     const document = await db.document.findUnique({
@@ -87,6 +92,12 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // SECURITY: Require appropriate role for updating documents
+    const authError = await requireRole(request, ['admin', 'manager', 'hr']);
+    if (authError) return authError;
+
+    const user = await getAuthenticatedUser();
+
     const { id } = await params;
     const body = await request.json();
 
@@ -226,6 +237,10 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // SECURITY: Require appropriate role for deleting documents
+    const authError = await requireRole(request, ['admin', 'manager']);
+    if (authError) return authError;
+
     const { id } = await params;
 
     // Check if document exists
@@ -274,6 +289,12 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    // SECURITY: Require appropriate role for document actions
+    const authError = await requireRole(request, ['admin', 'manager', 'hr']);
+    if (authError) return authError;
+
+    const user = await getAuthenticatedUser();
+
     const { id } = await params;
     const body = await request.json();
     const { searchParams } = new URL(request.url);

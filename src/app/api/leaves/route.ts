@@ -1,11 +1,16 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
 
 /**
  * GET /api/leaves - List leave requests with filters
  * Query params: employeeId, status, type, dateFrom, dateTo, page, limit
  */
 export async function GET(request: Request) {
+  // SECURITY: Require authentication for leave data (PII)
+  const authError = await requireAuth(request);
+  if (authError) return authError;
+
   try {
     const { searchParams } = new URL(request.url);
     const employeeId = searchParams.get('employeeId');
@@ -90,6 +95,10 @@ export async function GET(request: Request) {
  * Body: employeeId, type, startDate, endDate, reason?, morningOnly?
  */
 export async function POST(request: Request) {
+  // SECURITY: Require authentication for leave creation (employees can create their own)
+  const authError = await requireAuth(request);
+  if (authError) return authError;
+
   try {
     const body = await request.json();
 

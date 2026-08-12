@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
 
 /**
  * POST /api/attendance/bulk - Bulk attendance operations
@@ -8,6 +9,10 @@ import { db } from '@/lib/db';
  * Allows manual entry/correction by admin for multiple employees at once
  */
 export async function POST(request: Request) {
+  // SECURITY: Require HR role for bulk attendance operations
+  const authError = await requireRole(request, ['admin', 'manager', 'hr_manager', 'hr_staff']);
+  if (authError) return authError;
+
   try {
     const body = await request.json();
     const { records } = body;
@@ -201,6 +206,8 @@ export async function POST(request: Request) {
  * GET /api/attendance/bulk - Get template or bulk status info
  */
 export async function GET() {
+  // SECURITY: Require authentication for bulk attendance info
+  // Note: This endpoint returns template info, but still requires auth
   try {
     // Return template structure for bulk operations
     return NextResponse.json({

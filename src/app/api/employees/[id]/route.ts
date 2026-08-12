@@ -1,11 +1,16 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
 
 // GET /api/employees/[id] - Get single employee
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  // SECURITY: Require authentication for employee data (HIGHLY SENSITIVE PII)
+  const authError = await requireAuth(request);
+  if (authError) return authError;
+
   try {
     const { id } = await params;
     
@@ -46,6 +51,10 @@ export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  // SECURITY: Require HR role for employee modifications
+  const authError = await requireRole(request, ['admin', 'manager', 'hr_manager', 'hr_staff']);
+  if (authError) return authError;
+
   try {
     const { id } = await params;
     const body = await request.json();
@@ -144,6 +153,13 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  // SECURITY: Require Admin or HR Manager for employee termination
+  const authError = await requireRole(request, ['admin', 'hr_manager']);
+  if (authError) return authError;
+
+  // Get user for audit logging
+  const user = await getAuthenticatedUser();
+
   try {
     const { id } = await params;
     const { searchParams } = new URL(request.url);

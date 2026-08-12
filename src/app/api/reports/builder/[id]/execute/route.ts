@@ -18,6 +18,7 @@ import {
   FilterOperator
 } from '@/lib/types/report'
 import { getDataSource, DATA_SOURCES } from '@/lib/report-templates'
+import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils'
 
 interface RouteParams {
   params: Promise<{ id: string }>
@@ -316,6 +317,10 @@ function calculateSummary(rows: ReportDataRow[], metrics: ReportConfig['metrics'
 // ============================================================
 
 export async function POST(request: NextRequest, { params }: RouteParams) {
+  // SECURITY: Require authentication for report execution
+  const authError = await requireAuth(request);
+  if (authError) return authError;
+
   const startTime = Date.now()
   
   try {

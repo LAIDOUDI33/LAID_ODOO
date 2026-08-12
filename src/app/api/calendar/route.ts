@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
 
 /**
  * GET /api/calendar/events - List calendar events with filters
@@ -8,6 +9,10 @@ import { db } from '@/lib/db';
  */
 export async function GET(request: Request) {
   try {
+    // SECURITY: Require authentication
+    const authError = await requireAuth(request);
+    if (authError) return authError;
+
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type');
     const dateFrom = searchParams.get('dateFrom');
@@ -151,6 +156,12 @@ export async function GET(request: Request) {
  */
 export async function POST(request: Request) {
   try {
+    // SECURITY: Require appropriate role for creating events
+    const authError = await requireRole(request, ['admin', 'manager', 'hr']);
+    if (authError) return authError;
+
+    const user = await getAuthenticatedUser();
+
     const body = await request.json();
 
     // Validate required fields

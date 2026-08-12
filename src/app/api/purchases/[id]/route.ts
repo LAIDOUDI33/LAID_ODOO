@@ -11,6 +11,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { isValidTVARate, calculateLineAmounts, calculateOrderTotals } from '../route';
 import { generateSCFJournalEntryFromBill as generateBillJournalEntry } from '@/lib/workflow-orchestrator';
+import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
 
 // ============================================================
 // Types & Interfaces
@@ -149,6 +150,12 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // SECURITY: Require appropriate role
+    const authError = await requireRole(request, ['admin', 'manager', 'sales_manager', 'salesperson', 'accountant', 'warehouse_manager']);
+    if (authError) return authError;
+
+    const user = await getAuthenticatedUser();
+
     const { id } = await params;
     const body: UpdatePurchaseOrderInput = await request.json();
     
@@ -414,6 +421,12 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // SECURITY: Require appropriate role
+    const authError = await requireRole(request, ['admin', 'manager', 'sales_manager', 'salesperson', 'accountant', 'warehouse_manager']);
+    if (authError) return authError;
+
+    const user = await getAuthenticatedUser();
+
     const { id } = await params;
     
     // Check if PO exists

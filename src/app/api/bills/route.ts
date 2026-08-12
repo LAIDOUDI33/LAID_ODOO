@@ -1,8 +1,13 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
 
 // GET /api/bills - List supplier bills
 export async function GET(request: Request) {
+  // SECURITY: Require authentication for financial data
+  const authError = await requireAuth(request);
+  if (authError) return authError;
+  
   try {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
@@ -45,6 +50,12 @@ export async function GET(request: Request) {
 
 // POST /api/bills - Create supplier bill
 export async function POST(request: Request) {
+  // SECURITY: Require appropriate role for bill creation
+  const authError = await requireRole(request, ['admin', 'manager', 'accountant']);
+  if (authError) return authError;
+  
+  const user = await getAuthenticatedUser();
+  
   try {
     const body = await request.json();
     

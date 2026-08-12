@@ -265,7 +265,9 @@ export function usePWA(): UsePWAReturn {
 export function useOnlineStatus() {
   const [isOnline, setIsOnline] = useState(true)
 
+  // Initialize online status from navigator
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reading navigator API
     setIsOnline(navigator.onLine)
 
     const handleOnline = () => setIsOnline(true)

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { calculateTVACollectee, getTimbreFiscal } from '@/lib/algerian-taxes';
+import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
 
 // Valid quotation statuses
 const VALID_STATUSES = ['draft', 'sent', 'viewed', 'accepted', 'rejected', 'expired', 'converted', 'cancelled'];
@@ -8,6 +9,10 @@ const VALID_STATUSES = ['draft', 'sent', 'viewed', 'accepted', 'rejected', 'expi
 // GET /api/quotations - List quotations with filters
 export async function GET(request: Request) {
   try {
+    // SECURITY: Require authentication
+    const authError = await requireAuth(request);
+    if (authError) return authError;
+
     const { searchParams } = new URL(request.url);
     
     // Filter parameters
@@ -115,6 +120,12 @@ export async function GET(request: Request) {
 // POST /api/quotations - Create a new quotation with lines
 export async function POST(request: Request) {
   try {
+    // SECURITY: Require appropriate role
+    const authError = await requireRole(request, ['admin', 'manager', 'sales_manager', 'salesperson', 'accountant', 'warehouse_manager']);
+    if (authError) return authError;
+
+    const user = await getAuthenticatedUser();
+
     const body = await request.json();
     
     // Validation

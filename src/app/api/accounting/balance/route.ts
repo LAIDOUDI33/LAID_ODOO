@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { requireAuth } from '@/lib/auth-utils'
 
 // ============================================================
 // Types
@@ -70,6 +71,10 @@ const SCF_CLASSES: Record<string, string> = {
 // ============================================================
 
 export async function GET(request: NextRequest) {
+  // SECURITY: Require authentication for sensitive financial data (Trial Balance)
+  const authError = await requireAuth(request)
+  if (authError) return authError
+  
   try {
     const { searchParams } = new URL(request.url)
     

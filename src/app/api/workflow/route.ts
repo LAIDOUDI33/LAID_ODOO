@@ -17,10 +17,15 @@ import {
   getWorkflowStats,
 } from "@/lib/workflow";
 import { WorkflowType, WorkflowStatus, ApprovalAction } from "@prisma/client";
+import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
 
 // GET /api/workflow - Récupérer les workflows (définitions ou instances)
 export async function GET(request: Request) {
   try {
+    // SECURITY: Require authentication
+    const authError = await requireAuth(request);
+    if (authError) return authError;
+
     const { searchParams } = new URL(request.url);
     
     const type = searchParams.get("type");
@@ -83,6 +88,12 @@ export async function GET(request: Request) {
 // POST /api/workflow - Créer une définition ou une instance
 export async function POST(request: Request) {
   try {
+    // SECURITY: Require appropriate role for write operations
+    const authError = await requireRole(request, ['admin', 'manager']);
+    if (authError) return authError;
+
+    const user = await getAuthenticatedUser();
+
     const body = await request.json();
     const { action, ...data } = body;
 

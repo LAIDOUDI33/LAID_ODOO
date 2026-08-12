@@ -7,6 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { recordPayment } from '@/lib/workflow-orchestrator';
 import { db } from '@/lib/db';
+import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
 
 // ============================================================
 // POST /api/workflow/payments - Record Payment
@@ -15,6 +16,12 @@ import { db } from '@/lib/db';
 
 export async function POST(request: NextRequest) {
   try {
+    // SECURITY: Require appropriate role for payment operations
+    const authError = await requireRole(request, ['admin', 'manager', 'accountant']);
+    if (authError) return authError;
+
+    const user = await getAuthenticatedUser();
+
     const body = await request.json();
     
     const {
@@ -174,6 +181,10 @@ export async function POST(request: NextRequest) {
 
 // GET /api/workflow/payments - Get payments info and available methods
 export async function GET(request: NextRequest) {
+  // SECURITY: Require authentication
+  const authError = await requireAuth(request);
+  if (authError) return authError;
+
   const { searchParams } = new URL(request.url);
   const info = searchParams.get('info');
   

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { calculateTVACollectee, getTimbreFiscal } from '@/lib/algerian-taxes';
+import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
 
 // Valid statuses for updates
 const UPDATABLE_STATUSES = ['draft', 'sent', 'partial'];
@@ -12,6 +13,10 @@ interface RouteContext {
 
 // GET /api/invoices/[id] - Get single invoice
 export async function GET(request: Request, context: RouteContext) {
+  // SECURITY: Require authentication for financial data
+  const authError = await requireAuth(request);
+  if (authError) return authError;
+  
   try {
     const { id } = await context.params;
     
@@ -49,6 +54,12 @@ export async function GET(request: Request, context: RouteContext) {
 
 // PUT /api/invoices/[id] - Update an invoice
 export async function PUT(request: Request, context: RouteContext) {
+  // SECURITY: Require appropriate role for invoice modification
+  const authError = await requireRole(request, ['admin', 'manager', 'accountant', 'sales_manager']);
+  if (authError) return authError;
+  
+  const user = await getAuthenticatedUser();
+  
   try {
     const { id } = await context.params;
     const body = await request.json();
@@ -267,6 +278,12 @@ export async function PUT(request: Request, context: RouteContext) {
 
 // DELETE /api/invoices/[id] - Cancel/Soft delete an invoice
 export async function DELETE(request: Request, context: RouteContext) {
+  // SECURITY: Require appropriate role for invoice cancellation
+  const authError = await requireRole(request, ['admin', 'manager', 'accountant']);
+  if (authError) return authError;
+  
+  const user = await getAuthenticatedUser();
+  
   try {
     const { id } = await context.params;
 

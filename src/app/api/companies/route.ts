@@ -1,9 +1,14 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
 
 // GET /api/companies - List companies
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    // SECURITY: Require authentication
+    const authError = await requireAuth(request);
+    if (authError) return authError;
+
     const companies = await db.company.findMany({
       where: { isActive: true },
       include: {
@@ -31,6 +36,12 @@ export async function GET() {
 // POST /api/companies - Create company
 export async function POST(request: Request) {
   try {
+    // SECURITY: Require admin role for creating companies
+    const authError = await requireRole(request, ['admin']);
+    if (authError) return authError;
+
+    const user = await getAuthenticatedUser();
+
     const body = await request.json();
     
     // Validate required fields

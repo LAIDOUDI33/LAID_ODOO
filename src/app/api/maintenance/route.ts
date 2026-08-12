@@ -1,11 +1,15 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
 
 // ============================================================
 // GET /api/maintenance - Maintenance Dashboard & Data
 // ============================================================
 export async function GET(request: Request) {
   try {
+    // SECURITY: Require authentication
+    const authError = await requireAuth(request);
+    if (authError) return authError;
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type') || 'dashboard';
     
@@ -50,6 +54,11 @@ export async function GET(request: Request) {
 // ============================================================
 export async function POST(request: Request) {
   try {
+    // SECURITY: Require appropriate role for maintenance operations
+    const authError = await requireRole(request, ['admin', 'manager', 'warehouse_manager']);
+    if (authError) return authError;
+
+    const user = await getAuthenticatedUser();
     const body = await request.json();
     const { action, ...data } = body;
     

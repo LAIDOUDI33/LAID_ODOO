@@ -9,9 +9,16 @@ import {
   executeFullSalesCycle,
   type WorkflowResult,
 } from '@/lib/workflow-orchestrator';
+import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
 
 export async function POST(request: NextRequest) {
   try {
+    // SECURITY: Require appropriate role for workflow execution
+    const authError = await requireRole(request, ['admin', 'manager', 'sales']);
+    if (authError) return authError;
+
+    const user = await getAuthenticatedUser();
+
     // Parse request body
     const body = await request.json();
     const { quotationId, paymentData } = body as {
@@ -93,7 +100,11 @@ export async function POST(request: NextRequest) {
 }
 
 // Handle unsupported methods
-export async function GET() {
+export async function GET(request: NextRequest) {
+  // SECURITY: Require authentication
+  const authError = await requireAuth(request);
+  if (authError) return authError;
+
   return NextResponse.json(
     {
       success: false,

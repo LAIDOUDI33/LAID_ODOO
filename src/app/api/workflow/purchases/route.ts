@@ -10,6 +10,7 @@ import {
   executeFullPurchaseCycle
 } from '@/lib/workflow-orchestrator';
 import { db } from '@/lib/db';
+import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
 
 // ============================================================
 // POST /api/workflow/purchases - Execute Purchase Workflow Actions
@@ -18,6 +19,12 @@ import { db } from '@/lib/db';
 
 export async function POST(request: NextRequest) {
   try {
+    // SECURITY: Require appropriate role for purchase workflow actions
+    const authError = await requireRole(request, ['admin', 'manager']);
+    if (authError) return authError;
+
+    const user = await getAuthenticatedUser();
+
     const body = await request.json();
     const { action, ...params } = body;
 
@@ -133,7 +140,11 @@ export async function POST(request: NextRequest) {
 }
 
 // GET /api/workflow/purchases - Get available workflow actions info
-export async function GET() {
+export async function GET(request: NextRequest) {
+  // SECURITY: Require authentication
+  const authError = await requireAuth(request);
+  if (authError) return authError;
+
   return NextResponse.json({
     success: true,
     data: {

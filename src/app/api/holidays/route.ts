@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
 
 /**
  * Pre-seeded Algerian public holidays
@@ -96,6 +97,10 @@ const ALGERIAN_HOLIDAYS = [
  * Query params: year (filter by year), includeInactive
  */
 export async function GET(request: Request) {
+  // SECURITY: Require authentication for holidays data
+  const authError = await requireAuth(request);
+  if (authError) return authError;
+
   try {
     const { searchParams } = new URL(request.url);
     const yearParam = searchParams.get('year');
@@ -167,6 +172,10 @@ export async function GET(request: Request) {
  * Body for seeding: { action: 'seed', year? } 
  */
 export async function POST(request: Request) {
+  // SECURITY: Require HR role for holiday management
+  const authError = await requireRole(request, ['admin', 'manager', 'hr_manager', 'hr_staff']);
+  if (authError) return authError;
+
   try {
     const body = await request.json();
 

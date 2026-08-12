@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { receivePurchaseOrder } from '@/lib/workflow-orchestrator';
+import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
 
 // ============================================================
 // Types & Interfaces
@@ -29,6 +30,12 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // SECURITY: Require appropriate role (warehouse focus)
+    const authError = await requireRole(request, ['admin', 'manager', 'sales_manager', 'accountant', 'warehouse_manager']);
+    if (authError) return authError;
+
+    const user = await getAuthenticatedUser();
+
     const { id } = await params;
     
     // Check if PO exists

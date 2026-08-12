@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { requireAuth } from '@/lib/auth-utils';
 
 // Month names in French for charts
 const MONTH_NAMES_FR = [
@@ -7,8 +8,12 @@ const MONTH_NAMES_FR = [
   'Jul', 'Aou', 'Sep', 'Oct', 'Nov', 'Dec'
 ];
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    // SECURITY: Require authentication
+    const authError = await requireAuth(request);
+    if (authError) return authError;
+
     // Get current date info
     const now = new Date();
     const year = now.getFullYear();

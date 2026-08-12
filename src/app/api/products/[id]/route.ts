@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
 
 // GET /api/products/[id] - Get single product
 export async function GET(
@@ -7,6 +8,10 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // SECURITY: Require authentication
+    const authError = await requireAuth(request);
+    if (authError) return authError;
+
     const { id } = await params;
 
     const product = await db.product.findUnique({
@@ -49,6 +54,11 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // SECURITY: Require appropriate role
+    const authError = await requireRole(request, ['admin', 'manager', 'warehouse_manager']);
+    if (authError) return authError;
+
+    const user = await getAuthenticatedUser();
     const { id } = await params;
     const body = await request.json();
 
@@ -136,6 +146,11 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // SECURITY: Require appropriate role
+    const authError = await requireRole(request, ['admin', 'manager']);
+    if (authError) return authError;
+
+    const user = await getAuthenticatedUser();
     const { id } = await params;
 
     // Check if product exists

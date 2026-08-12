@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { 
   Users, 
   UserPlus,
@@ -767,22 +767,31 @@ function ContractModal({
     foodAllowance: 0,
   })
 
+  // Initialize form data from contract prop (using ref to track previous value)
+  const prevContractRef = useRef(contract)
+  
   useEffect(() => {
-    if (contract) {
-      setFormData(contract)
-    } else {
-      setFormData({
-        type: 'CDI',
-        status: 'draft',
-        baseSalary: 0,
-        currency: 'DZD',
-        paymentFrequency: 'monthly',
-        weeklyHours: 40,
-        annualLeaveDays: 30,
-        transportAllowance: 0,
-        housingAllowance: 0,
-        foodAllowance: 0,
-      })
+    // Only update if contract actually changed
+    if (contract !== prevContractRef.current) {
+      prevContractRef.current = contract
+      if (contract) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- form initialization from prop
+        setFormData(contract)
+      } else {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- form reset
+        setFormData({
+          type: 'CDI',
+          status: 'draft',
+          baseSalary: 0,
+          currency: 'DZD',
+          paymentFrequency: 'monthly',
+          weeklyHours: 40,
+          annualLeaveDays: 30,
+          transportAllowance: 0,
+          housingAllowance: 0,
+          foodAllowance: 0,
+        })
+      }
     }
   }, [contract])
 
@@ -1152,16 +1161,25 @@ function LeaveRequestModal({
     status: 'draft',
   })
 
+  // Initialize form data from leave prop (using ref to track previous value)
+  const prevLeaveRef = useRef(leave)
+
   useEffect(() => {
-    if (leave) {
-      setFormData(leave)
-    } else {
-      setFormData({
-        type: 'annual',
-        isHalfDay: false,
-        halfDayPart: null,
-        status: 'draft',
-      })
+    // Only update if leave actually changed
+    if (leave !== prevLeaveRef.current) {
+      prevLeaveRef.current = leave
+      if (leave) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- form initialization from prop
+        setFormData(leave)
+      } else {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- form reset
+        setFormData({
+          type: 'annual',
+          isHalfDay: false,
+          halfDayPart: null,
+          status: 'draft',
+        })
+      }
     }
   }, [leave])
 

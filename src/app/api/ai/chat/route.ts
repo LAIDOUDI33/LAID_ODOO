@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import ZAI from 'z-ai-web-dev-sdk'
+import { requireAuth, getAuthenticatedUser } from '@/lib/auth-utils'
 
 // Rate limiting - simple in-memory store
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>()
@@ -230,6 +231,10 @@ Souhaitez-vous un détail plus approfondi ?"
 `
 
 export async function POST(request: NextRequest) {
+  // SECURITY: Require authentication for AI chat
+  const authError = await requireAuth(request);
+  if (authError) return authError;
+
   // Get client IP for rate limiting
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() 
     || request.headers.get('x-real-ip') 
@@ -361,7 +366,11 @@ Y a-t-il autre chose avec lequel je peux vous aider?`
 }
 
 // Handle GET request for health check or quick actions
-export async function GET() {
+export async function GET(request: NextRequest) {
+  // SECURITY: Require authentication
+  const authError = await requireAuth(request);
+  if (authError) return authError;
+
   return NextResponse.json({
     status: 'ok',
     service: 'HASSIBA AI Chatbot',

@@ -6,10 +6,15 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { LeadStatus, LeadSource, LeadRating, ActivityType } from "@prisma/client";
+import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
 
 // GET /api/crm - Récupérer opportunités/activités
 export async function GET(request: Request) {
   try {
+    // SECURITY: Require authentication
+    const authError = await requireAuth(request);
+    if (authError) return authError;
+
     const { searchParams } = new URL(request.url);
     
     const type = searchParams.get("type"); // opportunities or activities
@@ -128,6 +133,12 @@ export async function GET(request: Request) {
 // POST /api/crm - Créer opportunité ou activité
 export async function POST(request: Request) {
   try {
+    // SECURITY: Require appropriate role for CRM operations
+    const authError = await requireRole(request, ['admin', 'manager', 'sales']);
+    if (authError) return authError;
+
+    const user = await getAuthenticatedUser();
+
     const body = await request.json();
     const { action, ...data } = body;
 

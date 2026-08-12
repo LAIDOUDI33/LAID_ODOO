@@ -1110,7 +1110,7 @@ export default function ReportViewer({
                   PDF (bientôt disponible)
                 </DropdownMenuItem>
                 <DropdownMenuItem disabled>
-                  <Image className="h-4 w-4 mr-2" />
+                  <Image className="h-4 w-4 mr-2" alt="" />
                   PNG (bientôt disponible)
                 </DropdownMenuItem>
               </DropdownMenuContent>

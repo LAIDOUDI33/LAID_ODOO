@@ -7,9 +7,14 @@ import {
   calculateCotisations,
   calculateIBS
 } from '@/lib/algerian-taxes';
+import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
 
 // GET /api/taxes - Tax calculations and declarations
 export async function GET(request: Request) {
+  // SECURITY: Require authentication for tax data
+  const authError = await requireAuth(request);
+  if (authError) return authError;
+  
   try {
     const { searchParams } = new URL(request.url);
     const action = searchParams.get('action');
@@ -122,6 +127,12 @@ async function getDeclarations(params: URLSearchParams) {
 
 // POST /api/taxes - Create tax declaration
 export async function POST(request: Request) {
+  // SECURITY: Require appropriate role for tax declaration creation
+  const authError = await requireRole(request, ['admin', 'manager', 'accountant']);
+  if (authError) return authError;
+  
+  const user = await getAuthenticatedUser();
+  
   try {
     const body = await request.json();
     

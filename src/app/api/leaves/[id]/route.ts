@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
 
 /**
  * GET /api/leaves/[id] - Get single leave request
@@ -8,6 +9,10 @@ export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  // SECURITY: Require authentication for leave data (PII)
+  const authError = await requireAuth(request);
+  if (authError) return authError;
+
   try {
     const { id } = await params;
 
@@ -53,6 +58,10 @@ export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  // SECURITY: Require authentication for leave updates (employee can update own draft/submitted)
+  const authError = await requireAuth(request);
+  if (authError) return authError;
+
   try {
     const { id } = await params;
     const body = await request.json();
@@ -163,6 +172,13 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  // SECURITY: Require HR/Manager role for approve/reject actions
+  const authError = await requireRole(request, ['admin', 'manager', 'hr_manager', 'hr_staff']);
+  if (authError) return authError;
+
+  // Get user for audit logging
+  const user = await getAuthenticatedUser();
+
   try {
     const { id } = await params;
     const body = await request.json();
@@ -302,6 +318,10 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  // SECURITY: Require authentication for leave deletion (own drafts only)
+  const authError = await requireAuth(request);
+  if (authError) return authError;
+
   try {
     const { id } = await params;
 

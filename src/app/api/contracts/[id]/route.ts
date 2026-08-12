@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
 
 /**
  * GET /api/contracts/[id] - Get single contract with full details
@@ -8,6 +9,10 @@ export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  // SECURITY: Require authentication for contract data (contains PII)
+  const authError = await requireAuth(request);
+  if (authError) return authError;
+
   try {
     const { id } = await params;
 
@@ -72,6 +77,10 @@ export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  // SECURITY: Require HR role for contract modifications
+  const authError = await requireRole(request, ['admin', 'manager', 'hr_manager', 'hr_staff']);
+  if (authError) return authError;
+
   try {
     const { id } = await params;
     const body = await request.json();
@@ -259,6 +268,13 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  // SECURITY: Require HR role for contract actions (activate, terminate, renew)
+  const authError = await requireRole(request, ['admin', 'manager', 'hr_manager', 'hr_staff']);
+  if (authError) return authError;
+
+  // Get user for audit logging
+  const user = await getAuthenticatedUser();
+
   try {
     const { id } = await params;
     const body = await request.json();
@@ -457,6 +473,10 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  // SECURITY: Require HR Manager or Admin for contract deletion
+  const authError = await requireRole(request, ['admin', 'hr_manager']);
+  if (authError) return authError;
+
   try {
     const { id } = await params;
 

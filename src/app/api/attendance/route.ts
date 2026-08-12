@@ -1,11 +1,16 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
 
 /**
  * GET /api/attendance - List attendance records with filters
  * Query params: employeeId, dateFrom, dateTo, status, page, limit
  */
 export async function GET(request: Request) {
+  // SECURITY: Require authentication for attendance data (PII)
+  const authError = await requireAuth(request);
+  if (authError) return authError;
+
   try {
     const { searchParams } = new URL(request.url);
     const employeeId = searchParams.get('employeeId');
@@ -95,6 +100,10 @@ export async function GET(request: Request) {
  * - If open record exists: update with clockOut, calculate workedHours
  */
 export async function POST(request: Request) {
+  // SECURITY: Require appropriate role for attendance operations
+  const authError = await requireRole(request, ['admin', 'manager', 'hr_manager', 'hr_staff']);
+  if (authError) return authError;
+
   try {
     const body = await request.json();
 

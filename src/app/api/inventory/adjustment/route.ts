@@ -6,10 +6,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { randomUUID } from 'crypto'
+import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils'
 
 // POST - Create a stock adjustment
 export async function POST(request: NextRequest) {
   try {
+    // SECURITY: Require appropriate role (stock adjustments affect financials)
+    const authError = await requireRole(request, ['admin', 'manager', 'warehouse_manager', 'accountant']);
+    if (authError) return authError;
+
+    const user = await getAuthenticatedUser();
     const body = await request.json()
     const { 
       productId, 
@@ -227,6 +233,9 @@ export async function POST(request: NextRequest) {
 // GET - Get adjustment history
 export async function GET(request: NextRequest) {
   try {
+    // SECURITY: Require authentication
+    const authError = await requireAuth(request);
+    if (authError) return authError;
     const { searchParams } = new URL(request.url)
     
     const page = parseInt(searchParams.get('page') || '1')

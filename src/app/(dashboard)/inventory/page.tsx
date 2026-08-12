@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { 
   Package, 
   AlertTriangle, 
@@ -394,41 +394,50 @@ function ProductModal({
     canBePurchased: true
   })
 
+  // Initialize form data from product prop (using ref to track previous value)
+  const prevProductRef = useRef(product)
+
   useEffect(() => {
-    if (product) {
-      setForm({
-        code: product.code || '',
-        name: product.name || '',
-        nameAr: product.nameAr || '',
-        description: product.description || '',
-        type: product.type || 'stockable',
-        salePrice: product.salePrice?.toString() || '',
-        purchasePrice: product.purchasePrice?.toString() || '',
-        costPrice: product.costPrice?.toString() || '',
-        tvaRate: product.tvaRate?.toString() || '19',
-        trackStock: product.trackStock ?? true,
-        unitOfMeasure: product.unitOfMeasure || 'U',
-        categoryId: product.categoryId || '',
-        canBeSold: product.canBeSold ?? true,
-        canBePurchased: product.canBePurchased ?? true
-      })
-    } else {
-      setForm({
-        code: '',
-        name: '',
-        nameAr: '',
-        description: '',
-        type: 'stockable',
-        salePrice: '',
-        purchasePrice: '',
-        costPrice: '',
-        tvaRate: '19',
-        trackStock: true,
-        unitOfMeasure: 'U',
-        categoryId: '',
-        canBeSold: true,
-        canBePurchased: true
-      })
+    // Only update if product actually changed
+    if (product !== prevProductRef.current) {
+      prevProductRef.current = product
+      if (product) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- form initialization from prop
+        setForm({
+          code: product.code || '',
+          name: product.name || '',
+          nameAr: product.nameAr || '',
+          description: product.description || '',
+          type: product.type || 'stockable',
+          salePrice: product.salePrice?.toString() || '',
+          purchasePrice: product.purchasePrice?.toString() || '',
+          costPrice: product.costPrice?.toString() || '',
+          tvaRate: product.tvaRate?.toString() || '19',
+          trackStock: product.trackStock ?? true,
+          unitOfMeasure: product.unitOfMeasure || 'U',
+          categoryId: product.categoryId || '',
+          canBeSold: product.canBeSold ?? true,
+          canBePurchased: product.canBePurchased ?? true
+        })
+      } else {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- form reset
+        setForm({
+          code: '',
+          name: '',
+          nameAr: '',
+          description: '',
+          type: 'stockable',
+          salePrice: '',
+          purchasePrice: '',
+          costPrice: '',
+          tvaRate: '19',
+          trackStock: true,
+          unitOfMeasure: 'U',
+          categoryId: '',
+          canBeSold: true,
+          canBePurchased: true
+        })
+      }
     }
   }, [product, open])
 
@@ -664,23 +673,32 @@ function StockAdjustModal({
     notes: ''
   })
 
+  // Initialize stock adjustment form (using ref to track previous value)
+  const prevStockItemRef = useRef(stockItem)
+
   useEffect(() => {
-    if (stockItem) {
-      setForm({
-        warehouseId: stockItem.warehouseId,
-        productId: stockItem.productId,
-        quantity: '0',
-        type: 'in',
-        notes: ''
-      })
-    } else if (warehouses.length > 0 && products.length > 0) {
-      setForm({
-        warehouseId: warehouses[0]?.id || '',
-        productId: products[0]?.id || '',
-        quantity: '0',
-        type: 'in',
-        notes: ''
-      })
+    // Only update if stockItem actually changed
+    if (stockItem !== prevStockItemRef.current) {
+      prevStockItemRef.current = stockItem
+      if (stockItem) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- form initialization from prop
+        setForm({
+          warehouseId: stockItem.warehouseId,
+          productId: stockItem.productId,
+          quantity: '0',
+          type: 'in',
+          notes: ''
+        })
+      } else if (warehouses.length > 0 && products.length > 0) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- form reset with defaults
+        setForm({
+          warehouseId: warehouses[0]?.id || '',
+          productId: products[0]?.id || '',
+          quantity: '0',
+          type: 'in',
+          notes: ''
+        })
+      }
     }
   }, [stockItem, open, warehouses, products])
 
@@ -865,15 +883,23 @@ function StockTransferModal({
     notes: ''
   })
 
+  // Initialize transfer form when dialog opens (using ref to track previous state)
+  const prevTransferOpenRef = useRef(open)
+
   useEffect(() => {
-    if (open && warehouses.length >= 2 && products.length > 0) {
-      setForm({
-        productId: products[0]?.id || '',
-        sourceWarehouseId: warehouses[0]?.id || '',
-        targetWarehouseId: warehouses[1]?.id || '',
-        quantity: '0',
-        notes: ''
-      })
+    // Only update if open state actually changed
+    if (open !== prevTransferOpenRef.current) {
+      prevTransferOpenRef.current = open
+      if (open && warehouses.length >= 2 && products.length > 0) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- form initialization on open
+        setForm({
+          productId: products[0]?.id || '',
+          sourceWarehouseId: warehouses[0]?.id || '',
+          targetWarehouseId: warehouses[1]?.id || '',
+          quantity: '0',
+          notes: ''
+        })
+      }
     }
   }, [open, warehouses, products])
 
@@ -1018,14 +1044,25 @@ function PhysicalCountModal({
   const [counts, setCounts] = useState<Record<string, string>>({})
   const [searchQuery, setSearchQuery] = useState('')
 
+  // Initialize counts when dialog opens (using ref to track previous state)
+  const prevStockCountOpenRef = useRef(open)
+  const prevStockItemsRef = useRef(stockItems)
+
   useEffect(() => {
-    if (open && stockItems.length > 0) {
-      const initialCounts: Record<string, string> = {}
-      stockItems.forEach(item => {
-        initialCounts[item.id] = item.quantity.toString()
-      })
-      setCounts(initialCounts)
-      setSearchQuery('')
+    // Only update if open state or stockItems actually changed
+    if (open !== prevStockCountOpenRef.current || stockItems !== prevStockItemsRef.current) {
+      prevStockCountOpenRef.current = open
+      prevStockItemsRef.current = stockItems
+      if (open && stockItems.length > 0) {
+        const initialCounts: Record<string, string> = {}
+        stockItems.forEach(item => {
+          initialCounts[item.id] = item.quantity.toString()
+        })
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- initializing counts from props
+        setCounts(initialCounts)
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- resetting search
+        setSearchQuery('')
+      }
     }
   }, [open, stockItems])
 

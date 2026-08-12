@@ -13,10 +13,15 @@ import {
   getNotificationStats,
   NotificationHelper,
 } from "@/lib/notifications";
+import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
 
 // GET /api/notifications - Récupérer les notifications
 export async function GET(request: Request) {
   try {
+    // SECURITY: Require authentication
+    const authError = await requireAuth(request);
+    if (authError) return authError;
+
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get("userId");
     
@@ -85,6 +90,12 @@ export async function GET(request: Request) {
 // POST /api/notifications - Créer une notification ou action groupée
 export async function POST(request: Request) {
   try {
+    // SECURITY: Require appropriate role for notification operations
+    const authError = await requireRole(request, ['admin', 'manager']);
+    if (authError) return authError;
+
+    const user = await getAuthenticatedUser();
+
     const body = await request.json();
     const { action, ...data } = body;
 

@@ -12,6 +12,7 @@ import {
   getPopularTemplates,
   searchTemplates
 } from '@/lib/workflow-templates';
+import { requireAuth } from '@/lib/auth-utils';
 
 // ============================================================
 // GET /api/workflows/catalog - Get full catalog or specific section
@@ -19,6 +20,10 @@ import {
 
 export async function GET(request: NextRequest) {
   try {
+    // SECURITY: Require authentication
+    const authError = await requireAuth(request);
+    if (authError) return authError;
+
     const { searchParams } = new URL(request.url);
     const section = searchParams.get('section'); // triggers, actions, palette, templates
     const category = searchParams.get('category');

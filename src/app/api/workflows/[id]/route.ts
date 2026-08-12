@@ -15,6 +15,7 @@ import {
   WorkflowStatus,
   ExecutionRecord 
 } from '@/lib/types/workflow';
+import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
 
 // ============================================================
 // Helper Functions
@@ -56,6 +57,10 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    // SECURITY: Require authentication
+    const authError = await requireAuth(request);
+    if (authError) return authError;
+
     const { id } = params;
     
     const workflow = await db.automationWorkflow.findUnique({
@@ -121,6 +126,12 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
+    // SECURITY: Require appropriate role for write operations
+    const authError = await requireRole(request, ['admin', 'manager']);
+    if (authError) return authError;
+
+    const user = await getAuthenticatedUser();
+
     const { id } = params;
     const body = await request.json();
 
@@ -196,6 +207,10 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    // SECURITY: Require appropriate role for delete operations
+    const authError = await requireRole(request, ['admin', 'manager']);
+    if (authError) return authError;
+
     const { id } = params;
 
     // Check if workflow exists
@@ -246,6 +261,10 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
+    // SECURITY: Require appropriate role for status changes
+    const authError = await requireRole(request, ['admin', 'manager']);
+    if (authError) return authError;
+
     const { id } = params;
     const body = await request.json();
     const action = body.action; // 'activate', 'deactivate', 'archive', 'restore'
@@ -333,6 +352,10 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
+    // SECURITY: Require appropriate role for workflow actions
+    const authError = await requireRole(request, ['admin', 'manager']);
+    if (authError) return authError;
+
     const { id } = params;
     const { searchParams } = new URL(request.url);
     const action = searchParams.get('action');

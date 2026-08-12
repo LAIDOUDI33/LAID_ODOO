@@ -1,11 +1,16 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
 
 /**
  * GET /api/contracts - List contracts with filters
  * Query params: employeeId, status, type, department, page, limit
  */
 export async function GET(request: Request) {
+  // SECURITY: Require authentication for contract data (contains PII)
+  const authError = await requireAuth(request);
+  if (authError) return authError;
+
   try {
     const { searchParams } = new URL(request.url);
     const employeeId = searchParams.get('employeeId');
@@ -91,6 +96,10 @@ export async function GET(request: Request) {
  * Body: employeeId, type, startDate, endDate?, baseSalary, and other optional fields
  */
 export async function POST(request: Request) {
+  // SECURITY: Require HR role for contract creation
+  const authError = await requireRole(request, ['admin', 'manager', 'hr_manager', 'hr_staff']);
+  if (authError) return authError;
+
   try {
     const body = await request.json();
 

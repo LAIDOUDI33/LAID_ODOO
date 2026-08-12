@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { calculateTVACollectee, getTimbreFiscal } from '@/lib/algerian-taxes';
+import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
 
 // Valid sales order statuses
 const VALID_STATUSES = ['draft', 'sent', 'confirmed', 'processing', 'delivered', 'invoiced', 'done', 'cancelled'];
@@ -10,6 +11,10 @@ const VALID_STATUSES = ['draft', 'sent', 'confirmed', 'processing', 'delivered',
 // ============================================================
 export async function GET(request: Request) {
   try {
+    // SECURITY: Require authentication
+    const authError = await requireAuth(request);
+    if (authError) return authError;
+
     const { searchParams } = new URL(request.url);
     
     // Filter parameters
@@ -125,6 +130,12 @@ export async function GET(request: Request) {
 // ============================================================
 export async function POST(request: Request) {
   try {
+    // SECURITY: Require appropriate role
+    const authError = await requireRole(request, ['admin', 'manager', 'sales_manager', 'salesperson', 'accountant', 'warehouse_manager']);
+    if (authError) return authError;
+
+    const user = await getAuthenticatedUser();
+
     const body = await request.json();
     const {
       partnerId,

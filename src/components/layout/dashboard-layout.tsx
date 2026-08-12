@@ -20,10 +20,13 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   // PWA hooks
   const { isOffline, swUpdateAvailable, updateSW } = usePWA()
 
+  // Set mounted state to handle hydration mismatch
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- needed for hydration fix
     setMounted(true)
     
     // Check saved preference
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reading from localStorage
     const saved = localStorage.getItem('sidebar-collapsed')
     if (saved) {
       setSidebarCollapsed(saved === 'true')

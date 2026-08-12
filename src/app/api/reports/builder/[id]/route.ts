@@ -16,6 +16,7 @@ import {
   FieldType
 } from '@/lib/types/report'
 import { getDataSource } from '@/lib/report-templates'
+import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils'
 
 interface RouteParams {
   params: Promise<{ id: string }>
@@ -27,6 +28,10 @@ interface RouteParams {
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
+    // SECURITY: Require authentication
+    const authError = await requireAuth(request);
+    if (authError) return authError;
+
     const { id } = await params
     
     const report = await db.reportBuilderConfig.findUnique({
@@ -63,6 +68,12 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
+    // SECURITY: Require appropriate role for updating reports
+    const authError = await requireRole(request, ['admin', 'manager']);
+    if (authError) return authError;
+
+    const user = await getAuthenticatedUser();
+
     const { id } = await params
     const body = await request.json()
     const { name, description, config, category, tags, isFavorite } = body
@@ -119,6 +130,10 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
+    // SECURITY: Require appropriate role for deleting reports
+    const authError = await requireRole(request, ['admin', 'manager']);
+    if (authError) return authError;
+
     const { id } = await params
     
     // Check if report exists
