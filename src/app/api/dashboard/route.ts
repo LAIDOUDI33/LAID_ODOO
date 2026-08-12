@@ -1,6 +1,12 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
+// Month names in French for charts
+const MONTH_NAMES_FR = [
+  'Jan', 'Fev', 'Mar', 'Avr', 'Mai', 'Juin',
+  'Jul', 'Aou', 'Sep', 'Oct', 'Nov', 'Dec'
+];
+
 export async function GET() {
   try {
     // Get current date info
@@ -22,13 +28,17 @@ export async function GET() {
     const [
       invoicesToday,
       invoicesMonth,
+      invoicesYear,
       paidInvoices,
       unpaidInvoices,
       employeeCount,
       productCount,
       partnerCount,
       recentInvoices,
-      lowStockProducts
+      lowStockProducts,
+      monthlyRevenueData,
+      salesByCategoryData,
+      expensesByMonthData
     ] = await Promise.all([
       // CA Today
       db.invoice.aggregate({
@@ -44,6 +54,16 @@ export async function GET() {
       db.invoice.aggregate({
         where: {
           date: { gte: startOfMonth },
+          status: { not: 'cancelled' }
+        },
+        _sum: { amountTotal: true },
+        _count: true
+      }),
+      
+      // CA This Year
+      db.invoice.aggregate({
+        where: {
+          date: { gte: startOfYear },
           status: { not: 'cancelled' }
         },
         _sum: { amountTotal: true },
@@ -89,14 +109,23 @@ export async function GET() {
         },
         take: 10,
         include: { product: { select: { name: true, code: true } } }
-      })
+      }),
+      
+      // Monthly Revenue (Last 12 months)
+      getMonthlyRevenue(year, month),
+      
+      // Sales by Category
+      getSalesByCategory(startOfYear),
+      
+      // Expenses by Month (Bills)
+      getExpensesByMonth(year, month)
     ]);
 
     // Tax Deadlines (Algerian Fiscal Calendar)
     const taxDeadlines = [
       {
         type: 'G50 - TVA',
-        description: 'Déclaration TVA',
+        description: 'Declaration TVA',
         deadline: 20,
         daysUntil: 20 - dayOfMonth <= 0 ? 30 - (dayOfMonth - 20) : 20 - dayOfMonth,
         isUrgent: (20 - dayOfMonth) <= 5 && (20 - dayOfMonth) > 0,
@@ -104,7 +133,7 @@ export async function GET() {
       },
       {
         type: 'G2 - TAP',
-        description: 'Taxe Activité Professionnelle',
+        description: 'Taxe Activite Professionnelle',
         deadline: 20,
         daysUntil: 20 - dayOfMonth <= 0 ? 30 - (dayOfMonth - 20) : 20 - dayOfMonth,
         isUrgent: (20 - dayOfMonth) <= 5 && (20 - dayOfMonth) > 0,
@@ -135,9 +164,10 @@ export async function GET() {
         kpis: {
           caToday: invoicesToday._sum.amountTotal || 0,
           caMonth: invoicesMonth._sum.amountTotal || 0,
-          caYear: null, // Would need aggregation
+          caYear: invoicesYear._sum.amountTotal || 0,
           invoiceCountToday: invoicesToday._count,
           invoiceCountMonth: invoicesMonth._count,
+          invoiceCountYear: invoicesYear._count,
           paidInvoiceCount: paidInvoices._count,
           unpaidInvoiceCount: unpaidInvoices._count,
           unpaidAmount: unpaidInvoices._sum.amountDue || 0,
@@ -146,9 +176,9 @@ export async function GET() {
           partnerCount
         },
         charts: {
-          monthlyRevenue: [], // Would need historical data
-          salesByCategory: [],
-          expensesByMonth: []
+          monthlyRevenue: monthlyRevenueData,
+          salesByCategory: salesByCategoryData,
+          expensesByMonth: expensesByMonthData
         },
         recentActivity: {
           invoices: recentInvoices,
@@ -165,4 +195,136 @@ export async function GET() {
       { status: 500 }
     );
   }
+}
+
+// ============================================================
+// Helper: Get Monthly Revenue for Last 12 Months
+// ============================================================
+
+async function getMonthlyRevenue(currentYear: number, currentMonth: number) {
+  const monthlyData = [];
+  
+  // Get last 12 months including current month
+  for (let i = 11; i >= 0; i--) {
+    let targetMonth = currentMonth - i;
+    let targetYear = currentYear;
+    
+    // Handle year rollover
+    while (targetMonth < 0) {
+      targetMonth += 12;
+      targetYear -= 1;
+    }
+    
+    const startOfMonth = new Date(targetYear, targetMonth, 1);
+    const endOfMonth = new Date(targetYear, targetMonth + 1, 0, 23, 59, 59, 999);
+    
+    const result = await db.invoice.aggregate({
+      where: {
+        date: { gte: startOfMonth, lte: endOfMonth },
+        status: { not: 'cancelled' }
+      },
+      _sum: { amountTotal: true },
+      _count: true
+    });
+    
+    monthlyData.push({
+      month: MONTH_NAMES_FR[targetMonth],
+      revenue: result._sum.amountTotal || 0,
+      count: result._count
+    });
+  }
+  
+  return monthlyData;
+}
+
+// ============================================================
+// Helper: Get Sales by Product Category
+// ============================================================
+
+async function getSalesByCategory(sinceDate: Date) {
+  // Get all invoices with their lines and products since the date
+  const invoices = await db.invoice.findMany({
+    where: {
+      date: { gte: sinceDate },
+      status: { not: 'cancelled' }
+    },
+    include: {
+      lines: {
+        include: {
+          product: {
+            include: {
+              category: { select: { name: true } }
+            }
+          }
+        }
+      }
+    }
+  });
+  
+  // Aggregate by category
+  const categoryMap = new Map<string, { value: number; count: number }>();
+  
+  for (const invoice of invoices) {
+    for (const line of invoice.lines) {
+      const categoryName = line.product.category?.name || 'Sans categorie';
+      const existing = categoryMap.get(categoryName) || { value: 0, count: 0 };
+      existing.value += line.amountTotal || 0;
+      existing.count += 1;
+      categoryMap.set(categoryName, existing);
+    }
+  }
+  
+  // Convert to array and calculate percentages
+  const totalValue = Array.from(categoryMap.values()).reduce((sum, cat) => sum + cat.value, 0);
+  
+  const result = Array.from(categoryMap.entries())
+    .map(([category, data]) => ({
+      category,
+      value: data.value,
+      percentage: totalValue > 0 ? Math.round((data.value / totalValue) * 100) : 0,
+      count: data.count
+    }))
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 10); // Top 10 categories
+  
+  return result.length > 0 ? result : [{ category: 'Aucune donnee', value: 0, percentage: 100, count: 0 }];
+}
+
+// ============================================================
+// Helper: Get Expenses by Month (from Bills)
+// ============================================================
+
+async function getExpensesByMonth(currentYear: number, currentMonth: number) {
+  const expenseData = [];
+  
+  for (let i = 11; i >= 0; i--) {
+    let targetMonth = currentMonth - i;
+    let targetYear = currentYear;
+    
+    // Handle year rollover
+    while (targetMonth < 0) {
+      targetMonth += 12;
+      targetYear -= 1;
+    }
+    
+    const startOfMonth = new Date(targetYear, targetMonth, 1);
+    const endOfMonth = new Date(targetYear, targetMonth + 1, 0, 23, 59, 59, 999);
+    
+    const result = await db.bill.aggregate({
+      where: {
+        date: { gte: startOfMonth, lte: endOfMonth },
+        status: { not: 'cancelled' }
+      },
+      _sum: { amountTotal: true },
+      _count: true
+    });
+    
+    expenseData.push({
+      month: MONTH_NAMES_FR[targetMonth],
+      expenses: result._sum.amountTotal || 0,
+      count: result._count
+    });
+  }
+  
+  return expenseData;
 }

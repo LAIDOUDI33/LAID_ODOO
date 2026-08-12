@@ -66,6 +66,18 @@ model User {
   createdEvents        CalendarEvent[]
   uploadedDocuments    Document[]
   
+  // Production Relations
+  assignedWorkOrders   WorkOrder[]         @relation("AssignedWorkOrders")
+  createdWorkOrders    WorkOrder[]         @relation("CreatedWorkOrders")
+  createdQualityControls QualityControl[] @relation("QCCreatedBy")
+  
+  // Maintenance Relations
+  assignedMOs          MaintenanceOrder[]  @relation("AssignedMOs")
+  createdMOs           MaintenanceOrder[]  @relation("CreatedMOs")
+  createdEquipments    Equipment[]         @relation("EquipmentCreatedBy")
+  createdSpareParts    SparePart[]         @relation("SparePartCreatedBy")
+  createdOEE           OEERecord[]         @relation("OEECreatedBy")
+  
   @@map("users")
 }
 
@@ -145,6 +157,20 @@ model Company {
   contracts         Contract[]
   documents         Document[]
   publicHolidays    PublicHoliday[]
+  
+  // Production Module Relations
+  workCenters       WorkCenter[]        @relation("CompanyWorkCenters")
+  boms              BillOfMaterials[]   @relation("CompanyBOMs")
+  routings          Routing[]           @relation("CompanyRoutings")
+  workOrders        WorkOrder[]         @relation("CompanyWorkOrders")
+  qualityControls   QualityControl[]    @relation("CompanyQC")
+  
+  // Maintenance Module Relations
+  equipments        Equipment[]          @relation("CompanyEquipments")
+  maintPlans        MaintenancePlan[]   @relation("CompanyMaintPlans")
+  maintOrders       MaintenanceOrder[]  @relation("CompanyMOs")
+  spareParts        SparePart[]          @relation("CompanySpareParts")
+  oeeRecords        OEERecord[]         @relation("CompanyOEE")
   
   @@map("companies")
 }
@@ -422,6 +448,14 @@ model Product {
   purchaseOrderLines PurchaseOrderLine[] @relation("POLines")
   salesOrderLines   SalesOrderLine[]    @relation("SOLines")
   quotationLines    QuotationLine[]     @relation("QuoteLines")
+  
+  // Production Relations
+  bomAsProducts     BillOfMaterials[]   @relation("ProductBOMs")
+  bomLines          BOMLine[]           @relation("BOMLineComponent")
+  routingsAsProduct Routing[]           @relation("ProductRouting")
+  workOrders        WorkOrder[]         @relation("ProductWorkOrders")
+  workOrderLines    WorkOrderLine[]     @relation("WOLineProduct")
+  qualityControls   QualityControl[]    @relation("QCProduct")
   
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
@@ -960,6 +994,10 @@ model Warehouse {
   movements     StockMovement[]
   salesOrders   SalesOrder[]    @relation("SOWarehouse")
   purchaseOrders PurchaseOrder[]
+  
+  // Production Relations
+  workCenters   WorkCenter[]     @relation("WCWarehouse")
+  workOrders    WorkOrder[]      @relation("WorkOrderWarehouse")
   
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -2630,3 +2668,909 @@ model PublicHoliday {
 // Phase 1 Complete: Added Purchase Orders, Sales Orders, Quotations
 // Phase 3 Complete: Added CalendarEvents, Contracts, Documents, PublicHolidays
 // ============================================================
+
+// ============================================================
+// PRODUCTION & MANUFACTURING MODULE (MODULE PRODUCTION)
+// Gestion complète de la fabrication industrielle
+// ============================================================
+
+// ============================================================
+// WORK CENTER (POSTE DE TRAVAIL / ATELIER)
+// ============================================================
+
+enum WorkCenterType {
+  machine          // Machine (CNC, presse, etc.)
+  manual           // Poste manuel
+  assembly         // Ligne d'assemblage
+  quality          // Poste de contrôle qualité
+  packaging        // Poste d'emballage
+  storage          // Zone de stockage intermédiaire
+}
+
+model WorkCenter {
+  id                String          @id @default(cuid())
+  code              String          @unique // WC-001, WC-002
+  name              String
+  nameAr            String?         // Nom en arabe
+  
+  type              WorkCenterType  @default(machine)
+  
+  // Capacité
+  capacityPerHour   Float           @default(1) // Pièces/heure
+  efficiency        Float           @default(100) // Rendement %
+  oeeTarget         Float           @default(85) // Cible OEE %
+  
+  // Localisation
+  location          String?         // Bâtiment A, Atelier 1
+  warehouseId       String?
+  warehouse         Warehouse?      @relation("WCWarehouse", fields: [warehouseId], references: [id])
+  
+  // Planning
+  workingHours      String?         // JSON: {"lun":"08-17",...}
+  setupTime         Int             @default(15) // Temps de réglage (min)
+  
+  // Coûts
+  hourlyCost        Float           @default(0) // Coût horaire DZD
+  
+  // Statut
+  isActive          Boolean         @default(true)
+  status            String          @default("available") // available, busy, maintenance, offline
+  
+  // Relations
+  companyId         String
+  company           Company         @relation("CompanyWorkCenters", fields: [companyId], references: [id])
+  
+  routingOperations RoutingOperation[] @relation("RoutingOperationWC")
+  workOrders        WorkOrder[]     @relation("WorkOrderWorkCenter")
+  equipments        Equipment[]     @relation("EquipmentWC")
+  
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  
+  @@index([companyId, status])
+  @@map("work_centers")
+}
+
+// ============================================================
+// BILL OF MATERIALS (NOMENCLATURE / BOM)
+// ============================================================
+
+model BillOfMaterials {
+  id                String          @id @default(cuid())
+  code              String          @unique // BOM-PROD-A-001
+  name              String
+  description       String?
+  
+  // Produit fini
+  productId         String
+  product           Product         @relation("ProductBOMs", fields: [productId], references: [id])
+  
+  // Versionnement
+  version           Int             @default(1)
+  versionName       String?         // v1.0, v2.0
+  effectiveDate     DateTime?       // Date d'effet
+  expiryDate        DateTime?       // Date d'expiration
+  
+  // Quantité produite
+  outputQuantity    Float           @default(1) // Quantité du produit fini
+  
+  // Caractéristiques
+  unitOfMeasure     String          @default("U") // Unité
+  scrapPercentage   Float           @default(0) // Perte estimée %
+  
+  // Statut
+  isActive          Boolean         @default(true)
+  isDefault         Boolean         @default(false) // Nomenclature par défaut
+  
+  // Relations
+  companyId         String
+  company           Company         @relation("CompanyBOMs", fields: [companyId], references: [id])
+  
+  lines             BOMLine[]
+  workOrders        WorkOrder[]     @relation("WorkOrderBOM")
+  
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  
+  @@unique([productId, version])
+  @@index([companyId])
+  @@map("bill_of_materials")
+}
+
+// ============================================================
+// BOM LINE (LIGNE DE NOMENCLATURE)
+// ============================================================
+
+model BOMLine {
+  id                String          @id @default(cuid())
+  
+  bomId             String
+  bom               BillOfMaterials @relation(fields: [bomId], references: [id], onDelete: Cascade)
+  
+  // Composant (peut être produit ou matière première)
+  componentId       String
+  component         Product         @relation("BOMLineComponent", fields: [componentId], references: [id])
+  
+  // Quantités
+  quantity          Float           @default(1) // Quantité nécessaire
+  unitOfMeasure     String          @default("U")
+  
+  // Position dans la nomenclature
+  sequence          Int             @default(0) // Ordre
+  
+  // Options
+  isOptional        Boolean         @default(false) // Composant optionnel
+  isPhantom         Boolean         @default(false) // Article fantôme (non stocké)
+  scrapPercentage   Float           @default(0) // Perte pour cette ligne
+  
+  // Coût (calculé)
+  unitCost          Float           @default(0) // Coût unitaire DZD
+  totalCost         Float           @default(0) // Coût total ligne
+  
+  // Notes
+  notes             String?
+  
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  
+  @@unique([bomId, componentId]) // Un composant unique par BOM
+  @@map("bom_lines")
+}
+
+// Ajouter relations au modèle Product
+// (Ces relations sont ajoutées via les champs existants)
+
+// ============================================================
+// ROUTING (GAMME OPÉRATOIRE)
+// ============================================================
+
+model Routing {
+  id                String              @id @default(cuid())
+  code               String              @unique // RT-PROD-A-001
+  name               String
+  description        String?
+  
+  // Produit associé
+  productId          String
+  product            Product             @relation("ProductRouting", fields: [productId], references: [id])
+  
+  // Version
+  version            Int                 @default(1)
+  
+  // Temps de cycle total (minutes)
+  totalTime          Float               @default(0)
+  setupTime          Float               @default(0)
+  
+  // Statut
+  isActive           Boolean             @default(true)
+  isDefault          Boolean             @default(false)
+  
+  // Relations
+  companyId          String
+  company            Company             @relation("CompanyRoutings", fields: [companyId], references: [id])
+  
+  operations         RoutingOperation[]
+  workOrders         WorkOrder[]         @relation("WorkOrderRouting")
+  
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  
+  @@unique([productId, version])
+  @@map("routings")
+}
+
+// ============================================================
+// ROUTING OPERATION (OPÉRATION DE GAMME)
+// ============================================================
+
+enum OperationType {
+  setup             // Réglage / Préparation
+  processing        // Fabrication / Transformation
+  inspection        // Contrôle / Inspection
+  assembly          // Assemblage
+  disassembly       // Désassemblage
+  packaging         // Conditionnement
+  move              // Manutention / Transfert
+  quality           // Contrôle qualité
+}
+
+model RoutingOperation {
+  id                String          @id @default(cuid())
+  sequence          Int             @default(1) // Ordre d'exécution
+  
+  routingId         String
+  routing           Routing         @relation(fields: [routingId], references: [id], onDelete: Cascade)
+  
+  // Opération
+  name              String
+  nameAr            String?
+  operationType     OperationType  @default(processing)
+  
+  // Work center
+  workCenterId      String?
+  workCenter        WorkCenter?     @relation("RoutingOperationWC", fields: [workCenterId], references: [id])
+  
+  // Temps (en minutes)
+  setupTime         Float           @default(0) // Temps de réglage
+  runTime           Float           @default(0) // Temps par unité
+  waitTime          Float           @default(0) // Temps d'attente
+  moveTime          Float           @default(0) // Temps de transfert
+  
+  // Main d'œuvre
+  workersRequired   Int             @default(1) // Nombre d'opérateurs
+  skillLevel        String?         // Niveau de compétence requis
+  
+  // Instructions
+  instructions      String?         // Instructions détaillées
+  notes             String?
+  
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  
+  @@index([routingId, sequence])
+  @@map("routing_operations")
+}
+
+// ============================================================
+// WORK ORDER (ORDRE DE FABRICATION - OF)
+// ============================================================
+
+enum WorkOrderStatus {
+  draft             // Brouillon
+  planned           // Planifié
+  released          // Lancé
+  in_progress       // En cours
+  paused            // En pause
+  completed         // Terminé
+  cancelled         // Annulé
+}
+
+enum WorkOrderPriority {
+  low               // Basse
+  normal            // Normale
+  high              // Haute
+  urgent            // Urgente
+  critical          // Critique
+}
+
+model WorkOrder {
+  id                String            @id @default(cuid())
+  reference         String            @unique // OF-2025-0001
+  
+  // Produit à fabriquer
+  productId         String
+  product           Product           @relation("ProductWorkOrders", fields: [productId], references: [id])
+  
+  // Nomenclature et Gamme
+  bomId             String?
+  bom               BillOfMaterials?  @relation("WorkOrderBOM", fields: [bomId], references: [id])
+  routingId         String?
+  routing           Routing?          @relation("WorkOrderRouting", fields: [routingId], references: [id])
+  
+  // Quantités
+  quantityPlanned   Float             @default(0) // Quantité planifiée
+  quantityProduced  Float             @default(0) // Quantité produite
+  quantityScrapped   Float             @default(0) // Quantité rebutée
+  quantityRemaining  Float             // Computed: quantité restante
+  
+  // Dates
+  scheduledStart    DateTime?        // Date de début planifiée
+  scheduledEnd      DateTime?        // Date de fin planifiée
+  actualStart       DateTime?        // Date de début réelle
+  actualEnd         DateTime?        // Date de fin réelle
+  
+  // Priorité et statut
+  priority          WorkOrderPriority @default(normal)
+  status            WorkOrderStatus  @default(draft)
+  
+  // Localisation
+  workCenterId      String?
+  workCenter        WorkCenter?       @relation("WorkOrderWorkCenter", fields: [workCenterId], references: [id])
+  warehouseId       String?
+  warehouse         Warehouse?        @relation("WorkOrderWarehouse", fields: [warehouseId], references: [id])
+  
+  // Responsable
+  assignedToId      String?
+  assignedTo        User?             @relation("AssignedWorkOrders", fields: [assignedToId], references: [id])
+  
+  // Liens
+  salesOrderId      String?           // Lien avec commande client
+  quotationId       String?           // Lien avec devis
+  
+  // Suivi des coûts
+  estimatedCost     Float             @default(0) // Coût estimé
+  actualCost        Float             @default(0) // Coût réel
+  
+  // Notes
+  notes             String?
+  internalNotes     String?
+  customerNotes     String?
+  
+  // Relations
+  companyId         String
+  company           Company           @relation("CompanyWorkOrders", fields: [companyId], references: [id])
+  
+  lines             WorkOrderLine[]
+  qualityControls   QualityControl[]
+  
+  createdById       String
+  createdBy         User              @relation("CreatedWorkOrders", fields: [createdById], references: [id])
+  
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  
+  @@index([companyId, status])
+  @@index([scheduledStart])
+  @@map("work_orders")
+}
+
+// ============================================================
+// WORK ORDER LINE (LIGNE D'ORDRE DE FABRICATION)
+// ============================================================
+
+model WorkOrderLine {
+  id                String          @id @default(cuid())
+  
+  workOrderId       String
+  workOrder         WorkOrder       @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+  
+  // Produit consommé ou produit
+  productId         String
+  product           Product         @relation("WOLineProduct", fields: [productId], references: [id])
+  
+  // Type de mouvement
+  type              String          @default("consumption") // consumption, production, byproduct
+  
+  // Quantités planifiées vs réelles
+  quantityPlanned   Float           @default(0)
+  quantityActual    Float           @default(0)
+  
+  // Unité
+  unitOfMeasure     String          @default("U")
+  
+  // Emplacement
+  locationSource    String?         // Source
+  locationDest      String?         // Destination
+  
+  // Statut
+  status            String          @default("pending") // pending, done, cancelled
+  
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  
+  @@index([workOrderId])
+  @@map("work_order_lines")
+}
+
+// ============================================================
+// QUALITY CONTROL (CONTRÔLE QUALITÉ)
+// ============================================================
+
+enum QualityStatus {
+  pending           // En attente
+  passed            // Conforme
+  failed            // Non conforme
+  conditional       // Conditionnel (avec réserves)
+  rework            // À retravailler
+}
+
+enum QualityType {
+  incoming          // Contrôle à réception
+  in_process        // En cours de fabrication
+  final             // Contrôle final
+  outgoing          // Contrôle expédition
+}
+
+model QualityControl {
+  id                String          @id @default(cuid())
+  reference         String          @unique // QC-2025-0001
+  
+  // Type et statut
+  type              QualityType     @default(in_process)
+  status            QualityStatus   @default(pending)
+  
+  // Lien avec l'OF
+  workOrderId       String?
+  workOrder         WorkOrder?      @relation(fields: [workOrderId], references: [id])
+  
+  // Produit contrôlé
+  productId         String
+  product           Product         @relation("QCProduct", fields: [productId], references: [id])
+  
+  // Lot/Série
+  lotNumber         String?
+  serialNumber      String?
+  
+  // Quantités
+  quantityChecked   Float           @default(1)
+  quantityPassed    Float           @default(0)
+  quantityFailed    Float           @default(0)
+  
+  // Résultats
+  resultNotes       String?
+  defectDescription String?
+  
+  // Décision
+  decision          String?         // accept, reject, rework, use_as_is
+  decidedBy         String?
+  decidedAt         DateTime?
+  
+  // Relations
+  companyId         String
+  company           Company         @relation("CompanyQC", fields: [companyId], references: [id])
+  
+  points            QCPoint[]
+  
+  createdById       String
+  createdBy         User           @relation("QCCreatedBy", fields: [createdById], references: [id])
+  
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  
+  @@index([companyId, status])
+  @@map("quality_controls")
+}
+
+// ============================================================
+// QC POINT (POINT DE CONTRÔLE)
+// ============================================================
+
+model QCPoint {
+  id                String          @id @default(cuid())
+  
+  qualityControlId  String
+  qualityControl    QualityControl  @relation(fields: [qualityControlId], references: [id], onDelete: Cascade)
+  
+  // Spécification
+  specification     String          // Nom du point de contrôle
+  specificationAr   String?         // Nom en arabe
+  type              String          @default("numeric") // numeric, visual, text, boolean
+  
+  // Valeurs
+  targetValue       Float?          // Valeur cible
+  minValue          Float?          // Tolérance min
+  maxValue          Float?          // Tolérance max
+  unit              String?         // Unité de mesure
+  
+  // Résultat
+  actualValue       Float?          // Valeur mesurée
+  textResult        String?         // Résultat textuel
+  isPassed          Boolean?        // Conforme ou non
+  
+  // Notes
+  notes             String?
+  
+  sequence          Int             @default(0)
+  
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  
+  @@index([qualityControlId])
+  @@map("qc_points")
+}
+
+
+// ============================================================
+// MAINTENANCE MODULE (MODULE MAINTENANCE)
+// Gestion complète de la maintenance industrielle - TPM
+// ============================================================
+
+// ============================================================
+// EQUIPMENT (ÉQUIPEMENTS / MACHINES)
+// ============================================================
+
+enum EquipmentCategory {
+  production         // Machine de production
+  auxiliary           // Machine auxiliaire
+  transport          // Équipement de manutention
+  measurement        // Instrument de mesure
+  utility            // Utilitaire (compresseur, etc.)
+  safety             // Équipement de sécurité
+  it                 // Équipement informatique/automate
+  building           // Bâtiment / Infrastructure
+}
+
+enum EquipmentStatus {
+  operational        // Opérationnel
+  in_operation       // En fonctionnement
+  standby            // En attente
+  under_maintenance  // En maintenance
+  broken             // Panne
+  decommissioned     // Hors service / Réformé
+}
+
+model Equipment {
+  id                String            @id @default(cuid())
+  code              String            @unique // EQP-001, MCH-CNC-01
+  name              String
+  nameAr            String?           // Nom en arabe
+  description       String?
+  
+  // Classification
+  category          EquipmentCategory @default(production)
+  subcategory       String?           // CNC, Presse, Robot, etc.
+  manufacturer      String?           // Constructeur
+  model             String?           // Modèle
+  serialNumber      String?           // N° de série
+  
+  // Spécifications techniques
+  specifications    String?           // JSON: {power: "5kW", speed: "3000rpm"...}
+  capacity          Float?            // Capacité nominale
+  unitOfMeasure     String?           // Unité de capacité
+  
+  // Localisation
+  location          String?           // Atelier A, Ligne 1
+  workCenterId      String?
+  workCenter        WorkCenter?       @relation("EquipmentWC", fields: [workCenterId], references: [id])
+  
+  // Dates
+  purchaseDate      DateTime?         // Date d'acquisition
+  installationDate  DateTime?         // Date d'installation
+  warrantyExpiry    DateTime?         // Fin de garantie
+  expectedLifespan  Int?              // Durée de vie estimée (années)
+  
+  // Coûts
+  purchasePrice     Float?            // Prix d'achat DZD
+  currentValue      Float?            // Valeur actuelle DZD
+  hourlyCost        Float?            // Coût horaire d'utilisation
+  
+  // Statut
+  status            EquipmentStatus   @default(operational)
+  criticality       String            @default("medium") // low, medium, high, critical
+  
+  // Maintenance
+  lastMaintenanceAt DateTime?        // Dernière maintenance
+  nextMaintenanceAt DateTime?        // Prochaine maintenance planifiée
+  maintenanceInterval Int? @default(720) // Intervalle (heures) entre maintenances
+  
+  // Compteurs
+  operatingHours    Float             @default(0) // Heures d'opération
+  cycleCount        Int               @default(0) // Nombre de cycles
+  
+  // Relations
+  companyId         String
+  company           Company           @relation("CompanyEquipments", fields: [companyId], references: [id])
+  
+  maintenancePlans  MaintenancePlan[]
+  maintenanceOrders MaintenanceOrder[] @relation("EquipmentMO")
+  spareParts        SparePartAssignment[] @relation("SparePartAssignment")
+  oeeLogs           OEERecord[]         @relation("OEEEquipment")
+  
+  createdById       String?
+  createdBy         User?             @relation("EquipmentCreatedBy", fields: [createdById], references: [id])
+  
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  
+  @@index([companyId, status])
+  @@index([category])
+  @@map("equipments")
+}
+
+// ============================================================
+// MAINTENANCE PLAN (PLAN DE MAINTENANCE PRÉVENTIVE)
+// ============================================================
+
+enum MaintenanceFrequency {
+  daily              // Quotidien
+  weekly             // Hebdomadaire
+  biweekly           // Bimensuel
+  monthly            // Mensuel
+  quarterly          // Trimestriel
+  semi_annually      // Semestriel
+  annually           // Annuel
+  by_hours           // Par heures d'utilisation
+  by_cycle           // Par cycles
+}
+
+model MaintenancePlan {
+  id                String                @id @default(cuid())
+  code              String                @unique // PM-EQP-001-W
+  name              String
+  description       String?              // Instructions détaillées
+  
+  // Équipement cible
+  equipmentId       String
+  equipment         Equipment             @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+  
+  // Type et fréquence
+  type              String                @default("preventive") // preventive, predictive, inspection
+  frequency         MaintenanceFrequency @default(monthly)
+  intervalValue     Int?                  // Valeur: toutes les X heures/cycles/jours
+  durationEstimated  Int?                  // Durée estimée (minutes)
+  
+  // Planning
+  lastPerformedAt   DateTime?            // Dernière exécution
+  nextDueAt         DateTime?             // Prochaine échéance
+  isActive          Boolean               @default(true)
+  
+  // Tâches (JSON array of task descriptions)
+  tasks             String?               // JSON: ["Vérifier huile", "Contrôler courroies", ...]
+  
+  // Pièces requises (optionnel)
+  requiredParts     String?               // JSON: [{partId, quantity}, ...]
+  
+  // Compétences requises
+  skillsRequired    String?               // JSON: ["mécanique", "électricité"]
+  
+  // Relations
+  companyId         String
+  company           Company               @relation("CompanyMaintPlans", fields: [companyId], references: [id])
+  
+  orders            MaintenanceOrder[]    @relation("PlanOrders")
+  
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+  
+  @@index([equipmentId, isActive])
+  @@index([nextDueAt])
+  @@map("maintenance_plans")
+}
+
+// ============================================================
+// MAINTENANCE ORDER (ORDRE D'INTERVENTION / OT)
+// ============================================================
+
+enum MaintenanceOrderStatus {
+  draft              // Brouillon
+  planned            // Planifié
+  released           // Lancé
+  ready              // Prêt (pièces dispo)
+  in_progress        // En cours
+  paused             // En pause
+  completed          // Terminé
+  cancelled          // Annulé
+}
+
+enum MaintenancePriority {
+  low                // Basse - Planifiée
+  normal             // Normale
+  high               // Haute - Urgent
+  critical           // Critique - Arrêt production
+  emergency          // Urgence absolue
+}
+
+model MaintenanceOrder {
+  id                String                @id @default(cuid())
+  reference         String                @unique // OM-2025-0001 or OT-2025-0001
+  
+  // Type
+  type              String                @default("corrective") // corrective, preventive, improvement, emergency
+  
+  // Priorité et statut
+  priority          MaintenancePriority  @default(normal)
+  status            MaintenanceOrderStatus @default(draft)
+  
+  // Équipement
+  equipmentId       String
+  equipment         Equipment             @relation("EquipmentMO", fields: [equipmentId], references: [id])
+  
+  // Plan associé (si maintenance préventive)
+  planId            String?
+  plan              MaintenancePlan?      @relation("PlanOrders", fields: [planId], references: [id])
+  
+  // Description du problème/travail
+  title             String                // Titre court
+  description       String?              // Description détaillée
+  failureMode       String?               // Mode de panne (pour analyse)
+  symptoms          String?               // Symptômes observés
+  
+  // Dates
+  requestedDate     DateTime // Date de demande
+  scheduledStart    DateTime?             // Date planifiée début
+  scheduledEnd      DateTime?             // Date planifiée fin
+  actualStart       DateTime?             // Date réelle début
+  actualEnd         DateTime?             // Date réelle fin
+  
+  // Durées (en minutes/heures)
+  estimatedDuration Int?                 @default(60) // Durée estimée (min)
+  actualDuration    Int?                  // Durée réelle (min)
+  downtimeHours     Float?                @default(0) // Temps d'arrêt (heures)
+  
+  // Assignation
+  assignedToId      String?
+  assignedTo        User?                 @relation("AssignedMOs", fields: [assignedToId], references: [id])
+  technicianTeam    String?               // JSON: [{userId, role}, ...]
+  
+  // Pièces utilisées
+  partsUsed         String?               // JSON: [{partId, quantity, cost}, ...]
+  partsCost         Float                 @default(0) // Coût des pièces
+  
+  // Autres coûts
+  laborCost         Float                 @default(0) // Main d'œuvre
+  externalCost      Float                 @default(0) // Sous-traitance
+  totalCost         Float                 @default(0) // Coût total
+  
+  // Compte-rendu
+  workPerformed     String?               // Travail effectué
+  rootCause         String?               // Cause racine
+  correctiveAction  String?               // Action corrective
+  recommendations   String?               // Recommandations
+  
+  // Validation
+  validatedBy       String?
+  validatedAt       DateTime?
+  
+  // Relations
+  companyId         String
+  company           Company               @relation("CompanyMOs", fields: [companyId], references: [id])
+  
+  createdById       String
+  createdBy         User                   @relation("CreatedMOs", fields: [createdById], references: [id])
+  
+  attachments       String?               // JSON: URLs des pièces jointes
+  
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+  
+  @@index([companyId, status])
+  @@index([equipmentId, status])
+  @@index([scheduledStart])
+  @@map("maintenance_orders")
+}
+
+// ============================================================
+// SPARE PART (PIÈCE DÉTACHÉE)
+// ============================================================
+
+enum SparePartCategory {
+  mechanical         // Mécanique
+  electrical        // Électrique
+  electronic        // Électronique
+  hydraulic         // Hydraulique
+  pneumatic         // Pneumatique
+  consumable        // Consommable
+  tool              // Outil
+  safety            // Sécurité
+  other             // Autre
+}
+
+model SparePart {
+  id                String              @id @default(cuid())
+  code              String              @unique // PD-001, SP-MOTOR-001
+  name              String
+  nameAr            String?
+  description       String?
+  
+  // Classification
+  category          SparePartCategory  @default(mechanical)
+  subcategory       String?
+  
+  // Fournisseur
+  supplier          String?             // Nom du fournisseur
+  supplierRef       String?             // Référence fournisseur
+  supplierPartNo    String?             // N° pièce fournisseur
+  
+  // Stock
+  minStock          Float               @default(1) // Stock minimum
+  maxStock          Float               @default(10) // Stock maximum
+  reorderPoint      Float               @default(2) // Seuil de commande
+  currentStock      Float               @default(0) // Stock actuel
+  reservedStock     Float               @default(0) // Stock réservé
+  availableStock   Float               @default(0) // Stock disponible (calculé)
+  
+  // Unité
+  unitOfMeasure     String              @default("U") // U, Kit, Set
+  
+  // Emplacement
+  location          String?             // Emplacement stockage
+  binLocation       String?             // Casier / Alvéole
+  
+  // Prix
+  purchasePrice     Float               @default(0) // Prix d'achat DZD
+  sellingPrice      Float?              // Prix de vente (si revendu)
+  currency          String              @default("DZD")
+  
+  // Lead time (jours)
+  leadTimeDays      Int                 @default(7) // Délai d'approvisionnement
+  
+  // Équipements associés
+  compatibleWith    String?             // JSON: [equipmentId1, equipmentId2]
+  
+  // Statut
+  isActive          Boolean             @default(true)
+  isCritical        Boolean             @default(false) // Pièce critique
+  
+  // Relations
+  companyId         String
+  company           Company             @relation("CompanySpareParts", fields: [companyId], references: [id])
+  
+  assignments       SparePartAssignment[]
+  
+  createdById       String?
+  createdBy         User?               @relation("SparePartCreatedBy", fields: [createdById], references: [id])
+  
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  
+  @@index([companyId, category])
+  @@index([code])
+  @@map("spare_parts")
+}
+
+// ============================================================
+// SPARE PART ASSIGNMENT (AFFECTATION PIÈCE À ÉQUIPEMENT)
+// ============================================================
+
+model SparePartAssignment {
+  id                String      @id @default(cuid())
+  
+  sparePartId       String
+  sparePart         SparePart   @relation(fields: [sparePartId], references: [id], onDelete: Cascade)
+  
+  equipmentId       String
+  equipment         Equipment   @relation("SparePartAssignment", fields: [equipmentId], references: [id], onDelete: Cascade)
+  
+  quantityPerMachine Int        @default(1) // Quantité par machine
+  
+  notes             String?
+  
+  createdAt         DateTime    @default(now())
+  
+  @@unique([sparePartId, equipmentId])
+  @@map("spare_part_assignments")
+}
+
+// ============================================================
+// OEE RECORD (JOURNAL OEE - Overall Equipment Effectiveness)
+// ============================================================
+
+model OEERecord {
+  id                String      @id @default(cuid())
+  
+  // Date et période
+  recordDate        DateTime
+  shift             String?     // Matin, Après-muit, Nuit
+  periodStart       DateTime
+  periodEnd         DateTime
+  
+  // Équipement
+  equipmentId       String
+  equipment         Equipment   @relation("OEEEquipment", fields: [equipmentId], references: [id], onDelete: Cascade)
+  
+  // Temps (minutes)
+  plannedTime       Float       @default(480) // Temps planifié (8h = 480 min)
+  operatingTime    Float       @default(0) // Temps réel de fonctionnement
+  idleTime          Float       @default(0) // Temps d'attente
+  downtime          Float       @default(0) // Temps d'arrêt (panne)
+  setupTime         Float       @default(0) // Temps de réglage
+  
+  // Production
+  totalProduced     Int         @default(0) // Total produit
+  goodQuantity      Int         @default(0) // Quantité conforme
+  defectiveQty      Int         @default(0) // Quantité défectueuse
+  
+  // Vitesse
+  idealCycleTime   Float       @default(1) // Temps cycle idéal (sec/unité)
+  actualCycleTime  Float?      // Temps cycle réel
+  
+  // Calculs OEE
+  availability      Float?      // Disponibilité = operatingTime / plannedTime
+  performance      Float?      // Performance = (idealCycle * total) / operatingTime
+  quality          Float?      // Qualité = good / total
+  oee              Float?      // OEE = avail * perf * quality
+  
+  // Commentaires
+  notes            String?
+  operatorName     String?
+  
+  // Relations
+  companyId        String
+  company          Company      @relation("CompanyOEE", fields: [companyId], references: [id])
+  
+  createdById      String?
+  createdBy        User?        @relation("OEECreatedBy", fields: [createdById], references: [id])
+  
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  
+  @@index([equipmentId, recordDate])
+  @@index([recordDate])
+  @@map("oee_records")
+}
+
+// ============================================================
+// END OF SCHEMA - HASSIBA Suite ERP v2.0.0 Enterprise
+// Total: 60+ Models with full Algerian ERP + Production + Maintenance modules
+// ============================================================
+
