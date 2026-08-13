@@ -321,3 +321,125 @@ export function formatValidationError(error: string | z.ZodError['issues']): {
     code: 'VALIDATION_ERROR',
   };
 }
+
+// ============================================================
+// M-05 FIX: Simple Type Validation (for endpoints without Zod)
+// These functions provide basic type checking when Zod is not available
+// or when you need quick inline validation
+// ============================================================
+
+/**
+ * Validate that a value is a non-empty string
+ */
+export function isValidString(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+/**
+ * Validate that a value is a valid ID (non-empty alphanumeric string)
+ */
+export function isValidId(value: unknown): boolean {
+  if (typeof value !== 'string' || value.trim().length === 0) return false;
+  return /^[a-zA-Z0-9_-]+$/.test(value);
+}
+
+/**
+ * Validate that a value is a positive number
+ */
+export function isValidPositiveNumber(value: unknown): boolean {
+  if (typeof value !== 'number' && typeof value !== 'string') return false;
+  const num = Number(value);
+  return !isNaN(num) && num > 0 && isFinite(num);
+}
+
+/**
+ * Validate that a value is a non-negative number
+ */
+export function isValidNonNegativeNumber(value: unknown): boolean {
+  if (typeof value !== 'number' && typeof value !== 'string') return false;
+  const num = Number(value);
+  return !isNaN(num) && num >= 0 && isFinite(num);
+}
+
+/**
+ * Validate date string (YYYY-MM-DD or ISO format)
+ */
+export function isValidDateString(value: unknown): boolean {
+  if (typeof value !== 'string') return false;
+  const date = new Date(value);
+  return !isNaN(date.getTime());
+}
+
+/**
+ * Validate period format (YYYY-MM)
+ */
+export function isValidPeriod(value: unknown): boolean {
+  if (typeof value !== 'string') return false;
+  return /^\d{4}-(0[1-9]|1[0-2])$/.test(value);
+}
+
+/**
+ * Sanitize input to prevent injection attacks
+ */
+export function sanitizeInput(input: unknown): string {
+  if (typeof input !== 'string') return '';
+  return input
+    .replace(/[<>"'\\]/g, '') // Remove HTML/script characters
+    .replace(/\x00/g, '') // Remove null bytes
+    .trim();
+}
+
+/**
+ * Validate an array of items with optional item validator
+ */
+export function isValidArray<T>(value: unknown, itemValidator?: (item: T) => boolean): value is T[] {
+  if (!Array.isArray(value)) return false;
+  if (itemValidator) {
+    return value.every(itemValidator);
+  }
+  return true;
+}
+
+// ============================================================
+// M-06 FIX: Company Isolation Helpers
+// Ensure data access is scoped to the user's company
+// ============================================================
+
+/**
+ * Build company-scoped where clause
+ * If user is not super_admin, adds companyId filter
+ */
+export interface CompanyScopedOptions {
+  userId?: string;
+  userRole?: string;
+  userCompanyId?: string;
+  isSuperAdmin?: boolean;
+}
+
+/**
+ * Add company scoping to a where clause
+ * Returns modified where clause with companyId filter if needed
+ */
+export function addCompanyScope(
+  whereClause: Record<string, any>,
+  options: CompanyScopedOptions,
+  explicitCompanyId?: string
+): Record<string, any> {
+  // If explicit companyId provided (e.g., from query param), use it
+  if (explicitCompanyId) {
+    whereClause.companyId = explicitCompanyId;
+    return whereClause;
+  }
+  
+  // Super admins can see all data (unless explicitly scoped)
+  if (options.isSuperAdmin) {
+    return whereClause;
+  }
+  
+  // Non-super-admin users are scoped to their company
+  if (options.userCompanyId) {
+    whereClause.companyId = options.userCompanyId;
+  }
+  
+  return whereClause;
+}

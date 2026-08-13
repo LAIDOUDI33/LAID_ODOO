@@ -206,6 +206,66 @@ export async function POST(
       }
 
       const approvedBy = body.approvedBy || body.userId;
+      
+      // LEAVE BALANCE CHECK: Validate sufficient balance before approval
+      const year = existingLeave.startDate.getFullYear();
+      const leaveType = existingLeave.type.toLowerCase();
+      const daysRequested = existingLeave.daysCount;
+
+      // Find or check leave balance for this employee/type/year
+      let leaveBalance = await db.leaveBalance.findUnique({
+        where: {
+          employeeId_leaveType_year: {
+            employeeId: existingLeave.employeeId,
+            leaveType: leaveType,
+            year: year
+          }
+        }
+      });
+
+      // If no balance exists for paid leave types, create one with default allocation
+      if (!leaveBalance && !['unpaid', 'other'].includes(leaveType)) {
+        const defaultAllocation = getDefaultAllocationForType(leaveType);
+        leaveBalance = await db.leaveBalance.create({
+          data: {
+            employeeId: existingLeave.employeeId,
+            leaveType: leaveType,
+            year: year,
+            totalAllocated: defaultAllocation,
+            totalUsed: 0,
+            totalPending: 0,
+            remaining: defaultAllocation
+          }
+        });
+      }
+
+      // Validate balance for paid leave types (skip for unpaid)
+      if (leaveBalance && !['unpaid', 'other'].includes(leaveType)) {
+        if (leaveBalance.remaining < daysRequested) {
+          return NextResponse.json(
+            { 
+              success: false, 
+              error: `Solde de congés insuffisant. Disponible: ${leaveBalance.remaining.toFixed(1)} jours, Demandé: ${daysRequested} jours`,
+              balanceInfo: {
+                remaining: leaveBalance.remaining,
+                requested: daysRequested,
+                deficit: daysRequested - leaveBalance.remaining
+              }
+            },
+            { status: 409 }
+          );
+        }
+
+        // Update leave balance: increment used, decrement remaining
+        await db.leaveBalance.update({
+          where: { id: leaveBalance.id },
+          data: {
+            totalUsed: { increment: daysRequested },
+            totalPending: { decrement: daysRequested },
+            remaining: { decrement: daysRequested }
+          }
+        });
+      }
 
       const leave = await db.leaveRequest.update({
         where: { id },
@@ -229,7 +289,8 @@ export async function POST(
       return NextResponse.json({
         success: true,
         data: leave,
-        message: "Demande de congés approuvée avec succès"
+        message: "Demande de congés approuvée avec succès",
+        balanceUpdated: !!leaveBalance
       });
     }
 
@@ -247,6 +308,36 @@ export async function POST(
           { success: false, error: "La raison du rejet est obligatoire" },
           { status: 400 }
         );
+      }
+
+      // LEAVE BALANCE UPDATE: If previously approved, restore the balance
+      let balanceRestored = false;
+      if (existingLeave.status === 'approved') {
+        const year = existingLeave.startDate.getFullYear();
+        const leaveType = existingLeave.type.toLowerCase();
+        const daysToRestore = existingLeave.daysCount;
+
+        const leaveBalance = await db.leaveBalance.findUnique({
+          where: {
+            employeeId_leaveType_year: {
+              employeeId: existingLeave.employeeId,
+              leaveType: leaveType,
+              year: year
+            }
+          }
+        });
+
+        if (leaveBalance) {
+          // Restore balance: decrement used, increment remaining
+          await db.leaveBalance.update({
+            where: { id: leaveBalance.id },
+            data: {
+              totalUsed: { decrement: daysToRestore },
+              remaining: { increment: daysToRestore }
+            }
+          });
+          balanceRestored = true;
+        }
       }
 
       const leave = await db.leaveRequest.update({
@@ -270,7 +361,8 @@ export async function POST(
       return NextResponse.json({
         success: true,
         data: leave,
-        message: "Demande de congés rejetée"
+        message: "Demande de congés rejetée",
+        balanceRestored
       });
     }
 
@@ -376,4 +468,21 @@ function calculateBusinessDays(startDate: Date, endDate: Date): number {
   }
 
   return count;
+}
+
+/**
+ * Get default allocation days based on leave type (Algerian labor law compliant)
+ */
+function getDefaultAllocationForType(leaveType: string): number {
+  const defaults: Record<string, number> = {
+    annual: 30,      // 30 days annual leave per Algerian labor law
+    sick: 15,        // 15 days paid sick leave
+    maternity: 98,   // 14 weeks maternity leave
+    paternity: 3,    // 3 days paternity leave
+    unpaid: 0,       // No allocation for unpaid leave
+    exceptional: 10, // 10 days exceptional leave
+    other: 0         // No default for other types
+  };
+  
+  return defaults[leaveType] ?? 0;
 }

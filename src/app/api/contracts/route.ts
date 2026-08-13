@@ -2,14 +2,94 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
 
+// ============================================================
+// HASSIBA Suite ERP v2.0.0 - Contracts API
+// FIXES: H-17 (Automated Contract Lifecycle)
+// ============================================================
+
+// ============================================================
+// H-17: Contract Status Validation & Transitions
+// Valid status transitions for contracts
+// ============================================================
+const VALID_CONTRACT_TRANSITIONS: Record<string, string[]> = {
+  draft: ['active', 'cancelled', 'expired'],
+  active: ['expired', 'terminated', 'suspended', 'renewed'],
+  suspended: ['active', 'terminated', 'cancelled'],
+  terminated: [], // Terminal state
+  cancelled: [], // Terminal state
+  expired: ['renewed', 'active'], // Can be renewed or reactivated
+  renewed: ['active']
+};
+
+/**
+ * H-17: Check if a contract is near expiration (within 30 days)
+ */
+function isContractNearExpiration(endDate: Date | null): boolean {
+  if (!endDate) return false;
+  const now = new Date();
+  const daysUntilExpiration = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  return daysUntilExpiration <= 30 && daysUntilExpiration > 0;
+}
+
+/**
+ * H-17: Check if a contract has expired
+ */
+function isContractExpired(endDate: Date | null): boolean {
+  if (!endDate) return false;
+  return new Date() > endDate;
+}
+
+/**
+ * H-17: Auto-expire contracts that have passed their end date
+ * This should be called periodically or on contract fetch
+ */
+export async function checkAndExpireContracts(): Promise<{ checked: number; expired: number }> {
+  try {
+    // Find active contracts that have passed their end date
+    const activeContracts = await db.contract.findMany({
+      where: {
+        status: 'active',
+        endDate: { not: null },
+        endDate: { lt: new Date() }
+      }
+    });
+
+    let expiredCount = 0;
+    for (const contract of activeContracts) {
+      await db.contract.update({
+        where: { id: contract.id },
+        data: { 
+          status: 'expired',
+          internalNotes: contract.internalNotes 
+            ? `${contract.internalNotes}\n[Auto-expired ${new Date().toISOString().slice(0, 10)}]`
+            : `[Auto-expired ${new Date().toISOString().slice(0, 10)}]`
+        }
+      });
+      expiredCount++;
+      console.log(`H-17: Contract ${contract.reference} auto-expired`);
+    }
+
+    return { checked: activeContracts.length, expired: expiredCount };
+  } catch (error) {
+    console.error('Error in checkAndExpireContracts:', error);
+    return { checked: 0, expired: 0 };
+  }
+}
+
 /**
  * GET /api/contracts - List contracts with filters
  * Query params: employeeId, status, type, department, page, limit
+ * H-17: Includes expiration warnings and auto-expiration check
  */
 export async function GET(request: Request) {
   // SECURITY: Require authentication for contract data (contains PII)
   const authError = await requireAuth(request);
   if (authError) return authError;
+
+  // H-17: Run expiration check on each GET request (lightweight async operation)
+  checkAndExpireContracts().catch(err => 
+    console.error('Background contract expiration check failed:', err)
+  );
 
   try {
     const { searchParams } = new URL(request.url);
@@ -72,9 +152,23 @@ export async function GET(request: Request) {
       }
     });
 
+    // H-17: Enrich contracts with lifecycle information
+    const enrichedContracts = contracts.map(contract => ({
+      ...contract,
+      // Add computed lifecycle fields
+      _lifecycle: {
+        isNearExpiration: isContractNearExpiration(contract.endDate),
+        isExpired: isContractExpired(contract.endDate),
+        daysUntilExpiration: contract.endDate 
+          ? Math.max(0, Math.ceil((contract.endDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+          : null,
+        canTransitionTo: VALID_CONTRACT_TRANSITIONS[contract.status] || []
+      }
+    }));
+
     return NextResponse.json({
       success: true,
-      data: contracts,
+      data: enrichedContracts,
       pagination: {
         page,
         limit,
@@ -94,6 +188,7 @@ export async function GET(request: Request) {
 /**
  * POST /api/contracts - Create new contract
  * Body: employeeId, type, startDate, endDate?, baseSalary, and other optional fields
+ * H-17: Validates status transitions and enforces business rules
  */
 export async function POST(request: Request) {
   // SECURITY: Require HR role for contract creation
@@ -154,6 +249,39 @@ export async function POST(request: Request) {
       );
     }
 
+    // H-17: Check for overlapping active contracts
+    const existingActiveContract = await db.contract.findFirst({
+      where: {
+        employeeId: body.employeeId,
+        status: { in: ['active', 'draft'] },
+        ...(endDate ? {
+          OR: [
+            { endDate: null }, // Indeterminate contract
+            { endDate: { gte: startDate } } // Overlaps with new contract start
+          ]
+        } : {
+          startDate: { lte: startDate } // New contract starts during existing one
+        })
+      }
+    });
+
+    if (existingActiveContract && body.status !== 'draft') {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: `Cet employé a déjà un contrat actif (${existingActiveContract.reference}). Veuillez d'abord résilier ou suspendre le contrat existant.`,
+          existingContract: {
+            id: existingActiveContract.id,
+            reference: existingActiveContract.reference,
+            type: existingActiveContract.type,
+            status: existingActiveContract.status,
+            endDate: existingActiveContract.endDate
+          }
+        },
+        { status: 409 }
+      );
+    }
+
     // Generate reference (CTR-YYYY-XXX)
     const year = startDate.getFullYear();
     const contractCount = await db.contract.count({
@@ -170,12 +298,26 @@ export async function POST(request: Request) {
       trialEndDate = new Date(body.trialEndDate);
     }
 
+    // H-17: Determine initial status based on dates
+    let initialStatus = body.status || 'draft';
+    if (!initialStatus || initialStatus === 'draft') {
+      // If start date is in the past or today, consider it active
+      if (startDate <= new Date()) {
+        initialStatus = 'active';
+      }
+    }
+    
+    // Validate initial status against allowed transitions from 'draft'
+    if (!['draft', 'active'].includes(initialStatus)) {
+      initialStatus = 'draft';
+    }
+
     // Create contract
     const contract = await db.contract.create({
       data: {
         reference,
         type: body.type,
-        status: 'draft',
+        status: initialStatus,
         
         // Dates
         startDate,
@@ -241,8 +383,15 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success: true,
-      data: contract,
-      message: `Contrat ${reference} créé avec succès`
+      data: {
+        ...contract,
+        _lifecycle: {
+          isNearExpiration: isContractNearExpiration(contract.endDate),
+          isExpired: isContractExpired(contract.endDate),
+          canTransitionTo: VALID_CONTRACT_TRANSITIONS[contract.status] || []
+        }
+      },
+      message: `Contrat ${reference} créé avec succès${initialStatus === 'active' ? ' (activé automatiquement)' : ''}`
     }, { status: 201 });
   } catch (error) {
     console.error('Contracts POST Error:', error);

@@ -216,12 +216,36 @@ export async function POST(request: Request) {
         });
       } else {
         // Update existing stock level
-        const newQty = Math.max(0, stockLevel.quantity + adjustedQty);
+        const newQty = stockLevel.quantity + adjustedQty;
+        
+        // M-07 FIX: Check for negative stock and handle based on policy
+        if (newQty < 0) {
+          const currentQty = stockLevel.quantity;
+          console.warn(`[M-07] Stock adjustment would result in negative stock: Product ${productId}, Current: ${currentQty}, Adjustment: ${adjustedQty}`);
+          
+          if (process.env.NEGATIVE_STOCK_POLICY !== 'allow') {
+            return NextResponse.json(
+              { 
+                success: false, 
+                error: `Ajustement refusé: résulterait en un stock négatif. Stock actuel: ${currentQty}, Ajustement demandé: ${adjustedQty}`,
+                code: 'NEGATIVE_STOCK_PREVENTED',
+                details: {
+                  currentStock: currentQty,
+                  requestedAdjustment: adjustedQty,
+                  resultingStock: newQty
+                }
+              },
+              { status: 409 }
+            );
+          }
+        }
+        
+        const safeNewQty = Math.max(0, newQty); // Final safety clamp if policy allows negative
         stockLevel = await tx.stockLevel.update({
           where: { id: stockLevel.id },
           data: {
-            quantity: newQty,
-            availableQty: Math.max(0, newQty - stockLevel.reservedQty)
+            quantity: safeNewQty,
+            availableQty: Math.max(0, safeNewQty - stockLevel.reservedQty)
           }
         });
       }

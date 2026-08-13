@@ -9,6 +9,13 @@ import {
 } from '@/lib/algerian-taxes';
 import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
 
+// M-04 FIX: Valid Algerian tax declaration types with their required fields
+const VALID_DECLARATION_TYPES = ['G50_TVA', 'G2_TAP', 'G1_IRG', 'G4_IBS'] as const;
+type DeclarationType = typeof VALID_DECLARATION_TYPES[number];
+
+// M-04 FIX: Period validation regex (YYYY-MM format)
+const PERIOD_REGEX = /^\d{4}-(0[1-9]|1[0-2])$/;
+
 // GET /api/taxes - Tax calculations and declarations
 export async function GET(request: Request) {
   // SECURITY: Require authentication for tax data
@@ -100,7 +107,64 @@ async function handleCalculation(type: string | null, params: URLSearchParams) {
 
 async function getDeclarations(params: URLSearchParams) {
   const period = params.get('period'); // YYYY-MM format
-  const type = params.get('type'); // G50, G1, G2, G4
+  const type = params.get('type'); // G50, G1, G2, G4 (or full names)
+
+  // M-04 FIX: Validate period format if provided
+  if (period && !PERIOD_REGEX.test(period)) {
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: 'Invalid period format. Expected YYYY-MM (e.g., 2025-01)',
+        code: 'INVALID_PERIOD_FORMAT'
+      },
+      { status: 400 }
+    );
+  }
+  
+  // M-04 FIX: Validate period is not in the future
+  if (period) {
+    const [year, month] = period.split('-').map(Number);
+    const periodDate = new Date(year, month - 1); // Month is 0-indexed
+    const now = new Date();
+    const currentMonth = new Date(now.getFullYear(), now.getMonth());
+    
+    if (periodDate > currentMonth) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: 'Declaration period cannot be in the future',
+          code: 'FUTURE_PERIOD'
+        },
+        { status: 400 }
+      );
+    }
+  }
+
+  // M-04 FIX: Normalize declaration type (allow short codes like G50, G1, etc.)
+  let normalizedType = type;
+  if (type && !type.startsWith('G50') && !type.startsWith('G2_') && !type.startsWith('G1_') && !type.startsWith('G4_')) {
+    // Map short codes to full names
+    const typeMap: Record<string, string> = {
+      'G50': 'G50_TVA',
+      'G2': 'G2_TAP',
+      'G1': 'G1_IRG',
+      'G4': 'G4_IBS'
+    };
+    normalizedType = typeMap[type] || type;
+  }
+  
+  // M-04 FIX: Validate declaration type if provided
+  if (normalizedType && !VALID_DECLARATION_TYPES.includes(normalizedType as DeclarationType)) {
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: `Invalid declaration type. Valid types: ${VALID_DECLARATION_TYPES.join(', ')}`,
+        validTypes: VALID_DECLARATION_TYPES,
+        code: 'INVALID_DECLARATION_TYPE'
+      },
+      { status: 400 }
+    );
+  }
 
   const whereClause: any = {};
   
@@ -108,8 +172,8 @@ async function getDeclarations(params: URLSearchParams) {
     whereClause.period = period;
   }
   
-  if (type) {
-    whereClause.type = type;
+  if (normalizedType) {
+    whereClause.type = normalizedType;
   }
 
   const declarations = await db.taxDeclaration.findMany({
@@ -118,10 +182,18 @@ async function getDeclarations(params: URLSearchParams) {
     take: 50
   });
 
+  // M-04 FIX: Return proper structure with metadata
   return NextResponse.json({
     success: true,
     data: declarations,
-    count: declarations.length
+    count: declarations.length,
+    meta: {
+      availableTypes: VALID_DECLARATION_TYPES,
+      filtersApplied: {
+        period: period || null,
+        type: normalizedType || null
+      }
+    }
   });
 }
 
@@ -142,6 +214,31 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
+    
+    // M-04 FIX: Validate declaration type
+    if (!VALID_DECLARATION_TYPES.includes(body.type)) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: `Invalid declaration type '${body.type}'. Valid types: ${VALID_DECLARATION_TYPES.join(', ')}`,
+          validTypes: VALID_DECLARATION_TYPES,
+          code: 'INVALID_DECLARATION_TYPE'
+        },
+        { status: 400 }
+      );
+    }
+    
+    // M-04 FIX: Validate period format (YYYY-MM)
+    if (!PERIOD_REGEX.test(body.period)) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: 'Invalid period format. Expected YYYY-MM (e.g., 2025-01)',
+          code: 'INVALID_PERIOD_FORMAT'
+        },
+        { status: 400 }
+      );
+    }
 
     // Get company
     const company = await db.company.findFirst({ where: { isActive: true } });
@@ -149,6 +246,27 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { success: false, error: 'No company found' },
         { status: 400 }
+      );
+    }
+    
+    // M-04 FIX: Check for duplicate declaration
+    const existingDecl = await db.taxDeclaration.findFirst({
+      where: {
+        type: body.type,
+        period: body.period,
+        companyId: company.id
+      }
+    });
+    
+    if (existingDecl && existingDecl.status !== 'draft') {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: `A ${body.type} declaration for period ${body.period} already exists with status '${existingDecl.status}'`,
+          existingDeclarationId: existingDecl.id,
+          code: 'DUPLICATE_DECLARATION'
+        },
+        { status: 409 }
       );
     }
 

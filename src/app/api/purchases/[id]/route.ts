@@ -3,14 +3,19 @@
 // Commandes d'Achat - Operations sur une commande spécifique
 // PUT /api/purchases/[id] - Update purchase order
 // DELETE /api/purchases/[id] - Cancel/delete purchase order
-// POST /api/purchases/[id]/receive - Receive goods from PO
-// POST /api/purchases/[id]/confirm - Confirm PO status change
+// POST /api/purchases/[id]?action=receive - Receive goods from PO (DELEGATES to canonical)
+// POST /api/purchases/[id]?action=confirm - Confirm PO status change
+// POST /api/purchases/[id]?action=bill - Create bill from PO
+// 
+// NOTE: The receive action DELEGATES to the canonical receivePurchaseOrder()
+// in workflow-orchestrator.ts. This ensures single source of truth for receipt logic.
+// For direct receipt endpoint, use POST /api/purchases/[id]/receive
 // ============================================================
 
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { isValidTVARate, calculateLineAmounts, calculateOrderTotals } from '../route';
-import { generateSCFJournalEntryFromBill as generateBillJournalEntry } from '@/lib/workflow-orchestrator';
+import { generateSCFJournalEntryFromBill as generateBillJournalEntry, receivePurchaseOrder } from '@/lib/workflow-orchestrator';
 import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
 
 // ============================================================
@@ -550,14 +555,22 @@ export async function POST(
 }
 
 // ============================================================
-// Handle Receive Goods Action
+// Handle Receive Goods Action - DELEGATES TO CANONICAL METHOD
+// ============================================================
+// This handler DELEGATES to receivePurchaseOrder() in workflow-orchestrator.ts
+// which is the SINGLE SOURCE OF TRUTH for all goods receipt operations.
+// This ensures consistent behavior regardless of which endpoint is called.
+// 
+// CANONICAL METHOD: workflow-orchestrator.ts -> receivePurchaseOrder()
+// DIRECT ENDPOINT: POST /api/purchases/[id]/receive (preferred)
+// LEGACY ENDPOINT: POST /api/purchases/[id]?action=receive (this handler)
 // ============================================================
 
 async function handleReceiveGoods(request: NextRequest, poId: string): Promise<NextResponse> {
   try {
     const body: ReceiveGoodsInput = await request.json();
     
-    // Validate input
+    // Basic validation before delegating to canonical method
     if (!body.lines || body.lines.length === 0) {
       return NextResponse.json(
         {
@@ -568,254 +581,46 @@ async function handleReceiveGoods(request: NextRequest, poId: string): Promise<N
       );
     }
     
-    // Get PO with full details
-    const po = await db.purchaseOrder.findUnique({
-      where: { id: poId },
-      include: {
-        lines: {
-          include: {
-            product: true,
-          },
-        },
-        warehouse: true,
-        company: true,
-      },
+    // *** DELEGATE TO CANONICAL RECEIPT METHOD ***
+    // The canonical receivePurchaseOrder handles:
+    // - PO validation and status checks
+    // - Quantity validation (> 0, within limits)
+    // - Atomic $transaction for stock updates
+    // - StockMovement creation with type 'in_receipt'
+    // - StockLevel updates (find or create)
+    // - PO status transitions
+    const result = await receivePurchaseOrder({
+      purchaseOrderId: poId,
+      lines: body.lines,
+      notes: body.notes,
     });
     
-    if (!po) {
+    if (result.success) {
+      return NextResponse.json({
+        success: true,
+        data: result.data,
+        message: result.message || 'Marchandises réceptionnées avec succès',
+        workflowTrace: result.workflowTrace,
+        _delegatedTo: 'canonical:workflow-orchestrator.receivePurchaseOrder',
+      });
+    } else {
       return NextResponse.json(
         {
           success: false,
-          error: 'Commande d\'achat non trouvée',
-        },
-        { status: 404 }
-      );
-    }
-    
-    // Check if PO can receive goods
-    if (!['confirmed', 'sent', 'draft'].includes(po.status) && po.status !== 'received') {
-      return NextResponse.json(
-        {
-          success: false,
-          error: `La commande doit être confirmée avant de pouvoir recevoir des marchandises. Statut actuel: ${po.status}`,
+          error: result.message || 'Erreur lors de la réception',
+          errors: result.errors,
+          workflowTrace: result.workflowTrace,
         },
         { status: 400 }
       );
     }
-    
-    // Check if warehouse is set
-    if (!po.warehouseId) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Aucun entrepôt défini pour cette commande. Veuillez définir l\'entrepôt de réception.',
-        },
-        { status: 400 }
-      );
-    }
-    
-    // Process each received line
-    const movements = [];
-    const updatedLines = [];
-    let totalReceived = 0;
-    
-    for (const recvLine of body.lines) {
-      // Find the corresponding PO line
-      const poLine = po.lines.find((l) => l.id === recvLine.lineId);
-      
-      if (!poLine) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: `Ligne de commande ${recvLine.lineId} non trouvée`,
-          },
-          { status: 404 }
-        );
-      }
-      
-      // Validate quantity
-      if (!recvLine.quantity || recvLine.quantity <= 0) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: `La quantité reçue doit être supérieure à 0 pour le produit ${poLine.product.name}`,
-          },
-          { status: 400 }
-        );
-      }
-      
-      // Check not over-receiving
-      const maxReceivable = poLine.quantity - poLine.quantityReceived;
-      if (recvLine.quantity > maxReceivable) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: `Quantité reçue (${recvLine.quantity}) supérieure au restant à recevoir (${maxReceivable}) pour ${poLine.product.name}`,
-          },
-          { status: 400 }
-        );
-      }
-      
-      // Calculate cost for this reception
-      const lineUnitCost = poLine.unitPrice * (1 - poLine.discountRate / 100);
-      const totalCost = Math.round(recvLine.quantity * lineUnitCost * 100) / 100;
-      
-      movements.push({
-        productId: poLine.productId,
-        quantity: recvLine.quantity,
-        unitCost: lineUnitCost,
-        totalCost,
-        locationId: recvLine.locationId || null,
-        lineId: poLine.id,
-      });
-      
-      updatedLines.push({
-        lineId: poLine.id,
-        quantityReceived: poLine.quantityReceived + recvLine.quantity,
-        amountReceived: Math.round((poLine.quantityReceived + recvLine.quantity) * lineUnitCost * 100) / 100,
-      });
-      
-      totalReceived += totalCost;
-    }
-    
-    // Generate movement reference
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const movementCount = await db.stockMovement.count({
-      where: {
-        type: 'in_receipt',
-        date: {
-          gte: new Date(year, now.getMonth(), 1),
-          lt: new Date(year, now.getMonth() + 1, 1),
-        },
-      },
-    });
-    const movementRef = `ENT-${year}-${month}-${String(movementCount + 1).padStart(3, '0')}`;
-    
-    // Process in transaction
-    const result = await db.$transaction(async (tx) => {
-      // Create stock movements
-      const createdMovements = await Promise.all(
-        movements.map((mov) =>
-          tx.stockMovement.create({
-            data: {
-              reference: `${movementRef}-${mov.productId.slice(-6)}`,
-              date: now,
-              type: 'in_receipt',
-              quantity: mov.quantity,
-              unitCost: mov.unitCost,
-              totalCost: mov.totalCost,
-              notes: body.notes || `Réception commande ${po.reference}`,
-              productId: mov.productId,
-              warehouseId: po.warehouseId!,
-              locationId: mov.locationId,
-              sourceDoc: 'purchase_order',
-              sourceId: poId,
-              purchaseOrderId: poId,
-            },
-          })
-        )
-      );
-      
-      // Update PO lines quantities received
-      for (const ul of updatedLines) {
-        await tx.purchaseOrderLine.update({
-          where: { id: ul.lineId },
-          data: {
-            quantityReceived: ul.quantityReceived,
-          },
-        });
-      }
-      
-      // Update stock levels for each product
-      for (const mov of movements) {
-        // Find or create stock level
-        const existingStockLevel = await tx.stockLevel.findUnique({
-          where: {
-            productId_warehouseId_locationId: {
-              productId: mov.productId,
-              warehouseId: po.warehouseId!,
-              locationId: mov.locationId ?? '',
-            },
-          },
-        });
-        
-        if (existingStockLevel) {
-          // Update existing stock level
-          const newQuantity = existingStockLevel.quantity + mov.quantity;
-          await tx.stockLevel.update({
-            where: { id: existingStockLevel.id },
-            data: {
-              quantity: Math.round(newQuantity * 100) / 100,
-              availableQty: Math.round((newQuantity - existingStockLevel.reservedQty) * 100) / 100,
-            },
-          });
-        } else {
-          // Create new stock level
-          await tx.stockLevel.create({
-            data: {
-              productId: mov.productId,
-              warehouseId: po.warehouseId!,
-              locationId: mov.locationId,
-              quantity: mov.quantity,
-              reservedQty: 0,
-              availableQty: mov.quantity,
-              minQty: 0,
-              maxQty: 0,
-            },
-          });
-        }
-      }
-      
-      // Determine new PO status
-      let newStatus = po.status;
-      const allFullyReceived = po.lines.every(
-        (l) => {
-          const updatedL = updatedLines.find((ul) => ul.lineId === l.id);
-          return updatedL ? updatedL.quantityReceived >= l.quantity : l.quantityReceived >= l.quantity;
-        }
-      );
-      
-      if (allFullyReceived) {
-        newStatus = 'received';
-      } else if (updatedLines.length > 0 && po.status === 'confirmed') {
-        newStatus = 'received'; // Partially received
-      }
-      
-      // Update PO
-      const updatedPO = await tx.purchaseOrder.update({
-        where: { id: poId },
-        data: {
-          amountReceived: po.amountReceived + totalReceived,
-          receiptDate: now,
-          status: newStatus,
-        },
-      });
-      
-      return {
-        movements: createdMovements,
-        purchaseOrder: updatedPO,
-      };
-    });
-    
-    // Return full updated order
-    const fullOrder = await getPurchaseOrderWithDetails(poId);
-    
-    return NextResponse.json({
-      success: true,
-      data: {
-        purchaseOrder: fullOrder,
-        movements: result.movements,
-      },
-      message: `${movements.length} produit(s) reçu(s) avec succès`,
-    });
   } catch (error) {
-    console.error('Error receiving goods:', error);
+    console.error('Error receiving goods (delegated to canonical):', error);
     return NextResponse.json(
       {
         success: false,
         error: 'Erreur lors de la réception des marchandises',
+        details: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 }
     );

@@ -830,6 +830,7 @@ model Employee {
   
   payrolls            Payroll[]
   leaves              LeaveRequest[]
+  leaveBalances       LeaveBalance[]
   attendances         Attendance[]
   contracts           Contract[]
   managedContracts    Contract[]      @relation("ContractManager")
@@ -955,6 +956,28 @@ model LeaveRequest {
   updatedAt     DateTime    @updatedAt
   
   @@map("leave_requests")
+}
+
+// ============================================================
+// LEAVE BALANCE (SOLDE DE CONGÉS)
+// ============================================================
+
+model LeaveBalance {
+  id              String   @id @default(cuid())
+  employeeId      String
+  employee        Employee @relation(fields: [employeeId], references: [id])
+  leaveType       String   // annual, sick, maternity, unpaid, etc.
+  year            Int      // Fiscal year
+  totalAllocated  Float    @default(0) // Total days allocated for the year
+  totalUsed       Float    @default(0) // Total days used
+  totalPending    Float    @default(0) // Days awaiting approval
+  remaining       Float    @default(0) // Computed: totalAllocated - totalUsed - totalPending
+  lastUpdated     DateTime @updatedAt()
+  
+  @@unique([employeeId, leaveType, year])
+  @@index([employeeId])
+  @@index([year])
+  @@map("leave_balances")
 }
 
 // ============================================================
@@ -2137,7 +2160,8 @@ enum PurchaseOrderStatus {
   draft
   sent           // Envoyée au fournisseur
   confirmed      // Confirmée par fournisseur
-  received       // Partiellement/totalement reçue
+  partial        // Partiellement reçue (H-08 FIX: Added for partial receipts)
+  received       // Totalement reçue
   billed         // Facturée par fournisseur
   done           // Terminée
   cancelled      // Annulée

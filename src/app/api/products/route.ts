@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
+import { requireAuth, requireRole, getAuthenticatedUser, ROLES } from '@/lib/auth-utils';
 
 // GET /api/products - List products
 export async function GET(request: Request) {
@@ -15,6 +15,9 @@ export async function GET(request: Request) {
     const type = searchParams.get('type');
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '50');
+
+    // SECURITY: Get authenticated user for company scoping
+    const user = await getAuthenticatedUser();
 
     const whereClause: any = { isActive: true };
     
@@ -32,6 +35,11 @@ export async function GET(request: Request) {
 
     if (type) {
       whereClause.type = type;
+    }
+
+    // SECURITY: Company scoping - non-super-admins can only see their company's data
+    if (user && user.role !== ROLES.SUPER_ADMIN && user.companyId) {
+      whereClause.companyId = user.companyId;
     }
 
     const [products, total] = await Promise.all([

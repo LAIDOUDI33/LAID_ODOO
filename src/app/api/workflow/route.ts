@@ -15,6 +15,11 @@ import {
   addWorkflowComment,
   cancelWorkflowInstance,
   getWorkflowStats,
+  // C-17 & C-18 FIX: Escalation and notification functions
+  checkAndEscalate,
+  sendDeadlineReminders,
+  getWorkflowsApproachingDeadline,
+  ESCALATION_TIMEOUTS,
 } from "@/lib/workflow";
 import { WorkflowType, WorkflowStatus, ApprovalAction } from "@prisma/client";
 import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
@@ -43,6 +48,24 @@ export async function GET(request: Request) {
     if (searchParams.get("stats") === "true") {
       const stats = await getWorkflowStats();
       return NextResponse.json({ success: true, data: stats });
+    }
+
+    // C-17 FIX: Endpoint for escalation timeout configuration
+    if (searchParams.get("timeouts") === "true") {
+      return NextResponse.json({ 
+        success: true, 
+        data: { 
+          timeouts: ESCALATION_TIMEOUTS,
+          description: "Escalation timeouts in hours per workflow type"
+        } 
+      });
+    }
+
+    // C-17 FIX: Endpoint for checking workflows approaching deadline
+    if (searchParams.get("approaching-deadline") === "true") {
+      const hoursThreshold = parseInt(searchParams.get("threshold") || "4");
+      const approaching = await getWorkflowsApproachingDeadline(hoursThreshold);
+      return NextResponse.json({ success: true, data: approaching });
     }
 
     // Récupérer une instance spécifique
@@ -201,6 +224,38 @@ export async function POST(request: Request) {
 
       const result = await cancelWorkflowInstance(instanceId, userId, reason);
       return NextResponse.json(result);
+    }
+
+    // C-17 FIX: Check and escalate expired approvals
+    if (action === "check_escalation" || action === "escalate") {
+      const { instanceId: escalateInstanceId } = data;
+      
+      // Require admin or manager role for escalation checks
+      const escalateAuthError = await requireRole(request, ['admin', 'manager']);
+      if (escalateAuthError) return escalateAuthError;
+
+      try {
+        const result = await checkAndEscalate(escalateInstanceId);
+        return NextResponse.json({ success: true, data: result });
+      } catch (error) {
+        console.error("Escalation check error:", error);
+        return NextResponse.json(
+          { success: false, error: "Failed to perform escalation check" },
+          { status: 500 }
+        );
+      }
+    }
+
+    // C-17/C-18 FIX: Send deadline reminder notifications
+    if (action === "send_reminders") {
+      const { threshold } = data;
+      
+      // Require admin role for sending reminders
+      const reminderAuthError = await requireRole(request, ['admin', 'manager']);
+      if (reminderAuthError) return reminderAuthError;
+
+      const result = await sendDeadlineReminders(threshold || 4);
+      return NextResponse.json({ success: true, data: result });
     }
 
     return NextResponse.json(

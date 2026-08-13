@@ -1,13 +1,21 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { calculateTVACollectee, getTimbreFiscal } from '@/lib/algerian-taxes';
-import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
+import { calculateTVACollectee, getTimbreFiscal, isValidTVARate, normalizeTVARate, tvaToInt } from '@/lib/algerian-taxes';
+import { requireAuth, requireRole, getAuthenticatedUser, ROLES } from '@/lib/auth-utils';
+
+// Valid invoice statuses from InvoiceStatus enum
+const VALID_INVOICE_STATUSES = ['draft', 'sent', 'paid', 'partial', 'cancelled'];
 
 // GET /api/invoices - List invoices
 export async function GET(request: Request) {
   // SECURITY: Require authentication for financial data
   const authError = await requireAuth(request);
   if (authError) return authError;
+  
+  // SECURITY FIX C-08: IDOR Vulnerability - Company Data Isolation
+  // CVSS 8.6 - HIGH: Users could previously access invoices from other companies
+  // Get authenticated user for company scoping
+  const user = await getAuthenticatedUser();
   
   try {
     const { searchParams } = new URL(request.url);
@@ -18,6 +26,12 @@ export async function GET(request: Request) {
     const limit = parseInt(searchParams.get('limit') || '20');
 
     const whereClause: any = {};
+    
+    // SECURITY FIX C-08: Enforce company data isolation
+    // Non-super_admin users can only see invoices from their own company
+    if (user && user.role !== ROLES.SUPER_ADMIN && user.companyId) {
+      whereClause.companyId = user.companyId;
+    }
     
     if (status && status !== 'all') {
       whereClause.status = status;
@@ -102,19 +116,30 @@ export async function POST(request: Request) {
     const reference = `FACT-${year}-${month}-${sequence}`;
 
     // Calculate line amounts and TVA
-    const linesData = body.lines.map((line: any) => ({
-      productId: line.productId,
-      label: line.label || null,
-      quantity: parseFloat(line.quantity) || 0,
-      unitPrice: parseFloat(line.unitPrice) || 0,
-      discountRate: parseFloat(line.discountRate) || 0,
-      tvaRate: parseFloat(line.tvaRate) || 0.19,
-      amountUntaxed: Math.round((parseFloat(line.quantity) * parseFloat(line.unitPrice)) * 100) / 100,
-      amountTax: 0, // Will be calculated below
-      amountTotal: 0 // Will be calculated below
-    }));
+    // Validate TVA rates first - accept both INTEGER (19) and DECIMAL (0.19) formats
+    const linesData = body.lines.map((line: any, index: number) => {
+      const rawTvaRate = parseFloat(line.tvaRate) || 0.19; // Default to 19% normal rate
+      
+      // Validate TVA rate
+      if (!isValidTVARate(rawTvaRate)) {
+        throw new Error(`Taux TVA invalide pour la ligne ${index + 1}: ${rawTvaRate}. Taux autorisés: 0%, 7%, 9%, 19%`);
+      }
+      
+      return {
+        productId: line.productId,
+        label: line.label || null,
+        quantity: parseFloat(line.quantity) || 0,
+        unitPrice: parseFloat(line.unitPrice) || 0,
+        discountRate: parseFloat(line.discountRate) || 0,
+        tvaRate: normalizeTVARate(rawTvaRate), // Normalize to DECIMAL for calculations
+        tvaRateForStorage: rawTvaRate > 1 ? rawTvaRate : tvaToInt(rawTvaRate), // Store as integer
+        amountUntaxed: Math.round((parseFloat(line.quantity) * parseFloat(line.unitPrice)) * 100) / 100,
+        amountTax: 0, // Will be calculated below
+        amountTotal: 0 // Will be calculated below
+      };
+    });
 
-    // Calculate TVA for each line
+    // Calculate TVA for each line using DECIMAL format
     linesData.forEach((line: any) => {
       const montantHTApresRemise = line.amountUntaxed * (1 - line.discountRate / 100);
       line.amountUntaxed = Math.round(montantHTApresRemise * 100) / 100;
@@ -140,52 +165,63 @@ export async function POST(request: Request) {
     const dueDate = body.dueDate ? new Date(body.dueDate) : new Date(now.getTime() + (parseInt(body.paymentTerms || '30') * 24 * 60 * 60 * 1000));
 
     // Create invoice with lines in a transaction
-    const invoice = await db.invoice.create({
-      data: {
-        reference,
-        date: now,
-        dueDate,
-        status: 'draft',
-        type: body.type || 'invoice',
-        
-        // Amounts
-        amountUntaxed,
-        amountTax,
-        timbreFiscal,
-        amountTotal,
-        amountPaid: 0,
-        amountDue: amountTotal,
-        
-        // Partner & Company
-        partnerId: body.partnerId,
-        companyId: company.id,
-        
-        // Payment info
-        paymentTerm: body.paymentTerms || '30',
-        paymentMode: body.paymentMode || null,
-        
-        // Notes
-        internalNotes: body.internalNotes || null,
-        customerNotes: body.customerNotes || null,
-        
-        lines: {
-          create: linesData.map((line: any) => ({
-            productId: line.productId,
-            label: line.label,
-            quantity: line.quantity,
-            unitPrice: line.unitPrice,
-            discountRate: line.discountRate,
-            tvaRate: line.tvaRate,
-            amountUntaxed: line.amountUntaxed,
-            amountTax: line.amountTax,
-            amountTotal: line.amountTotal
-          }))
+    // H-02 FIX: Wrapped in $transaction to ensure atomicity - if line creation fails,
+    // the header is also rolled back to prevent partial data
+    const invoice = await db.$transaction(async (tx) => {
+      const createdInvoice = await tx.invoice.create({
+        data: {
+          reference,
+          date: now,
+          dueDate,
+          status: 'draft',
+          type: body.type || 'invoice',
+          
+          // Amounts
+          amountUntaxed,
+          amountTax,
+          timbreFiscal,
+          amountTotal,
+          amountPaid: 0,
+          amountDue: amountTotal,
+          
+          // Partner & Company
+          partnerId: body.partnerId,
+          companyId: company.id,
+          
+          // Payment info
+          paymentTerm: body.paymentTerms || '30',
+          paymentMode: body.paymentMode || null,
+          
+          // Notes
+          internalNotes: body.internalNotes || null,
+          customerNotes: body.customerNotes || null
         }
-      },
-      include: {
-        partner: true,
-        lines: { include: { product: true } }
-      }
+      });
+      
+      // Create invoice lines separately within transaction
+      await tx.invoiceLine.createMany({
+        data: linesData.map((line: any) => ({
+          invoiceId: createdInvoice.id,
+          productId: line.productId,
+          label: line.label,
+          quantity: line.quantity,
+          unitPrice: line.unitPrice,
+          discountRate: line.discountRate,
+          tvaRate: line.tvaRateForStorage, // Store as integer for DB consistency
+          amountUntaxed: line.amountUntaxed,
+          amountTax: line.amountTax,
+          amountTotal: line.amountTotal
+        }))
+      });
+      
+      // Return the complete invoice with lines
+      return tx.invoice.findUnique({
+        where: { id: createdInvoice.id },
+        include: {
+          partner: true,
+          lines: { include: { product: true } }
+        }
+      });
     });
 
     return NextResponse.json({ 

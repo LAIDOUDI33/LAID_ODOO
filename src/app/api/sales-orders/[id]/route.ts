@@ -464,11 +464,21 @@ export async function POST(
 
 // ============================================================
 // Action: Confirm Sales Order
+// H-04 FIX: Added stock reservation on order confirmation
 // ============================================================
 async function handleConfirm(id: string) {
+  // Get order with full details including product and warehouse info
   const order = await db.salesOrder.findUnique({
     where: { id },
-    include: { lines: true }
+    include: { 
+      lines: { 
+        include: { 
+          product: true
+        } 
+      },
+      warehouse: true,
+      partner: { select: { id: true, name: true } }
+    }
   });
 
   if (!order) {
@@ -485,19 +495,77 @@ async function handleConfirm(id: string) {
     );
   }
 
-  const confirmedOrder = await db.salesOrder.update({
-    where: { id },
-    data: { status: 'confirmed' },
-    include: {
-      partner: { select: { id: true, name: true } },
-      lines: { include: { product: { select: { id: true, name: true } } } }
+  // Determine target warehouse for stock reservation
+  const targetWarehouseId = order.warehouseId;
+  
+  // H-04 FIX: Perform confirmation with stock reservation in a transaction
+  const confirmedOrder = await db.$transaction(async (tx) => {
+    // First, validate stock availability for all lines (if warehouse is specified)
+    if (targetWarehouseId) {
+      for (const line of order.lines) {
+        const stockLevel = await tx.stockLevel.findUnique({
+          where: {
+            productId_warehouseId_locationId: {
+              productId: line.productId,
+              warehouseId: targetWarehouseId,
+              locationId: '' // Default location
+            }
+          }
+        });
+        
+        const availableQty = stockLevel ? (stockLevel.quantity - stockLevel.reservedQty) : 0;
+        
+        // Warn if insufficient stock (but don't block confirmation - allow backorder)
+        if (availableQty < line.quantity) {
+          console.warn(`Stock warning: Product ${line.product?.name || line.productId} has ${availableQty} available, but ${line.quantity} required. Order will be confirmed as backorder.`);
+        }
+      }
+      
+      // Reserve stock for each line item
+      for (const line of order.lines) {
+        const stockLevel = await tx.stockLevel.findUnique({
+          where: {
+            productId_warehouseId_locationId: {
+              productId: line.productId,
+              warehouseId: targetWarehouseId,
+              locationId: ''
+            }
+          }
+        });
+        
+        if (stockLevel) {
+          // Update reserved quantity
+          await tx.stockLevel.update({
+            where: { id: stockLevel.id },
+            data: {
+              reservedQty: stockLevel.reservedQty + line.quantity,
+              availableQty: Math.max(0, stockLevel.quantity - (stockLevel.reservedQty + line.quantity))
+            }
+          });
+        }
+        // If no stock level exists, we could create one with negative availability
+        // or just skip - choosing to skip to allow backorders
+      }
     }
+    
+    // Update order status to confirmed
+    const updatedOrder = await tx.salesOrder.update({
+      where: { id },
+      data: { status: 'confirmed' },
+      include: {
+        partner: { select: { id: true, name: true } },
+        lines: { include: { product: { select: { id: true, name: true } } } },
+        warehouse: { select: { id: true, name: true } }
+      }
+    });
+    
+    return updatedOrder;
   });
 
   return NextResponse.json({
     success: true,
     data: confirmedOrder,
-    message: `Sales Order ${confirmedOrder.reference} has been confirmed`
+    message: `Sales Order ${confirmedOrder.reference} has been confirmed${targetWarehouseId ? ' and stock reserved' : ''}`
   });
 }
 
@@ -589,13 +657,13 @@ async function handleDeliver(id: string, body: any) {
         throw new Error(`Cannot deliver ${qtyToDeliver} units. Only ${remainingQty} remaining for this line.`);
       }
 
-      // Create stock movement (outgoing)
+      // Create stock movement (outgoing) - FIXED C-10: Using correct movement type 'out_delivery'
       const movementRef = `SORT-${year}-${month}-${sequence}-${movements.length + 1}`;
       const movement = await tx.stockMovement.create({
         data: {
           reference: movementRef,
           date: deliveryDt,
-          type: 'out',
+          type: 'out_delivery', // FIXED: was invalid 'out'
           quantity: qtyToDeliver,
           unitCost: line.unitPrice, // Use selling price as cost reference
           totalCost: Math.round(qtyToDeliver * line.unitPrice * 100) / 100,
@@ -609,6 +677,31 @@ async function handleDeliver(id: string, body: any) {
         }
       });
       movements.push(movement);
+
+      // FIXED C-09: Decrement stock level for this product/warehouse
+      const stockUpdateResult = await tx.stockLevel.updateMany({
+        where: {
+          productId: line.productId,
+          warehouseId: targetWarehouseId
+        },
+        data: {
+          quantity: { decrement: qtyToDeliver },
+          availableQty: { decrement: qtyToDeliver }
+        }
+      });
+
+      // If no stock level record found, create one with negative quantity (should not happen in normal flow)
+      if (stockUpdateResult.count === 0) {
+        await tx.stockLevel.create({
+          data: {
+            productId: line.productId,
+            warehouseId: targetWarehouseId,
+            quantity: -qtyToDeliver,
+            availableQty: -qtyToDeliver,
+            reservedQty: 0
+          }
+        });
+      }
 
       // Update line delivered quantity
       const newQtyDelivered = line.quantityDelivered + qtyToDeliver;

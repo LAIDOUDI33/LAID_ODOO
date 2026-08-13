@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
+import { requireAuth, requireRole, getAuthenticatedUser, ROLES } from '@/lib/auth-utils';
 
 // GET /api/partners - List partners
 export async function GET(request: Request) {
@@ -13,6 +13,9 @@ export async function GET(request: Request) {
     const type = searchParams.get('type'); // customer, supplier, both
     const search = searchParams.get('search');
     const wilaya = searchParams.get('wilaya');
+
+    // SECURITY: Get authenticated user for company scoping
+    const user = await getAuthenticatedUser();
 
     const whereClause: any = { isActive: true };
     
@@ -31,6 +34,11 @@ export async function GET(request: Request) {
 
     if (wilaya) {
       whereClause.wilayaCode = wilaya;
+    }
+
+    // SECURITY: Company scoping - non-super-admins can only see their company's data
+    if (user && user.role !== ROLES.SUPER_ADMIN && user.companyId) {
+      whereClause.companyId = user.companyId;
     }
 
     const partners = await db.partner.findMany({

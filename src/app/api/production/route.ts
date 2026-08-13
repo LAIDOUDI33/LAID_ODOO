@@ -3,6 +3,13 @@ import { db } from '@/lib/db';
 import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
 
 // ============================================================
+// HASSIBA Suite ERP v2.0.0 - Production API
+// FIXES: H-20 (Costing Automation), H-21 (Labor Cost), 
+//        H-22 (WIP Tracking), H-23 (BOM Explosion)
+// M-11 FIX: WorkCenter.hourlyCost now applied in production cost calculations
+// ============================================================
+
+// ============================================================
 // GET /api/production - Production Dashboard & KPIs
 // ============================================================
 export async function GET(request: Request) {
@@ -299,7 +306,9 @@ async function createWorkOrder(data: any) {
     bomId,
     routingId,
     assignedToId,
-    createdById
+    createdById,
+    // H-23: Auto-populate from BOM if productId provided
+    autoPopulateFromBom
   } = data;
   
   // Validate required fields
@@ -308,6 +317,67 @@ async function createWorkOrder(data: any) {
       { success: false, error: 'Product and quantity are required' },
       { status: 400 }
     );
+  }
+  
+  // Get company
+  const company = await db.company.findFirst({ where: { isActive: true } });
+  if (!company) {
+    return NextResponse.json(
+      { success: false, error: 'No active company configured' },
+      { status: 400 }
+    );
+  }
+  
+  // ============================================================
+  // H-23 FIX: BOM EXPLOSION TO WORK ORDER
+  // Auto-populate WO lines from BOM when productId is specified
+  // ============================================================
+  let workOrderLines: any[] = data.lines || [];
+  let effectiveBomId = bomId;
+  
+  if ((autoPopulateFromBom || !workOrderLines || workOrderLines.length === 0) && productId) {
+    // Find the active BOM for this product
+    const activeBom = await db.billOfMaterials.findFirst({
+      where: {
+        productId,
+        isActive: true
+      },
+      include: {
+        lines: {
+          orderBy: { sequence: 'asc' },
+          include: {
+            component: {
+              select: { id: true, name: true, code: true, costPrice: true, unitOfMeasure: true }
+            }
+          }
+        },
+        product: { select: { id: true, costPrice: true } }
+      },
+      orderBy: { version: 'desc' }
+    });
+    
+    if (activeBom) {
+      effectiveBomId = activeBom.id;
+      
+      // Calculate required quantities based on planned quantity and BOM output quantity
+      const quantityMultiplier = parseFloat(quantityPlanned) / (activeBom.outputQuantity || 1);
+      
+      // Explode BOM lines to WO lines
+      workOrderLines = activeBom.lines.map(bomLine => ({
+        productId: bomLine.componentId,
+        productName: bomLine.component?.name || '',
+        quantityPlanned: bomLine.quantity * quantityMultiplier,
+        unitOfMeasure: bomLine.unitOfMeasure || bomLine.component?.unitOfMeasure || 'U',
+        type: 'component', // Consumption line
+        unitCost: bomLine.unitCost || bomLine.component?.costPrice || 0,
+        totalCost: (bomLine.quantity * quantityMultiplier) * (bomLine.unitCost || bomLine.component?.costPrice || 0),
+        sequence: bomLine.sequence,
+        isOptional: bomLine.isOptional || false,
+        scrapPercentage: bomLine.scrapPercentage || 0
+      }));
+      
+      console.log(`H-23: BOM exploded for WO - ${workOrderLines.length} components from BOM ${activeBom.code}`);
+    }
   }
   
   // Generate reference
@@ -321,45 +391,98 @@ async function createWorkOrder(data: any) {
   const sequence = String(orderCount + 1).padStart(4, '0');
   const reference = `OF-${year}-${month}-${sequence}`;
   
-  // Get company
-  const company = await db.company.findFirst({ where: { isActive: true } });
-  if (!company) {
-    return NextResponse.json(
-      { success: false, error: 'No active company configured' },
-      { status: 400 }
-    );
+  // H-20/H-22: Pre-calculate estimated cost from BOM components
+  const estimatedMaterialCost = workOrderLines.reduce(
+    (sum, line) => sum + (line.totalCost || 0), 0
+  );
+  
+  // M-11 FIX: Get WorkCenter hourly cost for labor cost estimation
+  let workCenterHourlyCost = 0;
+  let estimatedLaborHours = 0; // Default or from routing
+  let estimatedLaborCost = 0;
+  
+  if (workCenterId) {
+    try {
+      const workCenter = await db.workCenter.findUnique({
+        where: { id: workCenterId },
+        select: { id: true, name: true, hourlyCost: true, hourlyRate: true }
+      });
+      
+      if (workCenter) {
+        // Use hourlyCost field (primary) or fallback to hourlyRate
+        workCenterHourlyCost = workCenter.hourlyCost || workCenter.hourlyRate || 0;
+        
+        // Estimate labor hours based on quantity and standard cycle time
+        // This is a simplified estimation - in production, this would come from routing operations
+        estimatedLaborHours = parseFloat(quantityPlanned) * 0.5; // Default: 0.5 hrs per unit
+        estimatedLaborCost = estimatedLaborHours * workCenterHourlyCost;
+        
+        console.log(`[M-11] Using WorkCenter ${workCenter.name} hourly cost: ${workCenterHourlyCost} DZD/hr for WO cost estimation`);
+      }
+    } catch (e) {
+      console.warn('[M-11] Could not fetch WorkCenter for hourly cost, using defaults');
+    }
   }
   
-  // Create work order
+  // Create work order with lines
+  const workOrderData: any = {
+    reference,
+    productId,
+    quantityPlanned: parseFloat(quantityPlanned),
+    quantityRemaining: parseFloat(quantityPlanned),
+    priority: priority || 'normal',
+    scheduledStart: scheduledStart ? new Date(scheduledStart) : null,
+    scheduledEnd: scheduledEnd ? new Date(scheduledEnd) : null,
+    workCenterId: workCenterId || null,
+    bomId: effectiveBomId || null,
+    routingId: routingId || null,
+    assignedToId: assignedToId || null,
+    createdById: createdById || null,
+    companyId: company.id,
+    notes: notes || '',
+    status: 'planned',
+    // H-20: Set initial estimated cost (material + labor estimate)
+    estimatedCost: estimatedMaterialCost + estimatedLaborCost,
+    // M-11 FIX: Store labor cost estimate separately for tracking
+    estimatedLaborCost: estimatedLaborCost,
+    // H-22: Initial WIP value is 0 (no work started)
+    wipValue: 0,
+    completionPercentage: 0
+  };
+  
+  // Include lines if we have them from BOM explosion
+  if (workOrderLines.length > 0) {
+    workOrderData.lines = {
+      create: workOrderLines.map((line: any, index: number) => ({
+        productId: line.productId,
+        productName: line.productName || '',
+        quantityPlanned: line.quantityPlanned,
+        quantityIssued: 0,
+        quantityConsumed: 0,
+        unitOfMeasure: line.unitOfMeasure || 'U',
+        type: line.type || 'component',
+        unitCost: line.unitCost || 0,
+        totalCost: line.totalCost || 0,
+        sequence: line.sequence ?? index,
+        notes: `From BOM explosion${line.isOptional ? ' (optional)' : ''}`
+      }))
+    };
+  }
+  
   const workOrder = await db.workOrder.create({
-    data: {
-      reference,
-      productId,
-      quantityPlanned: parseFloat(quantityPlanned),
-      quantityRemaining: parseFloat(quantityPlanned),
-      priority: priority || 'normal',
-      scheduledStart: scheduledStart ? new Date(scheduledStart) : null,
-      scheduledEnd: scheduledEnd ? new Date(scheduledEnd) : null,
-      workCenterId: workCenterId || null,
-      bomId: bomId || null,
-      routingId: routingId || null,
-      assignedToId: assignedToId || null,
-      createdById: createdById || null,
-      companyId: company.id,
-      notes: notes || '',
-      status: 'planned'
-    },
+    data: workOrderData,
     include: {
       product: true,
       workCenter: true,
-      assignedTo: { select: { id: true, name: true } }
+      assignedTo: { select: { id: true, name: true } },
+      ...(workOrderLines.length > 0 ? { lines: { include: { product: true } } } : {})
     }
   });
   
   return NextResponse.json({
     success: true,
     data: workOrder,
-    message: `Ordre de fabrication ${reference} créé avec succès`
+    message: `Ordre de fabrication ${reference} créé avec succès${workOrderLines.length > 0 ? ` (${workOrderLines.length} composants depuis nomenclature)` : ''}`
   }, { status: 201 });
 }
 
@@ -430,9 +553,24 @@ async function createBOM(data: any) {
 }
 
 async function updateWorkOrderProgress(data: any) {
-  const { id, quantityProduced, quantityScrapped, status } = data;
+  const { 
+    id, 
+    quantityProduced, 
+    quantityScrapped, 
+    status,
+    // H-21 FIX: Labor time and cost capture
+    laborTime,       // Hours worked
+    laborCost,       // Total labor cost (if known)
+    laborRate,       // Hourly rate (to calculate cost if laborTime provided)
+    operationsCompleted, // Number of operations completed (for WIP calculation)
+    totalOperations      // Total number of operations (for WIP % calculation)
+  } = data;
   
-  const workOrder = await db.workOrder.findUnique({ where: { id } });
+  const workOrder = await db.workOrder.findUnique({ 
+    where: { id },
+    include: { lines: true, product: true }
+  });
+  
   if (!workOrder) {
     return NextResponse.json(
       { success: false, error: 'Work order not found' },
@@ -441,13 +579,58 @@ async function updateWorkOrderProgress(data: any) {
   }
   
   const updateData: any = {};
+  
+  // H-21 FIX: Capture labor time and calculate cost
+  if (laborTime !== undefined) {
+    updateData.laborTime = laborTime;
+    // If laborRate provided but no laborCost, calculate it
+    if (laborRate && laborCost === undefined) {
+      updateData.laborCost = laborTime * laborRate;
+    } else if (laborCost !== undefined) {
+      updateData.laborCost = laborCost;
+    }
+  } else if (laborCost !== undefined) {
+    updateData.laborCost = laborCost;
+  }
+  
+  // M-11 FIX: Fetch WorkCenter hourly cost for fallback labor cost calculation
+  let wcHourlyCost = 0;
+  if (workOrder.workCenterId && (!laborCost || laborCost === 0)) {
+    try {
+      const wc = await db.workCenter.findUnique({
+        where: { id: workOrder.workCenterId },
+        select: { hourlyCost: true, hourlyRate: true }
+      });
+      if (wc) {
+        wcHourlyCost = wc.hourlyCost || wc.hourlyRate || 0;
+      }
+    } catch (e) {
+      console.warn('[M-11] Could not fetch WorkCenter hourly cost for WO progress update');
+    }
+  }
+  
   if (quantityProduced !== undefined) {
     updateData.quantityProduced = quantityProduced;
-    updateData.quantityRemaining = workOrder.quantityPlanned - quantityProduced - (quantityScrapped || 0);
+    updateData.quantityRemaining = workOrder.quantityPlanned - quantityProduced - (quantityScrapped || workOrder.quantityScrapped || 0);
+    
+    // H-22 FIX: Calculate completion percentage for WIP valuation
+    const completionPct = Math.min(100, (quantityProduced / workOrder.quantityPlanned) * 100);
+    updateData.completionPercentage = Math.round(completionPct * 100) / 100;
   }
+  
   if (quantityScrapped !== undefined) {
     updateData.quantityScrapped = quantityScrapped;
   }
+  
+  // H-22 FIX: Track operations completed for WIP calculation
+  if (operationsCompleted !== undefined) {
+    updateData.operationsCompleted = operationsCompleted;
+    // Calculate % based on operations if provided
+    if (totalOperations && totalOperations > 0) {
+      updateData.completionPercentage = Math.round((operationsCompleted / totalOperations) * 10000) / 100;
+    }
+  }
+  
   if (status) {
     updateData.status = status;
     if (status === 'in_progress' && !workOrder.actualStart) {
@@ -455,7 +638,57 @@ async function updateWorkOrderProgress(data: any) {
     }
     if (status === 'completed') {
       updateData.actualEnd = new Date();
+      
+      // ============================================================
+      // H-20 FIX: PRODUCTION COSTING AUTOMATION ON COMPLETION
+      // Calculate actual cost when WO is completed
+      // ============================================================
+      const finalQuantityProduced = quantityProduced || workOrder.quantityProduced || workOrder.quantityPlanned;
+      
+      // 1. Material cost from consumed components
+      const materialCost = workOrder.lines
+        ?.filter(l => l.type === 'consumption' || l.type === 'component')
+        ?.reduce((sum, line) => sum + (line.totalCost || (line.quantityConsumed || line.quantityPlanned || 0) * (line.unitCost || 0)), 0) || 0;
+      
+      // 2. Labor cost (from captured data or estimate using WorkCenter hourlyCost)
+      let actualLaborCost = laborCost || workOrder.laborCost || 0;
+      
+      // M-11 FIX: Fallback to WorkCenter hourlyCost if no labor cost captured
+      if (actualLaborCost === 0 && wcHourlyCost > 0) {
+        const estimatedHours = laborTime || (finalQuantityProduced * 0.5); // Use actual or estimate
+        actualLaborCost = estimatedHours * wcHourlyCost;
+        console.log(`[M-11] Using WorkCenter hourly cost (${wcHourlyCost} DZD/hr) as fallback for labor cost calculation`);
+      }
+      
+      // 3. Overhead (simplified: 20% of labor cost)
+      const overheadCost = actualLaborCost * 0.20;
+      
+      // 4. Total actual cost
+      const totalActualCost = materialCost + actualLaborCost + overheadCost;
+      
+      // 5. Unit cost
+      const unitCost = finalQuantityProduced > 0 ? totalActualCost / finalQuantityProduced : 0;
+      
+      updateData.actualCost = totalActualCost;
+      updateData.materialCost = materialCost;
+      updateData.overheadCost = overheadCost;
+      updateData.unitCost = unitCost;
+      updateData.quantityProduced = finalQuantityProduced;
+      updateData.completionPercentage = 100;
+      updateData.wipValue = 0; // WIP becomes finished goods on completion
+      
+      console.log(`H-20: Cost calculated for WO ${workOrder.reference}: Material=${materialCost}, Labor=${actualLaborCost}, Overhead=${overheadCost}, Total=${totalActualCost}`);
     }
+  }
+  
+  // H-22 FIX: Recalculate WIP value on every progress update
+  if (updateData.completionPercentage !== undefined || updateData.quantityProduced !== undefined) {
+    const currentCompletion = updateData.completionPercentage || workOrder.completionPercentage || 0;
+    const estimatedTotalCost = workOrder.estimatedCost || 0;
+    
+    // WIP Value = Estimated Cost × Completion %
+    // This represents the value of partially-completed work
+    updateData.wipValue = Math.round((estimatedTotalCost * currentCompletion / 100) * 100) / 100;
   }
   
   const updated = await db.workOrder.update({
@@ -463,14 +696,15 @@ async function updateWorkOrderProgress(data: any) {
     data: updateData,
     include: {
       product: { select: { id: true, name: true } },
-      workCenter: { select: { id: true, name: true } }
+      workCenter: { select: { id: true, name: true } },
+      lines: true
     }
   });
   
   return NextResponse.json({
     success: true,
     data: updated,
-    message: 'Progression mise à jour'
+    message: 'Progression mise à jour' + (updateData.wipValue !== undefined ? ` (WIP: ${updated.wipValue} DZD)` : '')
   });
 }
 
@@ -487,7 +721,14 @@ async function changeWorkOrderStatus(data: any) {
     cancelled: []
   };
   
-  const workOrder = await db.workOrder.findUnique({ where: { id } });
+  // Fetch work order with lines for stock operations
+  const workOrder = await db.workOrder.findUnique({ 
+    where: { id },
+    include: {
+      lines: true,
+      product: true
+    }
+  });
   if (!workOrder) {
     return NextResponse.json(
       { success: false, error: 'Work order not found' },
@@ -515,14 +756,191 @@ async function changeWorkOrderStatus(data: any) {
     updateData.notes = notes;
   }
   
-  const updated = await db.workOrder.update({
-    where: { id },
-    data: updateData
+  // ============================================================
+  // C-13 & C-14: STOCK INTEGRATION WITH TRANSACTION
+  // ============================================================
+  // Use transaction for atomic stock operations
+  const updated = await db.$transaction(async (tx) => {
+    // Update work order status first
+    const updatedWO = await tx.workOrder.update({
+      where: { id },
+      data: updateData
+    });
+    
+    // C-13: RESERVE COMPONENTS when WO is released or started
+    if ((status === 'released' || status === 'in_progress') && workOrder.warehouseId) {
+      const componentLines = workOrder.lines.filter(
+        line => line.type === 'consumption' || line.type === 'component'
+      );
+      
+      for (const line of componentLines) {
+        if (line.quantityPlanned <= 0) continue;
+        
+        // Reserve stock: move from available to reserved
+        const stockLevel = await tx.stockLevel.findFirst({
+          where: {
+            productId: line.productId,
+            warehouseId: workOrder.warehouseId!
+          }
+        });
+        
+        if (stockLevel) {
+          // Check sufficient available stock
+          if (stockLevel.availableQty < line.quantityPlanned) {
+            throw new Error(
+              `Stock insuffisant pour le composant ${line.productId}. ` +
+              `Disponible: ${stockLevel.availableQty}, Requis: ${line.quantityPlanned}`
+            );
+          }
+          
+          // Reserve the quantity
+          await tx.stockLevel.update({
+            where: { id: stockLevel.id },
+            data: {
+              availableQty: { decrement: line.quantityPlanned },
+              reservedQty: { increment: line.quantityPlanned }
+            }
+          });
+          
+          // Create reservation movement record
+          const reservationRef = `WO-RESERVE-${workOrder.reference}-${Date.now()}`;
+          await tx.stockMovement.create({
+            data: {
+              reference: reservationRef,
+              date: new Date(),
+              type: 'out_consumption', // Using consumption type for reservation tracking
+              quantity: line.quantityPlanned,
+              notes: `Réservation composants pour OF ${workOrder.reference}`,
+              productId: line.productId,
+              warehouseId: workOrder.warehouseId!,
+              sourceDoc: 'WORK_ORDER',
+              sourceId: workOrder.id,
+              stockLevelId: stockLevel.id
+            }
+          });
+        }
+      }
+    }
+    
+    // C-14: RECEIVE FINISHED GOODS & CONSUME RESERVED STOCK on completion
+    if (status === 'completed' && workOrder.warehouseId) {
+      const producedQuantity = workOrder.quantityProduced || workOrder.quantityPlanned;
+      
+      // 1. Consume reserved components (move from reserved to actual consumption)
+      const componentLines = workOrder.lines.filter(
+        line => line.type === 'consumption' || line.type === 'component'
+      );
+      
+      for (const line of componentLines) {
+        if (line.quantityPlanned <= 0) continue;
+        
+        const stockLevel = await tx.stockLevel.findFirst({
+          where: {
+            productId: line.productId,
+            warehouseId: workOrder.warehouseId!
+          }
+        });
+        
+        if (stockLevel && stockLevel.reservedQty >= line.quantityPlanned) {
+          // Consume from reserved stock
+          await tx.stockLevel.update({
+            where: { id: stockLevel.id },
+            data: {
+              quantity: { decrement: line.quantityPlanned },
+              reservedQty: { decrement: line.quantityPlanned }
+            }
+          });
+          
+          // Create consumption movement
+          const consumptionRef = `WO-CONSUME-${workOrder.reference}-${Date.now()}`;
+          await tx.stockMovement.create({
+            data: {
+              reference: consumptionRef,
+              date: new Date(),
+              type: 'out_consumption',
+              quantity: line.quantityPlanned,
+              notes: `Consommation composants pour OF ${workOrder.reference}`,
+              productId: line.productId,
+              warehouseId: workOrder.warehouseId!,
+              sourceDoc: 'WORK_ORDER',
+              sourceId: workOrder.id,
+              stockLevelId: stockLevel.id
+            }
+          });
+        }
+      }
+      
+      // 2. Receive finished goods into inventory
+      const fgStockLevel = await tx.stockLevel.findFirst({
+        where: {
+          productId: workOrder.productId,
+          warehouseId: workOrder.warehouseId!
+        }
+      });
+      
+      if (fgStockLevel) {
+        // Update existing stock level
+        await tx.stockLevel.update({
+          where: { id: fgStockLevel.id },
+          data: {
+            quantity: { increment: producedQuantity },
+            availableQty: { increment: producedQuantity }
+          }
+        });
+        
+        // Create receipt movement
+        const receiptRef = `WO-FG-${workOrder.reference}-${Date.now()}`;
+        await tx.stockMovement.create({
+          data: {
+            reference: receiptRef,
+            date: new Date(),
+            type: 'in_adjustment', // Production receipt as positive adjustment
+            quantity: producedQuantity,
+            notes: `Réception produit fini pour OF ${workOrder.reference}`,
+            productId: workOrder.productId,
+            warehouseId: workOrder.warehouseId!,
+            sourceDoc: 'WORK_ORDER',
+            sourceId: workOrder.id,
+            stockLevelId: fgStockLevel.id
+          }
+        });
+      } else {
+        // Create new stock level for finished goods
+        const newStockLevel = await tx.stockLevel.create({
+          data: {
+            productId: workOrder.productId,
+            warehouseId: workOrder.warehouseId!,
+            quantity: producedQuantity,
+            availableQty: producedQuantity,
+            reservedQty: 0
+          }
+        });
+        
+        // Create receipt movement
+        const receiptRef = `WO-FG-${workOrder.reference}-${Date.now()}`;
+        await tx.stockMovement.create({
+          data: {
+            reference: receiptRef,
+            date: new Date(),
+            type: 'in_adjustment',
+            quantity: producedQuantity,
+            notes: `Réception produit fini pour OF ${workOrder.reference}`,
+            productId: workOrder.productId,
+            warehouseId: workOrder.warehouseId!,
+            sourceDoc: 'WORK_ORDER',
+            sourceId: workOrder.id,
+            stockLevelId: newStockLevel.id
+          }
+        });
+      }
+    }
+    
+    return updatedWO;
   });
   
   return NextResponse.json({
     success: true,
     data: updated,
-    message: `Statut changé vers ${status}`
+    message: `Statut changé vers ${status}${(status === 'released' || status === 'in_progress') ? ' (composants réservés)' : ''}${status === 'completed' ? ' (produit fini reçu en stock)' : ''}`
   });
 }

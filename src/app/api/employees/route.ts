@@ -1,15 +1,40 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
+import { requireAuth, requireRole, getAuthenticatedUser, ROLES } from '@/lib/auth-utils';
+
+// Sensitive PII fields that should only be accessible to authorized roles
+const SENSITIVE_PII_FIELDS = [
+  'cin',
+  'nif', 
+  'nir',
+  'cnasNumber',
+  'casnosNumber',
+  'address',
+  'city',
+  'wilayaCode',
+  'phone',
+  'personalEmail',
+  'workEmail',
+  'bankName',
+  'bankAccount',
+  'dateOfBirth',
+  'placeOfBirth'
+];
+
+// Roles that can view full employee PII
+const AUTHORIZED_PII_ROLES = [ROLES.ADMIN, ROLES.MANAGER, ROLES.HR];
 
 // GET /api/employees - List employees
 export async function GET(request: Request) {
-  // SECURITY: Require authentication for employee PII data
+  // SECURITY FIX C-07: IDOR Vulnerability - Employee PII Exposure Protection
+  // CVSS 9.1 - CRITICAL: Any user could previously access sensitive PII (CIN, SSN, addresses, phones)
   const authError = await requireAuth(request);
   if (authError) return authError;
   
-  // Get user for company scoping
+  // Get user for role-based field filtering
   const user = await getAuthenticatedUser();
+  const userRole = user?.role || ROLES.USER;
+  const canViewFullPII = AUTHORIZED_PII_ROLES.includes(userRole);
   
   try {
     const { searchParams } = new URL(request.url);
@@ -54,7 +79,23 @@ export async function GET(request: Request) {
       }
     });
 
-    return NextResponse.json({ success: true, data: employees });
+    // SECURITY FIX C-07: Filter sensitive PII fields based on user role
+    // Non-authorized users (sales, regular users) cannot see sensitive personal data
+    let sanitizedEmployees = employees;
+    if (!canViewFullPII) {
+      sanitizedEmployees = employees.map((emp: Record<string, any>) => {
+        const sanitized = { ...emp };
+        // Remove all sensitive PII fields for unauthorized users
+        SENSITIVE_PII_FIELDS.forEach((field) => {
+          if (field in sanitized) {
+            delete sanitized[field];
+          }
+        });
+        return sanitized;
+      });
+    }
+
+    return NextResponse.json({ success: true, data: sanitizedEmployees });
   } catch (error) {
     console.error('Employees GET Error:', error);
     return NextResponse.json(

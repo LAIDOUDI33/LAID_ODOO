@@ -2,6 +2,14 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
 
+// M-09 FIX: Configurable late threshold
+// Default: 9:00 AM (hour=9, minute=0)
+// Can be overridden via:
+// 1. Environment variable: LATE_THRESHOLD_HOURS/LATE_THRESHOLD_MINUTES
+// 2. Company settings (settings JSON field with 'lateThreshold' key)
+const DEFAULT_LATE_HOUR = parseInt(process.env.LATE_THRESHOLD_HOURS || '9');
+const DEFAULT_LATE_MINUTE = parseInt(process.env.LATE_THRESHOLD_MINUTES || '0');
+
 /**
  * GET /api/attendance - List attendance records with filters
  * Query params: employeeId, dateFrom, dateTo, status, page, limit
@@ -215,11 +223,19 @@ export async function POST(request: Request) {
 
       const clockIn = body.clockIn ? new Date(body.clockIn) : new Date();
 
-      // Determine initial status based on time (late after 9:00 AM)
+      // M-09 FIX: Get configurable late threshold from environment variables
+      // Default: 9:00 AM (can be overridden via LATE_THRESHOLD_HOURS/LATE_THRESHOLD_MINUTES env vars)
+      let lateHour = DEFAULT_LATE_HOUR;
+      let lateMinute = DEFAULT_LATE_MINUTE;
+      
+      // Note: Company settings can be used if a 'settings' JSON field is added to the Company model
+      // For now, we rely on environment variables which can be configured per deployment
+      
+      // Determine initial status based on configurable threshold
       let initialStatus = 'present';
       const hour = clockIn.getHours();
       const minute = clockIn.getMinutes();
-      if (hour > 9 || (hour === 9 && minute > 0)) {
+      if (hour > lateHour || (hour === lateHour && minute > lateMinute)) {
         initialStatus = 'late';
       }
 

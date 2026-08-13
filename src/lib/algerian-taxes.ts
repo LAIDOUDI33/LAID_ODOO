@@ -1,10 +1,21 @@
 // ============================================================
 // ERP-DZ - ALGERIAN TAX CALCULATION ENGINE
 // Moteur de Calcul Fiscal Algérien (TVA, TAP, IRG, Cotisations)
+// FIXES: H-19 (Tax-Exempt Primes Handling)
 // ============================================================
 
 // ============================================================
 // TVA (Taxe sur la Valeur Ajoutée)
+// ============================================================
+//
+// IMPORTANT: All internal calculations use DECIMAL format (e.g., 0.19 for 19%)
+// Display/storage may use INTEGER format (e.g., 19 for 19%)
+// Use helper functions to convert between formats:
+//   - tvaToInt(0.19) => 19      (for display/storage)
+//   - tvaToDecimal(19) => 0.19  (for calculations)
+//   - isValidTVARate(value)     (validates both formats)
+//
+// Valid Algerian TVA rates: 0% (exonéré), 7% (particulier), 9% (réduit), 19% (normal)
 // ============================================================
 
 export interface TVARates {
@@ -20,6 +31,85 @@ export const TVA_RATES: TVARates = {
   particulier: 0.07,
   exonere: 0.00
 };
+
+/**
+ * Valid Algerian TVA rates in DECIMAL format for calculations
+ * 0% (exonéré), 7% (particulier/produits de première nécessité), 
+ * 9% (réduit), 19% (normal)
+ */
+export const VALID_TVA_RATES_DECIMAL = [0, 0.07, 0.09, 0.19] as const;
+
+/**
+ * Valid Algerian TVA rates in INTEGER format for display/storage
+ */
+export const VALID_TVA_RATES_INTEGER = [0, 7, 9, 19] as const;
+
+/**
+ * Convert TVA rate from DECIMAL to INTEGER format
+ * Example: tvaToInt(0.19) => 19
+ * @param rate - TVA rate in decimal format (e.g., 0.19)
+ * @returns TVA rate in integer format (e.g., 19)
+ */
+export function tvaToInt(rate: number): number {
+  return Math.round(rate * 100);
+}
+
+/**
+ * Convert TVA rate from INTEGER to DECIMAL format
+ * Example: tvaToDecimal(19) => 0.19
+ * @param rate - TVA rate in integer format (e.g., 19)
+ * @returns TVA rate in decimal format (e.g., 0.19)
+ */
+export function tvaToDecimal(rate: number): number {
+  return rate / 100;
+}
+
+/**
+ * Validate if a TVA rate is a valid Algerian TVA rate
+ * Accepts both DECIMAL (0.19) and INTEGER (19) formats
+ * @param rate - TVA rate to validate
+ * @returns true if valid Algerian TVA rate
+ */
+export function isValidTVARate(rate: number): boolean {
+  // Check if it's a valid decimal rate (<= 1)
+  if (rate <= 1 && rate >= 0) {
+    return VALID_TVA_RATES_DECIMAL.includes(rate as typeof VALID_TVA_RATES_DECIMAL[number]);
+  }
+  // Check if it's a valid integer rate (> 1)
+  if (rate > 1) {
+    return VALID_TVA_RATES_INTEGER.includes(rate as typeof VALID_TVA_RATES_INTEGER[number]);
+  }
+  return false;
+}
+
+/**
+ * Normalize TVA rate to DECIMAL format for calculations
+ * Accepts both formats and returns decimal
+ * @param rate - TVA rate in either format
+ * @returns TVA rate in DECIMAL format for calculations
+ */
+export function normalizeTVARate(rate: number): number {
+  if (rate > 1) {
+    return tvaToDecimal(rate);
+  }
+  return rate;
+}
+
+/**
+ * Get TVA rate label in French
+ * @param rate - TVA rate (either format)
+ * @returns French label for the rate
+ */
+export function getTVARateLabel(rate: number): string {
+  const normalized = normalizeTVARate(rate);
+  switch (normalized) {
+    case 0: return 'Exonéré (0%)';
+    case 0.07: return 'Particulier (7%)';
+    case 0.09: return 'Réduit (9%)';
+    case 0.19: return 'Normal (19%)';
+    default: return `${tvaToInt(normalized)}%`;
+  }
+}
 
 export interface TVACalculResult {
   montantHT: number;
@@ -416,8 +506,256 @@ export function getTimbreFiscal(type: TimbreType, montant?: number): number {
 }
 
 // ============================================================
-// PRIME ANCIENNETÉ (Seniority Bonus - Loi 91-29)
+// H-19: TAX-EXEMPT PRIMES (Primes Exonérées d'IRG)
+// Certain bonus types are exempt from IRG calculation per Algerian tax law
+// These should be excluded from the IRG taxable base
 // ============================================================
+
+/**
+ * Types of primes/bonuses in the Algerian payroll system
+ * taxExempt indicates if the prime is excluded from IRG base
+ */
+export interface PrimeType {
+  code: string;
+  name: string;
+  nameAr?: string;
+  taxExempt: boolean;    // H-19: Whether this prime is exempt from IRG
+  description?: string;
+}
+
+/**
+ * H-19: Definition of prime types with their tax exemption status
+ * Based on Algerian fiscal legislation (Code des Impôts Directs et Taxes Assimilées)
+ */
+export const PRIME_TYPES: Record<string, PrimeType> = {
+  // === Primes SOUMISES à l'IRG (Taxable) ===
+  prime_anciennete: {
+    code: 'prime_anciennete',
+    name: 'Prime d\'ancienneté',
+    nameAr: 'علاوة الأقدمية',
+    taxExempt: false,
+    description: 'Seniority bonus based on years of service'
+  },
+  prime_technique: {
+    code: 'prime_technique',
+    name: 'Prime technique',
+    nameAr: 'علاوة تقنية',
+    taxExempt: false,
+    description: 'Technical skill bonus'
+  },
+  prime_responsabilite: {
+    code: 'prime_responsabilite',
+    name: 'Prime de responsabilité',
+    nameAr: 'علاوة المسؤولية',
+    taxExempt: false,
+    description: 'Responsibility/position bonus'
+  },
+  prime_productivite: {
+    code: 'prime_productivite',
+    name: 'Prime de productivité',
+    nameAr: 'علاوة الإنتاجية',
+    taxExempt: false,
+    description: 'Productivity bonus'
+  },
+  prime_resultat: {
+    code: 'prime_resultat',
+    name: 'Prime de résultat',
+    nameAr: 'علاوة النتائج',
+    taxExempt: false,
+    description: 'Performance/results bonus'
+  },
+  prime_logement: {
+    code: 'prime_logement',
+    name: 'Prime de logement (imposable)',
+    nameAr: 'علاوة السكن (خاضعة للضريبة)',
+    taxExempt: false,
+    description: 'Housing allowance (taxable portion)'
+  },
+  
+  // === Primes EXONÉRÉES d'IRG (Tax-Exempt) per Article 67 CIDTA ===
+  prime_familiale: {
+    code: 'prime_familiale',
+    name: 'Allocations familiales',
+    nameAr: 'المنح العائلية',
+    taxExempt: true,
+    description: 'Family allowances (exempt per Art. 67 CIDTA)'
+  },
+  prime_deplacement: {
+    code: 'prime_deplacement',
+    name: 'Indemnité de déplacement',
+    nameAr: 'تعويض التنقل',
+    taxExempt: true,
+    description: 'Travel/transport allowance (exempt within limits)'
+  },
+  prime_transport: {
+    code: 'prime_transport',
+    name: 'Indemnité de transport',
+    nameAr: 'تعويض النقل',
+    taxExempt: true,
+    description: 'Transport allowance (exempt per Art. 67 CIDTA)'
+  },
+  prime_repas: {
+    code: 'prime_repas',
+    name: 'Indemnité de repas',
+    nameAr: 'تعويض الوجبات',
+    taxExempt: true,
+    description: 'Meal allowance (exempt within limits)'
+  },
+  prime_salariale_unique: {
+    code: 'prime_salariale_unique',
+    name: 'Prime salariale unique',
+    nameAr: 'العلاوة الأجرية الواحدة',
+    taxExempt: true,
+    description: 'PSU - Unique salary grant (exempt per 2022 Finance Law)'
+  },
+  prime_zone_difficile: {
+    code: 'prime_zone_difficile',
+    name: 'Prime de zone difficile',
+    nameAr: 'علاوة المناطق الصعبة',
+    taxExempt: true,
+    description: 'Hardship area allowance (fully exempt)'
+  },
+  prime_nuit: {
+    code: 'prime_nuit',
+    name: 'Indemnité de travail de nuit',
+    nameAr: 'تعويض العمل الليلي',
+    taxExempt: true,
+    description: 'Night work indemnity (exempt within limits)'
+  },
+  prime_mariage: {
+    code: 'prime_mariage',
+    name: 'Prime de mariage',
+    nameAr: 'علاوة الزواج',
+    taxExempt: true,
+    description: 'Marriage grant (one-time, exempt)'
+  },
+  prime_naissance: {
+    code: 'prime_naissance',
+    name: 'Prime de naissance',
+    nameAr: 'علاوة الميلاد',
+    taxExempt: true,
+    description: 'Birth grant (one-time, exempt)'
+  },
+  prime_scolarite: {
+    code: 'prime_scolarite',
+    name: 'Prime de scolarité',
+    nameAr: 'علاوة الدراسة',
+    taxExempt: true,
+    description: 'Education/Schooling allowance (exempt within limits)'
+  },
+  indemnite_chomage: {
+    code: 'indemnite_chomage',
+    name: 'Indemnité de chômage',
+    nameAr: 'تعويض البطالة',
+    taxExempt: true,
+    description: 'Unemployment benefits (exempt)'
+  },
+  indemnite_maladie: {
+    code: 'indemnite_maladie',
+    name: 'Indemnité de maladie',
+    nameAr: 'تعويض المرض',
+    taxExempt: true,
+    description: 'Sickness benefits (exempt)'
+  }
+};
+
+/**
+ * H-19: Interface for prime entry in payroll calculation
+ */
+export interface PrimeEntry {
+  typeCode: string;
+  amount: number;
+  isTaxExempt?: boolean; // Override default tax-exempt status
+}
+
+/**
+ * H-19: Calculate taxable and tax-exempt portions of primes
+ * This function separates primes into taxable and exempt categories
+ * for correct IRG base calculation
+ */
+export function calculatePrimeSplit(primes: PrimeEntry[]): {
+  taxablePrimes: number;
+  exemptPrimes: number;
+  details: Array<{ typeCode: string; name: string; amount: number; isExempt: boolean }>;
+} {
+  let taxablePrimes = 0;
+  let exemptPrimes = 0;
+  const details: Array<{ typeCode: string; name: string; amount: number; isExempt: boolean }> = [];
+  
+  for (const prime of primes) {
+    const primeType = PRIME_TYPES[prime.typeCode];
+    // Use override if provided, otherwise use default from PRIME_TYPES
+    const isExempt = prime.isTaxExempt !== undefined ? prime.isTaxExempt : (primeType?.taxExempt || false);
+    
+    if (isExempt) {
+      exemptPrimes += prime.amount;
+    } else {
+      taxablePrimes += prime.amount;
+    }
+    
+    details.push({
+      typeCode: prime.typeCode,
+      name: primeType?.name || prime.typeCode,
+      amount: prime.amount,
+      isExempt
+    });
+  }
+  
+  return { taxablePrimes, exemptPrimes, details };
+}
+
+/**
+ * H-19: Enhanced IRG calculation that properly handles tax-exempt primes
+ * Use this instead of calculateIRGMensuel when you have primes to consider
+ */
+export interface IRGWithPrimesResult extends IRGCalculResult {
+  totalPrimes: number;
+  taxablePrimes: number;
+  exemptPrimes: number;
+  salaireDeBase: number;
+  brutAvantPrimes: number;
+  brutAvecPrimes: number;
+  assietteIRG: number; // The actual IRG taxable base
+}
+
+/**
+ * H-19: Calculate monthly IRG with proper handling of tax-exempt primes
+ * @param salaireDeBase - Base salary
+ * @param primes - Array of prime entries
+ * @param nbPartsFamiliales - Number of family parts for deduction
+ */
+export function calculateIRGAvecPrimes(
+  salaireDeBase: number,
+  primes: PrimeEntry[] = [],
+  nbPartsFamiliales: number = 1
+): IRGWithPrimesResult {
+  // Split primes into taxable and exempt
+  const { taxablePrimes, exemptPrimes } = calculatePrimeSplit(primes);
+  
+  // Calculate gross salary components
+  const brutAvantPrimes = salaireDeBase;
+  const totalPrimes = primes.reduce((sum, p) => sum + p.amount, 0);
+  const brutAvecPrimes = salaireDeBase + totalPrimes;
+  
+  // H-19: IRG Base = Base Salary + Taxable Primes ONLY
+  // Tax-exempt primes are EXCLUDED from IRG calculation
+  const assietteIRG = salaireDeBase + taxablePrimes;
+  
+  // Calculate IRG on the correct base
+  const irgResult = calculateIRGMensuel(assietteIRG, nbPartsFamiliales);
+  
+  return {
+    ...irgResult,
+    revenuBrut: brutAvecPrimes, // Total gross including all primes
+    totalPrimes,
+    taxablePrimes,
+    exemptPrimes,
+    salaireDeBase,
+    brutAvantPrimes,
+    brutAvecPrimes,
+    assietteIRG
+  };
+}
 
 export interface AncienneteConfig {
   annees: number;
@@ -534,6 +872,13 @@ export const AlgerianTaxUtils = {
   calculateTVA,
   calculateTVACollectee,
   TVA_RATES,
+  VALID_TVA_RATES_DECIMAL,
+  VALID_TVA_RATES_INTEGER,
+  tvaToInt,
+  tvaToDecimal,
+  isValidTVARate,
+  normalizeTVARate,
+  getTVARateLabel,
   
   // TAP
   calculateTAP,
@@ -546,6 +891,11 @@ export const AlgerianTaxUtils = {
   IRG_TRANCHE_ANNUELLE,
   IRG_TRANCHE_MENSUELLE,
   PARTS_FAMILIALES,
+  
+  // H-19: Tax-Exempt Primes handling
+  PRIME_TYPES,
+  calculatePrimeSplit,
+  calculateIRGAvecPrimes,
   
   // Cotisations
   calculateCotisations,

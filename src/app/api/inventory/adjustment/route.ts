@@ -1,6 +1,7 @@
 // ============================================================
 // HASSIBA Suite ERP v2.0.0 - Stock Adjustment API
 // API pour les ajustements de stock (entrées/sorties/transferts)
+// FIXES: H-15 (Approval Workflow), H-16 (userId Audit Trail)
 // ============================================================
 
 import { NextRequest, NextResponse } from 'next/server'
@@ -9,6 +10,8 @@ import { randomUUID } from 'crypto'
 import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils'
 
 // POST - Create a stock adjustment
+// H-15 FIX: Adjustments now require approval (auto-approved for managers+)
+// H-16 FIX: userId is captured for audit trail
 export async function POST(request: NextRequest) {
   try {
     // SECURITY: Require appropriate role (stock adjustments affect financials)
@@ -26,7 +29,8 @@ export async function POST(request: NextRequest) {
       notes,
       reason, // Reason for adjustment (required for audit)
       sourceWarehouseId, // For transfers
-      unitCost // Optional: override cost price
+      unitCost, // Optional: override cost price
+      autoApprove // Manager+ can set true to skip approval workflow
     } = body
     
     // Validation
@@ -160,6 +164,56 @@ export async function POST(request: NextRequest) {
       )
     }
     
+    // ============================================================
+    // H-15 FIX: APPROVAL WORKFLOW FOR STOCK ADJUSTMENTS
+    // - Managers and above can auto-approve by setting autoApprove=true
+    // - Other roles must go through approval workflow
+    // - High-value adjustments always require approval (>100,000 DZD)
+    // ============================================================
+    const isManagerOrAbove = ['admin', 'manager'].includes(user?.role || '');
+    const isHighValueAdjustment = totalCost > 100000; // Threshold for mandatory approval
+    const requiresApproval = !autoApprove || !isManagerOrAbove || isHighValueAdjustment;
+    
+    if (requiresApproval) {
+      // Create pending adjustment that requires approval
+      const pendingAdjustment = await db.stockMovement.create({
+        data: {
+          reference,
+          date: new Date(),
+          type: movementType as any,
+          quantity,
+          unitCost: costPrice,
+          totalCost,
+          notes: notes || null,
+          productId,
+          warehouseId,
+          locationId,
+          stockLevelId: stockLevel.id,
+          userId: user?.id || null, // H-16: Audit trail
+          status: 'pending_approval' // Custom status for pending approval
+        }
+      });
+      
+      // TODO: Integrate with workflow system for formal approval process
+      // For now, log the pending approval requirement
+      console.log(`Stock adjustment ${pendingAdjustment.reference} requires approval. User: ${user?.name}, Role: ${user?.role}`);
+      
+      return NextResponse.json({
+        success: true,
+        message: `Ajustement de stock soumis pour approbation${isHighValueAdjustment ? ' (valeur élevée)' : ''}`,
+        data: {
+          movement: {
+            id: pendingAdjustment.id,
+            reference: pendingAdjustment.reference,
+            status: 'pending_approval'
+          },
+          requiresApproval: true,
+          reason: isHighValueAdjustment ? 'High value adjustment requires manager approval' : 'Approval workflow required'
+        }
+      });
+    }
+    
+    // Auto-approved path for managers+
     // Create transaction for atomic update
     const result = await db.$transaction(async (tx) => {
       // Create stock movement record
@@ -175,7 +229,9 @@ export async function POST(request: NextRequest) {
           productId,
           warehouseId,
           locationId,
-          stockLevelId: stockLevel.id
+          stockLevelId: stockLevel.id,
+          userId: user?.id || null, // H-16: Audit trail
+          status: 'approved' // Auto-approved
         }
       })
       

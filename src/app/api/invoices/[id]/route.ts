@@ -3,6 +3,10 @@ import { db } from '@/lib/db';
 import { calculateTVACollectee, getTimbreFiscal } from '@/lib/algerian-taxes';
 import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
 
+// Valid statuses from InvoiceStatus enum (must match schema.prisma exactly)
+// H-03 FIX: Centralized status validation against enum values
+const VALID_INVOICE_STATUSES = ['draft', 'sent', 'paid', 'partial', 'cancelled'];
+
 // Valid statuses for updates
 const UPDATABLE_STATUSES = ['draft', 'sent', 'partial'];
 const CANCELLABLE_STATUSES = ['draft', 'sent', 'partial', 'overdue'];
@@ -94,6 +98,17 @@ export async function PUT(request: Request, context: RouteContext) {
 
     // Update status if provided
     if (body.status && body.status !== existingInvoice.status) {
+      // H-03 FIX: Validate status against allowed enum values before any transition check
+      if (!VALID_INVOICE_STATUSES.includes(body.status)) {
+        return NextResponse.json(
+          { 
+            success: false, 
+            error: `Invalid status '${body.status}'. Must be one of: ${VALID_INVOICE_STATUSES.join(', ')}` 
+          },
+          { status: 400 }
+        );
+      }
+      
       // Validate status transition
       const validTransitions: Record<string, string[]> = {
         draft: ['sent', 'cancelled'],

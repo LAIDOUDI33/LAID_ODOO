@@ -3,6 +3,11 @@ import { db } from '@/lib/db';
 import { calculateTVACollectee, getTimbreFiscal } from '@/lib/algerian-taxes';
 import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
 
+// M-01 FIX: Discount approval threshold (10%)
+// Discounts exceeding this threshold require manager approval
+const DISCOUNT_APPROVAL_THRESHOLD = 10; // percent
+const DISCOUNT_APPROVAL_REQUIRED_FLAG = 'discount_approval_required';
+
 // Valid sales order statuses
 const VALID_STATUSES = ['draft', 'sent', 'confirmed', 'processing', 'delivered', 'invoiced', 'done', 'cancelled'];
 
@@ -168,6 +173,7 @@ export async function POST(request: Request) {
     }
 
     // Validate line items
+    let requiresDiscountApproval = false;
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
       if (!line.productId) {
@@ -187,6 +193,12 @@ export async function POST(request: Request) {
           { success: false, error: `Line ${i + 1}: Unit price must be 0 or greater` },
           { status: 400 }
         );
+      }
+      
+      // M-02 FIX: Check if discount exceeds threshold and requires approval
+      const discountRate = parseFloat(line.discountRate) || 0;
+      if (discountRate > DISCOUNT_APPROVAL_THRESHOLD) {
+        requiresDiscountApproval = true;
       }
     }
 
@@ -254,6 +266,22 @@ export async function POST(request: Request) {
 
     // Generate reference (CMD-YYYY-MM-XXX)
     const now = new Date();
+    
+    // M-01 FIX: Validate delivery date >= order date
+    if (expectedDate) {
+      const deliveryDate = new Date(expectedDate);
+      if (deliveryDate < now) {
+        return NextResponse.json(
+          { 
+            success: false, 
+            error: 'Delivery date cannot be earlier than order date',
+            code: 'INVALID_DELIVERY_DATE'
+          },
+          { status: 400 }
+        );
+      }
+    }
+    
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
     
@@ -378,7 +406,15 @@ export async function POST(request: Request) {
       data: salesOrder,
       message: quotationId 
         ? `Sales Order ${reference} created successfully from quotation`
-        : `Sales Order ${reference} created successfully`
+        : `Sales Order ${reference} created successfully`,
+      // M-02 FIX: Flag indicating if discount approval workflow should be triggered
+      warnings: requiresDiscountApproval ? [
+        {
+          code: DISCOUNT_APPROVAL_REQUIRED_FLAG,
+          message: `One or more line items have discounts exceeding ${DISCOUNT_APPROVAL_THRESHOLD}% and may require manager approval`,
+          threshold: DISCOUNT_APPROVAL_THRESHOLD
+        }
+      ] : undefined
     }, { status: 201 });
   } catch (error) {
     console.error('SalesOrders POST Error:', error);

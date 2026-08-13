@@ -558,7 +558,18 @@ export async function convertSalesOrderToInvoice(
 }
 
 // ============================================================
+// *** CANONICAL GOODS RECEIPT METHOD ***
 // WORKFLOW 3: Commande Achat → Réception (PO → Goods Receipt)
+// 
+// THIS IS THE SINGLE SOURCE OF TRUTH FOR GOODS RECEIPT.
+// All receipt operations MUST use this function.
+// 
+// Consistency guarantees:
+// - Uses $transaction for atomic updates
+// - Always creates StockMovement with type 'in_receipt'
+// - Always updates StockLevel (find or create)
+// - Validates quantities > 0
+// - Updates PO status appropriately (received/partial)
 // ============================================================
 
 export async function receivePurchaseOrder(
@@ -568,13 +579,13 @@ export async function receivePurchaseOrder(
   const trace: WorkflowStepTrace[] = [];
   
   try {
-    // Step 1: Validate PO
+    // Step 1: Validate PO exists and has correct status
     trace.push({ step: 'validate_purchase_order', status: 'completed', timestamp: new Date() });
     
     const po = await db.purchaseOrder.findUnique({
       where: { id: input.purchaseOrderId },
       include: { 
-        lines: true, 
+        lines: { include: { product: true } }, 
         partner: true,
         warehouse: true,
         company: true
@@ -590,19 +601,40 @@ export async function receivePurchaseOrder(
       };
     }
     
-    if (!['confirmed', 'partial'].includes(po.status)) {
+    // Allow receipt from confirmed, sent, or partially received POs
+    if (!['confirmed', 'sent', 'partial'].includes(po.status)) {
       return {
         success: false,
-        message: `La commande ne peut pas être réceptionnée (statut: ${po.status})`,
+        message: `Impossible de réceptionner une commande avec le statut '${po.status}'. La commande doit être confirmée ou partiellement reçue.`,
         workflowTrace: trace,
-        errors: [`Invalid PO status: ${po.status}`]
+        errors: [`Invalid PO status: ${po.status}. Must be confirmed, sent, or partial.`]
       };
     }
 
-    // Step 2: Validate received quantities
+    // Step 2: Validate received quantities (> 0 and within limits)
     trace.push({ step: 'validate_quantities', status: 'completed', timestamp: new Date() });
     
     for (const recvLine of input.lines) {
+      // Validate lineId is provided
+      if (!recvLine.lineId) {
+        return {
+          success: false,
+          message: "L'ID de la ligne est requis pour chaque ligne de réception",
+          workflowTrace: trace,
+          errors: ['Missing lineId in receipt line']
+        };
+      }
+      
+      // Validate quantity > 0 (CRITICAL: prevents zero/negative stock changes)
+      if (!recvLine.quantity || recvLine.quantity <= 0) {
+        return {
+          success: false,
+          message: `La quantité doit être supérieure à 0 (reçu: ${recvLine.quantity})`,
+          workflowTrace: trace,
+          errors: [`Invalid quantity: ${recvLine.quantity}. Must be > 0.`]
+        };
+      }
+      
       const poLine = po.lines.find(l => l.id === recvLine.lineId);
       if (!poLine) {
         return {
@@ -617,36 +649,54 @@ export async function receivePurchaseOrder(
       if (recvLine.quantity > maxReceivable) {
         return {
           success: false,
-          message: `Quantité reçue (${recvLine.quantity}) supérieure au restant (${maxReceivable}) pour la ligne`,
+          message: `Quantité à recevoir (${recvLine.quantity}) supérieure à la quantité restante (${maxReceivable}) pour ${poLine.product?.name || recvLine.lineId}`,
           workflowTrace: trace,
-          errors: ['Quantity exceeds remaining']
+          errors: [`Quantity exceeds remaining: ${recvLine.quantity} > ${maxReceivable}`]
         };
       }
     }
 
-    // Step 3: Process receipt with inventory update
+    // Step 3: Process receipt with inventory update (ATOMIC TRANSACTION)
+    // CRITICAL: All stock updates must happen within $transaction
     trace.push({ step: 'process_receipt', status: 'completed', timestamp: new Date() });
     
     const now = new Date();
-    const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '');
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    
+    // Generate sequential movement reference for traceability
+    const movementCount = await db.stockMovement.count({
+      where: {
+        type: 'in_receipt',
+        date: {
+          gte: new Date(year, now.getMonth(), 1),
+          lt: new Date(year, now.getMonth() + 1, 1),
+        },
+      },
+    });
+    const movementRefBase = `ENT-${year}-${month}-${String(movementCount + 1).padStart(3, '0')}`;
     
     let totalReceivedAmount = 0;
-    let totalReceivedTax = 0;
+    let totalReceivedCost = 0;
     
     const result = await db.$transaction(async (tx) => {
-      const movements = [];
+      const createdMovements = [];
       
       for (const recvLine of input.lines) {
         const poLine = po.lines.find(l => l.id === recvLine.lineId)!;
-        const product = await tx.product.findUnique({ where: { id: poLine.productId } });
+        const product = poLine.product; // Already included in query
         
-        // Calculate received amounts
+        // Calculate cost based on PO line pricing (with discount)
+        const lineUnitCost = poLine.unitPrice * (1 - (poLine.discountRate || 0) / 100);
+        const lineTotalCost = Math.round(recvLine.quantity * lineUnitCost * 100) / 100;
+        
+        // Calculate proportional tax amounts
         const ratio = recvLine.quantity / poLine.quantity;
         const lineAmountUntaxed = Math.round(poLine.amountUntaxed * ratio * 100) / 100;
         const lineAmountTax = Math.round(poLine.amountTax * ratio * 100) / 100;
         
         totalReceivedAmount += lineAmountUntaxed;
-        totalReceivedTax += lineAmountTax;
+        totalReceivedCost += lineTotalCost;
 
         // Update PO Line quantity received
         await tx.purchaseOrderLine.update({
@@ -654,96 +704,107 @@ export async function receivePurchaseOrder(
           data: { quantityReceived: poLine.quantityReceived + recvLine.quantity }
         });
 
-        // Generate movement reference
-        const refNumber = Math.random().toString(36).substring(2, 8).toUpperCase();
-        const reference = `REC-${dateStr}-${refNumber}`;
+        // Determine target warehouse (from location or PO)
+        let targetWarehouseId = po.warehouseId;
+        if (recvLine.locationId) {
+          const location = await tx.location.findUnique({ 
+            where: { id: recvLine.locationId },
+            select: { warehouseId: true }
+          });
+          targetWarehouseId = location?.warehouseId || po.warehouseId;
+        }
 
-        // Determine warehouse/location for stock
-        const warehouseId = recvLine.locationId 
-          ? (await tx.location.findUnique({ where: { id: recvLine.locationId } }))?.warehouseId || po.warehouseId
-          : po.warehouseId;
-
-        if (warehouseId && product?.trackStock) {
-          // Find or create stock level
-          const locationFilter = recvLine.locationId 
-            ? { productId: poLine.productId, warehouseId, locationId: recvLine.locationId }
-            : { productId: poLine.productId, warehouseId, locationId: null };
+        // Only track stock if we have a warehouse and product exists
+        if (targetWarehouseId && product) {
+          // Find or create stock level (CANONICAL pattern)
+          const stockLevelWhere = {
+            productId: poLine.productId,
+            warehouseId: targetWarehouseId,
+            locationId: recvLine.locationId ?? '',
+          };
           
-          let stockLevel = await tx.stockLevel.findFirst({ where: locationFilter });
+          let stockLevel = await tx.stockLevel.findUnique({
+            where: { productId_warehouseId_locationId: stockLevelWhere }
+          });
           
           if (!stockLevel) {
+            // Create new stock level entry
             stockLevel = await tx.stockLevel.create({
               data: {
                 productId: poLine.productId,
-                warehouseId,
+                warehouseId: targetWarehouseId,
                 locationId: recvLine.locationId || null,
                 quantity: recvLine.quantity,
+                reservedQty: 0,
                 availableQty: recvLine.quantity,
                 minQty: 0,
-                maxQty: 0
+                maxQty: 0,
               }
             });
           } else {
-            const newQty = stockLevel.quantity + recvLine.quantity;
+            // Update existing stock level atomically
+            const newQuantity = stockLevel.quantity + recvLine.quantity;
             stockLevel = await tx.stockLevel.update({
               where: { id: stockLevel.id },
               data: {
-                quantity: newQty,
-                availableQty: newQty - stockLevel.reservedQty
+                quantity: Math.round(newQuantity * 100) / 100,
+                availableQty: Math.round((newQuantity - stockLevel.reservedQty) * 100) / 100,
               }
             });
           }
 
-          // Create stock movement (IN from PO)
+          // Create stock movement with CONSISTENT type 'in_receipt'
+          // This is the canonical movement type for goods receipt
           const movement = await tx.stockMovement.create({
             data: {
-              reference,
+              reference: `${movementRefBase}-${poLine.productId.slice(-6)}`,
               date: now,
-              type: 'in_purchase',
+              type: 'in_receipt', // CANONICAL: always use 'in_receipt' for goods receipt
               quantity: recvLine.quantity,
-              unitCost: product?.costPrice || poLine.unitPrice,
-              totalCost: recvLine.quantity * (product?.costPrice || poLine.unitPrice),
-              notes: `Réception CMD Achat ${po.reference}`,
+              unitCost: lineUnitCost,
+              totalCost: lineTotalCost,
+              notes: input.notes || `Réception commande ${po.reference}`,
               productId: poLine.productId,
-              warehouseId,
+              warehouseId: targetWarehouseId,
               locationId: recvLine.locationId || null,
-              stockLevelId: stockLevel.id,
-              sourceType: 'purchase_order',
-              sourceId: po.id
+              sourceDoc: 'purchase_order',
+              sourceId: po.id,
+              purchaseOrderId: po.id,
             }
           });
           
-          movements.push(movement);
+          createdMovements.push(movement);
         }
       }
 
-      // Update PO status based on reception completeness
-      const allFullyReceived = po.lines.every(
-        l => input.lines.find(il => il.lineId === l.id)?.quantity === (l.quantity - l.quantityReceived)
-      );
-      const someReceived = input.lines.length > 0;
+      // Determine new PO status based on reception completeness
+      let newStatus: string = po.status;
+      const allLinesFullyReceived = po.lines.every(l => {
+        const updatedLine = input.lines.find(il => il.lineId === l.id);
+        if (updatedLine) {
+          return (l.quantityReceived + updatedLine.quantity) >= l.quantity;
+        }
+        return l.quantityReceived >= l.quantity;
+      });
       
-      let newStatus = po.status;
-      if (allFullyReceived && po.lines.every(l => {
-        const received = l.quantityReceived + (input.lines.find(il => il.lineId === l.id)?.quantity || 0);
-        return received >= l.quantity;
-      })) {
-        newStatus = 'received';
-      } else if (someReceived) {
-        newStatus = 'partial';
+      if (allLinesFullyReceived) {
+        newStatus = 'received'; // Fully received
+      } else if (input.lines.length > 0) {
+        newStatus = 'partial'; // Partially received
       }
 
-      // Update PO totals
+      // Atomically update PO with new status and totals
       const updatedPo = await tx.purchaseOrder.update({
         where: { id: po.id },
         data: {
           status: newStatus,
-          amountReceived: po.amountReceived + totalReceivedAmount
+          amountReceived: po.amountReceived + totalReceivedAmount,
+          receiptDate: now,
         },
-        include: { lines: true }
+        include: { lines: { include: { product: true } } }
       });
 
-      return { updatedPo, movements };
+      return { updatedPo, movements: createdMovements };
     });
 
     trace.push({ 
@@ -761,7 +822,7 @@ export async function receivePurchaseOrder(
         purchaseOrder: result.updatedPo,
         movements: result.movements,
         amountReceived: totalReceivedAmount,
-        taxReceived: totalReceivedTax
+        totalCost: totalReceivedCost
       },
       workflowTrace: trace
     };
@@ -923,12 +984,14 @@ export async function createBillFromPurchaseOrder(
 
     const result = await db.$transaction(async (tx) => {
       // Create bill
+      // H-07 FIX: Use 'received' status instead of invalid 'posted' status
+      // BillStatus enum values: draft, received, verified, approved, paid, cancelled
       const bill = await tx.bill.create({
         data: {
           reference,
           date: now,
           dueDate,
-          status: 'posted',
+          status: 'received',  // Fixed: was 'posted' which is not in BillStatus enum
           type: 'supplier_invoice',
           
           // Amounts
@@ -1073,12 +1136,19 @@ export async function recordPayment(
       };
     }
     
-    if (!['posted', 'partially_paid'].includes(document.status)) {
+    // H-07 FIX: Validate document status against correct enum values
+    // InvoiceStatus: draft, sent, paid, partial, cancelled
+    // BillStatus: draft, received, verified, approved, paid, cancelled
+    const validPaymentStatuses = input.invoiceType === 'customer' 
+      ? ['sent', 'partial']  // Customer invoices can receive payment when sent/partial
+      : ['received', 'verified', 'approved'];  // Supplier bills can receive payment in these statuses
+    
+    if (!validPaymentStatuses.includes(document.status)) {
       return {
         success: false,
         message: `Le document ne peut pas recevoir de paiement (statut: ${document.status})`,
         workflowTrace: trace,
-        errors: [`Invalid document status: ${document.status}`]
+        errors: [`Invalid document status: ${document.status}. Valid statuses: ${validPaymentStatuses.join(', ')}`]
       };
     }
 
@@ -1217,6 +1287,30 @@ export async function recordPayment(
             // Lines
             lines: { create: journalLines }
           }
+        });
+      }
+      
+      // H-05/H-06 FIX: Update partner balance on payment
+      // For customer payments (inflow): decrease customer balance (they owe less)
+      // For supplier payments (outflow): increase supplier balance (we owe them less, liability decreases)
+      if (document.partnerId) {
+        const currentBalance = document.partner?.balance || 0;
+        const balanceAdjustment = input.invoiceType === 'customer' 
+          ? -input.amount  // Customer paid us, reduce their debt
+          : input.amount;   // We paid supplier, reduce our liability to them
+        
+        await tx.partner.update({
+          where: { id: document.partnerId },
+          data: {
+            balance: currentBalance + balanceAdjustment
+          }
+        });
+        
+        trace.push({ 
+          step: 'partner_balance_updated', 
+          status: 'completed', 
+          timestamp: new Date(),
+          details: `Partner ${document.partner?.name || document.partnerId} balance updated by ${balanceAdjustment} DZD`
         });
       }
 

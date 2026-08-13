@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
+import { requireAuth, requireRole, getAuthenticatedUser, ROLES } from '@/lib/auth-utils';
 
 // GET /api/bills - List supplier bills
 export async function GET(request: Request) {
@@ -14,10 +14,18 @@ export async function GET(request: Request) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
 
+    // SECURITY: Get authenticated user for company scoping
+    const user = await getAuthenticatedUser();
+
     const whereClause: any = {};
     
     if (status && status !== 'all') {
       whereClause.status = status;
+    }
+
+    // SECURITY: Company scoping - non-super-admins can only see their company's data
+    if (user && user.role !== ROLES.SUPER_ADMIN && user.companyId) {
+      whereClause.companyId = user.companyId;
     }
 
     const [bills, total] = await Promise.all([
@@ -125,10 +133,24 @@ export async function POST(request: Request) {
     amountTax = Math.round(amountTax * 100) / 100;
     amountTotal = Math.round(amountTotal * 100) + 1; // Add timbre fiscal
 
+    // Validate purchaseOrderId if provided (H-09 FIX: Source tracking)
+    if (body.purchaseOrderId) {
+      const po = await db.purchaseOrder.findUnique({
+        where: { id: body.purchaseOrderId }
+      });
+      if (!po) {
+        return NextResponse.json(
+          { success: false, error: 'Purchase Order not found' },
+          { status: 404 }
+        );
+      }
+    }
+
     // Set due date
     const dueDate = body.dueDate ? new Date(body.dueDate) : new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
 
     // Create bill with lines
+    // H-09 FIX: Added optional source tracking fields (purchaseOrderId, sourceType, sourceId)
     const bill = await db.bill.create({
       data: {
         reference,
@@ -148,6 +170,9 @@ export async function POST(request: Request) {
         partnerId: body.partnerId,
         companyId: company.id,
         
+        // H-09 FIX: Source tracking - link to Purchase Order if provided
+        purchaseOrderId: body.purchaseOrderId || null,
+        
         // Notes
         internalNotes: body.internalNotes || null,
         
@@ -155,6 +180,9 @@ export async function POST(request: Request) {
       },
       include: {
         partner: true,
+        purchaseOrder: {
+          select: { id: true, reference: true, status: true }
+        },
         lines: { include: { product: true } }
       }
     });

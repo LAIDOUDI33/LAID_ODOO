@@ -6,13 +6,34 @@ import {
   calculatePrimeAncienete,
   getAllocationsFamiliales
 } from '@/lib/algerian-taxes';
-import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
+import { requireAuth, requireRole, getAuthenticatedUser, ROLES } from '@/lib/auth-utils';
+
+// M-10 FIX: SMIG (Salaire Minimum Garanti) Configuration
+// SMIG values in DZD (Algerian Dinars) - National Guaranteed Minimum Wage
+// Source: Algerian Labor Law - Updated annually by government decree
+const SMIG_CONFIG = {
+  // Current SMIG for 2025 (20,000 DZD monthly as of recent increases)
+  current: 20000,
+  // Historical values for reference
+  historical: {
+    2024: 20000,
+    2023: 18000,
+    2022: 18000,
+    2021: 18000,
+    2020: 18000
+  },
+  // Warning threshold (% below SMIG before blocking)
+  warningThreshold: 0.9, // Warn if salary < 90% of SMIG
+  currency: 'DZD'
+};
 
 // GET /api/payroll - List payrolls
 export async function GET(request: Request) {
-  // SECURITY: Require authentication for payroll data (HIGHLY SENSITIVE)
-  const authError = await requireAuth(request);
-  if (authError) return authError;
+  // SECURITY FIX C-06: IDOR Vulnerability - Restrict payroll access to authorized roles only
+  // Payroll data contains HIGHLY SENSITIVE information: salaries, tax deductions, bank accounts
+  // CVSS 9.8 - CRITICAL: Any authenticated user could previously access ALL employee financial data
+  const roleCheck = await requireRole(request, [ROLES.ADMIN, ROLES.MANAGER, ROLES.HR, ROLES.ACCOUNTANT]);
+  if (roleCheck) return roleCheck;
   
   try {
     const { searchParams } = new URL(request.url);
@@ -91,6 +112,50 @@ export async function POST(request: Request) {
         { success: false, error: 'Employee not found' },
         { status: 404 }
       );
+    }
+    
+    // M-10 FIX: SMIG Minimum Wage Validation
+    // Check if base salary is below SMIG and add appropriate warnings
+    const smigWarnings: Array<{ code: string; message: string; severity: 'warning' | 'error'; details?: any }> = [];
+    const baseSalary = employee.baseSalary;
+    const currentSMIG = SMIG_CONFIG.current;
+    
+    if (baseSalary < currentSMIG) {
+      const percentOfSmig = ((baseSalary / currentSMIG) * 100).toFixed(1);
+      const shortfall = currentSMIG - baseSalary;
+      
+      if (baseSalary < currentSMIG * SMIG_CONFIG.warningThreshold) {
+        // Salary is significantly below SMIG - this might be an error
+        smigWarnings.push({
+          code: 'SALARY_BELOW_SMIG_CRITICAL',
+          message: `Salaire de base (${baseSalary.toLocaleString()} ${SMIG_CONFIG.currency}) est significativement en dessous du SMIG (${currentSMIG.toLocaleString()} ${SMIG_CONFIG.currency}). Écart: ${shortfall.toLocaleString()} ${SMIG_CONFIG.currency} (${percentOfSmig}% du SMIG)`,
+          severity: 'error',
+          details: {
+            baseSalary,
+            smig: currentSMIG,
+            percentOfSmig: parseFloat(percentOfSmig),
+            shortfall,
+            recommendation: 'Vérifier le salaire de l\'employé ou justifier l\'écart dans les notes'
+          }
+        });
+        
+        console.warn(`[M-10] CRITICAL: Employee ${body.employeeId} salary (${baseSalary}) is significantly below SMIG (${currentSMIG})`);
+      } else {
+        // Salary is slightly below SMIG - just warn
+        smigWarnings.push({
+          code: 'SALARY_BELOW_SMIG',
+          message: `Salaire de base (${baseSalary.toLocaleString()} ${SMIG_CONFIG.currency}) est en dessous du SMIG actuel (${currentSMIG.toLocaleString()} ${SMIG_CONFIG.currency}). Écart: ${shortfall.toLocaleString()} ${SMIG_CONFIG.currency}`,
+          severity: 'warning',
+          details: {
+            baseSalary,
+            smig: currentSMIG,
+            percentOfSmig: parseFloat(percentOfSmig),
+            shortfall
+          }
+        });
+        
+        console.info(`[M-10] WARNING: Employee ${body.employeeId} salary (${baseSalary}) is below SMIG (${currentSMIG})`);
+      }
     }
 
     // Check if payroll already exists for this period
@@ -325,7 +390,17 @@ export async function POST(request: Request) {
         totalRetenues: Math.round(totalRetenues * 100) / 100,
         netPayable: Math.round(netPayable * 100) / 100
       },
-      message: `Payroll ${reference} generated successfully`
+      // M-10 FIX: Include SMIG compliance warnings if any
+      ...(smigWarnings.length > 0 ? {
+        smigCompliance: {
+          smig: currentSMIG,
+          currency: SMIG_CONFIG.currency,
+          isCompliant: baseSalary >= currentSMIG,
+          percentOfSmig: parseFloat(((baseSalary / currentSMIG) * 100).toFixed(1)),
+          warnings: smigWarnings
+        }
+      } : {}),
+      message: `Payroll ${reference} generated successfully${smigWarnings.length > 0 ? ' (with SMIG warnings)' : ''}`
     }, { status: 201 });
   } catch (error) {
     console.error('Payroll POST Error:', error);

@@ -1,6 +1,24 @@
 // ============================================================
-// HASSIBA Suite ERP v2.0.0 - Goods Receipt API
+// HASSIBA Suite ERP v2.0.0 - Goods Receipt API (CANONICAL ENDPOINT)
 // Réception des Marchandises - POST /api/purchases/[id]/receive
+//
+// *** THIS IS THE PREFERRED ENDPOINT FOR GOODS RECEIPT ***
+// 
+// This endpoint calls receivePurchaseOrder() from workflow-orchestrator.ts
+// which is the SINGLE SOURCE OF TRUTH for all goods receipt operations.
+//
+// Consistency guarantees (from canonical method):
+// - Uses $transaction for atomic stock updates
+// - Always creates StockMovement with type 'in_receipt'
+// - Always updates StockLevel (find or create pattern)
+// - Validates quantities > 0
+// - Proper PO status transitions (confirmed -> partial -> received)
+//
+// M-03 FIX: Added 3-way match variance alerts
+// When received quantity differs from ordered by >5%, warning flag is added
+//
+// Alternative (legacy) endpoint: POST /api/purchases/[id]?action=receive
+// Both endpoints now delegate to the same canonical method.
 // ============================================================
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -20,6 +38,10 @@ interface ReceiveGoodsInput {
   }>;
   notes?: string;
 }
+
+// M-03 FIX: Variance threshold for 3-way match (5%)
+// If received qty varies from ordered by more than this, a warning is flagged
+const VARIANCE_WARNING_THRESHOLD = 0.05; // 5%
 
 // ============================================================
 // POST /api/purchases/[id]/receive - Receive Goods for PO
@@ -136,6 +158,36 @@ export async function POST(
       }
     }
     
+    // M-03 FIX: Calculate variance warnings for 3-way match
+    const varianceWarnings: Array<{
+      lineId: string;
+      productName: string;
+      orderedQty: number;
+      receivedQty: number;
+      variancePercent: number;
+      warning: string;
+    }> = [];
+    
+    for (const line of body.lines) {
+      const poLine = existingPO.lines.find((l) => l.id === line.lineId);
+      if (poLine) {
+        const orderedQty = poLine.quantity;
+        const receivedQty = line.quantity;
+        const variance = Math.abs(receivedQty - orderedQty) / orderedQty;
+        
+        if (variance > VARIANCE_WARNING_THRESHOLD) {
+          varianceWarnings.push({
+            lineId: line.lineId,
+            productName: poLine.product?.name || 'Unknown',
+            orderedQty,
+            receivedQty,
+            variancePercent: Math.round(variance * 10000) / 100, // Round to 2 decimal places
+            warning: `Variance of ${(Math.round(variance * 10000) / 100)}% exceeds ${VARIANCE_WARNING_THRESHOLD * 100}% threshold`
+          });
+        }
+      }
+    }
+    
     // Execute workflow orchestrator's receivePurchaseOrder
     const result = await receivePurchaseOrder({
       purchaseOrderId: id,
@@ -149,6 +201,15 @@ export async function POST(
         message: result.message || 'Marchandises réceptionnées avec succès',
         data: result.data,
         workflowTrace: result.workflowTrace,
+        // M-03 FIX: Include variance warnings in response
+        ...(varianceWarnings.length > 0 ? {
+          varianceAlerts: {
+            hasWarnings: true,
+            threshold: `${VARIANCE_WARNING_THRESHOLD * 100}%`,
+            warnings: varianceWarnings,
+            recommendation: 'Review variances with procurement team and document reasons for discrepancy'
+          }
+        } : { varianceAlerts: { hasWarnings: false } })
       });
     } else {
       return NextResponse.json(
