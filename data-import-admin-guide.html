@@ -1,0 +1,2053 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guide Administrateur - Systeme d'Import de Donnees | HASSIBA Suite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        @page {
+            size: 720px 1020px;
+            margin: 0;
+        }
+        :root {
+            --c-bg: #f8fafc;
+            --c-text: #1e293b;
+            --c-primary: #1e40af;
+            --c-primary-dark: #1e3a5f;
+            --c-primary-light: #3b82f6;
+            --c-accent: #0369a1;
+            --c-border: #e2e8f0;
+            --c-card: #ffffff;
+            --c-card-alt: #f1f5f9;
+            --c-success: #059669;
+            --c-warning: #d97706;
+            --c-error: #dc2626;
+            --c-muted: #64748b;
+        }
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 720px;
+            background: var(--c-bg);
+            color: var(--c-text);
+            font-family: 'Inter', 'Noto Sans SC', sans-serif;
+        }
+        @media screen {
+            html {
+                height: auto;
+                display: flex;
+                justify-content: center;
+                background: #e2e8f0;
+            }
+            body {
+                transform-origin: top center;
+                box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+                margin: 20px auto;
+            }
+        }
+
+        /* Cover Page */
+        .cover {
+            width: 720px;
+            height: 1020px;
+            background: linear-gradient(135deg, var(--c-primary-dark) 0%, var(--c-primary) 50%, var(--c-accent) 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 60px;
+            box-sizing: border-box;
+            break-after: page;
+            position: relative;
+            overflow: hidden;
+        }
+        .cover::before {
+            content: '';
+            position: absolute;
+            top: -150px;
+            right: -150px;
+            width: 400px;
+            height: 400px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 50%;
+        }
+        .cover::after {
+            content: '';
+            position: absolute;
+            bottom: -100px;
+            left: -100px;
+            width: 300px;
+            height: 300px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 50%;
+        }
+        .cover-tag {
+            background: rgba(255,255,255,0.15);
+            color: white;
+            padding: 8px 24px;
+            border-radius: 30px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 50px;
+        }
+        .cover-title {
+            font-size: 44px;
+            font-weight: 900;
+            color: white;
+            text-align: center;
+            line-height: 1.35;
+            margin-bottom: 40px;
+            max-width: 550px;
+        }
+        .cover-subtitle {
+            font-size: 17px;
+            color: rgba(255,255,255,0.85);
+            text-align: center;
+            margin-bottom: 70px;
+            font-weight: 300;
+            line-height: 1.5;
+            max-width: 480px;
+        }
+        .cover-meta {
+            display: flex;
+            gap: 30px;
+            color: rgba(255,255,255,0.7);
+            font-size: 14px;
+        }
+        .cover-meta span {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .cover-version {
+            position: absolute;
+            bottom: 40px;
+            left: 60px;
+            right: 60px;
+            display: flex;
+            justify-content: space-between;
+            color: rgba(255,255,255,0.5);
+            font-size: 12px;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 50px 60px 40px 60px;
+        }
+
+        /* Section Headers */
+        .chapter-header {
+            break-after: avoid;
+            break-inside: avoid;
+            margin-top: 36px;
+            margin-bottom: 20px;
+        }
+        .section-tag {
+            display: inline-block;
+            background: var(--c-primary);
+            color: white;
+            padding: 4px 14px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+        .section-title {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--c-primary-dark);
+            line-height: 1.25;
+            margin: 0 0 12px 0;
+        }
+        .divider {
+            width: 60px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--c-primary), var(--c-accent));
+            border-radius: 2px;
+        }
+
+        /* Body Text */
+        .body-text {
+            font-size: 15px;
+            line-height: 1.75;
+            color: var(--c-text);
+            margin-bottom: 16px;
+        }
+        .body-text strong {
+            color: var(--c-primary-dark);
+            font-weight: 600;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--c-card);
+            border-radius: 10px;
+            padding: 20px 24px;
+            margin-bottom: 14px;
+            border: 1px solid var(--c-border);
+            break-inside: avoid;
+        }
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--c-primary), var(--c-accent));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 18px;
+        }
+        .card-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--c-primary-dark);
+        }
+        .card-desc {
+            font-size: 14px;
+            color: var(--c-muted);
+            line-height: 1.6;
+        }
+
+        /* Tables */
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 16px 0;
+            break-inside: avoid;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            background: var(--c-card);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th {
+            background: var(--c-primary-dark);
+            color: white;
+            padding: 12px 14px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        td {
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--c-border);
+            vertical-align: top;
+        }
+        tr:last-child td { border-bottom: none; }
+        tr:nth-child(even) td { background: var(--c-card-alt); }
+        .required { color: var(--c-error); font-weight: 600; }
+        .optional { color: var(--c-muted); }
+        .type-badge {
+            display: inline-block;
+            background: var(--c-card-alt);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--c-accent);
+        }
+
+        /* Info Boxes */
+        .info-box {
+            background: linear-gradient(135deg, #eff6ff, #dbeafe);
+            border-left: 4px solid var(--c-primary-light);
+            padding: 16px 20px;
+            border-radius: 0 8px 8px 0;
+            margin: 16px 0;
+            break-inside: avoid;
+        }
+        .info-box.warning {
+            background: linear-gradient(135deg, #fffbeb, #fef3c7);
+            border-left-color: var(--c-warning);
+        }
+        .info-box.error {
+            background: linear-gradient(135deg, #fef2f2, #fee2e2);
+            border-left-color: var(--c-error);
+        }
+        .info-box.success {
+            background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+            border-left-color: var(--c-success);
+        }
+        .info-title {
+            font-weight: 700;
+            font-size: 14px;
+            margin-bottom: 6px;
+            color: var(--c-primary-dark);
+        }
+        .info-box.warning .info-title { color: var(--c-warning); }
+        .info-box.error .info-title { color: var(--c-error); }
+        .info-box.success .info-title { color: var(--c-success); }
+        .info-text {
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--c-text);
+        }
+
+        /* Code/Format Blocks */
+        .format-block {
+            background: var(--c-primary-dark);
+            color: #e2e8f0;
+            padding: 16px 20px;
+            border-radius: 8px;
+            font-family: 'Liberation Mono', monospace;
+            font-size: 13px;
+            line-height: 1.7;
+            margin: 14px 0;
+            break-inside: avoid;
+            overflow-x: auto;
+        }
+        .format-block .comment { color: #94a3b8; }
+        .format-block .field { color: #93c5fd; }
+        .format-block .value { color: #86efac; }
+
+        /* Lists */
+        ul, ol {
+            padding-left: 20px;
+            margin: 12px 0;
+        }
+        li {
+            font-size: 14px;
+            line-height: 1.65;
+            margin-bottom: 6px;
+            color: var(--c-text);
+        }
+
+        /* Module Grid */
+        .module-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin: 16px 0;
+        }
+        .module-item {
+            background: var(--c-card);
+            border: 1px solid var(--c-border);
+            border-radius: 8px;
+            padding: 14px 16px;
+            break-inside: avoid;
+        }
+        .module-name {
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--c-primary-dark);
+            margin-bottom: 4px;
+        }
+        .module-desc {
+            font-size: 12px;
+            color: var(--c-muted);
+        }
+
+        /* Column Spec Table (for each module) */
+        .col-spec-table td:first-child {
+            font-family: 'Liberation Mono', monospace;
+            font-size: 12px;
+            color: var(--c-primary);
+        }
+
+        /* Steps */
+        .steps {
+            counter-reset: step;
+            margin: 16px 0;
+        }
+        .step {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 16px;
+            break-inside: avoid;
+        }
+        .step-num {
+            width: 32px;
+            height: 32px;
+            background: var(--c-primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+        .step-content h4 {
+            margin: 0 0 4px 0;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--c-primary-dark);
+        }
+        .step-content p {
+            margin: 0;
+            font-size: 14px;
+            color: var(--c-muted);
+            line-height: 1.55;
+        }
+
+        /* Ending Page */
+        .ending {
+            width: 720px;
+            height: 1020px;
+            background: linear-gradient(135deg, var(--c-primary-dark), var(--c-primary));
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 60px;
+            box-sizing: border-box;
+            break-before: page;
+            text-align: center;
+        }
+        .ending-title {
+            font-size: 42px;
+            font-weight: 900;
+            color: white;
+            margin-bottom: 20px;
+        }
+        .ending-text {
+            font-size: 18px;
+            color: rgba(255,255,255,0.8);
+            max-width: 450px;
+            line-height: 1.6;
+        }
+        .ending-footer {
+            position: absolute;
+            bottom: 50px;
+            color: rgba(255,255,255,0.5);
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- COVER PAGE -->
+<div class="cover">
+    <div class="cover-tag">Documentation Technique</div>
+    <h1 class="cover-title">Guide Administrateur<br>Import de Donnees</h1>
+    <p class="cover-subtitle">HASSIBA Suite ERP - Migration et Integration des Donnees Historiques</p>
+    <div class="cover-meta">
+        <span>Version 1.0</span>
+        <span>Janvier 2025</span>
+        <span>Algerie DZ</span>
+    </div>
+    <div class="cover-version">
+        <span>HASSIBA Suite v2.0</span>
+        <span>Confidentiel - Usage Interne</span>
+    </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main-content">
+
+    <!-- CHAPTER 1: INTRODUCTION -->
+    <div class="chapter-header">
+        <div class="section-tag">Chapitre 1</div>
+        <h2 class="section-title">Introduction au Systeme d'Import</h2>
+        <div class="divider"></div>
+    </div>
+
+    <div class="body-text">
+        Le <strong>Systeme d'Import de Donnees</strong> de HASSIBA Suite est un module puissant concu pour faciliter la migration des donnees historiques depuis vos anciens systemes vers la plateforme ERP. Ce systeme supporte l'importation de donnees pour plus de <strong>17 modules fonctionnels</strong>, couvrant les ressources humaines, la finance, les ventes, les achats, l'inventaire et bien plus encore.
+    </div>
+
+    <div class="body-text">
+        L'objectif principal de ce guide est de fournir aux administrateurs systeme et aux responsables informatiques toutes les informations necessaires pour preparer correctement leurs fichiers d'import, comprendre les formats requis par module, et resoudre les problemes courants qui peuvent survenir lors du processus de migration des donnees.
+    </div>
+
+    <div class="info-box success">
+        <div class="info-title">Bon a savoir</div>
+        <div class="info-text">Le systeme d'import supporte deux formats de fichier : CSV (valeurs separees par virgules) et Excel (.xlsx, .xls). Les templates preconfigures sont disponibles en telechargement depuis l'interface d'administration.</div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="card-icon">1</div>
+            <div class="card-title">Fonctionnalites Cles du Systeme</div>
+        </div>
+        <ul>
+            <li><strong>Validation automatique</strong> des donnees avant import avec rapport d'erreurs detaille</li>
+            <li><strong>Support multiformat</strong> - Fichiers CSV et Excel (.xlsx, .xls)</li>
+            <li><strong>Import progressif</strong> avec suivi en temps reel de l'avancement</li>
+            <li><strong>Capacite de rollback</strong> - Annulation possible des imports effectues</li>
+            <li><strong>Detection des doublons</strong> avec option de mise a jour ou saut</li>
+            <li><strong>Templates preconfigures</strong> pour chaque module avec exemples</li>
+        </ul>
+    </div>
+
+
+    <!-- CHAPTER 2: FORMATS SUPPORTES -->
+    <div class="chapter-header">
+        <div class="section-tag">Chapitre 2</div>
+        <h2 class="section-title">Formats de Fichiers Supportes</h2>
+        <div class="divider"></div>
+    </div>
+
+    <div class="body-text">
+        Le systeme d'accepte principalement deux types de fichiers pour l'importation des donnees. Chaque format ses propres avantages et cas d'utilisation preferentiels. Cette section detaille les specifications techniques de chaque format ainsi que les bonnes pratiques a suivre lors de la preparation de vos fichiers.
+    </div>
+
+    <!-- CSV Format -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-icon">A</div>
+            <div class="card-title">Format CSV (Comma Separated Values)</div>
+        </div>
+        <div class="card-desc">
+            Le format CSV est le format le plus universel et le plus simple a utiliser. Il peut etre genere depuis n'importe quel tableur (Excel, Google Sheets, LibreOffice) ou systeme de gestion de base de donnees.
+        </div>
+    </div>
+
+    <div class="format-block"><span class="comment"># Structure d'un fichier CSV type</span>
+<span class="field">prenom</span>,<span class="field">nom</span>,<span class="field">email</span>,<span class="field">telephone</span>,<span class="field">date_embauche</span>,<span class="field">departement</span>
+<span class="value">Ahmed</span>,<span class="value">BENALI</span>,<span class="value">a.benali@company.dz</span>,<span class="value">0555123456</span>,<span class="value">2024-01-15</span>,<span class="value">Informatique</span>
+<span class="value">Fatima</span>,<span class="value">ZERHOUNI</span>,<span class="value">f.zerhouni@company.dz</span>,<span class="value">0661987654</span>,<span class="value">2023-06-01</span>,<span class="value">Ressources Humaines</span></div>
+
+    <div class="info-box">
+        <div class="info-title">Specifications Techniques CSV</div>
+        <div class="info-text">
+            <ul>
+                <li><strong>Encodage :</strong> UTF-8 (recommande) ou ISO-8859-1 (Latin-1)</li>
+                <li><strong>Separateur :</strong> Virgule (,) comme separateur de champs</li>
+                <li><strong>Guillemets :</strong> Utilisez des doubles guillemets (") pour les valeurs contenant des virgules ou des sauts de ligne</li>
+                <li><strong>Ligne d'en-tete :</strong> Obligatoire - doit contenir les noms de colonnes exacts</li>
+                <li><strong>Finition de ligne :</strong> Unix (LF) ou Windows (CRLF) acceptees</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Excel Format -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-icon">B</div>
+            <div class="card-title">Format Excel (.xlsx / .xls)</div>
+        </div>
+        <div class="card-desc">
+            Les fichiers Excel sont egalement supportes et sont particulierement utiles lorsque vos donnees contiennent des formules, plusieurs feuilles, ou une mise en forme complexe. Seule la premiere feuille de calcul sera importee.
+        </div>
+    </div>
+
+    <div class="info-box warning">
+        <div class="info-title">Important - Format Excel</div>
+        <div class="info-text">
+            Assurez-vous que les dates sont au format texte (YYYY-MM-DD ou DD/MM/YYYY) et non au format Excel natif. Les nombres doivent utiliser le point (.) comme separateur decimal, non la virgule. La taille maximale de fichier est de 10 Mo.
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <tr>
+                <th>Type de Donne</th>
+                <th>Format Attendu</th>
+                <th>Exemple</th>
+                <th>Notes</th>
+            </tr>
+            <tr>
+                <td><strong>Date</strong></td>
+                <td>YYYY-MM-DD ou DD/MM/YYYY</td>
+                <td>2024-01-15 ou 15/01/2024</td>
+                <td>Format ISO recommande</td>
+            </tr>
+            <tr>
+                <td><strong>Nombre decimal</strong></td>
+                <td>Point comme decimal</td>
+                <td>1500.50 ou 85000</td>
+                <td>Pas de virgule comme separateur</td>
+            </tr>
+            <tr>
+                <td><strong>Monnaie (DZD)</strong></td>
+                <td>Nombre entier ou decimal</td>
+                <td>250000 ou 12500.75</td>
+                <td>Symbole DZD non requis</td>
+            </tr>
+            <tr>
+                <td><strong>Telephone</strong></td>
+                <td>Chiffres avec indicatif optionnel</td>
+                <td>0555123456 ou +21355123456</td>
+                <td>8-15 chiffres acceptes</td>
+            </tr>
+            <tr>
+                <td><strong>Email</strong></td>
+                <td>Format email standard</td>
+                <td>nom@entreprise.dz</td>
+                <td>Validation automatique</td>
+            </tr>
+            <tr>
+                <td><strong>Booleen</strong></td>
+                <td>true/false, yes/no, 1/0</td>
+                <td>true, oui, 1</td>
+                <td>Tous les formats acceptes</td>
+            </tr>
+        </table>
+    </div>
+
+
+    <!-- CHAPTER 3: PROCESSUS D'IMPORT -->
+    <div class="chapter-header">
+        <div class="section-tag">Chapitre 3</div>
+        <h2 class="section-title">Processus d'Import Etape par Etape</h2>
+        <div class="divider"></div>
+    </div>
+
+    <div class="body-text">
+        L'importation des donnees suit un processus structure en quatre etapes principales. Chaque etape est concue pour valider les donnees progressivement et minimiser les risques d'erreur. Comprendre ce processus essentiel pour reussir votre migration de donnees.
+    </div>
+
+    <div class="steps">
+        <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-content">
+                <h4>Selection du Module</h4>
+                <p>Choisissez le module correspondant aux donnees a importer parmi les 17 modules disponibles. Consultez le Chapitre 4 pour connaitre le format specifique a chaque module.</p>
+            </div>
+        </div>
+        <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-content">
+                <h4>Telechargement du Template</h4>
+                <p>Telechargez le template preconfigure pour le module choisi. Ce template contient les colonnes requises, les formats attendus et un exemple de donnees pour vous aider.</p>
+            </div>
+        </div>
+        <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-content">
+                <h4>Preparation et Upload du Fichier</h4>
+                <p>Remplissez le template avec vos donnees en respectant les formats specifies. Uploadez ensuite le fichier (CSV ou Excel) dans le systeme.</p>
+            </div>
+        </div>
+        <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-content">
+                <h4>Validation et Import</h4>
+                <p>Le systeme valide automatiquement vos donnees. Corrigez les erreurs signalees puis lancez l'import. Suivez la progression en temps reel.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-box error">
+        <div class="info-title">Ordre d'Import Recommande</div>
+        <div class="info-text">
+            Pour eviter les problemes de references entre modules, suivez cet ordre d'import : 
+            <strong>Plan Comptable → Partners → Produits → Entrepots → Employes → Soldes Conges → Mouvements Stock → Factures/Factures d'Achats → Ecritures Comptables → Autres modules</strong>
+        </div>
+    </div>
+
+
+    <!-- CHAPTER 4: MODULES HR -->
+    <div class="chapter-header">
+        <div class="section-tag">Chapitre 4</div>
+        <h2 class="section-title">Module 1 : Employes (RH)</h2>
+        <div class="divider"></div>
+    </div>
+
+    <div class="body-text">
+        Le module <strong>Employes</strong> permet d'importer l'ensemble du personnel de l'entreprise avec leurs informations personnelles, contractuelles et bancaires. C'est generalement l'un des premiers modules a importer car les employes sont references dans d'autres modules (pointages, paie, conges).
+    </div>
+
+    <div class="table-wrapper">
+        <table class="col-spec-table">
+            <tr>
+                <th>Colonne</th>
+                <th>Type</th>
+                <th>Obligatoire</th>
+                <th>Description & Exemple</th>
+            </tr>
+            <tr>
+                <td><span class="field">firstName</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="required">Oui</td>
+                <td>Prenom de l'employe. Ex: <em>Ahmed</em></td>
+            </tr>
+            <tr>
+                <td><span class="field">lastName</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="required">Oui</td>
+                <td>Nom de famille. Ex: <em>BENALI</em></td>
+            </tr>
+            <tr>
+                <td><span class="field">workEmail</span></td>
+                <td><span class="type-badge">email</span></td>
+                <td class="optional">Non</td>
+                <td>Email professionnel. Ex: <em>a.benali@company.dz</em></td>
+            </tr>
+            <tr>
+                <td><span class="field">personalEmail</span></td>
+                <td><span class="type-badge">email</span></td>
+                <td class="optional">Non</td>
+                <td>Email personnel</td>
+            </tr>
+            <tr>
+                <td><span class="field">phone</span></td>
+                <td><span class="type-badge">phone</span></td>
+                <td class="optional">Non</td>
+                <td>Telephone. Ex: <em>0555123456</em></td>
+            </tr>
+            <tr>
+                <td><span class="field">gender</span></td>
+                <td><span class="type-badge">select</span></td>
+                <td class="optional">Non</td>
+                <td>Genre: M, F, ou vide</td>
+            </tr>
+            <tr>
+                <td><span class="field">dateOfBirth</span></td>
+                <td><span class="type-badge">date</span></td>
+                <td class="optional">Non</td>
+                <td>Date de naissance (YYYY-MM-DD). Ex: <em>1985-06-15</em></td>
+            </tr>
+            <tr>
+                <td><span class="field">hireDate</span></td>
+                <td><span class="type-badge">date</span></td>
+                <td class="required">Oui</td>
+                <td>Date d'embauche. Ne peut pas etre dans le futur</td>
+            </tr>
+            <tr>
+                <td><span class="field">matricule</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="optional">Non</td>
+                <td>Identifiant unique employe. Ex: <em>EMP001</em></td>
+            </tr>
+            <tr>
+                <td><span class="field">department</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="optional">Non</td>
+                <td>Departement. Ex: <em>Informatique</em>, <em>RH</em></td>
+            </tr>
+            <tr>
+                <td><span class="field">jobPosition</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="optional">Non</td>
+                <td>Poste occupe</td>
+            </tr>
+            <tr>
+                <td><span class="field">jobTitle</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="optional">Non</td>
+                <td>Intitule du poste</td>
+            </tr>
+            <tr>
+                <td><span class="field">contractType</span></td>
+                <td><span class="type-badge">select</span></td>
+                <td class="optional">Non</td>
+                <td>Type: CDI, CDD, Stage, Intrim</td>
+            </tr>
+            <tr>
+                <td><span class="field">baseSalary</span></td>
+                <td><span class="type-badge">number</span></td>
+                <td class="optional">Non</td>
+                <td>Salaire de base (DZD). Ex: <em>85000</em></td>
+            </tr>
+            <tr>
+                <td><span class="field">bankAccount</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="optional">Non</td>
+                <td>Numero de compte/RIB</td>
+            </tr>
+            <tr>
+                <td><span class="field">bankName</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="optional">Non</td>
+                <td>Nom de la banque. Ex: <em>BNA</em>, <em>CPA</em></td>
+            </tr>
+            <tr>
+                <td><span class="field">address</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="optional">Non</td>
+                <td>Adresse postale</td>
+            </tr>
+            <tr>
+                <td><span class="field">city</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="optional">Non</td>
+                <td>Ville. Ex: <em>Alger</em>, <em>Oran</em></td>
+            </tr>
+            <tr>
+                <td><span class="field">wilayaCode</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="optional">Non</td>
+                <td>Code wilaya (1-58). Ex: <em>16</em> pour Alger</td>
+            </tr>
+            <tr>
+                <td><span class="field">employeeStatus</span></td>
+                <td><span class="type-badge">select</span></td>
+                <td class="optional">Non</td>
+                <td>Statut: actif, en_conge, resigne, retraite</td>
+            </tr>
+            <tr>
+                <td><span class="field">isActive</span></td>
+                <td><span class="type-badge">boolean</span></td>
+                <td class="optional">Non</td>
+                <td>Employe actif? Defaut: true</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="format-block"><span class="comment"># Exemple fichier CSV - Module Employes</span>
+firstName,lastName,workEmail,phone,hireDate,matricule,department,contractType,baseSalary,wilayaCode
+Ahmed,BENALI,a.benali@company.dz,0555123456,2024-01-15,EMP001,Informatique,CDI,85000,16
+Fatima,ZERHOUNI,f.zerhouni@company.dz,0661987654,2023-06-01,EMP002,RH,CDI,75000,31
+Karim,HADJAR,k.hajar@company.dz,0770123456,2022-03-20,EMP003,Finance,CDD,65000,09</div>
+
+    <div class="info-box">
+        <div class="info-title">Regles de Validation - Employes</div>
+        <div class="info-text">
+            <ul>
+                <li>La date d'embauche ne peut pas etre posterieure a la date du jour</li>
+                <li>La date de naissance doit etre anterieure a la date d'embauche</li>
+                <li>L'email professionnel doit avoir un format valide si renseigne</li>
+                <li>Le code wilaya doit etre compris entre 01 et 58 (wilayas algeriennes)</li>
+                <li>Le matricule doit etre unique s'il est precise</li>
+            </ul>
+        </div>
+    </div>
+
+
+    <!-- MODULE: ATTENDANCE -->
+    <div class="chapter-header">
+        <div class="section-tag">Chapitre 5</div>
+        <h2 class="section-title">Module 2 : Pointages (Attendance)</h2>
+        <div class="divider"></div>
+    </div>
+
+    <div class="body-text">
+        Le module <strong>Pointages</strong> permet d'importer l'historique des presences et absences des employes. Ces donnees sont essentielles pour le calcul de la paie et le suivi des heures travaillees. Chaque ligne represente un pointage journalier pour un employe.
+    </div>
+
+    <div class="table-wrapper">
+        <table class="col-spec-table">
+            <tr>
+                <th>Colonne</th>
+                <th>Type</th>
+                <th>Obligatoire</th>
+                <th>Description & Exemple</th>
+            </tr>
+            <tr>
+                <td><span class="field">employeeId</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="required">Oui</td>
+                <td>Matricule ou ID employe (doit exister)</td>
+            </tr>
+            <tr>
+                <td><span class="field">date</span></td>
+                <td><span class="type-badge">date</span></td>
+                <td class="required">Oui</td>
+                <td>Date du pointage (YYYY-MM-DD)</td>
+            </tr>
+            <tr>
+                <td><span class="field">clockIn</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="optional">Non</td>
+                <td>Heure d'arrivee (HH:MM). Ex: <em>08:30</em></td>
+            </tr>
+            <tr>
+                <td><span class="field">clockOut</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="optional">Non</td>
+                <td>Heure de depart (HH:MM). Doit etre apres clockIn</td>
+            </tr>
+            <tr>
+                <td><span class="field">breakDuration</span></td>
+                <td><span class="type-badge">number</span></td>
+                <td class="optional">Non</td>
+                <td>Duree pause dejeuner (minutes)</td>
+            </tr>
+            <tr>
+                <td><span class="field">workedHours</span></td>
+                <td><span class="type-badge">number</span></td>
+                <td class="optional">Non</td>
+                <td>Heures travaillees calculees</td>
+            </tr>
+            <tr>
+                <td><span class="field">status</span></td>
+                <td><span class="type-badge">select</span></td>
+                <td class="optional">Non</td>
+                <td>present, absent, late, half_day, leave, holiday</td>
+            </tr>
+            <tr>
+                <td><span class="field">overtimeHours</span></td>
+                <td><span class="type-badge">number</span></td>
+                <td class="optional">Non</td>
+                <td>Heures supplementaires</td>
+            </tr>
+            <tr>
+                <td><span class="field">notes</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="optional">Non</td>
+                <td>Commentaires</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="format-block"><span class="comment"># Exemple - Pointages</span>
+employeeId,date,clockIn,clockOut,breakDuration,status,notes
+EMP001,2024-01-15,08:00,17:30,60,present,
+EMP001,2024-01-16,08:30,17:30,60,late,Retard transport
+EMP002,2024-01-15,,,,,leave,Conge maladie</div>
+
+
+    <!-- MODULE: LEAVES -->
+    <div class="chapter-header">
+        <div class="section-tag">Chapitre 6</div>
+        <h2 class="section-title">Module 3 : Conges et Absences (Leaves)</h2>
+        <div class="divider"></div>
+    </div>
+
+    <div class="body-text">
+        Le module <strong>Conges</strong> permet d'importer les soldes de conges accumules par employe ainsi que l'historique des conges pris. Ces donnees sont cruciales pour le calcul correct des droits a conges et la gestion des absences.
+    </div>
+
+    <div class="table-wrapper">
+        <table class="col-spec-table">
+            <tr>
+                <th>Colonne</th>
+                <th>Type</th>
+                <th>Obligatoire</th>
+                <th>Description & Exemple</th>
+            </tr>
+            <tr>
+                <td><span class="field">employeeId</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="required">Oui</td>
+                <td>Matricule employe (reference obligatoire)</td>
+            </tr>
+            <tr>
+                <td><span class="field">leaveType</span></td>
+                <td><span class="type-badge">select</span></td>
+                <td class="required">Oui</td>
+                <td>Type: annual, sickness, unpaid, maternity, paternity, exceptionnel</td>
+            </tr>
+            <tr>
+                <td><span class="field">accruedDays</span></td>
+                <td><span class="type-badge">number</span></td>
+                <td class="optional">Non</td>
+                <td>Jours de conges acquis. Ex: <em>30</em></td>
+            </tr>
+            <tr>
+                <td><span class="field">usedDays</span></td>
+                <td><span class="type-badge">number</span></td>
+                <td class="optional">Non</td>
+                <td>Jours de conges deja utilises. Ex: <em>15</em></td>
+            </tr>
+            <tr>
+                <td><span class="field">remainingDays</span></td>
+                <td><span class="type-badge">number</span></td>
+                <td class="optional">Non</td>
+                <td>Solde restant = accrued - used</td>
+            </tr>
+            <tr>
+                <td><span class="field">asOfDate</span></td>
+                <td><span class="type-badge">date</span></td>
+                <td class="optional">Non</td>
+                <td>Date de reference du solde</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="format-block"><span class="comment"># Exemple - Soldes de Conges</span>
+employeeId,leaveType,accruedDays,usedDays,remainingDays,asOfDate
+EMP001,annual,30,10,20,2024-01-01
+EMP001,sickness,15,3,12,2024-01-01
+EMP002,annual,30,5,25,2024-01-01</div>
+
+
+    <!-- MODULE: CHART OF ACCOUNTS -->
+    <div class="chapter-header">
+        <div class="section-tag">Chapitre 7</div>
+        <h2 class="section-title">Module 4 : Plan Comptable (Finance)</h2>
+        <div class="divider"></div>
+    </div>
+
+    <div class="body-text">
+        Le <strong>Plan Comptable</strong> est la colonne vertebrale du module comptable. Il definit la structure des comptes selon le Plan Comptable Algerien (PCN). L'import du plan comptable doit generalement etre effectue en premier avant tout autre module financier.
+    </div>
+
+    <div class="table-wrapper">
+        <table class="col-spec-table">
+            <tr>
+                <th>Colonne</th>
+                <th>Type</th>
+                <th>Obligatoire</th>
+                <th>Description & Exemple</th>
+            </tr>
+            <tr>
+                <td><span class="field">code</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="required">Oui</td>
+                <td>Code compte unique. Ex: <em>410000</em>, <em>512100</em></td>
+            </tr>
+            <tr>
+                <td><span class="field">name</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="required">Oui</td>
+                <td>Nom du compte (francais)</td>
+            </tr>
+            <tr>
+                <td><span class="field">nameAr</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="optional">Non</td>
+                <td>Nom du compte en arabe</td>
+            </tr>
+            <tr>
+                <td><span class="field">type</span></td>
+                <td><span class="type-badge">select</span></td>
+                <td class="required">Oui</td>
+                <td>asset, liability, equity, revenue, expense</td>
+            </tr>
+            <tr>
+                <td><span class="field">class</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="optional">Non</td>
+                <td>Classe PCN (1-8). Ex: <em>4</em> pour tiers</td>
+            </tr>
+            <tr>
+                <td><span class="field">parentCode</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="optional">Non</td>
+                <td>Code compte parent (doit exister)</td>
+            </tr>
+            <tr>
+                <td><span class="field">nature</span></td>
+                <td><span class="type-badge">select</span></td>
+                <td class="optional">Non</td>
+                <td>detail, header, view</td>
+            </tr>
+            <tr>
+                <td><span class="field">isLeaf</span></td>
+                <td><span class="type-badge">boolean</span></td>
+                <td class="optional">Non</td>
+                <td>Compte feuille (saisissable)?</td>
+            </tr>
+            <tr>
+                <td><span class="field">isTaxAccount</span></td>
+                <td><span class="type-badge">boolean</span></td>
+                <td class="optional">Non</td>
+                <td>Compte lie a la TVA?</td>
+            </tr>
+            <tr>
+                <td><span class="field">taxType</span></td>
+                <td><span class="type-badge">select</span></td>
+                <td class="optional">Non</td>
+                <td>tva_collectee, tva_deductible, tap, irg, ibs</td>
+            </tr>
+            <tr>
+                <td><span class="field">reconcileable</span></td>
+                <td><span class="type-badge">boolean</span></td>
+                <td class="optional">Non</td>
+                <td>Rapprochable?</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="format-block"><span class="comment"># Exemple - Plan Comptable PCN</span>
+code,name,type,class,parentCode,nature,isLeaf,isTaxAccount,taxType
+100000,Capital,equity,1,,header,false,false,
+110000,Reserves,equity,1,100000,header,false,false,
+410000,Clients,asset,4,,header,false,false,
+410001,Clients locaux,asset,4,410000,detail,true,false,
+512100,BNA Compte courant,asset,5,512000,detail,true,false,
+445200,TVA collectée,liability,4,,detail,true,tva_collectee
+445600,TVA deductible,asset,4,,detail,true,tva_deductible</div>
+
+    <div class="info-box warning">
+        <div class="info-title">Structure Hierarchique</div>
+        <div class="info-text">
+            Importez les comptes parents AVANT les comptes enfants. Le systeme verifie que le parentCode reference un compte existant. Commencez par les comptes de niveau 1 (classes), puis les sous-comptes.
+        </div>
+    </div>
+
+
+    <!-- MODULE: JOURNAL ENTRIES -->
+    <div class="chapter-header">
+        <div class="section-tag">Chapitre 8</div>
+        <h2 class="section-title">Module 5 : Ecritures Comptables (Opening Balance)</h2>
+        <div class="divider"></div>
+    </div>
+
+    <div class="body-text">
+        Le module <strong>Ecritures Comptables</strong> permet d'importer les ecritures d'ouverture (soldes initiaux) ou les ecritures historiques. Chaque ecriture doit etre equilibree (Total Debit = Total Credit). Ce module est utilise pour initialiser les soldes des comptes lors de la migration.
+    </div>
+
+    <div class="table-wrapper">
+        <table class="col-spec-table">
+            <tr>
+                <th>Colonne</th>
+                <th>Type</th>
+                <th>Obligatoire</th>
+                <th>Description & Exemple</th>
+            </tr>
+            <tr>
+                <td><span class="field">date</span></td>
+                <td><span class="type-badge">date</span></td>
+                <td class="required">Oui</td>
+                <td>Date de l'ecriture</td>
+            </tr>
+            <tr>
+                <td><span class="field">journalCode</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="required">Oui</td>
+                <td>Code journal. Ex: <em>ACH</em>, <em>VTE</em>, <em>OD</em></td>
+            </tr>
+            <tr>
+                <td><span class="field">label</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="required">Oui</td>
+                <td>Libelle de l'ecriture</td>
+            </tr>
+            <tr>
+                <td><span class="field">reference</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="optional">Non</td>
+                <td>Reference externe</td>
+            </tr>
+            <tr>
+                <td><span class="field">lines[*].accountCode</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="required">Oui</td>
+                <td>Code compte de la ligne</td>
+            </tr>
+            <tr>
+                <td><span class="field">lines[*].label</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="required">Oui</td>
+                <td>Libelle de la ligne</td>
+            </tr>
+            <tr>
+                <td><span class="field">lines[*].debit</span></td>
+                <td><span class="type-badge">number</span></td>
+                <td class="required">Oui</td>
+                <td>Montant debit</td>
+            </tr>
+            <tr>
+                <td><span class="field">lines[*].credit</span></td>
+                <td><span class="type-badge">number</span></td>
+                <td class="required">Oui</td>
+                <td>Montant credit</td>
+            </tr>
+            <tr>
+                <td><span class="field">lines[*].partnerRef</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="optional">Non</td>
+                <td>Reference partenaire (optionnel)</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="format-block"><span class="comment"># Exemple - Ecriture d'ouverture</span>
+date,journalCode,label,reference,lines[account],lines[label],lines[debit],lines[credit]
+2024-01-01,OD,Soldes d'ouverture,SOLDE-2024,100000,Capital,1000000,
+2024-01-01,OD,Soldes d'ouverture,SOLDE-2024,410000,Clients,,250000
+2024-01-01,OD,Soldes d'ouverture,SOLDE-2024,512100,BNA,,750000</div>
+
+    <div class="info-box error">
+        <div class="info-title">Regle Critique - Equilibre Comptable</div>
+        <div class="info-text">
+            Chaque ecriture DOIT etre equilibree. Le total des debits doit etre egal au total des credits (a 0.01 pres). Une ecriture desequilibree sera rejetee par le systeme avec le code erreur UNBALANCED_ENTRY.
+        </div>
+    </div>
+
+
+    <!-- MODULE: PARTNERS -->
+    <div class="chapter-header">
+        <div class="section-tag">Chapitre 9</div>
+        <h2 class="section-title">Module 6 : Partners (Clients/Fournisseurs)</h2>
+        <div class="divider"></div>
+    </div>
+
+    <div class="body-text">
+        Le module <strong>Partners</strong> centralise la gestion des tiers : clients, fournisseurs, ou les deux. Ce module supporte les identifiants fiscaux algeriens (NIF, NIS, RC, AI) et est reference par les modules Ventes, Achats et Tresorerie.
+    </div>
+
+    <div class="table-wrapper">
+        <table class="col-spec-table">
+            <tr>
+                <th>Colonne</th>
+                <th>Type</th>
+                <th>Obligatoire</th>
+                <th>Description & Exemple</th>
+            </tr>
+            <tr>
+                <td><span class="field">name</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="required">Oui</td>
+                <td>Raison sociale ou nom complet</td>
+            </tr>
+            <tr>
+                <td><span class="field">displayName</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="optional">Non</td>
+                <td>Nom d'affichage court</td>
+            </tr>
+            <tr>
+                <td><span class="field">type</span></td>
+                <td><span class="type-badge">select</span></td>
+                <td class="required">Oui</td>
+                <td>customer, supplier, both</td>
+            </tr>
+            <tr>
+                <td><span class="field">isCompany</span></td>
+                <td><span class="type-badge">boolean</span></td>
+                <td class="optional">Non</td>
+                <td>Personne morale? Defaut: true</td>
+            </tr>
+            <tr>
+                <td><span class="field">rc</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="optional">Non</td>
+                <td>Registre Commerce. Ex: <em>16A-1234567</em></td>
+            </tr>
+            <tr>
+                <td><span class="field">nif</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="optional">Non</td>
+                <td>NIF (Identification Fiscale)</td>
+            </tr>
+            <tr>
+                <td><span class="field">nis</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="optional">Non</td>
+                <td>NIS (Statistique)</td>
+            </tr>
+            <tr>
+                <td><span class="field">ai</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="optional">Non</td>
+                <td>Article imposition</td>
+            </tr>
+            <tr>
+                <td><span class="field">email</span></td>
+                <td><span class="type-badge">email</span></td>
+                <td class="optional">Non</td>
+                <td>Email contact</td>
+            </tr>
+            <tr>
+                <td><span class="field">phone</span></td>
+                <td><span class="type-badge">phone</span></td>
+                <td class="optional">Non</td>
+                <td>Telephone fixe</td>
+            </tr>
+            <tr>
+                <td><span class="field">mobile</span></td>
+                <td><span class="type-badge">phone</span></td>
+                <td class="optional">Non</td>
+                <td>Telephone mobile</td>
+            </tr>
+            <tr>
+                <td><span class="field">address</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="optional">Non</td>
+                <td>Adresse postale complete</td>
+            </tr>
+            <tr>
+                <td><span class="field">city</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="optional">Non</td>
+                <td>Ville</td>
+            </tr>
+            <tr>
+                <td><span class="field">wilayaCode</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="optional">Non</td>
+                <td>Code wilaya (01-58)</td>
+            </tr>
+            <tr>
+                <td><span class="field">paymentTerms</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="optional">Non</td>
+                <td>Delai paiement (jours). Ex: <em>30</em>, <em>60</em></td>
+            </tr>
+            <tr>
+                <td><span class="field">paymentMode</span></td>
+                <td><span class="type-badge">select</span></td>
+                <td class="optional">Non</td>
+                <td>virement, cheque, espece, traite</td>
+            </tr>
+            <tr>
+                <td><span class="field">creditLimit</span></td>
+                <td><span class="type-badge">number</span></td>
+                <td class="optional">Non</td>
+                <td>Limite de credit (DZD)</td>
+            </tr>
+            <tr>
+                <td><span class="field">bankAccount</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="optional">Non</td>
+                <td>RIB (24 chiffres)</td>
+            </tr>
+            <tr>
+                <td><span class="field">isActive</span></td>
+                <td><span class="type-badge">boolean</span></td>
+                <td class="optional">Non</td>
+                <td>Actif? Defaut: true</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="format-block"><span class="comment"># Exemple - Partners</span>
+name,type,isCompany,rc,nif,nis,email,phone,city,wilayaCode,paymentTerms,paymentMode
+"ABC Sarl",both,true,"16A-0001234","000123456789012","00101234567",contact@abc.dz,021987654,Alger,30,virement
+"Mohamed KHALFI",customer,false,,,,"0661123456",m.khalfi@gmail.com,0661123456,Oran,31,cheque
+"FournIT SpA",supplier,true,"16B-999888","000998877665544","00998776543",achat@fournit.dz,021555444,Constantine,25,30,virement</div>
+
+
+    <!-- MODULE: PRODUCTS -->
+    <div class="chapter-header">
+        <div class="section-tag">Chapitre 10</div>
+        <h2 class="section-title">Module 7 : Produits et Services (Inventory)</h2>
+        <div class="divider"></div>
+    </div>
+
+    <div class="body-text">
+        Le module <strong>Produits</strong> gere le catalogue des articles vendus, achetes ou stockes. Supporte trois types : produits stockables, services et consommables. Chaque produit peut avoir son propre code (SKU), unite de mesure et taux de TVA.
+    </div>
+
+    <div class="table-wrapper">
+        <table class="col-spec-table">
+            <tr>
+                <th>Colonne</th>
+                <th>Type</th>
+                <th>Obligatoire</th>
+                <th>Description & Exemple</th>
+            </tr>
+            <tr>
+                <td><span class="field">name</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="required">Oui</td>
+                <td>Nom du produit/service</td>
+            </tr>
+            <tr>
+                <td><span class="field">code</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="optional">Non</td>
+                <td>Code/SKU unique. Ex: <em>PROD-001</em></td>
+            </tr>
+            <tr>
+                <td><span class="field">description</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="optional">Non</td>
+                <td>Description detaillee</td>
+            </tr>
+            <tr>
+                <td><span class="field">nameAr</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="optional">Non</td>
+                <td>Nom en arabe</td>
+            </tr>
+            <tr>
+                <td><span class="field">type</span></td>
+                <td><span class="type-badge">select</span></td>
+                <td class="required">Oui</td>
+                <td>stockable, service, consumable</td>
+            </tr>
+            <tr>
+                <td><span class="field">category</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="optional">Non</td>
+                <td>Categorie produit</td>
+            </tr>
+            <tr>
+                <td><span class="field">unitOfMeasure</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="optional">Non</td>
+                <td>Unite: U, KG, L, m2, m3, ML</td>
+            </tr>
+            <tr>
+                <td><span class="field">purchasePrice</span></td>
+                <td><span class="type-badge">number</span></td>
+                <td class="optional">Non</td>
+                <td>Prix d'achat HT (DZD)</td>
+            </tr>
+            <tr>
+                <td><span class="field">salePrice</span></td>
+                <td><span class="type-badge">number</span></td>
+                <td class="optional">Non</td>
+                <td>Prix de vente HT (DZD)</td>
+            </tr>
+            <tr>
+                <td><span class="field">costPrice</span></td>
+                <td><span class="type-badge">number</span></td>
+                <td class="optional">Non</td>
+                <td>Prix de revient (DZD)</td>
+            </tr>
+            <tr>
+                <td><span class="field">tvaRate</span></td>
+                <td><span class="type-badge">number</span></td>
+                <td class="optional">Non</td>
+                <td>Taux TVA (%). Ex: <em>19</em>, <em>9</em></td>
+            </tr>
+            <tr>
+                <td><span class="field">trackStock</span></td>
+                <td><span class="type-badge">boolean</span></td>
+                <td class="optional">Non</td>
+                <td>Suivi stock? Defaut: false</td>
+            </tr>
+            <tr>
+                <td><span class="field">canBeSold</span></td>
+                <td><span class="type-badge">boolean</span></td>
+                <td class="optional">Non</td>
+                <td>Vendable? Defaut: true</td>
+            </tr>
+            <tr>
+                <td><span class="field">canBePurchased</span></td>
+                <td><span class="type-badge">boolean</span></td>
+                <td class="optional">Non</td>
+                <td>Achetable? Defaut: true</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="format-block"><span class="comment"># Exemple - Produits</span>
+name,code,type,category,unitOfMeasure,purchasePrice,salePrice,tvaRate,trackStock
+"Ordinateur Dell Latitude",DL-LAT-5500,stockable,Informatique,U,120000,145000,19,true
+"Service Installation",SRV-INST,service,Services,,0,5000,19,false
+"Papier A4 Rame",PAP-A4-RAM,consumable,Fournitures,RAME,450,650,9,true</div>
+
+
+    <!-- MODULE: WAREHOUSES -->
+    <div class="chapter-header">
+        <div class="section-tag">Chapitre 11</div>
+        <h2 class="section-title">Module 8 : Entrepots (Warehouses)</h2>
+        <div class="divider"></div>
+    </div>
+
+    <div class="body-text">
+        Le module <strong>Entrepots</strong> definit les lieux de stockage ou les differents depots de l'entreprise. Chaque entrepot doit avoir un code unique qui sera reference dans les mouvements de stock et les transferts.
+    </div>
+
+    <div class="table-wrapper">
+        <table class="col-spec-table">
+            <tr>
+                <th>Colonne</th>
+                <th>Type</th>
+                <th>Obligatoire</th>
+                <th>Description & Exemple</th>
+            </tr>
+            <tr>
+                <td><span class="field">name</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="required">Oui</td>
+                <td>Nom de l'entrepot</td>
+            </tr>
+            <tr>
+                <td><span class="field">code</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="required">Oui</td>
+                <td>Code unique. Ex: <em>ENT-ALG</em>, <em>DEP-01</em></td>
+            </tr>
+            <tr>
+                <td><span class="field">address</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="optional">Non</td>
+                <td>Adresse physique</td>
+            </tr>
+            <tr>
+                <td><span class="field">city</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="optional">Non</td>
+                <td>Ville</td>
+            </tr>
+            <tr>
+                <td><span class="field">type</span></td>
+                <td><span class="type-badge">select</span></td>
+                <td class="optional">Non</td>
+                <td>principal, secondaire, magasin, depot</td>
+            </tr>
+            <tr>
+                <td><span class="field">isActive</span></td>
+                <td><span class="type-badge">boolean</span></td>
+                <td class="optional">Non</td>
+                <td>Actif? Defaut: true</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="format-block"><span class="comment"># Exemple - Entrepots</span>
+name,code,address,city,type,isActive
+"Entrepot Principal",ENT-ALG,"123 Rue Didouche Mourad",Alger,principal,true
+"Depot Oran",DEP-ORN,"Zone Industrielle Arzew",Oran,depot,true
+"Magasin Showroom",MAG-SHW,"Centre Commercial Blida",Blida,magasin,true</div>
+
+
+    <!-- MODULE: STOCK MOVEMENTS -->
+    <div class="chapter-header">
+        <div class="section-tag">Chapitre 12</div>
+        <h2 class="section-title">Module 9 : Mouvements de Stock</h2>
+        <div class="divider"></div>
+    </div>
+
+    <div class="body-text">
+        Le module <strong>Mouvements de Stock</strong> permet d'initialiser les stocks existants dans chaque entrepot. Utilisez le type "initial" pour definir les quantites en stock a la date de migration. Les mouvements ulterieurs (entrees, sorties, ajustements) peuvent egalement etre importes.
+    </div>
+
+    <div class="table-wrapper">
+        <table class="col-spec-table">
+            <tr>
+                <th>Colonne</th>
+                <th>Type</th>
+                <th>Obligatoire</th>
+                <th>Description & Exemple</th>
+            </tr>
+            <tr>
+                <td><span class="field">sku</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="required">Oui</td>
+                <td>Reference produit (doit exister)</td>
+            </tr>
+            <tr>
+                <td><span class="field">productName</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="optional">Non</td>
+                <td>Nom produit (affichage/validation)</td>
+            </tr>
+            <tr>
+                <td><span class="field">warehouse</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="required">Oui</td>
+                <td>Code ou nom entrepot (doit exister)</td>
+            </tr>
+            <tr>
+                <td><span class="field">quantity</span></td>
+                <td><span class="type-badge">number</span></td>
+                <td class="required">Oui</td>
+                <td>Quantite (positive = entree, negative = sortie)</td>
+            </tr>
+            <tr>
+                <td><span class="field">unitCost</span></td>
+                <td><span class="type-badge">number</span></td>
+                <td class="optional">Non</td>
+                <td>Cout unitaire (DZD)</td>
+            </tr>
+            <tr>
+                <td><span class="field">date</span></td>
+                <td><span class="type-badge">date</span></td>
+                <td class="optional">Non</td>
+                <td>Date du mouvement</td>
+            </tr>
+            <tr>
+                <td><span class="field">type</span></td>
+                <td><span class="type-badge">select</span></td>
+                <td class="optional">Non</td>
+                <td>in, out, adjustment, initial</td>
+            </tr>
+            <tr>
+                <td><span class="field">location</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="optional">Non</td>
+                <td>Emplacement (rayon, casier)</td>
+            </tr>
+            <tr>
+                <td><span class="field">reference</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="optional">Non</td>
+                <td>Ref. document source</td>
+            </tr>
+            <tr>
+                <td><span class="field">notes</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="optional">Non</td>
+                <td>Commentaires</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="format-block"><span class="comment"># Exemple - Initialisation Stocks</span>
+sku,warehouse,quantity,unitCost,date,type,notes
+DL-LAT-5500,ENT-ALG,25,125000,2024-01-01,initial,Stock initial
+DL-LAT-5500,DEP-ORN,10,125000,2024-01-01,initial,Stock initial Oran
+PAP-A4-RAM,ENT-ALG,500,450,2024-01-01,initial,Stock papier
+SRV-INST,ENT-ALG,0,0,2024-01-01,initial,Pas de stock (service)</div>
+
+
+    <!-- MODULE: INVOICES -->
+    <div class="chapter-header">
+        <div class="section-tag">Chapitre 13</div>
+        <h2 class="section-title">Module 10 : Factures Clients (Ventes)</h2>
+        <div class="divider"></div>
+    </div>
+
+    <div class="body-text">
+        Le module <strong>Factures Clients</strong> permet d'importer l'historique des factures emises aux clients. Chaque facture peut contenir plusieurs lignes d'articles. Les montants TTC et TVA sont calcules automatiquement mais peuvent etre fournis explicitement.
+    </div>
+
+    <div class="table-wrapper">
+        <table class="col-spec-table">
+            <tr>
+                <th>Colonne</th>
+                <th>Type</th>
+                <th>Obligatoire</th>
+                <th>Description & Exemple</th>
+            </tr>
+            <tr>
+                <td><span class="field">invoiceNumber</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="required">Oui</td>
+                <td>Numero facture unique. Ex: <em>FAC-2024-001</em></td>
+            </tr>
+            <tr>
+                <td><span class="field">partnerName</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="required">Oui</td>
+                <td>Nom client (doit exister dans partners)</td>
+            </tr>
+            <tr>
+                <td><span class="field">partnerType</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="required">Oui</td>
+                <td>Type: customer</td>
+            </tr>
+            <tr>
+                <td><span class="field">date</span></td>
+                <td><span class="type-badge">date</span></td>
+                <td class="required">Oui</td>
+                <td>Date facture</td>
+            </tr>
+            <tr>
+                <td><span class="field">dueDate</span></td>
+                <td><span class="type-badge">date</span></td>
+                <td class="optional">Non</td>
+                <td>Date echeance (>= date facture)</td>
+            </tr>
+            <tr>
+                <td><span class="field">items[*].productName</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="required">Oui</td>
+                <td>Nom du produit sur la ligne</td>
+            </tr>
+            <tr>
+                <td><span class="field">items[*].productSku</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="optional">Non</td>
+                <td>SKU produit (optionnel)</td>
+            </tr>
+            <tr>
+                <td><span class="field">items[*].quantity</span></td>
+                <td><span class="type-badge">number</span></td>
+                <td class="required">Oui</td>
+                <td>Quantite</td>
+            </tr>
+            <tr>
+                <td><span class="field">items[*].unitPrice</span></td>
+                <td><span class="type-badge">number</span></td>
+                <td class="required">Oui</td>
+                <td>Prix unitaire HT</td>
+            </tr>
+            <tr>
+                <td><span class="field">items[*].taxRate</span></td>
+                <td><span class="type-badge">number</span></td>
+                <td class="optional">Non</td>
+                <td>Taux TVA (%)</td>
+            </tr>
+            <tr>
+                <td><span class="field">totalAmount</span></td>
+                <td><span class="type-badge">number</span></td>
+                <td class="required">Oui</td>
+                <td>Total TTC facture</td>
+            </tr>
+            <tr>
+                <td><span class="field">status</span></td>
+                <td><span class="type-badge">select</span></td>
+                <td class="optional">Non</td>
+                <td>draft, sent, paid, cancelled</td>
+            </tr>
+            <tr>
+                <td><span class="field">paymentStatus</span></td>
+                <td><span class="type-badge">select</span></td>
+                <td class="optional">Non</td>
+                <td>unpaid, partial, paid, overdue</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="format-block"><span class="comment"># Exemple - Facture Client</span>
+invoiceNumber,partnerName,partnerType,date,dueDate,totalAmount,status
+FAC-2024-001,"ABC Sarl",customer,2024-01-15,2024-02-14,172050,sent
+<span class="comment"># Lignes (meme numero facture)</span>
+FAC-2024-001,Item,DL-LAT-5500,1,145000,19,<span class="comment"># Total: 172500</span>
+FAC-2024-001,Item,SRV-INST,1,5000,19</div>
+
+
+    <!-- MODULE: BILLS -->
+    <div class="chapter-header">
+        <div class="section-tag">Chapitre 14</div>
+        <h2 class="section-title">Module 11 : Factures Fournisseurs (Achats)</h2>
+        <div class="divider"></div>
+    </div>
+
+    <div class="body-text">
+        Le module <strong>Factures Fournisseurs</strong> (Bills) importe les factures recues des fournisseurs. Similaire au module Factures Clients mais pour les achats. Reference les fournisseurs importes dans le module Partners.
+    </div>
+
+    <div class="table-wrapper">
+        <table class="col-spec-table">
+            <tr>
+                <th>Colonne</th>
+                <th>Type</th>
+                <th>Obligatoire</th>
+                <th>Description & Exemple</th>
+            </tr>
+            <tr>
+                <td><span class="field">billNumber</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="required">Oui</td>
+                <td>Numero facture fournisseur unique</td>
+            </tr>
+            <tr>
+                <td><span class="field">supplierName</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="required">Oui</td>
+                <td>Nom fournisseur (doit exister)</td>
+            </tr>
+            <tr>
+                <td><span class="field">date</span></td>
+                <td><span class="type-badge">date</span></td>
+                <td class="required">Oui</td>
+                <td>Date facture</td>
+            </tr>
+            <tr>
+                <td><span class="field">dueDate</span></td>
+                <td><span class="type-badge">date</span></td>
+                <td class="optional">Non</td>
+                <td>Date echeance</td>
+            </tr>
+            <tr>
+                <td><span class="field">items[*].productName</span></td>
+                <td><span class="type-badge">string</span></td>
+                <td class="required">Oui</td>
+                <td>Produit/Service achete</td>
+            </tr>
+            <tr>
+                <td><span class="field">items[*].quantity</span></td>
+                <td><span class="type-badge">number</span></td>
+                <td class="required">Oui</td>
+                <td>Quantite</td>
+            </tr>
+            <tr>
+                <td><span class="field">items[*].unitPrice</span></td>
+                <td><span class="type-badge">number</span></td>
+                <td class="required">Oui</td>
+                <td>Prix unitaire HT</td>
+            </tr>
+            <tr>
+                <td><span class="field">totalAmount</span></td>
+                <td><span class="type-badge">number</span></td>
+                <td class="required">Oui</td>
+                <td>Total TTC</td>
+            </tr>
+            <tr>
+                <td><span class="field">status</span></td>
+                <td><span class="type-badge">select</span></td>
+                <td class="optional">Non</td>
+                <td>draft, received, paid, cancelled</td>
+            </tr>
+            <tr>
+                <td><span class="field">paymentMethod</span></td>
+                <td><span class="type-badge">select</span></td>
+                <td class="optional">Non</td>
+                <td>virement, cheque, espece, traite</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="format-block"><span class="comment"># Exemple - Facture Fournisseur</span>
+billNumber,supplierName,date,dueDate,totalAmount,status,paymentMethod
+FAC-FRN-001,"FournIT SpA",2024-01-10,2024-02-09,357000,received,virement
+<span class="comment"># Lignes</span>
+FAC-FRN-001,Item,DL-LAT-5500,2,120000,</div>
+
+
+    <!-- OTHER MODULES OVERVIEW -->
+    <div class="chapter-header">
+        <div class="section-tag">Chapitre 15</div>
+        <h2 class="section-title">Autres Modules Disponibles</h2>
+        <div class="divider"></div>
+    </div>
+
+    <div class="body-text">
+        En plus des modules detailles ci-dessus, le systeme d'import supporte plusieurs autres modules pour couvrir l'ensemble des besoins de l'ERP. Voici un apercu de ces modules additionnels avec leurs specifications principales.
+    </div>
+
+    <div class="module-grid">
+        <div class="module-item">
+            <div class="module-name">Commandes Clients (Sales Orders)</div>
+            <div class="module-desc">Import des commandes clients historiques. Colonnes: orderNumber, customerName, date, status, items[].</div>
+        </div>
+        <div class="module-item">
+            <div class="module-name">Commandes Fournisseurs (Purchase Orders)</div>
+            <div class="module-desc">Import des bons de commande fournisseurs. Colonnes: orderNumber, supplierName, date, totalAmount, status.</div>
+        </div>
+        <div class="module-item">
+            <div class="module-name">Immobilisations (Fixed Assets)</div>
+            <div class="module-desc">Registre des immobilisations. Colonnes: name, category, acquisitionDate, acquisitionValue, accumulatedDepreciation, usefulLife.</div>
+        </div>
+        <div class="module-item">
+            <div class="module-name">Declarations Fiscales</div>
+            <div class="module-desc">Historique declarations TVA/IRG/TAP. Colonnes: declarationType, period, amount, dueDate, paymentDate, status.</div>
+        </div>
+        <div class="module-item">
+            <div class="module-name">Contrats</div>
+            <div class="module-desc">Contrats clients/fournisseurs/employes. Colonnes: title, partyName, type, startDate, endDate, value, status.</div>
+        </div>
+        <div class="module-item">
+            <div class="module-name">Releves Bancaires</div>
+            <div class="module-desc">Import releves bancaires pour rapprochement. Colonnes: date, label, reference, debit, credit, balance.</div>
+        </div>
+        <div class="module-item">
+            <div class="module-name">Historique Paie (Payroll)</div>
+            <div class="module-desc">Bulletins de paie historiques. Colonnes: employeeId, period, basicSalary, grossPay, irg, netPay, paymentDate.</div>
+        </div>
+        <div class="module-item">
+            <div class="module-name">Conges (Leave Balances)</div>
+            <div class="module-desc">Soldes de conges par employe. Colonnes: employeeId, leaveType, accruedDays, usedDays, remainingDays.</div>
+        </div>
+    </div>
+
+
+    <!-- CHAPTER: VALIDATION RULES -->
+    <div class="chapter-header">
+        <div class="section-tag">Chapitre 16</div>
+        <h2 class="section-title">Regles de Validation</h2>
+        <div class="divider"></div>
+    </div>
+
+    <div class="body-text">
+        Le systeme applique automatiquement des regles de validation sur vos donnees avant l'import. Comprendre ces regles vous aidera a preparer des fichiers conformes et a diagnostiquer rapidement les erreurs signalees.
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <tr>
+                <th>Type de Regle</th>
+                <th>Description</th>
+                <th>Code Erreur</th>
+            </tr>
+            <tr>
+                <td><strong>required</strong></td>
+                <td>Le champ ne peut pas etre vide</td>
+                <td>REQUIRED</td>
+            </tr>
+            <tr>
+                <td><strong>unique</strong></td>
+                <td>La valeur doit etre unique dans le systeme</td>
+                <td>DUPLICATE</td>
+            </tr>
+            <tr>
+                <td><strong>format</strong></td>
+                <td>La valeur doit correspondre au pattern attendu</td>
+                <td>INVALID_FORMAT</td>
+            </tr>
+            <tr>
+                <td><strong>range</strong></td>
+                <td>La valeur numerique doit etre dans l'intervalle</td>
+                <td>OUT_OF_RANGE</td>
+            </tr>
+            <tr>
+                <td><strong>enum</strong></td>
+                <td>La valeur doit faire partie de la liste autorisee</td>
+                <td>INVALID_ENUM</td>
+            </tr>
+            <tr>
+                <td><strong>reference</strong></td>
+                <td>La valeur doit referencer un enregistrement existant</td>
+                <td>NOT_FOUND</td>
+            </tr>
+            <tr>
+                <td><strong>date</strong></td>
+                <td>Format date valide (YYYY-MM-DD ou DD/MM/YYYY)</td>
+                <td>INVALID_DATE</td>
+            </tr>
+            <tr>
+                <td><strong>email</strong></td>
+                <td>Format email valide</td>
+                <td>INVALID_EMAIL</td>
+            </tr>
+            <tr>
+                <td><strong>phone</strong></td>
+                <td>Format telephone valide (8-15 chiffres)</td>
+                <td>INVALID_PHONE</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="info-box warning">
+        <div class="info-title">Validations Croisees (Cross-field)</div>
+        <div class="info-text">
+            Certaines validations portent sur plusieurs champs simultanement :
+            <ul>
+                <li><strong>Employes :</strong> hireDate <= aujourd'hui, dateOfBirth < hireDate</li>
+                <li><strong>Factures/Bills :</strong> dueDate >= date</li>
+                <li><strong>Ecritures :</strong> Total Debit = Total Credit (equilibre)</li>
+                <li><strong>Pointages :</strong> clockOut > clockIn</li>
+            </ul>
+        </div>
+    </div>
+
+
+    <!-- CHAPTER: COMMON ERRORS -->
+    <div class="chapter-header">
+        <div class="section-tag">Chapitre 17</div>
+        <h2 class="section-title">Erreurs Courantes et Solutions</h2>
+        <div class="divider"></div>
+    </div>
+
+    <div class="body-text">
+        Cette section presente les erreurs les plus frequemment rencontrees lors des imports de donnees et leurs solutions. Consultez-la en premier si votre import echoue.
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="card-icon">!</div>
+            <div class="card-title">Erreur : "Duplicate column header"</div>
+        </div>
+        <div class="card-desc">
+            <strong>Cause :</strong> Votre fichier CSV contient deux colonnes avec le meme nom.<br>
+            <strong>Solution :</strong> Verifiez la ligne d'en-tete et renommez les colonnes en double. Chaque colonne doit avoir un nom unique correspondant au template.
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="card-icon">!</div>
+            <div class="card-title">Erreur : "Referenced employee/partner does not exist"</div>
+        </div>
+        <div class="card-desc">
+            <strong>Cause :</strong> Vous referencez un employe, partenaire ou produit qui n'existe pas encore dans le systeme.<br>
+            <strong>Solution :</strong> Importez d'abord le module reference (ex: importez les employes avant les pointages). Verifiez aussi les fautes de frappe dans les noms.
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="card-icon">!</div>
+            <div class="card-title">Erreur : "Journal entry not balanced"</div>
+        </div>
+        <div class="card-desc">
+            <strong>Cause :</strong> Les ecritures comptables ne sont pas equilibrees (Total Debit != Total Credit).<br>
+            <strong>Solution :</strong> Verifiez que la somme des debits egale strictement la somme des credits. Attention aux arrondis (tolerance de 0.01).
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="card-icon">!</div>
+            <div class="card-title">Erreur : "Invalid date format"</div>
+        </div>
+        <div class="card-desc">
+            <strong>Cause :</strong> La date n'est pas dans un format reconnu.<br>
+            <strong>Solution :</strong> Utilisez exclusivement YYYY-MM-DD (recommande) ou DD/MM/YYYY. Evitez les formats comme "01/15/2024" ou "janvier 2024".
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="card-icon">!</div>
+            <div class="card-title">Erreur : "File is empty or contains only headers"</div>
+        </div>
+        <div class="card-desc">
+            <strong>Cause :</strong> Le fichier uploade ne contient aucune ligne de donnees.<br>
+            <strong>Solution :</strong> Verifiez que votre fichier contient bien des donnees apres la ligne d'en-tete. Si vous utilisez Excel, assurez-vous d'exporter les donnees (pas seulement les headers).
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="card-icon">!</div>
+            <div class="card-title">Erreur : "Unsupported file type"</div>
+        </div>
+        <div class="card-desc">
+            <strong>Cause :</strong> Le format de fichier n'est pas supporte.<br>
+            <strong>Solution :</strong> Utilisez uniquement les formats .csv, .xlsx ou .xls. Les formats .ods, .numbers ou les PDF ne sont pas supportes.
+        </div>
+    </div>
+
+
+    <!-- CHAPTER: BEST PRACTICES -->
+    <div class="chapter-header">
+        <div class="section-tag">Chapitre 18</div>
+        <h2 class="section-title">Bonnes Pratiques et Recommandations</h2>
+        <div class="divider"></div>
+    </div>
+
+    <div class="body-text">
+        Pour reussir votre migration de donnees, suivez ces meilleures pratiques eprouvees. Elles vous feront gagner un temps precieux et eviteront de nombreuses erreurs.
+    </div>
+
+    <div class="info-box success">
+        <div class="info-title">Avant de Commencer l'Import</div>
+        <div class="info-text">
+            <ol>
+                <li><strong>Faites une sauvegarde</strong> de vos donnees sources avant toute manipulation</li>
+                <li><strong>Telechargez les templates officiels</strong> depuis le systeme pour avoir les bons noms de colonnes</li>
+                <li><strong>Commencez par un petit jeu de donnees test</strong> (5-10 lignes) pour valider le format</li>
+                <li><strong>Nettoyez vos donnees</strong> : supprimez les espaces superflus, uniformisez les formats</li>
+                <li><strong>Verifiez les references croisees</strong> : tous les IDs references doivent exister</li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="info-box">
+        <div class="info-title">Pendant l'Import</div>
+        <div class="info-text">
+            <ol>
+                <li><strong>Utilisez la fonction "Validate Only"</strong> pour verifier sans importer</li>
+                <li><strong>Consultez le rapport d'erreurs</strong> en detail avant de corriger</li>
+                <li><strong>Importez par lots</strong> de taille raisonnable (100-500 lignes maximum)</li>
+                <li><strong>Surveillez la progression</strong> via l'interface de suivi en temps reel</li>
+                <li><strong>Ne fermez pas le navigateur</strong> pendant un import en cours</li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="info-box warning">
+        <div class="title">Apres l'Import</div>
+        <div class="info-text">
+            <ol>
+                <li><strong>Verifiez les compteurs</strong> : les numeros de facture doivent etre coherents</li>
+                <li><strong>Controlez les soldes</strong> : comparez avec vos anciens systemes</li>
+                <li><strong>Conservez les rapports d'import</strong> pour audit et traçabilite</li>
+                <li><strong>Utilisez le rollback si necessaire</strong> en cas d'erreur detectee tardivement</li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="card-icon">*</div>
+            <div class="card-title">Checklist Pre-Import</div>
+        </div>
+        <ul>
+            <li>[ ] Templates telecharges et utilises sans modification des en-tetes</li>
+            <li>[ ] Dates au format YYYY-MM-DD</li>
+            <li>[ ] Nombres avec point comme separateur decimal</li>
+            <li>[ ] References (employes, produits, comptes) importees en premier</li>
+            <li>[ ] Fichier enregistre en UTF-8 (pour CSV)</li>
+            <li>[ ] Taille de fichier inferieure a 10 Mo</li>
+            <li>[ ] Test realise sur un echantillon reduit</li>
+            <li>[ ] Sauvegarde des donnees sources effectuee</li>
+        </ul>
+    </div>
+
+</div>
+
+<!-- ENDING PAGE -->
+<div class="ending">
+    <div class="ending-title">Fin du Guide</div>
+    <p class="ending-text">
+        Pour toute assistance technique concernant le systeme d'import de donnees, consultez la documentation en ligne ou contactez l'equipe support HASSIBA Suite.
+    </p>
+    <div class="ending-footer">HASSIBA Suite ERP v2.0 - Guide Administrateur Import de Donnees</div>
+</div>
+
+</body>
+</html>
