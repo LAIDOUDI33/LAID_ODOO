@@ -1,10 +1,10 @@
 // ============================================================
 // HASSIBA Suite ERP - Root Page
-// Redirects to dashboard
+// Redirects to main dashboard
 // ============================================================
 
 import { redirect } from 'next/navigation'
 
 export default function RootPage() {
-  redirect('/dashboard')
+  redirect('/sales')
 }
