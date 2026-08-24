@@ -196,16 +196,21 @@ function DashboardSkeleton() {
 // Error Component
 // ============================================================
 
-function DashboardError({ onRetry }: { onRetry: () => void }) {
+function DashboardError({ onRetry, isTimeout }: { onRetry: () => void; isTimeout?: boolean }) {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto p-4 md:p-6">
         <Card className="border-destructive/50 bg-destructive/5">
           <CardContent className="p-8 text-center">
             <AlertCircle className="w-12 h-12 text-destructive mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-foreground mb-2">Erreur de chargement</h2>
+            <h2 className="text-xl font-semibold text-foreground mb-2">
+              {isTimeout ? 'Délai d\'attente dépassé' : 'Erreur de chargement'}
+            </h2>
             <p className="text-muted-foreground mb-6">
-              Impossible de charger les données du tableau de bord. Vérifiez votre connexion et réessayez.
+              {isTimeout 
+                ? 'Le serveur met trop de temps à répondre. Cela peut être dû à une connexion lente ou un problème serveur. Veuillez réessayer.'
+                : 'Impossible de charger les données du tableau de bord. Vérifiez votre connexion et réessayez.'
+              }
             </p>
             <Button onClick={onRetry} variant="outline">
               <RefreshCw className="w-4 h-4 mr-2" />
@@ -241,14 +246,24 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [lastSync, setLastSync] = useState(new Date())
+  const [timeoutError, setTimeoutError] = useState(false)
 
   // Fetch dashboard data from API
+  // FIX: Added 10-second timeout with AbortController to prevent infinite loading
   const fetchDashboardData = useCallback(async () => {
+    // Create abort controller for timeout (10 seconds)
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 10000)
+    
     try {
       setLoading(true)
       setError(null)
+      setTimeoutError(false)
       
-      const response = await fetch('/api/dashboard')
+      const response = await fetch('/api/dashboard', {
+        signal: controller.signal,
+        cache: 'no-store' // Always fetch fresh data
+      })
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
@@ -342,8 +357,16 @@ export default function DashboardPage() {
       setLastSync(new Date())
     } catch (err) {
       console.error('Failed to fetch dashboard data:', err)
-      setError(err instanceof Error ? err.message : 'Unknown error occurred')
+      
+      // FIX: Handle timeout/abort errors specifically
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        setTimeoutError(true)
+        setError('Le chargement prend trop de temps. Vérifiez votre connexion ou réessayez.')
+      } else {
+        setError(err instanceof Error ? err.message : 'Unknown error occurred')
+      }
     } finally {
+      clearTimeout(timeoutId)
       setLoading(false)
     }
   }, [])
@@ -363,7 +386,7 @@ export default function DashboardPage() {
 
   // Show error state
   if (error && !data) {
-    return <DashboardError onRetry={handleRefresh} />
+    return <DashboardError onRetry={handleRefresh} isTimeout={timeoutError} />
   }
 
   // Should not happen, but just in case

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { calculateTVACollectee, getTimbreFiscal, isValidTVARate, normalizeTVARate, tvaToInt } from '@/lib/algerian-taxes';
 import { requireAuth, requireRole, getAuthenticatedUser, ROLES } from '@/lib/auth-utils';
+import { cache, CacheKeys } from '@/lib/cache';
 
 // Valid invoice statuses from InvoiceStatus enum
 const VALID_INVOICE_STATUSES = ['draft', 'sent', 'paid', 'partial', 'cancelled'];
@@ -46,6 +47,23 @@ export async function GET(request: Request) {
       whereClause.partnerId = partnerId;
     }
 
+    // CACHE: Check for cached invoice list (2 minute TTL for list data)
+    const cacheKey = CacheKeys.invoices({ 
+      status: status || undefined, 
+      type: type || undefined, 
+      page, 
+      limit,
+      companyId: user?.companyId 
+    });
+    const cachedData = await cache.get(cacheKey);
+    if (cachedData) {
+      return NextResponse.json({ 
+        success: true, 
+        ...cachedData,
+        _cached: true 
+      });
+    }
+
     const [invoices, total] = await Promise.all([
       db.invoice.findMany({
         where: whereClause,
@@ -60,10 +78,17 @@ export async function GET(request: Request) {
       db.invoice.count({ where: whereClause })
     ]);
 
-    return NextResponse.json({ 
-      success: true, 
+    const responseData = { 
       data: invoices,
       pagination: { page, limit, total, pages: Math.ceil(total / limit) }
+    };
+
+    // CACHE: Store result for 2 minutes (120 seconds)
+    await cache.set(cacheKey, responseData, 120);
+
+    return NextResponse.json({ 
+      success: true, 
+      ...responseData
     });
   } catch (error) {
     console.error('Invoices GET Error:', error);

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { requireAuth, requireRole, getAuthenticatedUser, ROLES } from '@/lib/auth-utils';
+import { cache, CacheKeys } from '@/lib/cache';
 
 // GET /api/products - List products
 export async function GET(request: Request) {
@@ -42,6 +43,24 @@ export async function GET(request: Request) {
       whereClause.companyId = user.companyId;
     }
 
+    // CACHE: Check for cached product catalog (3 minute TTL for product data)
+    const cacheKey = CacheKeys.products({ 
+      search: search || undefined, 
+      category: category || undefined, 
+      type: type || undefined,
+      page, 
+      limit,
+      companyId: user?.companyId 
+    });
+    const cachedData = await cache.get(cacheKey);
+    if (cachedData) {
+      return NextResponse.json({ 
+        success: true, 
+        ...cachedData,
+        _cached: true 
+      });
+    }
+
     const [products, total] = await Promise.all([
       db.product.findMany({
         where: whereClause,
@@ -55,10 +74,17 @@ export async function GET(request: Request) {
       db.product.count({ where: whereClause })
     ]);
 
-    return NextResponse.json({ 
-      success: true, 
+    const responseData = { 
       data: products,
       pagination: { page, limit, total, pages: Math.ceil(total / limit) }
+    };
+
+    // CACHE: Store result for 3 minutes (180 seconds)
+    await cache.set(cacheKey, responseData, 180);
+
+    return NextResponse.json({ 
+      success: true, 
+      ...responseData
     });
   } catch (error) {
     console.error('Products GET Error:', error);

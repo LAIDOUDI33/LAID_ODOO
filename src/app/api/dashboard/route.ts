@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { requireAuth, getAuthenticatedUser } from '@/lib/auth-utils';
+import { cache, CacheKeys } from '@/lib/cache';
 
 // Month names in French for charts
 const MONTH_NAMES_FR = [
@@ -17,6 +18,16 @@ export async function GET(request: Request) {
     // Get authenticated user for company scoping
     const user = await getAuthenticatedUser();
     const companyId = user?.companyId;
+
+    // CACHE: Check for cached dashboard data (5 minute TTL)
+    const cacheKey = CacheKeys.dashboard(companyId);
+    const cachedData = await cache.get(cacheKey);
+    if (cachedData) {
+      return NextResponse.json({
+        success: true,
+        data: { ...cachedData, _cached: true }
+      });
+    }
 
     // Get current date info
     const now = new Date();
@@ -200,36 +211,41 @@ export async function GET(request: Request) {
       }
     ];
 
+    const responseData = {
+      company,
+      kpis: {
+        caToday: invoicesToday._sum.amountTotal || 0,
+        caMonth: invoicesMonth._sum.amountTotal || 0,
+        caYear: invoicesYear._sum.amountTotal || 0,
+        invoiceCountToday: invoicesToday._count,
+        invoiceCountMonth: invoicesMonth._count,
+        invoiceCountYear: invoicesYear._count,
+        paidInvoiceCount: paidInvoices._count,
+        unpaidInvoiceCount: unpaidInvoices._count,
+        unpaidAmount: unpaidInvoices._sum.amountDue || 0,
+        employeeCount,
+        productCount,
+        partnerCount
+      },
+      charts: {
+        monthlyRevenue: monthlyRevenueData,
+        salesByCategory: salesByCategoryData,
+        expensesByMonth: expensesByMonthData
+      },
+      recentActivity: {
+        invoices: recentInvoices,
+        lowStockAlerts: lowStockProducts
+      },
+      taxDeadlines,
+      currentDate: now.toISOString()
+    };
+
+    // CACHE: Store result for 5 minutes (300 seconds)
+    await cache.set(cacheKey, responseData, 300);
+
     return NextResponse.json({
       success: true,
-      data: {
-        company,
-        kpis: {
-          caToday: invoicesToday._sum.amountTotal || 0,
-          caMonth: invoicesMonth._sum.amountTotal || 0,
-          caYear: invoicesYear._sum.amountTotal || 0,
-          invoiceCountToday: invoicesToday._count,
-          invoiceCountMonth: invoicesMonth._count,
-          invoiceCountYear: invoicesYear._count,
-          paidInvoiceCount: paidInvoices._count,
-          unpaidInvoiceCount: unpaidInvoices._count,
-          unpaidAmount: unpaidInvoices._sum.amountDue || 0,
-          employeeCount,
-          productCount,
-          partnerCount
-        },
-        charts: {
-          monthlyRevenue: monthlyRevenueData,
-          salesByCategory: salesByCategoryData,
-          expensesByMonth: expensesByMonthData
-        },
-        recentActivity: {
-          invoices: recentInvoices,
-          lowStockAlerts: lowStockProducts
-        },
-        taxDeadlines,
-        currentDate: now.toISOString()
-      }
+      data: responseData
     });
   } catch (error) {
     console.error('Dashboard API Error:', error);
