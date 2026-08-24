@@ -751,8 +751,7 @@ export default function DocumentsPage() {
           <div className="absolute top-3 left-3 z-10">
             <Checkbox
               checked={selectedIds.has(doc.id)}
-              onCheckedChange={(e) => {
-                e?.stopPropagation()
+              onCheckedChange={() => {
                 toggleSelectDocument(doc.id)
               }}
               onClick={(e) => e.stopPropagation()}

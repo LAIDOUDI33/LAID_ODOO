@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { requireAuth } from '@/lib/auth-utils';
+import { requireAuth, getAuthenticatedUser } from '@/lib/auth-utils';
 
 // Month names in French for charts
 const MONTH_NAMES_FR = [
@@ -14,6 +14,10 @@ export async function GET(request: Request) {
     const authError = await requireAuth(request);
     if (authError) return authError;
 
+    // Get authenticated user for company scoping
+    const user = await getAuthenticatedUser();
+    const companyId = user?.companyId;
+
     // Get current date info
     const now = new Date();
     const year = now.getFullYear();
@@ -24,12 +28,18 @@ export async function GET(request: Request) {
     const startOfMonth = new Date(year, month, 1);
     const startOfYear = new Date(year, 0, 1);
 
-    // Get company info
+    // Build company filter condition (for multi-tenant data isolation)
+    const companyFilter = companyId ? { companyId } : {};
+
+    // Get company info (scoped to user's company if applicable)
     const company = await db.company.findFirst({
-      where: { isActive: true }
+      where: { 
+        isActive: true,
+        ...(companyId && { id: companyId })
+      }
     });
 
-    // Calculate KPIs
+    // Calculate KPIs - all queries now include company scoping
     const [
       invoicesToday,
       invoicesMonth,
@@ -49,7 +59,8 @@ export async function GET(request: Request) {
       db.invoice.aggregate({
         where: {
           date: { gte: startOfDay },
-          status: { not: 'cancelled' }
+          status: { not: 'cancelled' },
+          ...companyFilter
         },
         _sum: { amountTotal: true },
         _count: true
@@ -59,7 +70,8 @@ export async function GET(request: Request) {
       db.invoice.aggregate({
         where: {
           date: { gte: startOfMonth },
-          status: { not: 'cancelled' }
+          status: { not: 'cancelled' },
+          ...companyFilter
         },
         _sum: { amountTotal: true },
         _count: true
@@ -69,7 +81,8 @@ export async function GET(request: Request) {
       db.invoice.aggregate({
         where: {
           date: { gte: startOfYear },
-          status: { not: 'cancelled' }
+          status: { not: 'cancelled' },
+          ...companyFilter
         },
         _sum: { amountTotal: true },
         _count: true
@@ -77,53 +90,78 @@ export async function GET(request: Request) {
       
       // Paid Invoices
       db.invoice.aggregate({
-        where: { status: 'paid' },
+        where: { 
+          status: 'paid',
+          ...companyFilter 
+        },
         _sum: { amountTotal: true },
         _count: true
       }),
       
       // Unpaid Invoices
       db.invoice.aggregate({
-        where: { status: { in: ['draft', 'sent', 'partial'] } },
+        where: { 
+          status: { in: ['draft', 'sent', 'partial'] },
+          ...companyFilter 
+        },
         _sum: { amountDue: true },
         _count: true
       }),
       
-      // Employee Count
-      db.employee.count({ where: { isActive: true } }),
+      // Employee Count (scoped to company)
+      db.employee.count({ 
+        where: { 
+          isActive: true,
+          ...companyFilter 
+        } 
+      }),
       
-      // Product Count
-      db.product.count({ where: { isActive: true } }),
+      // Product Count (scoped to company)
+      db.product.count({ 
+        where: { 
+          isActive: true,
+          ...companyFilter 
+        } 
+      }),
       
-      // Partner Count
-      db.partner.count({ where: { isActive: true } }),
+      // Partner Count (scoped to company)
+      db.partner.count({ 
+        where: { 
+          isActive: true,
+          ...companyFilter 
+        } 
+      }),
       
-      // Recent Invoices (last 10)
+      // Recent Invoices (last 10) - scoped to company
       db.invoice.findMany({
         take: 10,
         orderBy: { createdAt: 'desc' },
+        where: companyFilter,
         include: {
           partner: { select: { name: true } }
         }
       }),
       
-      // Low Stock Products
+      // Low Stock Products - scoped to company
       db.stockLevel.findMany({
         where: {
-          availableQty: { lte: 10 }
+          availableQty: { lte: 10 },
+          ...(companyId && { 
+            product: { companyId } 
+          })
         },
         take: 10,
         include: { product: { select: { name: true, code: true } } }
       }),
       
-      // Monthly Revenue (Last 12 months)
-      getMonthlyRevenue(year, month),
+      // Monthly Revenue (Last 12 months) - OPTIMIZED: Parallel execution
+      getMonthlyRevenue(year, month, companyId),
       
-      // Sales by Category
-      getSalesByCategory(startOfYear),
+      // Sales by Category - OPTIMIZED: Database GROUP BY aggregation
+      getSalesByCategory(startOfYear, companyId),
       
-      // Expenses by Month (Bills)
-      getExpensesByMonth(year, month)
+      // Expenses by Month (Bills) - OPTIMIZED: Parallel execution
+      getExpensesByMonth(year, month, companyId)
     ]);
 
     // Tax Deadlines (Algerian Fiscal Calendar)
@@ -204,13 +242,17 @@ export async function GET(request: Request) {
 
 // ============================================================
 // Helper: Get Monthly Revenue for Last 12 Months
+// OPTIMIZED: Uses Promise.all for parallel query execution
+// Instead of 12 sequential queries, all 12 run in parallel
 // ============================================================
 
-async function getMonthlyRevenue(currentYear: number, currentMonth: number) {
-  const monthlyData = [];
-  
-  // Get last 12 months including current month
-  for (let i = 11; i >= 0; i--) {
+async function getMonthlyRevenue(
+  currentYear: number, 
+  currentMonth: number,
+  companyId?: string
+) {
+  // Create all 12 month queries and execute them in parallel
+  const monthlyPromises = Array.from({ length: 12 }, async (_, i) => {
     let targetMonth = currentMonth - i;
     let targetYear = currentYear;
     
@@ -223,62 +265,85 @@ async function getMonthlyRevenue(currentYear: number, currentMonth: number) {
     const startOfMonth = new Date(targetYear, targetMonth, 1);
     const endOfMonth = new Date(targetYear, targetMonth + 1, 0, 23, 59, 59, 999);
     
-    const result = await db.invoice.aggregate({
+    return db.invoice.aggregate({
       where: {
         date: { gte: startOfMonth, lte: endOfMonth },
-        status: { not: 'cancelled' }
+        status: { not: 'cancelled' },
+        ...(companyId && { companyId })
       },
       _sum: { amountTotal: true },
       _count: true
-    });
-    
-    monthlyData.push({
+    }).then(result => ({
       month: MONTH_NAMES_FR[targetMonth],
       revenue: result._sum.amountTotal || 0,
       count: result._count
-    });
-  }
-  
-  return monthlyData;
+    }));
+  });
+
+  // Execute all queries in parallel instead of sequentially
+  return Promise.all(monthlyPromises);
 }
 
 // ============================================================
 // Helper: Get Sales by Product Category
+// OPTIMIZED: Uses database GROUP BY instead of loading all data into memory
+// Reduces memory usage and lets the database handle aggregation
 // ============================================================
 
-async function getSalesByCategory(sinceDate: Date) {
-  // Get all invoices with their lines and products since the date
-  const invoices = await db.invoice.findMany({
+async function getSalesByCategory(
+  sinceDate: Date,
+  companyId?: string
+) {
+  // Step 1: Aggregate invoice lines by product using database GROUP BY
+  // This is much more efficient than loading all invoices into memory
+  const productSales = await db.invoiceLine.groupBy({
+    by: ['productId'],
+    _sum: { amountTotal: true },
+    _count: true,
     where: {
-      date: { gte: sinceDate },
-      status: { not: 'cancelled' }
-    },
-    include: {
-      lines: {
-        include: {
-          product: {
-            include: {
-              category: { select: { name: true } }
-            }
-          }
-        }
+      invoice: {
+        date: { gte: sinceDate },
+        status: { not: 'cancelled' },
+        ...(companyId && { companyId })
       }
     }
   });
-  
-  // Aggregate by category
+
+  // Early return if no sales data
+  if (productSales.length === 0) {
+    return [{ category: 'Aucune donnee', value: 0, percentage: 100, count: 0 }];
+  }
+
+  // Step 2: Fetch product categories for each unique productId (single query)
+  const productIds = [...new Set(productSales.map(ps => ps.productId))];
+  const products = await db.product.findMany({
+    where: { id: { in: productIds } },
+    select: { id: true, categoryId: true }
+  });
+
+  // Step 3: Fetch category names for unique categories (single query)
+  const categoryIds = [...new Set(products.map(p => p.categoryId).filter(Boolean))] as string[];
+  const categories = await db.productCategory.findMany({
+    where: { id: { in: categoryIds } },
+    select: { id: true, name: true }
+  });
+
+  // Create lookup maps for efficient joining
+  const productCategoryMap = new Map(products.map(p => [p.id, p.categoryId]));
+  const categoryNameMap = new Map(categories.map(c => [c.id, c.name]));
+
+  // Step 4: Aggregate by category in JavaScript (on minimal dataset)
   const categoryMap = new Map<string, { value: number; count: number }>();
   
-  for (const invoice of invoices) {
-    for (const line of invoice.lines) {
-      const categoryName = line.product.category?.name || 'Sans categorie';
-      const existing = categoryMap.get(categoryName) || { value: 0, count: 0 };
-      existing.value += line.amountTotal || 0;
-      existing.count += 1;
-      categoryMap.set(categoryName, existing);
-    }
+  for (const ps of productSales) {
+    const catId = productCategoryMap.get(ps.productId);
+    const categoryName = (catId ? categoryNameMap.get(catId) : null) || 'Sans categorie';
+    const existing = categoryMap.get(categoryName) || { value: 0, count: 0 };
+    existing.value += ps._sum.amountTotal || 0;
+    existing.count += ps._count;
+    categoryMap.set(categoryName, existing);
   }
-  
+
   // Convert to array and calculate percentages
   const totalValue = Array.from(categoryMap.values()).reduce((sum, cat) => sum + cat.value, 0);
   
@@ -292,17 +357,21 @@ async function getSalesByCategory(sinceDate: Date) {
     .sort((a, b) => b.value - a.value)
     .slice(0, 10); // Top 10 categories
   
-  return result.length > 0 ? result : [{ category: 'Aucune donnee', value: 0, percentage: 100, count: 0 }];
+  return result;
 }
 
 // ============================================================
 // Helper: Get Expenses by Month (from Bills)
+// OPTIMIZED: Uses Promise.all for parallel query execution
 // ============================================================
 
-async function getExpensesByMonth(currentYear: number, currentMonth: number) {
-  const expenseData = [];
-  
-  for (let i = 11; i >= 0; i--) {
+async function getExpensesByMonth(
+  currentYear: number, 
+  currentMonth: number,
+  companyId?: string
+) {
+  // Create all 12 month queries and execute them in parallel
+  const expensePromises = Array.from({ length: 12 }, async (_, i) => {
     let targetMonth = currentMonth - i;
     let targetYear = currentYear;
     
@@ -315,21 +384,21 @@ async function getExpensesByMonth(currentYear: number, currentMonth: number) {
     const startOfMonth = new Date(targetYear, targetMonth, 1);
     const endOfMonth = new Date(targetYear, targetMonth + 1, 0, 23, 59, 59, 999);
     
-    const result = await db.bill.aggregate({
+    return db.bill.aggregate({
       where: {
         date: { gte: startOfMonth, lte: endOfMonth },
-        status: { not: 'cancelled' }
+        status: { not: 'cancelled' },
+        ...(companyId && { companyId })
       },
       _sum: { amountTotal: true },
       _count: true
-    });
-    
-    expenseData.push({
+    }).then(result => ({
       month: MONTH_NAMES_FR[targetMonth],
       expenses: result._sum.amountTotal || 0,
       count: result._count
-    });
-  }
-  
-  return expenseData;
+    }));
+  });
+
+  // Execute all queries in parallel instead of sequentially
+  return Promise.all(expensePromises);
 }

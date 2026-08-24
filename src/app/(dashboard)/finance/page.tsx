@@ -999,7 +999,7 @@ export default function FinancePage() {
     if (entryStatusFilter !== 'all') params.set('status', entryStatusFilter)
     if (entryDateFrom) params.set('dateFrom', entryDateFrom)
     if (entryDateTo) params.set('dateTo', entryDateTo)
-    return params.toString()
+    return params
   }, [entryTypeFilter, entryStatusFilter, entryDateFrom, entryDateTo, entryPage])
 
   // Calculate balance period dates
@@ -1072,6 +1072,7 @@ export default function FinancePage() {
     loading: entriesLoading,
     error: entriesError,
     refetch: refetchEntries,
+    pagination: entryPagination,
     stats: accountingStats
   } = useAccountingData(entryQueryParams)
 
@@ -1955,7 +1956,7 @@ export default function FinancePage() {
                     </div>
 
                     {/* Pagination */}
-                    {pagination && pagination.pages > 1 && (
+                    {entryPagination && entryPagination.pages > 1 && (
                       <div className="mt-4">
                         <Pagination>
                           <PaginationContent>
@@ -1966,7 +1967,7 @@ export default function FinancePage() {
                               />
                             </PaginationItem>
                             
-                            {[...Array(Math.min(pagination.pages, 5))].map((_, i) => {
+                            {[...Array(Math.min(entryPagination.pages, 5))].map((_, i) => {
                               const pageNum = i + 1
                               return (
                                 <PaginationItem key={pageNum}>
@@ -1981,12 +1982,12 @@ export default function FinancePage() {
                               )
                             })}
                             
-                            {pagination.pages > 5 && <PaginationEllipsis />}
+                            {entryPagination.pages > 5 && <PaginationEllipsis />}
                             
                             <PaginationItem>
                               <PaginationNext 
-                                onClick={() => setEntryPage(p => Math.min(pagination.pages!, p + 1))}
-                                className={entryPage >= pagination.pages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                                onClick={() => setEntryPage(p => Math.min(entryPagination.pages!, p + 1))}
+                                className={entryPage >= entryPagination.pages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
                               />
                             </PaginationItem>
                           </PaginationContent>

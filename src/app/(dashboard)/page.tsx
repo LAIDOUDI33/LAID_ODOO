@@ -5,7 +5,7 @@
 
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { 
   DollarSign, 
@@ -30,12 +30,14 @@ import {
   Target,
   BarChart3,
   Zap,
-  Globe
+  Globe,
+  AlertCircle
 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   LineChart,
   Line,
@@ -52,7 +54,7 @@ import {
   Legend
 } from 'recharts'
 import HassibaAIAssistant from '@/components/ai/assistant'
-import NotificationCenter from '@/components/notifications/notification-center'
+import { NotificationCenter } from '@/components/notifications/notification-center'
 
 // ============================================================
 // Types
@@ -74,79 +76,160 @@ interface DashboardData {
   pendingTasks: { id: string; title: string; type: string; priority: string }[]
 }
 
+interface APIDashboardResponse {
+  success: boolean
+  data?: {
+    company: any
+    kpis: {
+      caToday: number
+      caMonth: number
+      caYear: number
+      invoiceCountToday: number
+      invoiceCountMonth: number
+      invoiceCountYear: number
+      paidInvoiceCount: number
+      unpaidInvoiceCount: number
+      unpaidAmount: number
+      employeeCount: number
+      productCount: number
+      partnerCount: number
+    }
+    charts: {
+      monthlyRevenue: { month: string; revenue: number; count: number }[]
+      salesByCategory: { category: string; value: number; percentage: number; count: number }[]
+      expensesByMonth: { month: string; expenses: number; count: number }[]
+    }
+    recentActivity: {
+      invoices: any[]
+      lowStockAlerts: any[]
+    }
+    taxDeadlines: Array<{
+      type: string
+      description: string
+      deadline: number
+      daysUntil: number
+      isUrgent: boolean
+      isOverdue: boolean
+    }>
+    currentDate: string
+  }
+  error?: string
+}
+
 // ============================================================
-// Mock Data (will be replaced with API calls)
+// Color palette for charts
 // ============================================================
 
-const mockDashboardData: DashboardData = {
-  kpis: [
-    {
-      title: "Chiffre d'Affaires du jour",
-      value: "0 DA",
-      change: 0,
-      changeLabel: "vs mois dernier",
-      icon: <DollarSign className="w-5 h-5" />,
-      color: "text-emerald-600"
-    },
-    {
-      title: "CA Mensuel",
-      value: "0 DA",
-      change: 0,
-      changeLabel: "vs mois dernier",
-      icon: <TrendingUp className="w-5 h-5" />,
-      color: "text-blue-600"
-    },
-    {
-      title: "Factures du Mois",
-      value: "0",
-      change: 0,
-      changeLabel: "vs mois dernier",
-      icon: <FileText className="w-5 h-5" />,
-      color: "text-orange-600"
-    },
-    {
-      title: "Effectif Total",
-      value: "1",
-      change: 4.2,
-      changeLabel: "vs mois dernier",
-      icon: <Users className="w-5 h-5" />,
-      color: "text-purple-600"
-    },
-    {
-      title: "Montant à Recevoir",
-      value: "0 DA",
-      change: 0,
-      changeLabel: "vs mois dernier",
-      icon: <ArrowUpRight className="w-5 h-5" />,
-      color: "text-green-600"
-    }
-  ],
-  revenueData: [
-    { month: 'Jan', ca: 3000000, objectif: 2800000 },
-    { month: 'Fév', ca: 2900000, objectif: 2900000 },
-    { month: 'Mar', ca: 3200000, objectif: 3000000 },
-    { month: 'Avr', ca: 3500000, objectif: 3200000 },
-    { month: 'Mai', ca: 3800000, objectif: 3500000 },
-    { month: 'Jun', ca: 4200000, objectif: 3800000 },
-    { month: 'Jul', ca: 3900000, objectif: 4000000 },
-    { month: 'Août', ca: 4500000, objectif: 4200000 },
-    { month: 'Sep', ca: 4800000, objectif: 4500000 },
-    { month: 'Oct', ca: 5200000, objectif: 4800000 },
-    { month: 'Nov', ca: 5500000, objectif: 5200000 },
-    { month: 'Déc', ca: 5800000, objectif: 5500000 }
-  ],
-  categoryData: [
-    { name: 'Produits A', value: 35, color: '#059669' },
-    { name: 'Services B', value: 25, color: '#dc2626' },
-    { name: 'Produits C', value: 20, color: '#059669' },
-    { name: 'Accessoires D', value: 12, color: '#f97316' },
-    { name: 'Autres', value: 8, color: '#6b7280' }
-  ],
-  pendingTasks: [
-    { id: '1', title: 'Factures en attente', type: 'finance', priority: 'high' },
-    { id: '2', title: 'Paiements à recevoir', type: 'finance', priority: 'medium' },
-    { id: '3', title: 'Produits en stock bas', type: 'inventory', priority: 'high' }
-  ]
+const CHART_COLORS = ['#059669', '#dc2626', '#f97316', '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6', '#eab308']
+
+// ============================================================
+// Loading Skeleton Component
+// ============================================================
+
+function DashboardSkeleton() {
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-6">
+        {/* Header Skeleton */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-64" />
+            <Skeleton className="h-4 w-96" />
+          </div>
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-9 w-24" />
+            <Skeleton className="h-9 w-28" />
+            <Skeleton className="h-9 w-36" />
+          </div>
+        </div>
+
+        {/* Banner Skeleton */}
+        <Skeleton className="h-24 w-full rounded-lg" />
+
+        {/* KPI Cards Skeleton */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          {[...Array(5)].map((_, i) => (
+            <Card key={i}>
+              <CardContent className="p-4 md:p-6 space-y-3">
+                <div className="flex items-center justify-between">
+                  <Skeleton className="h-4 w-28" />
+                  <Skeleton className="h-10 w-10 rounded-lg" />
+                </div>
+                <Skeleton className="h-7 w-20" />
+                <Skeleton className="h-3 w-24" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Secondary Stats Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i}>
+              <CardContent className="p-4 flex items-center justify-between">
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-7 w-16" />
+                </div>
+                <Skeleton className="h-8 w-12 rounded" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Chart Skeleton */}
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-5 w-48" />
+            <Skeleton className="h-4 w-64" />
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-[300px] w-full" />
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
+}
+
+// ============================================================
+// Error Component
+// ============================================================
+
+function DashboardError({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="max-w-7xl mx-auto p-4 md:p-6">
+        <Card className="border-destructive/50 bg-destructive/5">
+          <CardContent className="p-8 text-center">
+            <AlertCircle className="w-12 h-12 text-destructive mx-auto mb-4" />
+            <h2 className="text-xl font-semibold text-foreground mb-2">Erreur de chargement</h2>
+            <p className="text-muted-foreground mb-6">
+              Impossible de charger les données du tableau de bord. Vérifiez votre connexion et réessayez.
+            </p>
+            <Button onClick={onRetry} variant="outline">
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Réessayer
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
+}
+
+// ============================================================
+// Format currency helper
+// ============================================================
+
+function formatCurrency(value: number): string {
+  if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M DZD`
+  if (value >= 1000) return `${(value / 1000).toFixed(0)}K DZD`
+  return `${value.toLocaleString('fr-DZ')} DZD`
+}
+
+function formatNumber(value: number): string {
+  return value.toLocaleString('fr-DZ')
 }
 
 // ============================================================
@@ -154,30 +237,138 @@ const mockDashboardData: DashboardData = {
 // ============================================================
 
 export default function DashboardPage() {
-  const [data, setData] = useState<DashboardData>(mockDashboardData)
+  const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [lastSync, setLastSync] = useState(new Date())
 
-  useEffect(() => {
-    // Simulate API call
-    const timer = setTimeout(() => {
+  // Fetch dashboard data from API
+  const fetchDashboardData = useCallback(async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      
+      const response = await fetch('/api/dashboard')
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      
+      const result: APIDashboardResponse = await response.json()
+      
+      if (!result.success || !result.data) {
+        throw new Error(result.error || 'Failed to load dashboard data')
+      }
+      
+      const apiData = result.data
+      
+      // Transform API data to UI format
+      const transformedData: DashboardData = {
+        kpis: [
+          {
+            title: "Chiffre d'Affaires du jour",
+            value: formatCurrency(apiData.kpis.caToday),
+            change: apiData.kpis.caMonth > 0 ? Math.round((apiData.kpis.caToday / apiData.kpis.caMonth) * 100) : 0,
+            changeLabel: "vs hier",
+            icon: <DollarSign className="w-5 h-5" />,
+            color: "text-emerald-600"
+          },
+          {
+            title: "CA Mensuel",
+            value: formatCurrency(apiData.kpis.caMonth),
+            change: 0, // Would need previous month data for accurate calculation
+            changeLabel: "vs mois dernier",
+            icon: <TrendingUp className="w-5 h-5" />,
+            color: "text-blue-600"
+          },
+          {
+            title: "Factures du Mois",
+            value: formatNumber(apiData.kpis.invoiceCountMonth),
+            change: 0,
+            changeLabel: "vs mois dernier",
+            icon: <FileText className="w-5 h-5" />,
+            color: "text-orange-600"
+          },
+          {
+            title: "Effectif Total",
+            value: formatNumber(apiData.kpis.employeeCount),
+            change: 0,
+            changeLabel: "employés actifs",
+            icon: <Users className="w-5 h-5" />,
+            color: "text-purple-600"
+          },
+          {
+            title: "Montant à Recevoir",
+            value: formatCurrency(apiData.kpis.unpaidAmount),
+            change: 0,
+            changeLabel: "factures impayées",
+            icon: <ArrowUpRight className="w-5 h-5" />,
+            color: "text-green-600"
+          }
+        ],
+        revenueData: apiData.charts.monthlyRevenue.map(item => ({
+          month: item.month,
+          ca: item.revenue,
+          objectif: item.revenue * 0.9 // Target is 90% of actual for demo
+        })),
+        categoryData: apiData.charts.salesByCategory.map((item, index) => ({
+          name: item.category,
+          value: item.percentage,
+          color: CHART_COLORS[index % CHART_COLORS.length]
+        })),
+        pendingTasks: [
+          ...(apiData.kpis.unpaidInvoiceCount > 0 ? [{
+            id: '1',
+            title: `Factures en attente (${apiData.kpis.unpaidInvoiceCount})`,
+            type: 'finance',
+            priority: 'high' as string
+          }] : []),
+          ...(apiData.kpis.unpaidAmount > 0 ? [{
+            id: '2',
+            title: `Paiements à recevoir: ${formatCurrency(apiData.kpis.unpaidAmount)}`,
+            type: 'finance',
+            priority: 'medium' as string
+          }] : []),
+          ...apiData.recentActivity.lowStockAlerts.slice(0, 3).map((alert, idx) => ({
+            id: `stock-${idx}`,
+            title: `Stock bas: ${alert.product?.name || 'Produit inconnu'}`,
+            type: 'inventory',
+            priority: 'high' as string
+          }))
+        ]
+      }
+      
+      setData(transformedData)
+      setLastSync(new Date())
+    } catch (err) {
+      console.error('Failed to fetch dashboard data:', err)
+      setError(err instanceof Error ? err.message : 'Unknown error occurred')
+    } finally {
       setLoading(false)
-    }, 800)
-    return () => clearTimeout(timer)
+    }
   }, [])
 
+  useEffect(() => {
+    fetchDashboardData()
+  }, [fetchDashboardData])
+
   const handleRefresh = async () => {
-    setLoading(true)
-    // Refresh data from API
-    await new Promise(resolve => setTimeout(resolve, 500))
-    setLastSync(new Date())
-    setLoading(false)
+    await fetchDashboardData()
   }
 
-  const formatCurrency = (value: number) => {
-    if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M DZD`
-    if (value >= 1000) return `${(value / 1000).toFixed(0)}K DZD`
-    return `${value} DZD`
+  // Show loading skeleton
+  if (loading && !data) {
+    return <DashboardSkeleton />
+  }
+
+  // Show error state
+  if (error && !data) {
+    return <DashboardError onRetry={handleRefresh} />
+  }
+
+  // Should not happen, but just in case
+  if (!data) {
+    return <DashboardError onRetry={handleRefresh} />
   }
 
   return (
@@ -226,7 +417,7 @@ export default function DashboardPage() {
               </div>
               <div className="flex-1">
                 <h2 className="text-xl font-bold">HASSIBA Suite ERP</h2>
-                <p className="text-white/90 text-sm">Plateforme de Gestion Intégré • Déployée pour 1 employés • Production Ready</p>
+                <p className="text-white/90 text-sm">Plateforme de Gestion Intégré • Production Ready</p>
               </div>
               <Badge variant="secondary" className="bg-white text-emerald-700 font-semibold hidden md:flex">
                 <Shield className="w-3 h-3 mr-1" />
@@ -348,7 +539,7 @@ export default function DashboardPage() {
               {/* Revenue Chart */}
               <Card className="lg:col-span-2">
                 <CardHeader>
-                  <CardTitle>Évolution du Chiffre d'Affaires</CardTitle>
+                  <CardTitle>Évolution du Chiffre d&apos;Affaires</CardTitle>
                   <CardDescription>Comparaison CA réel vs Objectif mensuel</CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -462,19 +653,27 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {data.pendingTasks.map(task => (
-                    <div key={task.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <Badge variant={task.priority === 'high' ? 'destructive' : 'secondary'}>
-                          {task.priority === 'high' ? 'Urgent' : 'Normal'}
-                        </Badge>
-                        <span>{task.title}</span>
+                  {data.pendingTasks.length > 0 ? (
+                    data.pendingTasks.map(task => (
+                      <div key={task.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <Badge variant={task.priority === 'high' ? 'destructive' : 'secondary'}>
+                            {task.priority === 'high' ? 'Urgent' : 'Normal'}
+                          </Badge>
+                          <span>{task.title}</span>
+                        </div>
+                        <Button variant="ghost" size="sm">
+                          Voir <ChevronRight className="w-4 h-4 ml-1" />
+                        </Button>
                       </div>
-                      <Button variant="ghost" size="sm">
-                        Voir <ChevronRight className="w-4 h-4 ml-1" />
-                      </Button>
+                    ))
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <CheckCircle className="w-12 h-12 mx-auto mb-3 text-emerald-500" />
+                      <p>Aucune tâche en attente</p>
+                      <p className="text-sm">Tout est à jour !</p>
                     </div>
-                  ))}
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -497,10 +696,10 @@ export default function DashboardPage() {
                   <Bot className="w-12 h-12 mx-auto mb-3 text-primary" />
                   <p className="font-medium mb-2">Assistant IA Intégré</p>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Cliquez sur le bouton chat en bas à droite pour interagir avec l'IA
+                    Cliquez sur le bouton chat en bas à droite pour interagir avec l&apos;IA
                   </p>
-                  <Button onClick={() => document.querySelector('[data-chatbot-toggle]')?.click()}>
-                    Ouvrir l'Assistant
+                  <Button onClick={() => (document.querySelector('[data-chatbot-toggle]') as HTMLElement)?.click()}>
+                    Ouvrir l&apos;Assistant
                   </Button>
                 </div>
               </CardContent>
@@ -515,5 +714,14 @@ export default function DashboardPage() {
         </footer>
       </div>
     </div>
+  )
+}
+
+// CheckCircle icon for empty state
+function CheckCircle({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
   )
 }

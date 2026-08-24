@@ -2,6 +2,23 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
 
+// C-01 FIX: Roles authorized to view sensitive PII data
+const SENSITIVE_PII_ROLES = ['admin', 'manager', 'hr_manager', 'hr_staff', 'super_admin'];
+
+// C-01 FIX: Sensitive PII fields that should only be visible to authorized roles
+const SENSITIVE_PII_FIELDS = [
+  'cin',           // National ID number
+  'cnasNumber',    // Social security number
+  'casnosNumber',  // Pension fund number
+  'bankName',      // Bank name
+  'bankAccount',   // Bank account number
+  'address',       // Full address
+  'phone',         // Phone number
+  'personalEmail', // Personal email
+  'dateOfBirth',   // Date of birth
+  'placeOfBirth'   // Place of birth
+] as const;
+
 // GET /api/employees/[id] - Get single employee
 export async function GET(
   request: Request,
@@ -10,6 +27,9 @@ export async function GET(
   // SECURITY: Require authentication for employee data (HIGHLY SENSITIVE PII)
   const authError = await requireAuth(request);
   if (authError) return authError;
+
+  // C-01 FIX: Get authenticated user for role-based PII filtering
+  const user = await getAuthenticatedUser();
 
   try {
     const { id } = await params;
@@ -34,6 +54,16 @@ export async function GET(
         { success: false, error: 'Employee not found' },
         { status: 404 }
       );
+    }
+
+    // C-01 FIX: Role-based PII sanitization - remove sensitive fields for non-authorized users
+    if (!SENSITIVE_PII_ROLES.includes(user?.role || '')) {
+      // Create a safe copy of employee data without PII fields
+      const safeData = { ...employee };
+      for (const field of SENSITIVE_PII_FIELDS) {
+        delete (safeData as any)[field];
+      }
+      return NextResponse.json({ success: true, data: safeData });
     }
 
     return NextResponse.json({ success: true, data: employee });

@@ -2,14 +2,12 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { calculateTVACollectee, getTimbreFiscal } from '@/lib/algerian-taxes';
 import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
-
-// Valid statuses from InvoiceStatus enum (must match schema.prisma exactly)
-// H-03 FIX: Centralized status validation against enum values
-const VALID_INVOICE_STATUSES = ['draft', 'sent', 'paid', 'partial', 'cancelled'];
-
-// Valid statuses for updates
-const UPDATABLE_STATUSES = ['draft', 'sent', 'partial'];
-const CANCELLABLE_STATUSES = ['draft', 'sent', 'partial', 'overdue'];
+import { postInvoiceToJournal } from '@/lib/auto-posting';
+import { 
+  validateTransition, 
+  isTerminalStatus,
+  INVOICE_STATE_MACHINE 
+} from '@/lib/state-machine';
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -21,11 +19,22 @@ export async function GET(request: Request, context: RouteContext) {
   const authError = await requireAuth(request);
   if (authError) return authError;
   
+  // C-02 FIX: Get authenticated user for company access control
+  const user = await getAuthenticatedUser();
+  
   try {
     const { id } = await context.params;
     
+    // C-02 FIX: Build where clause with company access control
+    // Only super_admin and admin can access invoices across all companies
+    // Other users can only access invoices from their own company
+    const whereClause: any = { id };
+    if (user?.role !== 'super_admin' && user?.role !== 'admin') {
+      whereClause.companyId = user?.companyId;
+    }
+    
     const invoice = await db.invoice.findUnique({
-      where: { id },
+      where: whereClause,
       include: {
         partner: true,
         company: true,
@@ -40,6 +49,20 @@ export async function GET(request: Request, context: RouteContext) {
     });
 
     if (!invoice) {
+      // C-02 FIX: Return 403 if invoice exists but belongs to another company (access denied)
+      // vs 404 if invoice truly doesn't exist
+      const invoiceExists = await db.invoice.findUnique({
+        where: { id },
+        select: { id: true }
+      });
+      
+      if (invoiceExists) {
+        return NextResponse.json(
+          { success: false, error: 'Access denied: You do not have permission to view this invoice' },
+          { status: 403 }
+        );
+      }
+      
       return NextResponse.json(
         { success: false, error: 'Invoice not found' },
         { status: 404 }
@@ -81,12 +104,12 @@ export async function PUT(request: Request, context: RouteContext) {
       );
     }
 
-    // Check if invoice can be updated
-    if (!UPDATABLE_STATUSES.includes(existingInvoice.status)) {
+    // H-17 FIX: Use state machine to check if invoice can be updated (non-terminal status)
+    if (isTerminalStatus('invoice', existingInvoice.status)) {
       return NextResponse.json(
         { 
           success: false, 
-          error: `Cannot update invoice with status '${existingInvoice.status}'. Only invoices with status: ${UPDATABLE_STATUSES.join(', ')} can be updated.` 
+          error: `Cannot update invoice with status '${existingInvoice.status}'. This is a terminal status and cannot be modified.` 
         },
         { status: 400 }
       );
@@ -98,41 +121,37 @@ export async function PUT(request: Request, context: RouteContext) {
 
     // Update status if provided
     if (body.status && body.status !== existingInvoice.status) {
-      // H-03 FIX: Validate status against allowed enum values before any transition check
-      if (!VALID_INVOICE_STATUSES.includes(body.status)) {
+      // H-17 FIX: Use centralized state machine for status transition validation
+      const userRole = user?.role;
+      const validationResult = validateTransition(
+        'invoice',
+        existingInvoice.status,
+        body.status,
+        userRole
+      );
+
+      if (!validationResult.valid) {
         return NextResponse.json(
           { 
             success: false, 
-            error: `Invalid status '${body.status}'. Must be one of: ${VALID_INVOICE_STATUSES.join(', ')}` 
+            error: validationResult.error || 'Invalid status transition' 
           },
           { status: 400 }
         );
       }
-      
-      // Validate status transition
-      const validTransitions: Record<string, string[]> = {
-        draft: ['sent', 'cancelled'],
-        sent: ['draft', 'paid', 'partial', 'cancelled'],
-        partial: ['paid', 'cancelled']
-      };
 
-      if (validTransitions[existingInvoice.status]?.includes(body.status)) {
-        updateData.status = body.status;
-        
-        // Auto-set paid date when marking as paid
-        if (body.status === 'paid') {
-          updateData.paidDate = new Date();
-          updateData.amountPaid = existingInvoice.amountTotal;
-          updateData.amountDue = 0;
-        }
-      } else {
-        return NextResponse.json(
-          { 
-            success: false, 
-            error: `Invalid status transition from '${existingInvoice.status}' to '${body.status}'` 
-          },
-          { status: 400 }
-        );
+      // Apply the validated status change
+      updateData.status = body.status;
+
+      // H-17 FIX: Apply auto-timestamps from state machine validation
+      if (validationResult.autoFields) {
+        Object.assign(updateData, validationResult.autoFields);
+      }
+
+      // Auto-calculate payment amounts when marking as paid
+      if (body.status === 'paid') {
+        updateData.amountPaid = existingInvoice.amountTotal;
+        updateData.amountDue = 0;
       }
     }
 
@@ -277,10 +296,33 @@ export async function PUT(request: Request, context: RouteContext) {
       });
     }
 
+    // C-06: Auto-post invoice to journal when status changes to 'sent' or 'paid'
+    let journalPostingResult = null;
+    if (
+      (updatedInvoice.status === 'sent' || updatedInvoice.status === 'paid') &&
+      !updatedInvoice.journalEntryId &&
+      user
+    ) {
+      journalPostingResult = await postInvoiceToJournal(updatedInvoice.id, user.id);
+      if (journalPostingResult.success) {
+        // Refresh the invoice to include the new journal entry ID
+        updatedInvoice = await db.invoice.findUnique({
+          where: { id },
+          include: {
+            partner: true,
+            lines: { include: { product: true } }
+          }
+        }) as typeof updatedInvoice;
+      } else {
+        console.warn(`Auto-posting failed for invoice ${updatedInvoice.reference}:`, journalPostingResult.error);
+        // Don't fail the update - just log the warning
+      }
+    }
+
     return NextResponse.json({ 
       success: true, 
       data: updatedInvoice,
-      message: `Invoice ${updatedInvoice.reference} updated successfully`
+      message: `Invoice ${updatedInvoice.reference} updated successfully${journalPostingResult?.success ? ' (Journal entry created)' : ''}`
     });
   } catch (error) {
     console.error('Invoice PUT Error:', error);
@@ -323,12 +365,19 @@ export async function DELETE(request: Request, context: RouteContext) {
       );
     }
 
-    // Validate invoice can be cancelled
-    if (!CANCELLABLE_STATUSES.includes(existingInvoice.status)) {
+    // H-17 FIX: Use state machine to validate cancellation transition
+    const cancelValidation = validateTransition(
+      'invoice',
+      existingInvoice.status,
+      'cancelled',
+      user?.role
+    );
+
+    if (!cancelValidation.valid) {
       return NextResponse.json(
         { 
           success: false, 
-          error: `Cannot cancel invoice with status '${existingInvoice.status}'. Only invoices with status: ${CANCELLABLE_STATUSES.join(', ')} can be cancelled.` 
+          error: cancelValidation.error || `Cannot cancel invoice with status '${existingInvoice.status}'.` 
         },
         { status: 400 }
       );

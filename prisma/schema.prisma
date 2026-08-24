@@ -181,6 +181,10 @@ model Company {
   // Data Import Relations
   importJobs        ImportJob[]
   
+  // Accounting Relations (multi-tenant)
+  journalEntries    JournalEntry[]
+  payments          Payment[]
+  
   @@map("companies")
 }
 
@@ -287,6 +291,10 @@ model JournalEntry {
   source        String?  // manual, invoice, bill, payment
   sourceId      String?
   
+  // Société (multi-tenant support)
+  companyId     String?
+  company       Company? @relation(fields: [companyId], references: [id])
+  
   journalId     String
   journal       Journal  @relation(fields: [journalId], references: [id])
   
@@ -295,6 +303,8 @@ model JournalEntry {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   
+  @@index([companyId])
+  @@index([date])
   @@map("journal_entries")
 }
 
@@ -535,6 +545,7 @@ model Invoice {
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
   
+  @@index([partnerId])
   @@map("invoices")
 }
 
@@ -657,6 +668,10 @@ model Payment {
   bankAccountId String?
   bankAccount   BankAccount?  @relation(fields: [bankAccountId], references: [id])
   
+  // Société (multi-tenant support)
+  companyId     String?
+  company       Company? @relation(fields: [companyId], references: [id])
+  
   // Liens factures
   invoiceId     String?
   invoice       Invoice?       @relation(fields: [invoiceId], references: [id])
@@ -666,6 +681,7 @@ model Payment {
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
   
+  @@index([companyId])
   @@map("payments")
 }
 
@@ -907,6 +923,7 @@ model Payroll {
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
   
+  @@index([employeeId, period])
   @@map("payrolls")
 }
 
@@ -1001,6 +1018,8 @@ model Attendance {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   
+  @@index([date])
+  @@index([employeeId])
   @@map("attendances")
   @@unique([employeeId, date])
 }
@@ -1072,6 +1091,8 @@ model StockLevel {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   
+  @@index([productId])
+  @@index([warehouseId])
   @@map("stock_levels")
   @@unique([productId, warehouseId, locationId])
 }

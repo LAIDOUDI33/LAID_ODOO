@@ -466,7 +466,7 @@ function ErrorView({ onRetry }: { onRetry: () => void }) {
               Impossible de charger les commandes d&apos;achat. Veuillez réessayer.
             </p>
           </div>
-          <Button onClick={OnRetry} variant="outline" className="gap-2">
+          <Button onClick={onRetry} variant="outline" className="gap-2">
             <RefreshCw className="w-4 h-4" />
             Réessayer
           </Button>
@@ -510,7 +510,7 @@ function EmptyState({ onCreateNew }: { onCreateNew: () => void }) {
 
 interface WorkflowPipelineProps {
   orders: PurchaseOrder[]
-  onStageClick: (stageId: string) => void
+  onStageClick: (stageId: string | null) => void
   activeStage: string | null
 }
 

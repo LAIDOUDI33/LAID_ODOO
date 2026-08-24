@@ -256,17 +256,48 @@ export async function POST(
           );
         }
 
-        // Update leave balance: increment used, decrement remaining
-        await db.leaveBalance.update({
-          where: { id: leaveBalance.id },
-          data: {
-            totalUsed: { increment: daysRequested },
-            totalPending: { decrement: daysRequested },
-            remaining: { decrement: daysRequested }
-          }
+        // Use $transaction for atomicity: update balance AND approve leave together
+        const [leave] = await db.$transaction([
+          // Step 1: Update leave balance - increment used, decrement remaining
+          db.leaveBalance.update({
+            where: { id: leaveBalance.id },
+            data: {
+              totalUsed: { increment: daysRequested },
+              totalPending: { decrement: daysRequested },
+              remaining: { decrement: daysRequested }
+            }
+          }),
+          // Step 2: Approve the leave request
+          db.leaveRequest.update({
+            where: { id },
+            data: {
+              status: 'approved',
+              approvedBy: approvedBy || null,
+              approvedAt: new Date()
+            },
+            include: {
+              employee: {
+                select: {
+                  id: true,
+                  matricule: true,
+                  firstName: true,
+                  lastName: true
+                }
+              }
+            }
+          })
+        ]);
+
+        return NextResponse.json({
+          success: true,
+          data: leave,
+          message: "Demande de congés approuvée avec succès",
+          balanceUpdated: true,
+          daysDeducted: daysRequested
         });
       }
 
+      // For unpaid/other leave types or when no balance exists, just approve without balance update
       const leave = await db.leaveRequest.update({
         where: { id },
         data: {
@@ -290,7 +321,7 @@ export async function POST(
         success: true,
         data: leave,
         message: "Demande de congés approuvée avec succès",
-        balanceUpdated: !!leaveBalance
+        balanceUpdated: false
       });
     }
 

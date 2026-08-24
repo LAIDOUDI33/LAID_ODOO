@@ -54,14 +54,14 @@ function generateExecutionReference(): string {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // SECURITY: Require authentication
     const authError = await requireAuth(request);
     if (authError) return authError;
 
-    const { id } = params;
+    const { id } = await params;
     
     const workflow = await db.automationWorkflow.findUnique({
       where: { id },
@@ -123,7 +123,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // SECURITY: Require appropriate role for write operations
@@ -132,7 +132,7 @@ export async function PUT(
 
     const user = await getAuthenticatedUser();
 
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
 
     // Check if workflow exists
@@ -204,14 +204,14 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // SECURITY: Require appropriate role for delete operations
     const authError = await requireRole(request, ['admin', 'manager']);
     if (authError) return authError;
 
-    const { id } = params;
+    const { id } = await params;
 
     // Check if workflow exists
     const existingWorkflow = await db.automationWorkflow.findUnique({
@@ -258,14 +258,14 @@ export async function DELETE(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // SECURITY: Require appropriate role for status changes
     const authError = await requireRole(request, ['admin', 'manager']);
     if (authError) return authError;
 
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     const action = body.action; // 'activate', 'deactivate', 'archive', 'restore'
 
@@ -349,14 +349,14 @@ export async function PATCH(
 // We'll use a query parameter to differentiate
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // SECURITY: Require appropriate role for workflow actions
     const authError = await requireRole(request, ['admin', 'manager']);
     if (authError) return authError;
 
-    const { id } = params;
+    const { id } = await params;
     const { searchParams } = new URL(request.url);
     const action = searchParams.get('action');
 

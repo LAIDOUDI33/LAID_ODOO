@@ -23,10 +23,10 @@ import {
   Eye,
   RefreshCw,
   AlertTriangle,
-  Settings,
-  Target,
+  Settings as SettingsIcon,
+  Target as TargetIcon,
   Zap,
-  ShoppingCart,
+  ShoppingCart as ShoppingCartIcon,
   Sparkles,
   LayoutDashboard
 } from 'lucide-react'

@@ -107,28 +107,38 @@ export async function getAuthenticatedUser(): Promise<AuthUser | null> {
 }
 
 // ============================================================
-// Role Constants
+// Role Constants (MUST match auth.ts exactly)
+// H-02 FIX: Unified role definitions across the application
 // ============================================================
 
 export const ROLES = {
-  SUPER_ADMIN: 'super_admin',
-  ADMIN: 'admin',
-  MANAGER: 'manager',
-  ACCOUNTANT: 'accountant',
-  HR: 'hr',
-  SALES: 'sales',
-  USER: 'user'
-} as const
+  SUPER_ADMIN: "super_admin",
+  ADMIN: "admin",
+  MANAGER: "manager",
+  ACCOUNTANT: "accountant",
+  HR_MANAGER: "hr_manager",
+  HR_STAFF: "hr_staff",
+  SALES_MANAGER: "sales_manager",
+  SALESPERSON: "salesperson",
+  WAREHOUSE_MANAGER: "warehouse_manager",
+  EMPLOYEE: "user",
+} as const;
 
+export type Role = typeof ROLES[keyof typeof ROLES];
+
+// Role hierarchy for permission level comparisons (higher = more permissions)
 export const ROLE_HIERARCHY = {
   [ROLES.SUPER_ADMIN]: 100,
-  [ROLES.ADMIN]: 80,
-  [ROLES.MANAGER]: 60,
-  [ROLES.ACCOUNTANT]: 50,
-  [ROLES.HR]: 50,
-  [ROLES.SALES]: 40,
-  [ROLES.USER]: 20
-} as const
+  [ROLES.ADMIN]: 90,
+  [ROLES.MANAGER]: 80,
+  [ROLES.ACCOUNTANT]: 70,
+  [ROLES.HR_MANAGER]: 65,
+  [ROLES.WAREHOUSE_MANAGER]: 65,
+  [ROLES.SALES_MANAGER]: 60,
+  [ROLES.HR_STAFF]: 45,
+  [ROLES.SALESPERSON]: 40,
+  [ROLES.EMPLOYEE]: 20,
+} as const;
 
 // ============================================================
 // Check if user has at least the specified role level

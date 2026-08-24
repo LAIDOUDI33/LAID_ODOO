@@ -651,7 +651,7 @@ export default function MaintenancePage() {
                         <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 120 120">
                           <circle cx="60" cy="60" r="54" fill="none" stroke="currentColor" strokeWidth="8" className="text-gray-200" />
                           <circle cx="60" cy="60" r="54" fill="none" stroke="currentColor" strokeWidth="8" 
-                            strokeDasharray={`${kpis?.equipment.availabilityRate * 3.39} 339.292`} 
+                            strokeDasharray={`${(kpis?.equipment.availabilityRate ?? 0) * 3.39} 339.292`} 
                             className="text-primary" strokeLinecap="round" />
                         </svg>
                         <div className="absolute inset-0 flex items-center justify-center">

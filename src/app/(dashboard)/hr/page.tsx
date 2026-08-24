@@ -1632,7 +1632,7 @@ export default function HrPage() {
         break
     }
     
-    setContracts(prev => prev.map(c => c.id === contract.id ? { ...c, status: newStatus } : Contract))
+    setContracts(prev => prev.map(c => c.id === contract.id ? { ...c, status: newStatus } : c))
     setConfirmDialog({ open: false, action: '', contract: null })
   }
 

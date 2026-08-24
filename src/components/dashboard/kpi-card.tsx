@@ -9,7 +9,7 @@ import { motion } from 'framer-motion'
 interface KpiCardProps {
   title: string
   value: string | number
-  change?: number
+  change?: number | null
   changeLabel?: string
   icon: LucideIcon
   iconColor?: string
