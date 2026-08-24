@@ -23,7 +23,8 @@ export async function GET(request: Request) {
     const type = searchParams.get('type');
     const partnerId = searchParams.get('partnerId');
     const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '20');
+    // M-02 FIX: Enforce maximum limit of 100 to prevent excessive data retrieval
+    const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 100);
 
     const whereClause: any = {};
     
@@ -91,9 +92,17 @@ export async function POST(request: Request) {
       );
     }
 
-    // Get company for reference generation
-    const company = await db.company.findFirst({ where: { isActive: true } });
-    if (!company) {
+    // Get company for reference generation (M-03 FIX)
+    // Use user's company context instead of findFirst to ensure proper multi-tenant isolation
+    let companyId = user?.companyId;
+    
+    if (!companyId) {
+      // Fallback for super admins or users without company context
+      const defaultCompany = await db.company.findFirst({ where: { isActive: true } });
+      companyId = defaultCompany?.id;
+    }
+    
+    if (!companyId) {
       return NextResponse.json(
         { success: false, error: 'No company configured' },
         { status: 400 }
@@ -108,7 +117,7 @@ export async function POST(request: Request) {
     // Count existing invoices this month to generate sequence
     const invoiceCount = await db.invoice.count({
       where: {
-        companyId: company.id,
+        companyId: companyId,
         reference: { startsWith: `FACT-${year}-${month}` }
       }
     });
@@ -186,7 +195,7 @@ export async function POST(request: Request) {
           
           // Partner & Company
           partnerId: body.partnerId,
-          companyId: company.id,
+          companyId: companyId,
           
           // Payment info
           paymentTerm: body.paymentTerms || '30',

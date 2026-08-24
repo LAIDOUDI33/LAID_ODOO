@@ -10,6 +10,9 @@ import { ZodError } from 'zod';
 // Request Body Size Limit Configuration (H-05 FIX)
 // ============================================================
 
+// L-02 FIX: Maximum request body size (10MB)
+export const MAX_BODY_SIZE = 10 * 1024 * 1024; // 10MB
+
 const BODY_SIZE_LIMITS: Record<string, number> = {
   default: 1024 * 1024,        // 1MB default
   upload: 50 * 1024 * 1024,    // 50MB for file uploads
@@ -41,6 +44,22 @@ export function validateBodySize(
   }
   
   return null;
+}
+
+// L-02 FIX: Simple request body size validation utility
+// Uses MAX_BODY_SIZE constant (10MB) for general validation
+export async function validateRequestBody(request: Request): Promise<{ valid: boolean; error?: Response }> {
+  const contentLength = request.headers.get('content-length');
+  if (contentLength && parseInt(contentLength) > MAX_BODY_SIZE) {
+    return {
+      valid: false,
+      error: new Response(
+        JSON.stringify({ success: false, error: 'Corps de la requête trop volumineux' }),
+        { status: 413 }
+      )
+    };
+  }
+  return { valid: true };
 }
 
 /**

@@ -130,9 +130,17 @@ export async function POST(request: Request) {
       matricule = `EMP-${String(count + 1).padStart(4, '0')}`;
     }
 
-    // Get default company
-    const company = await db.company.findFirst({ where: { isActive: true } });
-    if (!company) {
+    // Get default company from user context (M-03 FIX)
+    // Previously used findFirst which could return wrong company in multi-tenant setup
+    let companyId = user?.companyId;
+    
+    if (!companyId) {
+      // Fallback for super admins or users without company context
+      const defaultCompany = await db.company.findFirst({ where: { isActive: true } });
+      companyId = defaultCompany?.id;
+    }
+    
+    if (!companyId) {
       return NextResponse.json(
         { success: false, error: 'No company found' },
         { status: 400 }
@@ -190,7 +198,7 @@ export async function POST(request: Request) {
         
         isActive: body.isActive !== undefined ? body.isActive : true,
         
-        companyId: company.id
+        companyId: companyId
       }
     });
 

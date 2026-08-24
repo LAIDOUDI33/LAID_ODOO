@@ -7,6 +7,7 @@ import {
   getAllocationsFamiliales
 } from '@/lib/algerian-taxes';
 import { requireAuth, requireRole, getAuthenticatedUser, ROLES } from '@/lib/auth-utils';
+import { AuditLogger, AuditModule } from '@/lib/audit';
 
 // M-10 FIX: SMIG (Salaire Minimum Garanti) Configuration
 // SMIG values in DZD (Algerian Dinars) - National Guaranteed Minimum Wage
@@ -73,6 +74,19 @@ export async function GET(request: Request) {
       }
     });
 
+    // M-05 FIX: Audit log for sensitive payroll data access
+    // Payroll data contains HIGHLY SENSITIVE financial information
+    await AuditLogger.logRead(request, AuditModule.hr, "PayrollList", "list", {
+      action: "VIEW_PAYROLL_LIST",
+      accessedBy: user?.id,
+      piiAccess: 'full', // Payroll list requires authorized roles (admin, manager, hr, accountant)
+      details: {
+        filters: { period, employeeId, status },
+        recordCount: payrolls.length
+      },
+      user: user ? { id: user.id!, name: user.name || '', email: user.email || '' } : undefined
+    }).catch(console.error);
+
     return NextResponse.json({ success: true, data: payrolls });
   } catch (error) {
     console.error('Payroll GET Error:', error);
@@ -100,6 +114,72 @@ export async function POST(request: Request) {
         { success: false, error: 'Employee ID and period (YYYY-MM) are required' },
         { status: 400 }
       );
+    }
+
+    // M-04 FIX: Validate numeric fields are within reasonable ranges
+    // This prevents injection of extreme values that could cause calculation errors
+    
+    // Validate baseSalary if provided in request (for salary adjustment scenarios)
+    if (body.baseSalary !== undefined) {
+      const salary = parseFloat(body.baseSalary);
+      if (isNaN(salary) || salary < 0 || salary > 10000000) {
+        return NextResponse.json(
+          { 
+            success: false, 
+            error: 'Salaire de base invalide (doit être entre 0 et 10,000,000 DZD)',
+            code: 'INVALID_SALARY' 
+          },
+          { status: 400 }
+        );
+      }
+    }
+    
+    // Validate bonus/prime fields for reasonable ranges
+    const primeFields = ['primeRendement', 'primeResponsabilite', 'primeTechnicite', 
+                         'primeTransport', 'primePanier', 'primeLogement', 'primeMarie'];
+    for (const field of primeFields) {
+      if (body[field] !== undefined) {
+        const value = parseFloat(body[field]);
+        if (isNaN(value) || value < 0 || value > 1000000) {
+          return NextResponse.json(
+            { 
+              success: false, 
+              error: `${field} invalide (doit être entre 0 et 1,000,000 DZD)`,
+              code: `INVALID_${field.toUpperCase()}` 
+            },
+            { status: 400 }
+          );
+        }
+      }
+    }
+    
+    // Validate heuresSupp and tauxHeureSupp
+    if (body.heuresSupp !== undefined) {
+      const heuresSupp = parseFloat(body.heuresSupp);
+      if (isNaN(heuresSupp) || heuresSupp < 0 || heuresSupp > 500) {
+        return NextResponse.json(
+          { success: false, error: 'Heures supplémentaires invalides (0-500 heures max)', code: 'INVALID_HEURES_SUPP' },
+          { status: 400 }
+        );
+      }
+    }
+    
+    // Validate deduction fields
+    const deductionFields = ['avanceSalaire', 'opposition', 'mutuelle', 'cnacCredit'];
+    for (const field of deductionFields) {
+      if (body[field] !== undefined) {
+        const value = parseFloat(body[field]);
+        if (isNaN(value) || value < 0 || value > 5000000) {
+          return NextResponse.json(
+            { 
+              success: false, 
+              error: `${field} invalide (doit être entre 0 et 5,000,000 DZD)`,
+              code: `INVALID_${field.toUpperCase()}` 
+            },
+            { status: 400 }
+          );
+        }
+      }
     }
 
     // Get employee data

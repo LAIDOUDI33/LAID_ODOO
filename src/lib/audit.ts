@@ -340,6 +340,44 @@ export class AuditLogger {
       ...reqInfo,
     });
   }
+
+  /**
+   * M-05 FIX: Logger l'accès à des données sensibles
+   * Utilisé pour tracer les consultations de PII, salaires, données financières
+   */
+  static async logRead(
+    request: Request,
+    module: AuditModule,
+    entityName: string,
+    entityId: string,
+    options: {
+      action?: string;
+      accessedBy?: string;
+      piiAccess?: 'full' | 'sanitized' | 'none';
+      details?: Record<string, any>;
+      user?: { id: string; name: string; email: string };
+    } = {}
+  ) {
+    const reqInfo = this.extractRequestInfo(request);
+    
+    return createAuditLog({
+      action: "view" as any, // Use view action for read operations
+      module,
+      entityName,
+      entityId,
+      description: `Consultation ${options.action || `de ${entityName}`} #${entityId}${options.piiAccess ? ` (accès PII: ${options.piiAccess})` : ''}`,
+      newValues: {
+        action: options.action || 'VIEW_DETAILS',
+        accessedBy: options.accessedBy,
+        piiAccess: options.piiAccess,
+        ...options.details,
+      },
+      userId: options.user?.id,
+      userName: options.user?.name,
+      userEmail: options.user?.email,
+      ...reqInfo,
+    });
+  }
 }
 
 // ============================================================

@@ -8,6 +8,15 @@ import { db } from '@/lib/db'
 import { requireRole } from '@/lib/auth-utils'
 
 // ============================================================
+// COGS (Cost of Goods Sold) Configuration
+// M-01 FIX: Made configurable via environment variable
+// Default: 0.6 (60% of operating expenses are typically COGS)
+// This is an approximation for SCF-compliant income statements
+// For accurate COGS, integrate with inventory movement data
+// ============================================================
+const COGS_RATIO = parseFloat(process.env.COGS_RATIO || '0.6')
+
+// ============================================================
 // Types
 // ============================================================
 
@@ -296,9 +305,11 @@ export async function GET(request: NextRequest) {
     
     // Calculate results per SCF format
     // Gross Operating Income (Marge Commerciale + Production - Achats consommés)
-    // Simplified as Operating Revenue - Cost of Goods Sold portion
+    // M-01 FIX: COGS ratio is now configurable via COGS_RATIO env var (default 0.6)
+    // This approximates the portion of operating expenses that represent cost of goods sold
+    // For precise COGS calculation, integrate with inventory valuation and stock movements
     const grossOperatingIncome = totalOperatingRevenue - (
-      totalOperatingExpenses * 0.6 // Approximation: 60% of operating expenses are typically COGS
+      totalOperatingExpenses * COGS_RATIO
     )
     
     // Operating Result (Résultat d'Exploitation)

@@ -132,7 +132,8 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get('category');
     const search = searchParams.get('search');
     const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '20');
+    // M-02 FIX: Enforce maximum limit of 100 to prevent excessive data retrieval
+    const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 100);
     const includeTemplates = searchParams.get('templates') === 'true';
     const includeStats = searchParams.get('stats') === 'true';
 

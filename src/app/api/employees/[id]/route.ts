@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { requireAuth, requireRole, getAuthenticatedUser } from '@/lib/auth-utils';
+import { AuditLogger, AuditModule } from '@/lib/audit';
 
 // C-01 FIX: Roles authorized to view sensitive PII data
 const SENSITIVE_PII_ROLES = ['admin', 'manager', 'hr_manager', 'hr_staff', 'super_admin'];
@@ -63,8 +64,25 @@ export async function GET(
       for (const field of SENSITIVE_PII_FIELDS) {
         delete (safeData as any)[field];
       }
+      
+      // M-05 FIX: Audit log for sensitive data access (sanitized view)
+      await AuditLogger.logRead(request, AuditModule.hr, "Employee", id, {
+        action: "VIEW_EMPLOYEE_DETAILS",
+        accessedBy: user?.id,
+        piiAccess: 'sanitized',
+        user: user ? { id: user.id, name: user.name, email: user.email } : undefined
+      }).catch(console.error);
+      
       return NextResponse.json({ success: true, data: safeData });
     }
+
+    // M-05 FIX: Audit log for sensitive data access (full PII access)
+    await AuditLogger.logRead(request, AuditModule.hr, "Employee", id, {
+      action: "VIEW_EMPLOYEE_DETAILS",
+      accessedBy: user?.id,
+      piiAccess: 'full',
+      user: user ? { id: user.id, name: user.name, email: user.email } : undefined
+    }).catch(console.error);
 
     return NextResponse.json({ success: true, data: employee });
   } catch (error) {

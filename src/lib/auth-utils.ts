@@ -71,13 +71,13 @@ export async function requireRole(
   const userRole = session?.user?.role || 'user'
   
   if (!allowedRoles.includes(userRole)) {
+    // L-01 FIX: Removed requiredRoles and currentRole from error response
+    // to prevent information disclosure about valid roles and user's actual role
     return NextResponse.json(
       { 
         success: false, 
         error: "Accès refusé. Permissions insuffisantes.",
-        code: "FORBIDDEN",
-        requiredRoles: allowedRoles,
-        currentRole: userRole
+        code: "FORBIDDEN"
       },
       { status: 403 }
     )

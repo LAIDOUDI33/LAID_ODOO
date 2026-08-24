@@ -8,6 +8,7 @@ import {
   isTerminalStatus,
   INVOICE_STATE_MACHINE 
 } from '@/lib/state-machine';
+import { AuditLogger, AuditModule } from '@/lib/audit';
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -68,6 +69,19 @@ export async function GET(request: Request, context: RouteContext) {
         { status: 404 }
       );
     }
+
+    // M-05 FIX: Audit log for sensitive financial data access (invoice details)
+    await AuditLogger.logRead(request, AuditModule.accounting, "Invoice", id, {
+      action: "VIEW_INVOICE_DETAILS",
+      accessedBy: user?.id,
+      piiAccess: 'full',
+      details: {
+        invoiceReference: invoice.reference,
+        amountTotal: invoice.amountTotal,
+        status: invoice.status
+      },
+      user: user ? { id: user.id!, name: user.name || '', email: user.email || '' } : undefined
+    }).catch(console.error);
 
     return NextResponse.json({ success: true, data: invoice });
   } catch (error) {
